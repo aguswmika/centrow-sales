@@ -1,0 +1,865 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+  <title>Pelanggan — Centrow Sales Tablet</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="css/tablet.css"/>
+  <style>
+    /* Scoped ergonomic tablet enhancements */
+    .master {
+      width: var(--master-w, 360px);
+      min-width: var(--master-w, 360px);
+      max-width: var(--master-w, 360px);
+    }
+    .cli {
+      min-height: 60px;
+      padding: 14px;
+      gap: 12px;
+    }
+    .cli-name {
+      font-size: 14.5px;
+      font-weight: 600;
+      line-height: 1.3;
+    }
+    .cli-meta {
+      font-size: 12.5px;
+      line-height: 1.35;
+      margin-top: 3px;
+    }
+    .sub-tabs {
+      height: 44px;
+      min-height: 44px;
+    }
+    .sub-tab {
+      height: 44px;
+      padding: 0 20px;
+      font-size: 13.5px;
+      font-weight: 600;
+    }
+    .info-row {
+      padding: 13px 18px;
+    }
+    .info-key {
+      font-size: 13px;
+      width: 150px;
+      color: var(--sec);
+    }
+    .info-val {
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--text);
+    }
+    .master-tb .search {
+      height: 44px;
+      min-height: 44px;
+    }
+    .master-tb .btn-icon {
+      width: 44px;
+      height: 44px;
+      min-width: 44px;
+      min-height: 44px;
+    }
+    .detail-header-actions .btn {
+      height: 44px;
+      min-height: 44px;
+    }
+    .chip {
+      min-height: 36px;
+      padding: 0 14px;
+      font-size: 12.5px;
+      font-weight: 600;
+    }
+    .card-touch-item {
+      background: var(--surface);
+      border: 1.5px solid var(--border);
+      border-radius: var(--r-lg);
+      padding: 14px 16px;
+      box-shadow: var(--sh-sm);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      transition: all 0.15s;
+      text-decoration: none;
+      color: inherit;
+    }
+    .card-touch-item:hover {
+      border-color: var(--brand);
+      box-shadow: var(--sh-md);
+    }
+  </style>
+</head>
+<body>
+<div class="device">
+
+  <!-- STATUS BAR (Tablet Top bar) -->
+  <div class="statusbar">
+    <span class="statusbar-time">20:00</span>
+    <div class="statusbar-icons">
+      <svg viewBox="0 0 24 24" fill="currentColor"><path d="M1 8.5C4.1 5.4 8.3 3.5 13 3.5s8.9 1.9 12 5L23 6.5C19.5 3 15.5 1 12.5 1S5.5 3 2 6.5L1 8.5zm4 4C7.2 10.3 9.9 9 13 9s5.8 1.3 8 3.5l1-1C19.7 9 16.5 7.5 13 7.5S6.3 9 4 11.5l1 1zm4 4a1.5 1.5 0 110-3 1.5 1.5 0 010 3z"/></svg>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="2" y="7" width="18" height="11" rx="2"/><path d="M20 11h2v3h-2"/><rect x="4" y="9" width="12" height="7" rx="1" fill="currentColor"/></svg>
+      <span class="statusbar-bat">92%</span>
+    </div>
+  </div>
+
+  <!-- APP SHELL -->
+  <div class="app-shell">
+
+    <!-- LEFT NAV RAIL (72px touch friendly) -->
+    <nav class="nav-rail">
+      <a href="index.html" class="nav-logo" title="Centrow Sales">C</a>
+
+      <a href="index.html" class="nav-item" title="Beranda">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+        <span>Beranda</span>
+      </a>
+      <a href="pelanggan.html" class="nav-item active" title="Pelanggan">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg>
+        <span>Pelanggan</span>
+      </a>
+      <a href="proposal.html" class="nav-item" title="Proposal">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+        <span>Proposal</span>
+      </a>
+      <a href="kontrak.html" class="nav-item" title="Kontrak">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+        <span>Kontrak</span>
+      </a>
+      <a href="kalkulator.html" class="nav-item" title="Kalkulator Harga">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="2" width="16" height="20" rx="2"/><line x1="8" y1="6" x2="16" y2="6"/><line x1="8" y1="10" x2="16" y2="10"/><line x1="8" y1="14" x2="12" y2="14"/><line x1="8" y1="18" x2="12" y2="18"/></svg>
+        <span>Harga</span>
+      </a>
+
+      <div class="nav-spacer"></div>
+      <a href="login.html" class="nav-avatar" title="Keluar / Ganti Akun (Agus)">AG</a>
+    </nav>
+
+    <!-- MAIN AREA (SPLIT MASTER-DETAIL) -->
+    <div class="main">
+      <div class="split">
+
+        <!-- MASTER LIST (360px Column) -->
+        <div class="master">
+          <div class="master-header" style="display:flex;flex-direction:column;gap:10px;padding:14px 16px 12px;">
+            <div>
+              <div class="master-title">Daftar Pelanggan</div>
+              <div class="master-sub" id="master-count">7 entitas pelanggan aktif</div>
+            </div>
+
+            <!-- 44px Search & Action Button -->
+            <div style="display:flex;align-items:center;gap:8px;">
+              <div class="search" style="flex:1;">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                <input type="text" id="search-input" placeholder="Cari nama, kode, wilayah…" oninput="filterCustomers()"/>
+              </div>
+              <a href="tambah-pelanggan.html" class="btn btn-primary btn-icon" title="Tambah Pelanggan Baru">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+              </a>
+            </div>
+
+            <!-- Segmented Control Category Bar -->
+            <div class="seg-control">
+              <button class="seg-btn active" onclick="setCustomerChip(this, 'all')">Semua</button>
+              <button class="seg-btn" onclick="setCustomerChip(this, 'Villa')">Villa</button>
+              <button class="seg-btn" onclick="setCustomerChip(this, 'Hotel')">Hotel</button>
+              <button class="seg-btn" onclick="setCustomerChip(this, 'Restoran')">Resto</button>
+              <button class="seg-btn" onclick="setCustomerChip(this, 'Komersial')">Lainnya</button>
+            </div>
+          </div>
+
+          <!-- Customer List with 60px min height touch items -->
+          <div class="master-list" id="customer-list">
+
+            <div class="cli selected" data-id="c1" data-seg="Villa" onclick="selectCustById('c1')">
+              <div class="av av-md" style="background:var(--brand-10);color:var(--brand);">VS</div>
+              <div class="cli-info">
+                <div class="cli-name">Villa Sari Dewi</div>
+                <div class="cli-meta">CRM-0012 · Villa · Kab. Badung</div>
+              </div>
+              <div class="cli-right">
+                <span class="badge badge-ok">Aktif</span>
+              </div>
+            </div>
+
+            <div class="cli" data-id="c2" data-seg="Hotel" onclick="selectCustById('c2')">
+              <div class="av av-md" style="background:rgba(16,185,129,.12);color:#059669;">GH</div>
+              <div class="cli-info">
+                <div class="cli-name">Grand Hyatt Nusa Dua</div>
+                <div class="cli-meta">CRM-0084 · Hotel · Kab. Badung</div>
+              </div>
+              <div class="cli-right">
+                <span class="badge badge-ok">Aktif</span>
+              </div>
+            </div>
+
+            <div class="cli" data-id="c3" data-seg="Restoran" onclick="selectCustById('c3')">
+              <div class="av av-md" style="background:rgba(188,123,67,.14);color:#92580F;">WB</div>
+              <div class="cli-info">
+                <div class="cli-name">Resto Warung Bumi</div>
+                <div class="cli-meta">CRM-0201 · Restoran · Kota Denpasar</div>
+              </div>
+              <div class="cli-right">
+                <span class="badge badge-ok">Aktif</span>
+              </div>
+            </div>
+
+            <div class="cli" data-id="c4" data-seg="Villa" onclick="selectCustById('c4')">
+              <div class="av av-md" style="background:rgba(59,130,246,.12);color:#2563EB;">PB</div>
+              <div class="cli-info">
+                <div class="cli-name">Puri Bali Residence</div>
+                <div class="cli-meta">CRM-0512 · Villa · Kab. Gianyar</div>
+              </div>
+              <div class="cli-right">
+                <span class="badge badge-ok">Aktif</span>
+              </div>
+            </div>
+
+            <div class="cli" data-id="c5" data-seg="Restoran" onclick="selectCustById('c5')">
+              <div class="av av-md" style="background:rgba(234,88,12,.12);color:#C2410C;">SR</div>
+              <div class="cli-info">
+                <div class="cli-name">Starbucks Reserve Sunset</div>
+                <div class="cli-meta">CRM-0633 · Restoran · Kab. Badung</div>
+              </div>
+              <div class="cli-right">
+                <span class="badge badge-ok">Aktif</span>
+              </div>
+            </div>
+
+            <div class="cli" data-id="c6" data-seg="Komersial" onclick="selectCustById('c6')">
+              <div class="av av-md" style="background:rgba(139,92,246,.12);color:#7C3AED;">BM</div>
+              <div class="cli-info">
+                <div class="cli-name">RS Bali Mandara</div>
+                <div class="cli-meta">CRM-0710 · Komersial · Kota Denpasar</div>
+              </div>
+              <div class="cli-right">
+                <span class="badge badge-ok">Aktif</span>
+              </div>
+            </div>
+
+            <div class="cli" data-id="c7" data-seg="Komersial" onclick="selectCustById('c7')">
+              <div class="av av-md" style="background:rgba(16,185,129,.12);color:#059669;">FB</div>
+              <div class="cli-info">
+                <div class="cli-name">Finns Beach Club Canggu</div>
+                <div class="cli-meta">CRM-0842 · Komersial · Kab. Badung</div>
+              </div>
+              <div class="cli-right">
+                <span class="badge badge-ok">Aktif</span>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- DETAIL PANE -->
+        <div class="detail-pane">
+
+          <!-- Detail Header: 44px Action Buttons -->
+          <div class="detail-header">
+            <div style="display:flex;align-items:center;gap:14px;">
+              <div class="av av-lg" id="d-av" style="background:var(--brand-10);color:var(--brand);">VS</div>
+              <div>
+                <div style="font-family:'Plus Jakarta Sans',sans-serif;font-size:17px;font-weight:700;color:var(--text);" id="d-name">Villa Sari Dewi</div>
+                <div style="display:flex;gap:8px;align-items:center;margin-top:4px;">
+                  <span class="badge badge-brand" id="d-seg">Villa</span>
+                  <span class="badge badge-ok" id="d-status">Aktif</span>
+                  <span style="font-size:12px;color:var(--muted);font-weight:600;" id="d-code">CRM-0012</span>
+                </div>
+              </div>
+            </div>
+            <div class="detail-header-actions" style="display:flex;gap:10px;">
+              <a href="kalkulator.html" class="btn btn-secondary" title="Buat proposal untuk pelanggan ini">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><line x1="9" y1="15" x2="15" y2="15"/></svg>
+                + Buat Proposal
+              </a>
+              <a href="tambah-pelanggan.html" class="btn btn-primary">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                Edit Data
+              </a>
+            </div>
+          </div>
+
+          <!-- Sub-tabs (44px height for ergonomic touch) -->
+          <div class="sub-tabs">
+            <div class="sub-tab active" onclick="switchTab(this,'dt-info')">Informasi Utama</div>
+            <div class="sub-tab" onclick="switchTab(this,'dt-lokasi')">Lokasi &amp; Titik Servis</div>
+            <div class="sub-tab" onclick="switchTab(this,'dt-kontak')">Kontak Person &amp; PIC</div>
+            <div class="sub-tab" onclick="switchTab(this,'dt-proposal')">Riwayat Proposal</div>
+          </div>
+
+          <!-- Detail Scroll Content -->
+          <div class="detail-scroll">
+
+            <!-- TAB 1: INFORMASI UTAMA -->
+            <div id="dt-info" class="tc active">
+              <div class="info-block">
+                <div class="info-row"><span class="info-key">Status Pelanggan</span><span class="info-val" id="i-status"><span class="badge badge-ok">Aktif</span></span></div>
+                <div class="info-row"><span class="info-key">Segmen Usaha</span><span class="info-val" id="i-segment">Villa / Resor Privat</span></div>
+                <div class="info-row"><span class="info-key">Wilayah Domisili</span><span class="info-val" id="i-regency">Kabupaten Badung, Bali</span></div>
+                <div class="info-row"><span class="info-key">Nomor NPWP</span><span class="info-val" id="i-npwp">12.345.678.9-567.000</span></div>
+                <div class="info-row"><span class="info-key">Telepon Utama</span><span class="info-val" id="i-phone">+62 812-3456-7890</span></div>
+                <div class="info-row"><span class="info-key">Telepon Alternatif</span><span class="info-val" id="i-phone-alt">+62 811-9876-5432</span></div>
+                <div class="info-row"><span class="info-key">Email Bisnis</span><span class="info-val" id="i-email">contact@villasaridewi.com</span></div>
+                <div class="info-row"><span class="info-key">Scan Barcode / QR</span><span class="info-val" id="i-scan" style="font-family:monospace;font-weight:600;">QR-VS-0012-BDG</span></div>
+                <div class="info-row"><span class="info-key">Catatan Risiko</span><span class="info-val" id="i-risk">Tidak ada riwayat tunggakan bayar, pembayaran lancar (Termin Net 30).</span></div>
+                <div class="info-row"><span class="info-key">Catatan Operasional</span><span class="info-val" id="i-notes">Akses gerbang satpam 24 jam. Disarankan treatment sebelum tamu check-in (pukul 08:00 – 10:00 WITA).</span></div>
+              </div>
+            </div>
+
+            <!-- TAB 2: LOKASI & TITIK SERVIS -->
+            <div id="dt-lokasi" class="tc">
+              <div id="locations-container" style="display:flex;flex-direction:column;gap:14px;">
+                <!-- Location cards rendered dynamically -->
+              </div>
+            </div>
+
+            <!-- TAB 3: KONTAK PERSON & PIC -->
+            <div id="dt-kontak" class="tc">
+              <div id="contacts-container" style="display:flex;flex-direction:column;gap:12px;">
+                <!-- PIC cards rendered dynamically -->
+              </div>
+            </div>
+
+            <!-- TAB 4: RIWAYAT PROPOSAL -->
+            <div id="dt-proposal" class="tc">
+              <div id="proposals-container" style="display:flex;flex-direction:column;gap:12px;">
+                <!-- Proposal cards rendered dynamically -->
+              </div>
+            </div>
+
+          </div><!-- /detail-scroll -->
+        </div><!-- /detail-pane -->
+
+      </div><!-- /split -->
+    </div><!-- /main -->
+  </div><!-- /app-shell -->
+
+  <!-- HOME INDICATOR -->
+  <div class="home-bar"><div></div></div>
+
+</div><!-- /device -->
+
+<script src="js/tablet.js"></script>
+<script>
+// Customer Data Store with Clean Indonesian Labels
+const CUSTOMERS = {
+  c1: {
+    id: 'c1',
+    code: 'CRM-0012',
+    name: 'Villa Sari Dewi',
+    av: 'VS',
+    seg: 'Villa',
+    status: 'Aktif',
+    regency: 'Kabupaten Badung, Bali',
+    npwp: '12.345.678.9-567.000',
+    phone: '+62 812-3456-7890',
+    phoneAlt: '+62 811-9876-5432',
+    email: 'contact@villasaridewi.com',
+    scanCode: 'QR-VS-0012-BDG',
+    riskNotes: 'Tidak ada riwayat tunggakan bayar, pembayaran lancar (Termin Net 30).',
+    notes: 'Akses gerbang satpam 24 jam. Disarankan treatment sebelum tamu check-in (pukul 08:00 – 10:00 WITA).',
+    locations: [
+      {
+        isPrimary: true,
+        label: 'Villa Utama & Club House',
+        address: 'Jl. Raya Seminyak No. 88, Kuta, Badung, Bali 80361',
+        area: '1.200 m²',
+        district: 'Kecamatan Kuta · Kelurahan Seminyak',
+        coords: '-8.6913, 115.1682'
+      },
+      {
+        isPrimary: false,
+        label: 'Gudang Logistik & Laundry Annex',
+        address: 'Jl. Sunset Road Gg. Melati No. 4, Kuta, Badung',
+        area: '450 m²',
+        district: 'Kecamatan Kuta',
+        coords: '-8.6980, 115.1740'
+      }
+    ],
+    contacts: [
+      {
+        name: 'Budi Santoso',
+        av: 'BS',
+        position: 'General Manager',
+        email: 'budi@villasaridewi.com',
+        phone: '+62 812-3456-7890',
+        role: 'Pengambil Keputusan',
+        roleBadge: 'badge-brand'
+      },
+      {
+        name: 'Sari Rahayu',
+        av: 'SR',
+        position: 'Duty Manager Operasional',
+        email: 'sari@villasaridewi.com',
+        phone: '+62 811-9876-5432',
+        role: 'Koordinator Lapangan',
+        roleBadge: 'badge-neutral'
+      },
+      {
+        name: 'Wayan Sudarta',
+        av: 'WS',
+        position: 'Chief Engineering / SPV',
+        email: 'wayan.eng@villasaridewi.com',
+        phone: '+62 813-7788-9900',
+        role: 'Teknis & Lapangan',
+        roleBadge: 'badge-neutral'
+      }
+    ],
+    proposals: [
+      {
+        title: 'Termite Protection Plan (2 Tahun)',
+        code: 'PRO-2026-0042',
+        date: '12 Agt 2026',
+        amount: 'Rp 8.158.500',
+        status: 'Dikirim',
+        badge: 'badge-info'
+      },
+      {
+        title: 'General Pest Control Rutin Bulanan',
+        code: 'PRO-2025-0118',
+        date: '15 Jan 2026',
+        amount: 'Rp 4.500.000',
+        status: 'Disetujui',
+        badge: 'badge-ok'
+      }
+    ]
+  },
+  c2: {
+    id: 'c2',
+    code: 'CRM-0084',
+    name: 'Grand Hyatt Nusa Dua',
+    av: 'GH',
+    seg: 'Hotel',
+    status: 'Aktif',
+    regency: 'Kabupaten Badung, Bali',
+    npwp: '01.234.567.8-051.000',
+    phone: '+62 361-771234',
+    phoneAlt: '+62 812-4455-6677',
+    email: 'procurement@grandhyattbali.com',
+    scanCode: 'QR-GH-0084-ND',
+    riskNotes: 'Pelanggan korporat tier-A, proses approval PO membutuhkan waktu 14 hari kerja.',
+    notes: 'Akses melalui Loading Dock B. Wajib sertifikat safety dan APD lengkap bagi teknisi.',
+    locations: [
+      {
+        isPrimary: true,
+        label: 'Area Utama Hotel & Resor',
+        address: 'Kawasan Wisata Nusa Dua BTDC, Badung 80363',
+        area: '45.000 m²',
+        district: 'Kecamatan Kuta Selatan · Kelurahan Benoa',
+        coords: '-8.8021, 115.2310'
+      }
+    ],
+    contacts: [
+      {
+        name: 'Michael Wong',
+        av: 'MW',
+        position: 'Director of Operations',
+        email: 'michael.wong@hyatt.com',
+        phone: '+62 811-3882-990',
+        role: 'Pengambil Keputusan',
+        roleBadge: 'badge-brand'
+      },
+      {
+        name: 'Ketut Astawa',
+        av: 'KA',
+        position: 'Executive Housekeeper',
+        email: 'ketut.astawa@hyatt.com',
+        phone: '+62 812-3901-2233',
+        role: 'Koordinator Lapangan',
+        roleBadge: 'badge-neutral'
+      }
+    ],
+    proposals: [
+      {
+        title: 'Integrated Pest Management Full Facility',
+        code: 'PRO-2026-0038',
+        date: '02 Agt 2026',
+        amount: 'Rp 48.000.000',
+        status: 'Negosiasi',
+        badge: 'badge-warn'
+      }
+    ]
+  },
+  c3: {
+    id: 'c3',
+    code: 'CRM-0201',
+    name: 'Resto Warung Bumi',
+    av: 'WB',
+    seg: 'Restoran',
+    status: 'Aktif',
+    regency: 'Kota Denpasar, Bali',
+    npwp: '31.888.999.0-901.000',
+    phone: '+62 361-223344',
+    phoneAlt: '+62 819-3344-5566',
+    email: 'operasional@warungbumi.co.id',
+    scanCode: 'QR-WB-0201-DPS',
+    riskNotes: 'Pembayaran tunai / transfer per invoice 14 hari lancar.',
+    notes: 'Jadwal servis rutin hanya boleh dilakukan setelah resto tutup (pukul 22:30 WITA).',
+    locations: [
+      {
+        isPrimary: true,
+        label: 'Restoran & Dapur Pusat',
+        address: 'Jl. Teuku Umar No. 102, Denpasar Barat',
+        area: '500 m²',
+        district: 'Kecamatan Denpasar Barat · Kelurahan Dauh Puri',
+        coords: '-8.6750, 115.2050'
+      }
+    ],
+    contacts: [
+      {
+        name: 'Dewi Lestari',
+        av: 'DL',
+        position: 'Owner / Direktur',
+        email: 'dewi@warungbumi.co.id',
+        phone: '+62 819-3344-5566',
+        role: 'Pengambil Keputusan',
+        roleBadge: 'badge-brand'
+      }
+    ],
+    proposals: [
+      {
+        title: 'Pengendalian Hama Dapur & Restoran',
+        code: 'PRO-2026-0019',
+        date: '20 Jul 2026',
+        amount: 'Rp 3.600.000',
+        status: 'Disetujui',
+        badge: 'badge-ok'
+      }
+    ]
+  },
+  c4: {
+    id: 'c4',
+    code: 'CRM-0512',
+    name: 'Puri Bali Residence',
+    av: 'PB',
+    seg: 'Villa',
+    status: 'Aktif',
+    regency: 'Kabupaten Gianyar, Bali',
+    npwp: '72.444.555.6-112.000',
+    phone: '+62 813-3889-1122',
+    phoneAlt: '',
+    email: 'info@puribalivilla.com',
+    scanCode: 'QR-PB-0512-GNY',
+    riskNotes: 'Riwayat kontrak 3 tahun berturut-turut tanpa kendala.',
+    notes: 'Kawasan tenang di Ubud. Dilarang menggunakan mesin fogging bising di atas jam 17:00.',
+    locations: [
+      {
+        isPrimary: true,
+        label: 'Kompleks Villa & Spa',
+        address: 'Jl. Raya Sayan No. 23, Ubud, Gianyar',
+        area: '2.800 m²',
+        district: 'Kecamatan Ubud · Kelurahan Sayan',
+        coords: '-8.5080, 115.2440'
+      }
+    ],
+    contacts: [
+      {
+        name: 'Anak Agung Gede',
+        av: 'AG',
+        position: 'Estate Manager',
+        email: 'aagede@puribalivilla.com',
+        phone: '+62 813-3889-1122',
+        role: 'Pengambil Keputusan',
+        roleBadge: 'badge-brand'
+      }
+    ],
+    proposals: [
+      {
+        title: 'Anti Rayap & Pemeliharaan Taman',
+        code: 'PRO-2026-0027',
+        date: '28 Jul 2026',
+        amount: 'Rp 14.200.000',
+        status: 'Dikirim',
+        badge: 'badge-info'
+      }
+    ]
+  },
+  c5: {
+    id: 'c5',
+    code: 'CRM-0633',
+    name: 'Starbucks Reserve Sunset',
+    av: 'SR',
+    seg: 'Restoran',
+    status: 'Aktif',
+    regency: 'Kabupaten Badung, Bali',
+    npwp: '01.999.888.7-062.000',
+    phone: '+62 361-8499000',
+    phoneAlt: '',
+    email: 'store.sunset@map.co.id',
+    scanCode: 'QR-SB-0633-BDG',
+    riskNotes: 'Sistem pembayaran terpusat via Head Office MAP Jakarta.',
+    notes: 'Servis subuh pukul 05:00 – 06:30 WITA sebelum gerai buka untuk pelanggan.',
+    locations: [
+      {
+        isPrimary: true,
+        label: 'Gerai Reserve & Drive Thru',
+        address: 'Jl. Sunset Road No. 77, Kuta, Badung',
+        area: '680 m²',
+        district: 'Kecamatan Kuta',
+        coords: '-8.6940, 115.1780'
+      }
+    ],
+    contacts: [
+      {
+        name: 'Rian Pratama',
+        av: 'RP',
+        position: 'Store Manager',
+        email: 'rian.pratama@map.co.id',
+        phone: '+62 812-9988-7766',
+        role: 'Koordinator Lapangan',
+        roleBadge: 'badge-neutral'
+      }
+    ],
+    proposals: [
+      {
+        title: 'Pest & Fly Control Food Grade Contract',
+        code: 'PRO-2026-0011',
+        date: '10 Jun 2026',
+        amount: 'Rp 9.800.000',
+        status: 'Disetujui',
+        badge: 'badge-ok'
+      }
+    ]
+  },
+  c6: {
+    id: 'c6',
+    code: 'CRM-0710',
+    name: 'RS Bali Mandara',
+    av: 'BM',
+    seg: 'Komersial',
+    status: 'Aktif',
+    regency: 'Kota Denpasar, Bali',
+    npwp: '00.123.987.4-902.000',
+    phone: '+62 361-4490555',
+    phoneAlt: '+62 361-4490556',
+    email: 'sanitasi@rsbalimandara.go.id',
+    scanCode: 'QR-BM-0710-DPS',
+    riskNotes: 'Instansi layanan kesehatan, pembayaran via SP2D APBD.',
+    notes: 'Kepatuhan standar sanitasi rumah sakit tinggi. Bahan kimia harus tersertifikasi ramah lingkungan & non-toxic di area rawat inap.',
+    locations: [
+      {
+        isPrimary: true,
+        label: 'Gedung Rumah Sakit Utama',
+        address: 'Jl. By Pass Ngurah Rai No. 548, Sanur Kauh, Denpasar Selatan',
+        area: '18.500 m²',
+        district: 'Kecamatan Denpasar Selatan · Kelurahan Sanur Kauh',
+        coords: '-8.7050, 115.2490'
+      }
+    ],
+    contacts: [
+      {
+        name: 'dr. I Made Arimbawa',
+        av: 'MA',
+        position: 'Kepala Instalasi Sanitasi & K3',
+        email: 'sanitasi.arimbawa@rsbalimandara.go.id',
+        phone: '+62 811-3940-100',
+        role: 'Pengambil Keputusan',
+        roleBadge: 'badge-brand'
+      }
+    ],
+    proposals: [
+      {
+        title: 'Hospital Hygiene & Vector Control 1 Tahun',
+        code: 'PRO-2026-0004',
+        date: '18 Mei 2026',
+        amount: 'Rp 36.000.000',
+        status: 'Disetujui',
+        badge: 'badge-ok'
+      }
+    ]
+  },
+  c7: {
+    id: 'c7',
+    code: 'CRM-0842',
+    name: 'Finns Beach Club Canggu',
+    av: 'FB',
+    seg: 'Komersial',
+    status: 'Aktif',
+    regency: 'Kabupaten Badung, Bali',
+    npwp: '22.333.444.5-052.000',
+    phone: '+62 361-8446327',
+    phoneAlt: '+62 812-3844-0000',
+    email: 'maintenance@finnsbeachclub.com',
+    scanCode: 'QR-FB-0842-CGU',
+    riskNotes: 'Pembayaran lancar setiap tanggal 10 awal bulan.',
+    notes: 'Area pantai terbuka dengan lalu lintas pengunjung padat. Treatment fly control & rodent control dilakukan rutin tiap minggu.',
+    locations: [
+      {
+        isPrimary: true,
+        label: 'Beach Club, Resto & Pool Bar',
+        address: 'Jl. Pantai Berawa No. 99, Canggu, Kuta Utara, Badung',
+        area: '8.500 m²',
+        district: 'Kecamatan Kuta Utara · Kelurahan Tibubeneng',
+        coords: '-8.6650, 115.1380'
+      }
+    ],
+    contacts: [
+      {
+        name: 'Alexandre Meyer',
+        av: 'AM',
+        position: 'Director of Facilities',
+        email: 'alex.meyer@finnsbeachclub.com',
+        phone: '+62 812-3844-0000',
+        role: 'Pengambil Keputusan',
+        roleBadge: 'badge-brand'
+      }
+    ],
+    proposals: [
+      {
+        title: 'High-Traffic Hospitality Vector Management',
+        code: 'PRO-2026-0033',
+        date: '05 Agt 2026',
+        amount: 'Rp 18.500.000',
+        status: 'Disetujui',
+        badge: 'badge-ok'
+      }
+    ]
+  }
+};
+
+let activeCustomerId = 'c1';
+
+function selectCustById(id) {
+  const data = CUSTOMERS[id];
+  if (!data) return;
+  activeCustomerId = id;
+
+  // Highlight list item
+  document.querySelectorAll('#customer-list .cli').forEach(c => {
+    c.classList.remove('selected');
+    if (c.getAttribute('data-id') === id) c.classList.add('selected');
+  });
+
+  // Update Detail Header
+  document.getElementById('d-name').textContent = data.name;
+  document.getElementById('d-av').textContent = data.av;
+  document.getElementById('d-code').textContent = data.code;
+  document.getElementById('d-seg').textContent = data.seg;
+  document.getElementById('d-status').textContent = data.status;
+
+  // Update Tab 1: Info Utama
+  document.getElementById('i-segment').textContent = data.seg;
+  document.getElementById('i-regency').textContent = data.regency;
+  document.getElementById('i-npwp').textContent = data.npwp;
+  document.getElementById('i-phone').textContent = data.phone;
+  document.getElementById('i-phone-alt').textContent = data.phoneAlt || '—';
+  document.getElementById('i-email').textContent = data.email;
+  document.getElementById('i-scan').textContent = data.scanCode;
+  document.getElementById('i-risk').textContent = data.riskNotes;
+  document.getElementById('i-notes').textContent = data.notes;
+
+  // Update Tab 2: Locations
+  const locContainer = document.getElementById('locations-container');
+  locContainer.innerHTML = '';
+  data.locations.forEach((loc, idx) => {
+    const card = document.createElement('div');
+    card.className = 'info-block';
+    card.style.marginBottom = '0';
+    card.innerHTML = `
+      <div class="info-row" style="align-items:flex-start;">
+        <div style="flex:1;">
+          <div style="display:flex;align-items:center;gap:8px;">
+            <span class="badge ${loc.isPrimary ? 'badge-brand' : 'badge-neutral'}" style="font-size:11px;">${loc.isPrimary ? 'Lokasi Utama' : 'Sekunder'}</span>
+            <strong style="font-size:14.5px;color:var(--text);">${loc.label}</strong>
+          </div>
+          <div style="font-size:13.5px;color:var(--sec);margin-top:6px;">${loc.address}</div>
+          <div style="display:flex;flex-wrap:wrap;gap:16px;font-size:12.5px;color:var(--muted);margin-top:8px;">
+            <span>Luas Area: <strong style="color:var(--text);">${loc.area}</strong></span>
+            <span>Wilayah: <strong style="color:var(--text);">${loc.district}</strong></span>
+            <span>Koordinat GPS: <strong style="color:var(--text);">${loc.coords}</strong></span>
+          </div>
+        </div>
+      </div>
+    `;
+    locContainer.appendChild(card);
+  });
+
+  // Update Tab 3: Contacts
+  const cntContainer = document.getElementById('contacts-container');
+  cntContainer.innerHTML = '';
+  data.contacts.forEach((cnt, idx) => {
+    const card = document.createElement('div');
+    card.className = 'card-touch-item';
+    card.innerHTML = `
+      <div style="display:flex;align-items:center;gap:12px;">
+        <div class="av av-md" style="background:var(--brand-10);color:var(--brand);">${cnt.av}</div>
+        <div>
+          <div style="font-size:14.5px;font-weight:600;color:var(--text);">${cnt.name}</div>
+          <div style="font-size:12.5px;color:var(--sec);margin-top:2px;">${cnt.position} · ${cnt.email} · ${cnt.phone}</div>
+        </div>
+      </div>
+      <span class="badge ${cnt.roleBadge}">${cnt.role}</span>
+    `;
+    cntContainer.appendChild(card);
+  });
+
+  // Update Tab 4: Proposals
+  const propContainer = document.getElementById('proposals-container');
+  propContainer.innerHTML = '';
+  data.proposals.forEach((prop, idx) => {
+    const card = document.createElement('a');
+    card.href = 'proposal.html';
+    card.className = 'card-touch-item';
+    card.innerHTML = `
+      <div style="display:flex;align-items:center;gap:12px;">
+        <div class="av av-md" style="background:var(--brand-10);color:var(--brand);">PR</div>
+        <div>
+          <div style="font-size:14.5px;font-weight:600;color:var(--text);">${prop.title}</div>
+          <div style="font-size:12.5px;color:var(--muted);margin-top:2px;">${prop.code} · ${prop.date}</div>
+        </div>
+      </div>
+      <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px;">
+        <span class="badge ${prop.badge}">${prop.status}</span>
+        <span style="font-family:'Plus Jakarta Sans',sans-serif;font-size:14.5px;font-weight:700;color:var(--text);">${prop.amount}</span>
+      </div>
+    `;
+    propContainer.appendChild(card);
+  });
+}
+
+// Segment / Chip filter
+let activeSegment = 'all';
+function setCustomerChip(btn, seg) {
+  btn.parentElement.querySelectorAll('.seg-btn, .chip').forEach(c => c.classList.remove('active'));
+  btn.classList.add('active');
+  activeSegment = seg;
+  filterCustomers();
+}
+
+// Live search and filter
+function filterCustomers() {
+  const query = document.getElementById('search-input').value.toLowerCase().trim();
+  const items = document.querySelectorAll('#customer-list .cli');
+  let visibleCount = 0;
+
+  items.forEach(item => {
+    const id = item.getAttribute('data-id');
+    const cust = CUSTOMERS[id];
+    if (!cust) return;
+
+    const matchesSeg = (activeSegment === 'all' || cust.seg.toLowerCase() === activeSegment.toLowerCase());
+    const matchesQuery = !query ||
+      cust.name.toLowerCase().includes(query) ||
+      cust.code.toLowerCase().includes(query) ||
+      cust.regency.toLowerCase().includes(query) ||
+      cust.seg.toLowerCase().includes(query);
+
+    if (matchesSeg && matchesQuery) {
+      item.style.display = 'flex';
+      visibleCount++;
+    } else {
+      item.style.display = 'none';
+    }
+  });
+
+  document.getElementById('master-count').textContent = `${visibleCount} entitas pelanggan ditemukan`;
+}
+
+// Initialize on page load
+selectCustById('c1');
+</script>
+</body>
+</html>

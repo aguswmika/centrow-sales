@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover"/>
+  <title>Kontrak — Centrow Sales Tablet</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="css/tablet.css"/>
+</head>
+<body>
+<div class="device">
+
+  <!-- STATUS BAR -->
+  <div class="statusbar">
+    <span class="statusbar-time">20:00</span>
+    <div class="statusbar-icons">
+      <svg viewBox="0 0 24 24" fill="currentColor"><path d="M1 8.5C4.1 5.4 8.3 3.5 13 3.5s8.9 1.9 12 5L23 6.5C19.5 3 15.5 1 12.5 1S5.5 3 2 6.5L1 8.5zm4 4C7.2 10.3 9.9 9 13 9s5.8 1.3 8 3.5l1-1C19.7 9 16.5 7.5 13 7.5S6.3 9 4 11.5l1 1zm4 4a1.5 1.5 0 110-3 1.5 1.5 0 010 3z"/></svg>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="2" y="7" width="18" height="11" rx="2"/><path d="M20 11h2v3h-2"/><rect x="4" y="9" width="12" height="7" rx="1" fill="currentColor"/></svg>
+      <span class="statusbar-bat">92%</span>
+    </div>
+  </div>
+
+  <!-- APP SHELL -->
+  <div class="app-shell">
+
+    <!-- LEFT NAV RAIL (72px) -->
+    <nav class="nav-rail" aria-label="Navigasi Utama">
+      <a href="index.html" class="nav-logo" title="Centrow Sales">C</a>
+
+      <a href="index.html" class="nav-item">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+        <span>Beranda</span>
+      </a>
+      <a href="pelanggan.html" class="nav-item">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg>
+        <span>Pelanggan</span>
+      </a>
+      <a href="proposal.html" class="nav-item">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+        <span>Proposal</span>
+      </a>
+      <a href="kontrak.html" class="nav-item active" aria-current="page">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+        <span>Kontrak</span>
+      </a>
+      <a href="kalkulator.html" class="nav-item">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="2" width="16" height="20" rx="2"/><line x1="8" y1="6" x2="16" y2="6"/><line x1="8" y1="10" x2="16" y2="10"/><line x1="8" y1="14" x2="12" y2="14"/><line x1="8" y1="18" x2="12" y2="18"/></svg>
+        <span>Harga</span>
+      </a>
+
+      <div class="nav-spacer"></div>
+      <a href="login.html" class="nav-avatar" title="Keluar / Ganti Akun (Agus)">AG</a>
+    </nav>
+
+    <!-- MAIN AREA -->
+    <div class="main">
+      <header class="ph">
+        <div>
+          <h1 class="ph-title">Daftar Kontrak Layanan</h1>
+          <div class="ph-sub">148 kontrak aktif · 3 jatuh tempo bulan ini</div>
+        </div>
+        <button class="btn btn-primary btn-sm" onclick="showToast('Pilih proposal yang disetujui untuk membuat kontrak.')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          Buat Kontrak
+        </button>
+      </header>
+
+      <!-- SEARCH & FILTER TOOLBAR -->
+      <div class="tb">
+        <div class="search" style="flex:1;">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          <input type="text" placeholder="Cari nomor kontrak, nama klien, atau lokasi…"/>
+        </div>
+        <div class="chips">
+          <button class="chip active" onclick="setChip(this)">Semua (148)</button>
+          <button class="chip" onclick="setChip(this)">Aktif (132)</button>
+          <button class="chip" onclick="setChip(this)">Jatuh Tempo (3)</button>
+          <button class="chip" onclick="setChip(this)">Selesai (13)</button>
+        </div>
+      </div>
+
+      <main class="sa">
+        <!-- KPI GRID -->
+        <section class="kpi-grid" aria-label="Statistik Kontrak">
+          <div class="kpi">
+            <div class="kpi-lbl">Kontrak Aktif</div>
+            <div class="kpi-val">148</div>
+            <div class="kpi-sub"><span class="up">82%</span><span>dari total basis klien</span></div>
+          </div>
+          <div class="kpi">
+            <div class="kpi-lbl">Jatuh Tempo Bln Ini</div>
+            <div class="kpi-val" style="color:var(--err);">3</div>
+            <div class="kpi-sub"><span style="color:var(--err);font-weight:600;">Perlu follow-up segera</span></div>
+          </div>
+          <div class="kpi">
+            <div class="kpi-lbl">Total Nilai Kontrak</div>
+            <div class="kpi-val">Rp 612,4jt</div>
+            <div class="kpi-sub"><span>Periode berjalan 2026</span></div>
+          </div>
+          <div class="kpi">
+            <div class="kpi-lbl">Renewal Rate</div>
+            <div class="kpi-val">88,5%</div>
+            <div class="kpi-sub"><span class="up">↑ 4.2%</span><span>vs tahun sebelumnya</span></div>
+          </div>
+        </section>
+
+        <!-- CONTRACT LIST -->
+        <div class="st">
+          <span>Daftar Kontrak Berjalan</span>
+          <span style="font-family:'Inter',sans-serif;font-size:12.5px;color:var(--muted);font-weight:500;">Menampilkan 7 dari 148 kontrak</span>
+        </div>
+
+        <div class="card-list">
+          <div class="cli" style="border-left:4px solid var(--err);" onclick="showToast('Membuka detail kontrak KON-2024-0112')">
+            <div class="av av-md" style="background:rgba(239,68,68,.12);color:var(--err);">PT</div>
+            <div class="cli-info">
+              <div class="cli-name">Villa Puri Tirtha</div>
+              <div class="cli-meta">KON-2024-0112 · Termite Protection 2 Thn · Gianyar · Termin Bertahap</div>
+            </div>
+            <div class="cli-right">
+              <span style="font-family:'Inter',sans-serif;font-size:12px;color:var(--err);font-weight:700;">Jatuh Tempo 28 Agt</span>
+              <span class="cli-amt">Rp 9,6jt</span>
+            </div>
+          </div>
+
+          <div class="cli" style="border-left:4px solid var(--warn);" onclick="showToast('Membuka detail kontrak KON-2024-0089')">
+            <div class="av av-md" style="background:rgba(188,123,67,.14);color:#92580F;">GH</div>
+            <div class="cli-info">
+              <div class="cli-name">Grand Hyatt Nusa Dua</div>
+              <div class="cli-meta">KON-2024-0089 · Integrated Pest Control 3 Thn · Badung · Bulanan</div>
+            </div>
+            <div class="cli-right">
+              <span style="font-family:'Inter',sans-serif;font-size:12px;color:var(--warn);font-weight:700;">Jatuh Tempo 15 Sep</span>
+              <span class="cli-amt">Rp 38,0jt</span>
+            </div>
+          </div>
+
+          <div class="cli" style="border-left:4px solid var(--warn);" onclick="showToast('Membuka detail kontrak KON-2024-0105')">
+            <div class="av av-md" style="background:rgba(188,123,67,.14);color:#92580F;">HS</div>
+            <div class="cli-info">
+              <div class="cli-name">Hotel Santika Seminyak</div>
+              <div class="cli-meta">KON-2024-0105 · Rodent &amp; Fly Control 1 Thn · Badung · Termin Triwulan</div>
+            </div>
+            <div class="cli-right">
+              <span style="font-family:'Inter',sans-serif;font-size:12px;color:var(--warn);font-weight:700;">Jatuh Tempo 30 Sep</span>
+              <span class="cli-amt">Rp 14,2jt</span>
+            </div>
+          </div>
+
+          <div class="cli" onclick="showToast('Membuka detail kontrak KON-2025-0072')">
+            <div class="av av-md" style="background:var(--brand-10);color:var(--brand);">VS</div>
+            <div class="cli-info">
+              <div class="cli-name">Villa Sari Dewi</div>
+              <div class="cli-meta">KON-2025-0072 · Pest Control 1 Thn · Badung · Full Payment</div>
+            </div>
+            <div class="cli-right">
+              <span class="badge badge-ok">Aktif</span>
+              <span class="cli-amt">Rp 4,8jt</span>
+            </div>
+          </div>
+
+          <div class="cli" onclick="showToast('Membuka detail kontrak KON-2025-0034')">
+            <div class="av av-md" style="background:rgba(59,130,246,.12);color:#2563EB;">AV</div>
+            <div class="cli-info">
+              <div class="cli-name">Alila Villas Uluwatu</div>
+              <div class="cli-meta">KON-2025-0034 · Comprehensive Pest &amp; Termite 2 Thn · Badung · Bulanan</div>
+            </div>
+            <div class="cli-right">
+              <span class="badge badge-ok">Aktif</span>
+              <span class="cli-amt">Rp 45,0jt</span>
+            </div>
+          </div>
+
+          <div class="cli" onclick="showToast('Membuka detail kontrak KON-2025-0018')">
+            <div class="av av-md" style="background:var(--brand-10);color:var(--brand);">MU</div>
+            <div class="cli-info">
+              <div class="cli-name">Maya Ubud Resort &amp; Spa</div>
+              <div class="cli-meta">KON-2025-0018 · Termite Baiting System · Gianyar · Semesteran</div>
+            </div>
+            <div class="cli-right">
+              <span class="badge badge-ok">Aktif</span>
+              <span class="cli-amt">Rp 18,5jt</span>
+            </div>
+          </div>
+
+          <div class="cli" onclick="showToast('Membuka detail kontrak KON-2024-0094')">
+            <div class="av av-md" style="background:rgba(140,142,139,.14);color:var(--sec);">CD</div>
+            <div class="cli-info">
+              <div class="cli-name">Café del Mar Canggu</div>
+              <div class="cli-meta">KON-2024-0094 · Fly &amp; Insect Control · Badung · Berakhir Juli 2026</div>
+            </div>
+            <div class="cli-right">
+              <span class="badge badge-neutral">Selesai</span>
+              <span class="cli-amt">Rp 12,0jt</span>
+            </div>
+          </div>
+        </div>
+      </main>
+    </div><!-- /main -->
+  </div><!-- /app-shell -->
+
+  <!-- HOME INDICATOR -->
+  <div class="home-bar"><div></div></div>
+
+</div><!-- /device -->
+<script src="js/tablet.js"></script>
+</body>
+</html>

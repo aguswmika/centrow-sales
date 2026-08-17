@@ -1,0 +1,1058 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+  <title>Daftar Proposal — Centrow Sales Tablet</title>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="css/tablet.css"/>
+  <style>
+    :root {
+      --master-w: 360px;
+      --calc-side-w: 300px;
+      --touch-min: 44px;
+      --row-min: 48px;
+    }
+
+    /* Fluid tablet viewport adaptations */
+    @media (max-width: 1024px), (max-height: 768px), (pointer: coarse) {
+      body {
+        padding: 0 !important;
+        background: var(--page) !important;
+      }
+      .device {
+        width: 100vw !important;
+        height: 100vh !important;
+        max-width: 100vw !important;
+        max-height: 100vh !important;
+        border-radius: 0 !important;
+        box-shadow: none !important;
+      }
+    }
+
+    /* Master Pane (360px) */
+    .master {
+      width: var(--master-w);
+      min-width: var(--master-w);
+      max-width: var(--master-w);
+      flex: 0 0 var(--master-w);
+      background: var(--surface);
+      border-right: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+      overflow: hidden;
+    }
+
+    .master-header {
+      padding: 14px 18px 10px;
+      border-bottom: 1px solid var(--border);
+      background: var(--surface);
+      flex-shrink: 0;
+    }
+    .master-title {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: 17px;
+      font-weight: 800;
+      color: var(--text);
+    }
+    .master-sub {
+      font-size: 12px;
+      color: var(--muted);
+      margin-top: 2px;
+    }
+
+    /* 44px Search & Toolbar */
+    .master-search-bar {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 16px;
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      flex-shrink: 0;
+    }
+    .search-wrap {
+      flex: 1;
+      position: relative;
+      display: flex;
+      align-items: center;
+    }
+    .search-wrap svg {
+      position: absolute;
+      left: 12px;
+      width: 16px;
+      height: 16px;
+      color: var(--muted);
+      pointer-events: none;
+    }
+    .search-input {
+      width: 100%;
+      height: var(--touch-min);
+      min-height: var(--touch-min);
+      border: 1.5px solid var(--border);
+      border-radius: var(--r-md);
+      padding: 0 12px 0 38px;
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--text);
+      background: var(--subtle);
+      outline: none;
+      transition: all 0.15s ease;
+      font-family: inherit;
+    }
+    .search-input:focus {
+      border-color: var(--brand);
+      background: var(--surface);
+      box-shadow: 0 0 0 3px var(--brand-10);
+    }
+    .btn-create-prop {
+      height: var(--touch-min);
+      min-height: var(--touch-min);
+      width: var(--touch-min);
+      min-width: var(--touch-min);
+      border-radius: var(--r-md);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      background: var(--brand);
+      color: #FFFFFF;
+      border: none;
+      cursor: pointer;
+      flex-shrink: 0;
+      transition: background 0.15s ease;
+    }
+    .btn-create-prop:hover {
+      background: var(--brand-d);
+    }
+
+    /* Filter Chips Bar */
+    .master-chips-bar {
+      padding: 8px 16px;
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      overflow-x: auto;
+      flex-shrink: 0;
+    }
+    .chip-btn {
+      height: 34px;
+      min-height: 34px;
+      padding: 0 12px;
+      font-size: 12px;
+      font-weight: 600;
+      border-radius: var(--r-pill);
+      border: 1.5px solid var(--border);
+      background: var(--subtle);
+      color: var(--sec);
+      cursor: pointer;
+      white-space: nowrap;
+      transition: all 0.15s ease;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .chip-btn:hover {
+      border-color: var(--brand);
+      color: var(--brand);
+    }
+    .chip-btn.active {
+      background: var(--brand);
+      color: #FFFFFF;
+      border-color: var(--brand);
+    }
+
+    /* Master List Items */
+    .master-list {
+      flex: 1;
+      overflow-y: auto;
+      min-height: 0;
+      background: var(--surface);
+    }
+    .prop-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 16px;
+      border-bottom: 1px solid var(--border);
+      cursor: pointer;
+      transition: background 0.15s ease;
+      position: relative;
+    }
+    .prop-item:hover {
+      background: rgba(30, 64, 175, 0.03);
+    }
+    .prop-item.selected {
+      background: var(--brand-05);
+      border-left: 4px solid var(--brand);
+      padding-left: 12px;
+    }
+    .prop-avatar {
+      width: 40px;
+      height: 40px;
+      min-width: 40px;
+      border-radius: var(--r-md);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: 13px;
+      font-weight: 800;
+      flex-shrink: 0;
+    }
+    .prop-info {
+      flex: 1;
+      min-width: 0;
+    }
+    .prop-name {
+      font-size: 13.5px;
+      font-weight: 700;
+      color: var(--text);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .prop-meta {
+      font-size: 11.5px;
+      color: var(--muted);
+      margin-top: 2px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .prop-meta-highlight {
+      color: var(--sec);
+      font-weight: 500;
+    }
+    .prop-right {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 4px;
+      flex-shrink: 0;
+    }
+    .prop-amt {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: 13px;
+      font-weight: 800;
+      color: var(--text);
+      font-variant-numeric: tabular-nums;
+    }
+
+    /* Detail Pane */
+    .detail-pane {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      min-height: 0;
+      background: var(--page);
+    }
+
+    /* Detail Header */
+    .detail-header {
+      padding: 12px 20px;
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-shrink: 0;
+    }
+    .detail-header-title {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: 17px;
+      font-weight: 800;
+      color: var(--text);
+    }
+    .detail-header-tags {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin-top: 4px;
+    }
+
+    /* 4-Column Proposal Metadata Bar */
+    .proposal-meta-bar {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+      padding: 12px 20px;
+      background: var(--subtle);
+      border-bottom: 1px solid var(--border);
+      font-size: 12px;
+      flex-shrink: 0;
+    }
+    .meta-box {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+    .meta-lbl {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+    .meta-val {
+      font-weight: 700;
+      color: var(--text);
+      font-size: 12.5px;
+    }
+
+    /* Embedded Pricing Container */
+    .calc-split {
+      display: flex;
+      flex: 1;
+      overflow: hidden;
+      min-height: 0;
+    }
+    .calc-left {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      min-height: 0;
+    }
+    .calc-tabs {
+      display: flex;
+      background: var(--subtle);
+      border-bottom: 1px solid var(--border);
+      flex-shrink: 0;
+      padding: 0 8px;
+      gap: 4px;
+    }
+    .calc-tab {
+      flex: 1;
+      height: var(--touch-min);
+      min-height: var(--touch-min);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--sec);
+      cursor: pointer;
+      border-bottom: 3px solid transparent;
+      background: transparent;
+      transition: all 0.15s ease;
+      user-select: none;
+      border-radius: var(--r-sm) var(--r-sm) 0 0;
+      padding: 0 14px;
+    }
+    .calc-tab:hover {
+      color: var(--brand);
+      background: rgba(30, 64, 175, 0.03);
+    }
+    .calc-tab.active {
+      background: var(--surface);
+      color: var(--brand);
+      border-bottom-color: var(--brand);
+      font-weight: 700;
+      box-shadow: 0 -2px 6px rgba(0, 0, 0, 0.03);
+    }
+    .calc-scroll {
+      flex: 1;
+      overflow-y: auto;
+      min-height: 0;
+      background: var(--surface);
+    }
+
+    /* Embedded Pricing Row (Min 48px) */
+    .li-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 16px;
+      border-bottom: 1px solid var(--border);
+      background: var(--surface);
+      min-height: var(--row-min);
+      transition: background 0.15s ease;
+    }
+    .li-row:hover {
+      background: rgba(30, 64, 175, 0.02);
+    }
+    .li-name {
+      flex: 1;
+      min-width: 0;
+    }
+    .li-title {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text);
+      line-height: 1.35;
+    }
+    .li-code {
+      font-size: 12px;
+      color: var(--muted);
+      margin-top: 2px;
+    }
+    .li-price {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--text);
+      text-align: right;
+      font-variant-numeric: tabular-nums;
+      white-space: nowrap;
+    }
+
+    /* 300px Financial Summary Sidebar */
+    .calc-right {
+      width: var(--calc-side-w);
+      min-width: var(--calc-side-w);
+      flex: 0 0 var(--calc-side-w);
+      display: flex;
+      flex-direction: column;
+      overflow-y: auto;
+      padding: 16px;
+      gap: 12px;
+      background: var(--page);
+      border-left: 1px solid var(--border);
+      min-height: 0;
+    }
+
+    /* Grand Total Card */
+    .sum-total {
+      background: linear-gradient(135deg, var(--brand) 0%, #1E3A8A 100%);
+      border-radius: var(--r-lg);
+      padding: 16px;
+      text-align: center;
+      color: #FFFFFF;
+      box-shadow: 0 4px 14px rgba(30, 64, 175, 0.25);
+      flex-shrink: 0;
+    }
+    .sum-total-lbl {
+      font-size: 11px;
+      font-weight: 700;
+      color: rgba(255, 255, 255, 0.8);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      margin-bottom: 6px;
+    }
+    .sum-total-val {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: 24px;
+      font-weight: 800;
+      color: #FFFFFF;
+      line-height: 1.2;
+      font-variant-numeric: tabular-nums;
+    }
+    .sum-total-sub {
+      font-size: 12px;
+      color: rgba(255, 255, 255, 0.75);
+      margin-top: 4px;
+      font-weight: 500;
+    }
+
+    /* Financial Card Details */
+    .sum-card {
+      background: var(--surface);
+      border: 1.5px solid var(--border);
+      border-radius: var(--r-lg);
+      padding: 14px;
+      box-shadow: var(--sh-sm);
+      flex-shrink: 0;
+    }
+    .sum-ttl {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: 12.5px;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 10px;
+    }
+    .sum-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 4px 0;
+      font-size: 12px;
+      line-height: 1.4;
+    }
+    .sum-lbl {
+      color: var(--sec);
+      font-weight: 500;
+    }
+    .sum-val {
+      font-weight: 600;
+      color: var(--text);
+      font-variant-numeric: tabular-nums;
+    }
+    .sum-div {
+      height: 1px;
+      background: var(--border);
+      margin: 8px 0;
+    }
+
+    /* Profitability Metric Tiles */
+    .margin-tiles {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      margin-top: 8px;
+    }
+    .margin-tile {
+      padding: 10px 8px;
+      border-radius: var(--r-md);
+      text-align: center;
+    }
+    .margin-val {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: 16px;
+      font-weight: 800;
+      font-variant-numeric: tabular-nums;
+    }
+    .margin-lbl {
+      font-size: 10.5px;
+      color: var(--sec);
+      margin-top: 3px;
+      font-weight: 600;
+    }
+  </style>
+</head>
+<body>
+<div class="device">
+
+  <!-- STATUS BAR -->
+  <div class="statusbar">
+    <span class="statusbar-time">20:00</span>
+    <div class="statusbar-icons">
+      <svg viewBox="0 0 24 24" fill="currentColor"><path d="M1 8.5C4.1 5.4 8.3 3.5 13 3.5s8.9 1.9 12 5L23 6.5C19.5 3 15.5 1 12.5 1S5.5 3 2 6.5L1 8.5zm4 4C7.2 10.3 9.9 9 13 9s5.8 1.3 8 3.5l1-1C19.7 9 16.5 7.5 13 7.5S6.3 9 4 11.5l1 1zm4 4a1.5 1.5 0 110-3 1.5 1.5 0 010 3z"/></svg>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="2" y="7" width="18" height="11" rx="2"/><path d="M20 11h2v3h-2"/><rect x="4" y="9" width="12" height="7" rx="1" fill="currentColor"/></svg>
+      <span class="statusbar-bat">92%</span>
+    </div>
+  </div>
+
+  <!-- APP SHELL -->
+  <div class="app-shell">
+
+    <!-- NAV RAIL -->
+    <nav class="nav-rail">
+      <a href="index.html" class="nav-logo" title="Centrow Sales">C</a>
+
+      <a href="index.html" class="nav-item">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+        <span>Beranda</span>
+      </a>
+      <a href="pelanggan.html" class="nav-item">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg>
+        <span>Pelanggan</span>
+      </a>
+      <a href="proposal.html" class="nav-item active">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+        <span>Proposal</span>
+      </a>
+      <a href="kontrak.html" class="nav-item">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+        <span>Kontrak</span>
+      </a>
+      <a href="kalkulator.html" class="nav-item">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="2" width="16" height="20" rx="2"/><line x1="8" y1="6" x2="16" y2="6"/><line x1="8" y1="10" x2="16" y2="10"/><line x1="8" y1="14" x2="12" y2="14"/><line x1="8" y1="18" x2="12" y2="18"/></svg>
+        <span>Harga</span>
+      </a>
+
+      <div class="nav-spacer"></div>
+      <a href="login.html" class="nav-avatar" title="Keluar / Ganti Akun (Agus)">AG</a>
+    </nav>
+
+    <!-- MAIN (SPLIT VIEW) -->
+    <div class="main" style="display:flex;flex:1;overflow:hidden;">
+      <div class="split" style="display:flex;flex:1;overflow:hidden;width:100%;">
+
+        <!-- 360PX MASTER LIST PANE -->
+        <div class="master">
+          <div class="master-header" style="display:flex;flex-direction:column;gap:10px;padding:14px 16px 12px;">
+            <div>
+              <div class="master-title">Daftar Proposal</div>
+              <div class="master-sub">24 proposal aktif dalam pipeline penawaran</div>
+            </div>
+          
+            <!-- 44PX SEARCH & CREATE BUTTON -->
+            <div style="display:flex;align-items:center;gap:8px;">
+              <div class="search-wrap" style="flex:1;">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                <input type="text" class="search-input" id="search-prop" placeholder="Cari nama klien, kode proposal…" oninput="filterProposals(this.value)"/>
+              </div>
+              <a href="kalkulator.html" class="btn-create-prop" title="Buat Proposal Baru via Kalkulator">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="width:18px;height:18px;"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+              </a>
+            </div>
+
+            <!-- FILTER SEGMENTS (100% fit within 360px sidebar) -->
+            <div class="seg-control">
+              <button class="seg-btn active" onclick="filterStatus(this, 'all')">Semua</button>
+              <button class="seg-btn" onclick="filterStatus(this, 'Draft')">Draft</button>
+              <button class="seg-btn" onclick="filterStatus(this, 'Dikirim')">Dikirim</button>
+              <button class="seg-btn" onclick="filterStatus(this, 'Negosiasi')">Nego</button>
+              <button class="seg-btn" onclick="filterStatus(this, 'Disetujui')">Setuju</button>
+            </div>
+          </div>
+
+          <!-- PROPOSAL LIST ITEMS -->
+          <div class="master-list" id="prop-list-container">
+            
+            <div class="prop-item selected" data-status="Dikirim" onclick="selectProposal(this, {
+              code: 'PRO-2026-0042',
+              client: 'Villa Sari Dewi',
+              service: 'Termite Protection Plan',
+              total: 'Rp 8.158.500',
+              status: 'Dikirim',
+              badgeClass: 'badge-info',
+              date: '12 Agt 2026',
+              valid: '12 Sep 2026',
+              location: 'Villa Utama Seminyak',
+              version: '1',
+              cogs: 'Rp 5.480.000',
+              mat: 'Rp 3.710.000',
+              lab: 'Rp 1.650.000',
+              fuel: 'Rp 120.000',
+              markup: '+ Rp 1.370.000 (25%)',
+              srvPrice: 'Rp 6.850.000',
+              addon: 'Rp 500.000',
+              subtotal: 'Rp 7.350.000',
+              tax: 'Rp 808.500',
+              marginPct: '20.0%',
+              marginAmt: 'Rp 1,37jt',
+              ppv: 'Rp 1.225.000',
+              ppm: 'Rp 612.500'
+            })">
+              <div class="prop-avatar" style="background:var(--brand-10);color:var(--brand);">VS</div>
+              <div class="prop-info">
+                <div class="prop-name">Villa Sari Dewi</div>
+                <div class="prop-meta">PRO-2026-0042 · <span class="prop-meta-highlight">Termite Protection</span></div>
+              </div>
+              <div class="prop-right">
+                <span class="badge badge-info" style="font-size:10.5px;">Dikirim</span>
+                <span class="prop-amt">Rp 8,15jt</span>
+              </div>
+            </div>
+
+            <div class="prop-item" data-status="Negosiasi" onclick="selectProposal(this, {
+              code: 'PRO-2026-0041',
+              client: 'Hotel Surya Kuta',
+              service: 'Pest Control Full Commercial',
+              total: 'Rp 12.500.000',
+              status: 'Negosiasi',
+              badgeClass: 'badge-warn',
+              date: '10 Agt 2026',
+              valid: '10 Sep 2026',
+              location: 'Resort &amp; Resto Kuta',
+              version: '2',
+              cogs: 'Rp 8.200.000',
+              mat: 'Rp 5.400.000',
+              lab: 'Rp 2.500.000',
+              fuel: 'Rp 300.000',
+              markup: '+ Rp 3.060.000 (30%)',
+              srvPrice: 'Rp 11.260.000',
+              addon: 'Rp 0',
+              subtotal: 'Rp 11.260.000',
+              tax: 'Rp 1.240.000',
+              marginPct: '27.2%',
+              marginAmt: 'Rp 3,06jt',
+              ppv: 'Rp 1.042.000',
+              ppm: 'Rp 938.000'
+            })">
+              <div class="prop-avatar" style="background:rgba(188,123,67,0.14);color:#92580F;">SK</div>
+              <div class="prop-info">
+                <div class="prop-name">Hotel Surya Kuta</div>
+                <div class="prop-meta">PRO-2026-0041 · <span class="prop-meta-highlight">Pest Control Full</span></div>
+              </div>
+              <div class="prop-right">
+                <span class="badge badge-warn" style="font-size:10.5px;">Negosiasi</span>
+                <span class="prop-amt">Rp 12,5jt</span>
+              </div>
+            </div>
+
+            <div class="prop-item" data-status="Draft" onclick="selectProposal(this, {
+              code: 'PRO-2026-0040',
+              client: 'Resto Warung Bumi',
+              service: 'Disinfection &amp; Sanitasi Ruang',
+              total: 'Rp 2.200.000',
+              status: 'Draft',
+              badgeClass: 'badge-neutral',
+              date: '15 Agt 2026',
+              valid: '15 Sep 2026',
+              location: 'Restoran Denpasar',
+              version: '1',
+              cogs: 'Rp 1.450.000',
+              mat: 'Rp 950.000',
+              lab: 'Rp 400.000',
+              fuel: 'Rp 100.000',
+              markup: '+ Rp 531.982 (36%)',
+              srvPrice: 'Rp 1.981.982',
+              addon: 'Rp 0',
+              subtotal: 'Rp 1.981.982',
+              tax: 'Rp 218.018',
+              marginPct: '26.8%',
+              marginAmt: 'Rp 532rb',
+              ppv: 'Rp 1.981.982',
+              ppm: 'Rp 1.981.982'
+            })">
+              <div class="prop-avatar" style="background:rgba(140,142,139,0.14);color:var(--sec);">WB</div>
+              <div class="prop-info">
+                <div class="prop-name">Resto Warung Bumi</div>
+                <div class="prop-meta">PRO-2026-0040 · <span class="prop-meta-highlight">Disinfection</span></div>
+              </div>
+              <div class="prop-right">
+                <span class="badge badge-neutral" style="font-size:10.5px;">Draft</span>
+                <span class="prop-amt">Rp 2,2jt</span>
+              </div>
+            </div>
+
+            <div class="prop-item" data-status="Disetujui" onclick="selectProposal(this, {
+              code: 'PRO-2026-0039',
+              client: 'Ayana Jimbaran Suite',
+              service: 'Rodent &amp; Fly Integrated Control',
+              total: 'Rp 15.800.000',
+              status: 'Disetujui',
+              badgeClass: 'badge-ok',
+              date: '05 Agt 2026',
+              valid: '05 Sep 2026',
+              location: 'Jimbaran Cliff Area',
+              version: '1',
+              cogs: 'Rp 10.200.000',
+              mat: 'Rp 6.800.000',
+              lab: 'Rp 3.000.000',
+              fuel: 'Rp 400.000',
+              markup: '+ Rp 4.034.234 (39%)',
+              srvPrice: 'Rp 14.234.234',
+              addon: 'Rp 0',
+              subtotal: 'Rp 14.234.234',
+              tax: 'Rp 1.565.766',
+              marginPct: '28.3%',
+              marginAmt: 'Rp 4,03jt',
+              ppv: 'Rp 1.186.000',
+              ppm: 'Rp 1.186.000'
+            })">
+              <div class="prop-avatar" style="background:rgba(16,185,129,0.14);color:var(--ok);">AJ</div>
+              <div class="prop-info">
+                <div class="prop-name">Ayana Jimbaran Suite</div>
+                <div class="prop-meta">PRO-2026-0039 · <span class="prop-meta-highlight">Rodent &amp; Fly</span></div>
+              </div>
+              <div class="prop-right">
+                <span class="badge badge-ok" style="font-size:10.5px;">Disetujui</span>
+                <span class="prop-amt">Rp 15,8jt</span>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- DETAIL PANE + EMBEDDED PRICING BREAKDOWN -->
+        <div class="detail-pane">
+          
+          <!-- DETAIL HEADER -->
+          <div class="detail-header">
+            <div>
+              <div class="detail-header-title" id="p-title">PRO-2026-0042 · Villa Sari Dewi</div>
+              <div class="detail-header-tags">
+                <span class="badge badge-brand" id="p-srv">Termite Protection Plan</span>
+                <span class="badge badge-neutral" id="p-ver">Versi 1</span>
+                <span class="badge badge-info" id="p-st">Status: Dikirim</span>
+              </div>
+            </div>
+            <div style="display:flex;gap:10px;align-items:center;">
+              <button class="btn btn-secondary" style="height:44px;min-height:44px;padding:0 16px;font-size:13px;font-weight:600;display:inline-flex;align-items:center;gap:6px;border-radius:var(--r-md);" onclick="showToast('Dokumen proposal PDF siap diunduh.')">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:16px;height:16px;"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                Ekspor PDF
+              </button>
+              <a href="kalkulator.html" class="btn btn-primary" style="height:44px;min-height:44px;padding:0 18px;font-size:13.5px;font-weight:700;display:inline-flex;align-items:center;gap:8px;border-radius:var(--r-md);">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:16px;height:16px;"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                Buka di Kalkulator
+              </a>
+            </div>
+          </div>
+
+          <!-- 4-COLUMN PROPOSAL METADATA BAR -->
+          <div class="proposal-meta-bar">
+            <div class="meta-box">
+              <span class="meta-lbl">Tanggal Proposal</span>
+              <span class="meta-val" id="p-date">12 Agt 2026</span>
+            </div>
+            <div class="meta-box">
+              <span class="meta-lbl">Masa Berlaku</span>
+              <span class="meta-val" id="p-valid">12 Sep 2026</span>
+            </div>
+            <div class="meta-box">
+              <span class="meta-lbl">Lokasi Properti</span>
+              <span class="meta-val" id="p-location">Villa Utama Seminyak</span>
+            </div>
+            <div class="meta-box">
+              <span class="meta-lbl">Total Nilai Proposal</span>
+              <span class="meta-val" style="color:var(--brand);font-size:13.5px;" id="p-tot">Rp 8.158.500</span>
+            </div>
+          </div>
+
+          <!-- EMBEDDED PRICING SUB-TABLE VIEW -->
+          <div class="calc-split">
+            
+            <!-- LEFT: 44PX SUB TABS & 48PX ROWS -->
+            <div class="calc-left">
+              
+              <div class="calc-tabs">
+                <div class="calc-tab active" onclick="switchCalc(this,'cp-persiapan')">
+                  <span>1. Persiapan Bahan &amp; Alat</span>
+                </div>
+                <div class="calc-tab" onclick="switchCalc(this,'cp-teknisi')">
+                  <span>2. Tenaga Kerja &amp; Teknisi</span>
+                </div>
+                <div class="calc-tab" onclick="switchCalc(this,'cp-items')">
+                  <span>3. Transport &amp; Add-on</span>
+                </div>
+              </div>
+
+              <div class="calc-scroll">
+
+                <!-- 1. PERSIAPAN BAHAN -->
+                <div id="cp-persiapan" class="tc active">
+                  <div class="li-row">
+                    <div class="li-name">
+                      <div class="li-title">Ficam W (25kg)</div>
+                      <div class="li-code">Jumlah: 2 kg · Frekuensi Aplikasi: 1 · Biaya Satuan: Rp 380.000 / kg</div>
+                    </div>
+                    <div class="li-price">Rp 760.000</div>
+                  </div>
+                  <div class="li-row">
+                    <div class="li-name">
+                      <div class="li-title">Termidor SC (1L)</div>
+                      <div class="li-code">Jumlah: 3 botol · Frekuensi Aplikasi: 1 · Biaya Satuan: Rp 650.000 / botol</div>
+                    </div>
+                    <div class="li-price">Rp 1.950.000</div>
+                  </div>
+                  <div class="li-row">
+                    <div class="li-name">
+                      <div class="li-title">Solfac 10WP (1kg)</div>
+                      <div class="li-code">Jumlah: 1 kg · Frekuensi Aplikasi: 2 · Biaya Satuan: Rp 290.000 / kg</div>
+                    </div>
+                    <div class="li-price">Rp 580.000</div>
+                  </div>
+                  <div class="li-row">
+                    <div class="li-name">
+                      <div class="li-title">Sprayer Solo 425 &amp; Nozzle</div>
+                      <div class="li-code">Jumlah: 1 unit · Frekuensi: 1 · Biaya Satuan: Rp 420.000 / unit</div>
+                    </div>
+                    <div class="li-price">Rp 420.000</div>
+                  </div>
+                </div>
+
+                <!-- 2. TENAGA KERJA & TEKNISI -->
+                <div id="cp-teknisi" class="tc">
+                  <div class="li-row">
+                    <div class="li-name">
+                      <div class="li-title">Teknisi Senior (Lead Operator)</div>
+                      <div class="li-code">6 Kunjungan (4 jam pertama, 3 jam rutin) · Tarif: Rp 45.000 / jam</div>
+                    </div>
+                    <div class="li-price">Rp 990.000</div>
+                  </div>
+                  <div class="li-row">
+                    <div class="li-name">
+                      <div class="li-title">Teknisi Junior (Asisten Lapangan)</div>
+                      <div class="li-code">6 Kunjungan (4 jam pertama, 3 jam rutin) · Tarif: Rp 30.000 / jam</div>
+                    </div>
+                    <div class="li-price">Rp 660.000</div>
+                  </div>
+                </div>
+
+                <!-- 3. TRANSPORT & ADD-ON -->
+                <div id="cp-items" class="tc">
+                  <div class="li-row">
+                    <div class="li-name">
+                      <div class="li-title">Biaya Perjalanan Badung (BBM &amp; Transport)</div>
+                      <div class="li-code">6 Kunjungan × Rp 20.000 per visit</div>
+                    </div>
+                    <div class="li-price">Rp 120.000</div>
+                  </div>
+                  <div class="li-row">
+                    <div class="li-name">
+                      <div class="li-title">Pest Safety Training Kit (Add-on)</div>
+                      <div class="li-code">1 Paket Modul Pelatihan &amp; Keselamatan Kerja</div>
+                    </div>
+                    <div class="li-price">Rp 500.000</div>
+                  </div>
+                </div>
+
+              </div>
+            </div>
+
+            <!-- RIGHT: 300PX FINANCIAL SUMMARY SIDEBAR -->
+            <div class="calc-right">
+              
+              <!-- GRAND TOTAL CARD (24PX TYPOGRAPHY) -->
+              <div class="sum-total">
+                <div class="sum-total-lbl">Total Nilai Proposal</div>
+                <div class="sum-total-val" id="d-total">Rp 8.158.500</div>
+                <div class="sum-total-sub">Sudah termasuk PPN 11%</div>
+              </div>
+
+              <!-- FINANCIAL BREAKDOWN -->
+              <div class="sum-card">
+                <div class="sum-ttl">Rincian Finansial Proposal</div>
+                <div class="sum-row">
+                  <span class="sum-lbl">Biaya Bahan &amp; Alat</span>
+                  <span class="sum-val" id="d-mat">Rp 3.710.000</span>
+                </div>
+                <div class="sum-row">
+                  <span class="sum-lbl">Biaya Tenaga Kerja</span>
+                  <span class="sum-val" id="d-lab">Rp 1.650.000</span>
+                </div>
+                <div class="sum-row">
+                  <span class="sum-lbl">Biaya Transport / BBM</span>
+                  <span class="sum-val" id="d-fuel">Rp 120.000</span>
+                </div>
+                <div class="sum-div"></div>
+                <div class="sum-row">
+                  <span class="sum-lbl" style="font-weight:700;color:var(--text);">Total Biaya Modal (COGS)</span>
+                  <span class="sum-val" style="font-weight:800;color:var(--text);" id="d-cogs">Rp 5.480.000</span>
+                </div>
+                <div class="sum-row">
+                  <span class="sum-lbl">Markup Keuntungan</span>
+                  <span class="sum-val" style="color:var(--ok);font-weight:700;" id="d-markup">+ Rp 1.370.000 (25%)</span>
+                </div>
+                <div class="sum-row">
+                  <span class="sum-lbl">Harga Pokok Layanan</span>
+                  <span class="sum-val" id="d-srv-price">Rp 6.850.000</span>
+                </div>
+                <div class="sum-row">
+                  <span class="sum-lbl">Total Add-on &amp; Ekstra</span>
+                  <span class="sum-val" id="d-addon">Rp 500.000</span>
+                </div>
+                <div class="sum-div"></div>
+                <div class="sum-row">
+                  <span class="sum-lbl" style="font-weight:600;">Subtotal (DPP)</span>
+                  <span class="sum-val" style="font-weight:700;" id="d-subtotal">Rp 7.350.000</span>
+                </div>
+                <div class="sum-row">
+                  <span class="sum-lbl">PPN 11%</span>
+                  <span class="sum-val" id="d-tax">Rp 808.500</span>
+                </div>
+              </div>
+
+              <!-- MARGIN METRICS -->
+              <div class="sum-card">
+                <div class="sum-ttl">Metrik Profitabilitas</div>
+                <div class="margin-tiles">
+                  <div class="margin-tile" style="background:rgba(16,185,129,0.1);border:1px solid rgba(16,185,129,0.2);">
+                    <div class="margin-val" style="color:var(--ok);" id="d-margin-pct">20.0%</div>
+                    <div class="margin-lbl">Margin Persen</div>
+                  </div>
+                  <div class="margin-tile" style="background:var(--subtle);border:1px solid var(--border);">
+                    <div class="margin-val" style="font-size:14px;color:var(--text);" id="d-margin-amt">Rp 1,37jt</div>
+                    <div class="margin-lbl">Nominal Margin</div>
+                  </div>
+                </div>
+                <div style="display:flex;justify-content:space-between;font-size:12px;color:var(--sec);margin-top:10px;padding:2px 0;">
+                  <span>Harga per Kunjungan</span>
+                  <strong style="color:var(--text);font-variant-numeric:tabular-nums;" id="d-ppv">Rp 1.225.000</strong>
+                </div>
+                <div style="display:flex;justify-content:space-between;font-size:12px;color:var(--sec);margin-top:4px;padding:2px 0;">
+                  <span>Harga per Bulan</span>
+                  <strong style="color:var(--text);font-variant-numeric:tabular-nums;" id="d-ppm">Rp 612.500</strong>
+                </div>
+              </div>
+
+            </div>
+
+          </div>
+
+        </div><!-- /detail-pane -->
+
+      </div><!-- /split -->
+    </div><!-- /main -->
+  </div><!-- /app-shell -->
+
+  <!-- HOME INDICATOR -->
+  <div class="home-bar"><div></div></div>
+
+</div><!-- /device -->
+
+<script src="js/tablet.js"></script>
+<script>
+function selectProposal(el, data) {
+  document.querySelectorAll('.master-list .prop-item').forEach(c => c.classList.remove('selected'));
+  el.classList.add('selected');
+
+  const pTitle = document.getElementById('p-title');
+  const pSrv = document.getElementById('p-srv');
+  const pVer = document.getElementById('p-ver');
+  const pSt = document.getElementById('p-st');
+  const pDate = document.getElementById('p-date');
+  const pValid = document.getElementById('p-valid');
+  const pLocation = document.getElementById('p-location');
+  const pTot = document.getElementById('p-tot');
+
+  if (pTitle) pTitle.textContent = data.code + ' · ' + data.client;
+  if (pSrv) pSrv.textContent = data.service;
+  if (pVer) pVer.textContent = 'Versi ' + data.version;
+  if (pSt) {
+    pSt.textContent = 'Status: ' + data.status;
+    pSt.className = 'badge ' + (data.badgeClass || 'badge-neutral');
+  }
+  if (pDate) pDate.textContent = data.date;
+  if (pValid) pValid.textContent = data.valid;
+  if (pLocation) pLocation.innerHTML = data.location;
+  if (pTot) pTot.textContent = data.total;
+
+  // Sidebar Financials
+  const dTotal = document.getElementById('d-total');
+  const dMat = document.getElementById('d-mat');
+  const dLab = document.getElementById('d-lab');
+  const dFuel = document.getElementById('d-fuel');
+  const dCogs = document.getElementById('d-cogs');
+  const dMarkup = document.getElementById('d-markup');
+  const dSrvPrice = document.getElementById('d-srv-price');
+  const dAddon = document.getElementById('d-addon');
+  const dSubtotal = document.getElementById('d-subtotal');
+  const dTax = document.getElementById('d-tax');
+  const dMarginPct = document.getElementById('d-margin-pct');
+  const dMarginAmt = document.getElementById('d-margin-amt');
+  const dPpv = document.getElementById('d-ppv');
+  const dPpm = document.getElementById('d-ppm');
+
+  if (dTotal) dTotal.textContent = data.total;
+  if (dMat) dMat.textContent = data.mat;
+  if (dLab) dLab.textContent = data.lab;
+  if (dFuel) dFuel.textContent = data.fuel;
+  if (dCogs) dCogs.textContent = data.cogs;
+  if (dMarkup) dMarkup.textContent = data.markup;
+  if (dSrvPrice) dSrvPrice.textContent = data.srvPrice;
+  if (dAddon) dAddon.textContent = data.addon;
+  if (dSubtotal) dSubtotal.textContent = data.subtotal;
+  if (dTax) dTax.textContent = data.tax;
+  if (dMarginPct) dMarginPct.textContent = data.marginPct;
+  if (dMarginAmt) dMarginAmt.textContent = data.marginAmt;
+  if (dPpv) dPpv.textContent = data.ppv;
+  if (dPpm) dPpm.textContent = data.ppm;
+}
+
+function filterStatus(chipEl, status) {
+  chipEl.parentElement.querySelectorAll('.seg-btn, .chip-btn').forEach(c => c.classList.remove('active'));
+  chipEl.classList.add('active');
+
+  document.querySelectorAll('#prop-list-container .prop-item').forEach(item => {
+    const itemStatus = item.getAttribute('data-status');
+    if (status === 'all' || itemStatus === status) {
+      item.style.display = 'flex';
+    } else {
+      item.style.display = 'none';
+    }
+  });
+}
+
+function filterProposals(query) {
+  const q = (query || '').toLowerCase().trim();
+  document.querySelectorAll('#prop-list-container .prop-item').forEach(item => {
+    const text = item.textContent.toLowerCase();
+    if (!q || text.includes(q)) {
+      item.style.display = 'flex';
+    } else {
+      item.style.display = 'none';
+    }
+  });
+}
+</script>
+</body>
+</html>

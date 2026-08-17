@@ -1,0 +1,20 @@
+<svg width="124" height="124" viewBox="0 0 124 124"
+  xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bgGradient" gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="124" y2="0" gradientTransform="rotate(160 62 62)">
+      <stop offset="0%" stop-color="#6366F1"/>
+      <stop offset="100%" stop-color="#4F46E5"/>
+    </linearGradient>
+  </defs>
+
+  <!-- background -->
+  <rect width="124" height="124" rx="28" fill="url(#bgGradient)"/>
+
+  <!-- icon -->
+  <g transform="translate(26 26)">
+    <path d="M 56.48 21.66 A 25 25 0 1 1 14.92 22.57"
+        stroke="#FFFFFF" stroke-width="8" stroke-linecap="round" fill="none"/>
+    <circle cx="36" cy="36" r="13" fill="rgba(255,255,255,0.18)" />
+    <circle cx="36" cy="36" r="6" fill="#FFFFFF" />
+  </g>
+</svg>

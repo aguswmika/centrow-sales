@@ -1,0 +1,1138 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+  <title>Kalkulator Harga &amp; Biaya — Centrow Sales Tablet</title>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="css/tablet.css"/>
+  <style>
+    :root {
+      --calc-side-w: 300px;
+      --touch-min: 44px;
+      --row-min: 48px;
+    }
+
+    /* Fluid tablet viewport adaptations */
+    @media (max-width: 1024px), (max-height: 768px), (pointer: coarse) {
+      body {
+        padding: 0 !important;
+        background: var(--page) !important;
+      }
+      .device {
+        width: 100vw !important;
+        height: 100vh !important;
+        max-width: 100vw !important;
+        max-height: 100vh !important;
+        border-radius: 0 !important;
+        box-shadow: none !important;
+      }
+    }
+
+    /* Top Parameter Bar */
+    .calc-input-param {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+      padding: 12px 20px;
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      flex-shrink: 0;
+    }
+    .param-box {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+    }
+    .param-box label {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--sec);
+      letter-spacing: 0.01em;
+    }
+    .param-control-wrap {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .param-box input,
+    .param-box select {
+      width: 100%;
+      height: var(--touch-min);
+      min-height: var(--touch-min);
+      border: 1.5px solid var(--border);
+      border-radius: var(--r-sm);
+      padding: 0 12px;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text);
+      background: var(--subtle);
+      outline: none;
+      transition: all 0.15s ease;
+      font-family: inherit;
+    }
+    .param-box select {
+      cursor: pointer;
+      appearance: auto;
+    }
+    .param-box input:focus,
+    .param-box select:focus {
+      border-color: var(--brand);
+      background: var(--surface);
+      box-shadow: 0 0 0 3px var(--brand-10);
+    }
+
+    /* Calculator Tabs */
+    .calc-tabs {
+      display: flex;
+      background: var(--subtle);
+      border-bottom: 1px solid var(--border);
+      flex-shrink: 0;
+      padding: 0 8px;
+      gap: 4px;
+    }
+    .calc-tab {
+      flex: 1;
+      height: var(--touch-min);
+      min-height: var(--touch-min);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--sec);
+      cursor: pointer;
+      border-bottom: 3px solid transparent;
+      background: transparent;
+      transition: all 0.15s ease;
+      user-select: none;
+      border-radius: var(--r-sm) var(--r-sm) 0 0;
+      padding: 0 14px;
+    }
+    .calc-tab:hover {
+      color: var(--brand);
+      background: rgba(30, 64, 175, 0.03);
+    }
+    .calc-tab.active {
+      background: var(--surface);
+      color: var(--brand);
+      border-bottom-color: var(--brand);
+      font-weight: 700;
+      box-shadow: 0 -2px 6px rgba(0, 0, 0, 0.03);
+    }
+    .calc-tab-badge {
+      font-size: 11px;
+      padding: 2px 7px;
+      border-radius: var(--r-pill);
+      background: var(--border);
+      color: var(--sec);
+      font-weight: 700;
+    }
+    .calc-tab.active .calc-tab-badge {
+      background: var(--brand-10);
+      color: var(--brand);
+    }
+
+    /* Calculator Main Tables */
+    .calc-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+    }
+    .calc-table th {
+      background: var(--subtle);
+      padding: 10px 14px;
+      text-align: left;
+      font-size: 11.5px;
+      font-weight: 700;
+      color: var(--sec);
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      border-bottom: 1.5px solid var(--border);
+      white-space: nowrap;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+    .calc-table td {
+      padding: 10px 14px;
+      border-bottom: 1px solid var(--border);
+      vertical-align: middle;
+      height: var(--row-min);
+      min-height: var(--row-min);
+      background: var(--surface);
+    }
+    .calc-table tr:hover td {
+      background: rgba(30, 64, 175, 0.02);
+    }
+
+    /* Typography inside table */
+    .item-title {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text);
+      line-height: 1.35;
+    }
+    .item-sub {
+      font-size: 12px;
+      color: var(--muted);
+      margin-top: 2px;
+    }
+    .item-badge {
+      font-size: 11px;
+      font-weight: 600;
+      padding: 3px 8px;
+      background: var(--brand-05);
+      color: var(--brand);
+      border: 1px solid var(--brand-10);
+      border-radius: var(--r-sm);
+      display: inline-flex;
+      align-items: center;
+      margin-top: 4px;
+    }
+
+    /* Touch Inputs in Table (40px) */
+    .li-inp {
+      height: 40px;
+      min-height: 40px;
+      border: 1.5px solid var(--border);
+      border-radius: var(--r-sm);
+      padding: 0 10px;
+      font-family: inherit;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text);
+      background: var(--subtle);
+      outline: none;
+      text-align: right;
+      transition: all 0.15s ease;
+      font-variant-numeric: tabular-nums;
+      box-sizing: border-box;
+    }
+    .li-inp:focus {
+      border-color: var(--brand);
+      background: var(--surface);
+      box-shadow: 0 0 0 3px var(--brand-10);
+    }
+    .li-inp-text {
+      text-align: left;
+      width: 100%;
+    }
+    .li-uom {
+      font-size: 12.5px;
+      font-weight: 600;
+      color: var(--sec);
+      text-align: center;
+      display: block;
+    }
+    .li-price {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--text);
+      text-align: right;
+      font-variant-numeric: tabular-nums;
+      display: block;
+    }
+
+    /* Delete Button (40px Touch Target) */
+    .btn-del {
+      width: 40px;
+      height: 40px;
+      min-width: 40px;
+      min-height: 40px;
+      border-radius: var(--r-sm);
+      border: 1.5px solid transparent;
+      background: transparent;
+      color: var(--muted);
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.15s ease;
+    }
+    .btn-del:hover {
+      color: var(--err);
+      background: rgba(239, 68, 68, 0.1);
+      border-color: rgba(239, 68, 68, 0.2);
+    }
+    .btn-del svg {
+      width: 18px;
+      height: 18px;
+    }
+
+    /* Add Row Actions */
+    .li-add-bar {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 12px 16px;
+      background: var(--subtle);
+      border-bottom: 1px solid var(--border);
+    }
+    .li-add-btn {
+      height: var(--touch-min);
+      min-height: var(--touch-min);
+      padding: 0 16px;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--brand);
+      background: var(--surface);
+      border: 1.5px solid var(--border);
+      border-radius: var(--r-sm);
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+    .li-add-btn:hover {
+      background: var(--brand-05);
+      border-color: var(--brand);
+    }
+    .li-add-btn svg {
+      width: 16px;
+      height: 16px;
+    }
+
+    /* Right Financial Sidebar (300px) */
+    .calc-right {
+      width: var(--calc-side-w);
+      min-width: var(--calc-side-w);
+      flex: 0 0 var(--calc-side-w);
+      display: flex;
+      flex-direction: column;
+      overflow-y: auto;
+      padding: 16px;
+      gap: 12px;
+      background: var(--page);
+      border-left: 1px solid var(--border);
+      min-height: 0;
+    }
+
+    /* Grand Total Card (24px Typography) */
+    .sum-total {
+      background: linear-gradient(135deg, var(--brand) 0%, #1E3A8A 100%);
+      border-radius: var(--r-lg);
+      padding: 16px;
+      text-align: center;
+      color: #FFFFFF;
+      box-shadow: 0 4px 14px rgba(30, 64, 175, 0.25);
+      flex-shrink: 0;
+    }
+    .sum-total-lbl {
+      font-size: 11px;
+      font-weight: 700;
+      color: rgba(255, 255, 255, 0.8);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      margin-bottom: 6px;
+    }
+    .sum-total-val {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: 24px;
+      font-weight: 800;
+      color: #FFFFFF;
+      line-height: 1.2;
+      font-variant-numeric: tabular-nums;
+    }
+    .sum-total-sub {
+      font-size: 12px;
+      color: rgba(255, 255, 255, 0.75);
+      margin-top: 4px;
+      font-weight: 500;
+    }
+
+    /* Summary Card Details */
+    .sum-card {
+      background: var(--surface);
+      border: 1.5px solid var(--border);
+      border-radius: var(--r-lg);
+      padding: 14px;
+      box-shadow: var(--sh-sm);
+      flex-shrink: 0;
+    }
+    .sum-ttl {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: 12.5px;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .sum-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 4px 0;
+      font-size: 12px;
+      line-height: 1.4;
+    }
+    .sum-lbl {
+      color: var(--sec);
+      font-weight: 500;
+    }
+    .sum-val {
+      font-weight: 600;
+      color: var(--text);
+      font-variant-numeric: tabular-nums;
+    }
+    .sum-div {
+      height: 1px;
+      background: var(--border);
+      margin: 8px 0;
+    }
+
+    /* 44px Markup Row */
+    .markup-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 0;
+      border-top: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+      margin: 8px 0;
+    }
+    .markup-lbl {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--sec);
+      white-space: nowrap;
+    }
+    .markup-sel {
+      flex: 1;
+      height: var(--touch-min);
+      min-height: var(--touch-min);
+      border: 1.5px solid var(--border);
+      border-radius: var(--r-sm);
+      padding: 0 10px;
+      font-size: 12.5px;
+      font-weight: 600;
+      color: var(--text);
+      background: var(--subtle);
+      outline: none;
+      cursor: pointer;
+    }
+    .markup-sel:focus,
+    .markup-inp:focus {
+      border-color: var(--brand);
+      background: var(--surface);
+      box-shadow: 0 0 0 3px var(--brand-10);
+    }
+    .markup-inp {
+      width: 64px;
+      height: var(--touch-min);
+      min-height: var(--touch-min);
+      border: 1.5px solid var(--border);
+      border-radius: var(--r-sm);
+      padding: 0 8px;
+      font-size: 13px;
+      font-weight: 700;
+      text-align: right;
+      color: var(--text);
+      background: var(--subtle);
+      outline: none;
+      font-variant-numeric: tabular-nums;
+    }
+
+    /* Profitability Metric Tiles */
+    .margin-tiles {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      margin-top: 8px;
+    }
+    .margin-tile {
+      padding: 10px 8px;
+      border-radius: var(--r-md);
+      text-align: center;
+    }
+    .margin-val {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: 16px;
+      font-weight: 800;
+      font-variant-numeric: tabular-nums;
+    }
+    .margin-lbl {
+      font-size: 10.5px;
+      color: var(--sec);
+      margin-top: 3px;
+      font-weight: 600;
+    }
+
+    /* 44px CTA Buttons */
+    .calc-cta-btn {
+      height: var(--touch-min);
+      min-height: var(--touch-min);
+      width: 100%;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      font-size: 13.5px;
+      font-weight: 700;
+      border-radius: var(--r-md);
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+<div class="device">
+
+  <!-- STATUS BAR -->
+  <div class="statusbar">
+    <span class="statusbar-time">20:00</span>
+    <div class="statusbar-icons">
+      <svg viewBox="0 0 24 24" fill="currentColor"><path d="M1 8.5C4.1 5.4 8.3 3.5 13 3.5s8.9 1.9 12 5L23 6.5C19.5 3 15.5 1 12.5 1S5.5 3 2 6.5L1 8.5zm4 4C7.2 10.3 9.9 9 13 9s5.8 1.3 8 3.5l1-1C19.7 9 16.5 7.5 13 7.5S6.3 9 4 11.5l1 1zm4 4C10.1 15.1 11.5 14.5 13 14.5s2.9.6 4 1.5l1-1C16.7 13.6 14.9 13 13 13s-3.7.6-5 2l1 1zm4 4a1.5 1.5 0 110-3 1.5 1.5 0 010 3z"/></svg>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="2" y="7" width="18" height="11" rx="2"/><path d="M20 11h2v3h-2"/><rect x="4" y="9" width="12" height="7" rx="1" fill="currentColor"/></svg>
+      <span class="statusbar-bat">92%</span>
+    </div>
+  </div>
+
+  <!-- APP SHELL -->
+  <div class="app-shell">
+
+    <!-- NAV RAIL -->
+    <nav class="nav-rail">
+      <a href="index.html" class="nav-logo" title="Centrow Sales">C</a>
+
+      <a href="index.html" class="nav-item">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+        <span>Beranda</span>
+      </a>
+      <a href="pelanggan.html" class="nav-item">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg>
+        <span>Pelanggan</span>
+      </a>
+      <a href="proposal.html" class="nav-item">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+        <span>Proposal</span>
+      </a>
+      <a href="kontrak.html" class="nav-item">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+        <span>Kontrak</span>
+      </a>
+      <a href="kalkulator.html" class="nav-item active">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="2" width="16" height="20" rx="2"/><line x1="8" y1="6" x2="16" y2="6"/><line x1="8" y1="10" x2="16" y2="10"/><line x1="8" y1="14" x2="12" y2="14"/><line x1="8" y1="18" x2="12" y2="18"/></svg>
+        <span>Harga</span>
+      </a>
+
+      <div class="nav-spacer"></div>
+      <a href="login.html" class="nav-avatar" title="Keluar / Ganti Akun (Agus)">AG</a>
+    </nav>
+
+    <!-- MAIN AREA -->
+    <div class="main" style="display:flex;flex-direction:column;flex:1;overflow:hidden;">
+      
+      <!-- PAGE HEADER -->
+      <div class="ph" style="padding:12px 20px;border-bottom:1px solid var(--border);background:var(--surface);display:flex;align-items:center;justify-content:space-between;flex-shrink:0;">
+        <div>
+          <div class="ph-title" style="font-family:'Plus Jakarta Sans',sans-serif;font-size:18px;font-weight:800;color:var(--text);">Kalkulator Harga &amp; Biaya Layanan</div>
+          <div style="display:flex;align-items:center;gap:8px;margin-top:4px;">
+            <span class="badge badge-brand" style="font-size:11px;font-weight:600;padding:2px 8px;border-radius:var(--r-sm);">Villa Sari Dewi</span>
+            <span class="badge badge-neutral" style="font-size:11px;font-weight:600;padding:2px 8px;border-radius:var(--r-sm);">PRO-2026-0042</span>
+            <span class="badge badge-info" style="font-size:11px;font-weight:600;padding:2px 8px;border-radius:var(--r-sm);">Termite Protection Plan</span>
+          </div>
+        </div>
+        <div style="display:flex;gap:10px;align-items:center;">
+          <a href="proposal.html" class="btn btn-secondary" style="height:44px;min-height:44px;padding:0 18px;font-size:13px;font-weight:600;display:inline-flex;align-items:center;border-radius:var(--r-md);">Batal</a>
+          <button class="btn btn-primary" style="height:44px;min-height:44px;padding:0 18px;font-size:13.5px;font-weight:700;display:inline-flex;align-items:center;gap:8px;border-radius:var(--r-md);" onclick="showToast('Kalkulasi harga berhasil disimpan ke proposal.')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:16px;height:16px;"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v14a2 2 0 01-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/></svg>
+            Simpan Kalkulasi
+          </button>
+        </div>
+      </div>
+
+      <!-- 44PX PARAMETER BAR -->
+      <div class="calc-input-param">
+        <div class="param-box">
+          <label>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px;color:var(--brand);"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>
+            Luas Area Properti
+          </label>
+          <div class="param-control-wrap">
+            <input type="number" id="inp-area" value="1200" min="1" step="10" oninput="recalc()"/>
+            <select style="width:75px;flex-shrink:0;">
+              <option value="m2" selected>m²</option>
+              <option value="ha">Ha</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="param-box">
+          <label>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px;color:var(--brand);"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+            Durasi Kontrak
+          </label>
+          <select id="inp-months" onchange="recalc()">
+            <option value="12">12 Bulan (1 Tahun)</option>
+            <option value="24" selected>24 Bulan (2 Tahun)</option>
+            <option value="36">36 Bulan (3 Tahun)</option>
+            <option value="6">6 Bulan (Semi-tahunan)</option>
+            <option value="1">1 Bulan (Layanan Khusus)</option>
+          </select>
+        </div>
+
+        <div class="param-box">
+          <label>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px;color:var(--brand);"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+            Frekuensi Kunjungan
+          </label>
+          <div class="param-control-wrap">
+            <input type="number" id="inp-freq" value="6" min="1" max="100" oninput="recalc()"/>
+            <span style="font-size:12px;font-weight:600;color:var(--muted);white-space:nowrap;padding-right:4px;">Visit</span>
+          </div>
+        </div>
+
+        <div class="param-box">
+          <label>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px;color:var(--brand);"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>
+            Wilayah &amp; Biaya Transport
+          </label>
+          <select id="inp-region" onchange="recalc()">
+            <option value="20000" selected>Badung (Rp 20.000 / visit)</option>
+            <option value="15000">Denpasar (Rp 15.000 / visit)</option>
+            <option value="25000">Gianyar (Rp 25.000 / visit)</option>
+            <option value="35000">Tabanan (Rp 35.000 / visit)</option>
+            <option value="300000">Nusa Penida &amp; Lembongan (Rp 300.000 / visit)</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- CALCULATOR SPLIT LAYOUT -->
+      <div class="calc-split" style="display:flex;flex:1;overflow:hidden;min-height:0;">
+
+        <!-- LEFT: 3 TAB SUB-TABLES -->
+        <div class="calc-left" style="flex:1;display:flex;flex-direction:column;overflow:hidden;min-height:0;">
+          
+          <!-- 44PX CALCULATION TABS -->
+          <div class="calc-tabs">
+            <div class="calc-tab active" onclick="switchCalc(this,'ck-persiapan')">
+              <span>1. Persiapan Bahan &amp; Alat</span>
+              <span class="calc-tab-badge" id="badge-persiapan-count">4</span>
+            </div>
+            <div class="calc-tab" onclick="switchCalc(this,'ck-teknisi')">
+              <span>2. Tenaga Kerja &amp; Teknisi</span>
+              <span class="calc-tab-badge" id="badge-teknisi-count">2</span>
+            </div>
+            <div class="calc-tab" onclick="switchCalc(this,'ck-items')">
+              <span>3. Transport &amp; Add-on</span>
+              <span class="calc-tab-badge" id="badge-items-count">2</span>
+            </div>
+          </div>
+
+          <!-- TAB SCROLL CONTAINER -->
+          <div class="calc-scroll" style="flex:1;overflow-y:auto;min-height:0;background:var(--surface);">
+
+            <!-- TAB 1: PERSIAPAN BAHAN & ALAT -->
+            <div id="ck-persiapan" class="tc active">
+              <table class="calc-table">
+                <thead>
+                  <tr>
+                    <th>Item &amp; Deskripsi Bahan</th>
+                    <th style="width:100px;text-align:center;">Jumlah (Qty)</th>
+                    <th style="width:100px;text-align:center;">Frekuensi</th>
+                    <th style="width:75px;text-align:center;">Satuan</th>
+                    <th style="width:140px;text-align:right;">Biaya Satuan</th>
+                    <th style="width:140px;text-align:right;">Total Biaya</th>
+                    <th style="width:50px;text-align:center;"></th>
+                  </tr>
+                </thead>
+                <tbody id="tb-persiapan">
+                  <tr class="row-persiapan">
+                    <td>
+                      <div class="item-title">Ficam W (25kg)</div>
+                      <div class="item-badge">Insektisida Rayap Residual</div>
+                    </td>
+                    <td><input class="li-inp p-qty" type="number" value="2" min="1" step="1" oninput="recalc()"/></td>
+                    <td><input class="li-inp p-frq" type="number" value="1" min="1" step="1" oninput="recalc()"/></td>
+                    <td><span class="li-uom">kg</span></td>
+                    <td><input class="li-inp p-cst" type="number" value="380000" min="0" step="5000" oninput="recalc()"/></td>
+                    <td><span class="li-price p-line">Rp 760.000</span></td>
+                    <td style="text-align:center;"><button class="btn-del" title="Hapus Baris" onclick="this.closest('tr').remove();updateTabCounts();recalc();"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/></svg></button></td>
+                  </tr>
+                  <tr class="row-persiapan">
+                    <td>
+                      <div class="item-title">Termidor SC (1L)</div>
+                      <div class="item-badge">Termitisida Fipronil Non-Repellent</div>
+                    </td>
+                    <td><input class="li-inp p-qty" type="number" value="3" min="1" step="1" oninput="recalc()"/></td>
+                    <td><input class="li-inp p-frq" type="number" value="1" min="1" step="1" oninput="recalc()"/></td>
+                    <td><span class="li-uom">botol</span></td>
+                    <td><input class="li-inp p-cst" type="number" value="650000" min="0" step="5000" oninput="recalc()"/></td>
+                    <td><span class="li-price p-line">Rp 1.950.000</span></td>
+                    <td style="text-align:center;"><button class="btn-del" title="Hapus Baris" onclick="this.closest('tr').remove();updateTabCounts();recalc();"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/></svg></button></td>
+                  </tr>
+                  <tr class="row-persiapan">
+                    <td>
+                      <div class="item-title">Solfac 10WP (1kg)</div>
+                      <div class="item-badge">Cyfluthrin Wettable Powder</div>
+                    </td>
+                    <td><input class="li-inp p-qty" type="number" value="1" min="1" step="1" oninput="recalc()"/></td>
+                    <td><input class="li-inp p-frq" type="number" value="2" min="1" step="1" oninput="recalc()"/></td>
+                    <td><span class="li-uom">kg</span></td>
+                    <td><input class="li-inp p-cst" type="number" value="290000" min="0" step="5000" oninput="recalc()"/></td>
+                    <td><span class="li-price p-line">Rp 580.000</span></td>
+                    <td style="text-align:center;"><button class="btn-del" title="Hapus Baris" onclick="this.closest('tr').remove();updateTabCounts();recalc();"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/></svg></button></td>
+                  </tr>
+                  <tr class="row-persiapan">
+                    <td>
+                      <div class="item-title">Sprayer Solo 425 &amp; Nozzle</div>
+                      <div class="item-badge">Peralatan Teknis Penyemprotan</div>
+                    </td>
+                    <td><input class="li-inp p-qty" type="number" value="1" min="1" step="1" oninput="recalc()"/></td>
+                    <td><input class="li-inp p-frq" type="number" value="1" min="1" step="1" oninput="recalc()"/></td>
+                    <td><span class="li-uom">unit</span></td>
+                    <td><input class="li-inp p-cst" type="number" value="420000" min="0" step="5000" oninput="recalc()"/></td>
+                    <td><span class="li-price p-line">Rp 420.000</span></td>
+                    <td style="text-align:center;"><button class="btn-del" title="Hapus Baris" onclick="this.closest('tr').remove();updateTabCounts();recalc();"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/></svg></button></td>
+                  </tr>
+                </tbody>
+              </table>
+              <div class="li-add-bar">
+                <button class="li-add-btn" onclick="addRowPersiapan()">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                  Tambah Baris Bahan / Alat
+                </button>
+              </div>
+            </div>
+
+            <!-- TAB 2: TENAGA KERJA & TEKNISI -->
+            <div id="ck-teknisi" class="tc">
+              <table class="calc-table">
+                <thead>
+                  <tr>
+                    <th>Posisi &amp; Peran Teknisi</th>
+                    <th style="width:95px;text-align:center;">Kunjungan</th>
+                    <th style="width:95px;text-align:center;">Jam Awal</th>
+                    <th style="width:95px;text-align:center;">Jam Rutin</th>
+                    <th style="width:130px;text-align:right;">Tarif per Jam</th>
+                    <th style="width:140px;text-align:right;">Total Biaya</th>
+                    <th style="width:50px;text-align:center;"></th>
+                  </tr>
+                </thead>
+                <tbody id="tb-teknisi">
+                  <tr class="row-teknisi">
+                    <td>
+                      <div class="item-title">Teknisi Senior (Lead Operator)</div>
+                      <div class="item-badge">Teknisi Utama Bersertifikasi</div>
+                    </td>
+                    <td><input class="li-inp t-vfrq" type="number" value="6" min="1" step="1" oninput="recalc()"/></td>
+                    <td><input class="li-inp t-fhrs" type="number" value="4.0" step="0.5" min="0" oninput="recalc()"/></td>
+                    <td><input class="li-inp t-rhrs" type="number" value="3.0" step="0.5" min="0" oninput="recalc()"/></td>
+                    <td><input class="li-inp t-rate" type="number" value="45000" step="1000" min="0" oninput="recalc()"/></td>
+                    <td><span class="li-price t-line">Rp 990.000</span></td>
+                    <td style="text-align:center;"><button class="btn-del" title="Hapus Baris" onclick="this.closest('tr').remove();updateTabCounts();recalc();"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/></svg></button></td>
+                  </tr>
+                  <tr class="row-teknisi">
+                    <td>
+                      <div class="item-title">Teknisi Junior (Asisten Lapangan)</div>
+                      <div class="item-badge">Asisten Aplikasi &amp; Support</div>
+                    </td>
+                    <td><input class="li-inp t-vfrq" type="number" value="6" min="1" step="1" oninput="recalc()"/></td>
+                    <td><input class="li-inp t-fhrs" type="number" value="4.0" step="0.5" min="0" oninput="recalc()"/></td>
+                    <td><input class="li-inp t-rhrs" type="number" value="3.0" step="0.5" min="0" oninput="recalc()"/></td>
+                    <td><input class="li-inp t-rate" type="number" value="30000" step="1000" min="0" oninput="recalc()"/></td>
+                    <td><span class="li-price t-line">Rp 660.000</span></td>
+                    <td style="text-align:center;"><button class="btn-del" title="Hapus Baris" onclick="this.closest('tr').remove();updateTabCounts();recalc();"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/></svg></button></td>
+                  </tr>
+                </tbody>
+              </table>
+              <div class="li-add-bar">
+                <button class="li-add-btn" onclick="addRowTeknisi()">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                  Tambah Baris Teknisi
+                </button>
+              </div>
+            </div>
+
+            <!-- TAB 3: TRANSPORT & ADD-ON -->
+            <div id="ck-items" class="tc">
+              <table class="calc-table">
+                <thead>
+                  <tr>
+                    <th>Komponen &amp; Jenis Biaya</th>
+                    <th style="width:95px;text-align:center;">Jumlah</th>
+                    <th style="width:95px;text-align:center;">Frekuensi</th>
+                    <th style="width:130px;text-align:right;">Biaya Pokok</th>
+                    <th style="width:130px;text-align:right;">Harga Jual</th>
+                    <th style="width:140px;text-align:right;">Total Nilai</th>
+                    <th style="width:50px;text-align:center;"></th>
+                  </tr>
+                </thead>
+                <tbody id="tb-items">
+                  <tr class="row-item" data-type="1" data-role="1">
+                    <td>
+                      <div class="item-title">Biaya Perjalanan Badung</div>
+                      <div class="item-badge">BBM &amp; Transportasi Wilayah</div>
+                    </td>
+                    <td><input class="li-inp i-qty" type="number" value="1" min="1" step="1" oninput="recalc()"/></td>
+                    <td><input class="li-inp i-frq" type="number" value="6" min="1" step="1" oninput="recalc()"/></td>
+                    <td><input class="li-inp i-cst" type="number" value="20000" step="1000" min="0" oninput="recalc()"/></td>
+                    <td><span style="color:var(--muted);font-size:12px;display:block;text-align:center;">-</span></td>
+                    <td><span class="li-price i-tot">Rp 120.000</span></td>
+                    <td style="text-align:center;"><button class="btn-del" title="Hapus Baris" onclick="this.closest('tr').remove();updateTabCounts();recalc();"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/></svg></button></td>
+                  </tr>
+                  <tr class="row-item" data-type="2" data-role="2">
+                    <td>
+                      <div class="item-title">Pest Safety Training Kit</div>
+                      <div class="item-badge">Layanan Tambahan (Add-on)</div>
+                    </td>
+                    <td><input class="li-inp i-qty" type="number" value="1" min="1" step="1" oninput="recalc()"/></td>
+                    <td><input class="li-inp i-frq" type="number" value="1" min="1" step="1" oninput="recalc()"/></td>
+                    <td><input class="li-inp i-cst" type="number" value="200000" step="5000" min="0" oninput="recalc()"/></td>
+                    <td><input class="li-inp i-prc" type="number" value="500000" step="5000" min="0" oninput="recalc()"/></td>
+                    <td><span class="li-price i-tot">Rp 500.000</span></td>
+                    <td style="text-align:center;"><button class="btn-del" title="Hapus Baris" onclick="this.closest('tr').remove();updateTabCounts();recalc();"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/></svg></button></td>
+                  </tr>
+                </tbody>
+              </table>
+              <div class="li-add-bar">
+                <button class="li-add-btn" onclick="addItemRow(1,1,'Transport Wilayah',20000,0)">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                  + Biaya Transport / BBM
+                </button>
+                <button class="li-add-btn" onclick="addItemRow(2,2,'Add-on Layanan Baru',100000,250000)">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                  + Add-on Layanan Tambahan
+                </button>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- RIGHT: 300PX FINANCIAL SUMMARY SIDEBAR -->
+        <div class="calc-right">
+          
+          <!-- GRAND TOTAL (24PX TYPOGRAPHY) -->
+          <div class="sum-total">
+            <div class="sum-total-lbl">Total Nilai Proposal</div>
+            <div class="sum-total-val" id="out-total-amount">Rp 8.158.500</div>
+            <div class="sum-total-sub">Sudah termasuk PPN 11%</div>
+          </div>
+
+          <!-- COGS & MARKUP STRUCTURE -->
+          <div class="sum-card">
+            <div class="sum-ttl">
+              <span>Struktur Biaya Pokok (HPP / COGS)</span>
+            </div>
+            <div class="sum-row">
+              <span class="sum-lbl">Biaya Bahan &amp; Alat</span>
+              <span class="sum-val" id="out-mat">Rp 3.710.000</span>
+            </div>
+            <div class="sum-row">
+              <span class="sum-lbl">Biaya Tenaga Kerja</span>
+              <span class="sum-val" id="out-lab">Rp 1.650.000</span>
+            </div>
+            <div class="sum-row">
+              <span class="sum-lbl">Biaya Transport / BBM</span>
+              <span class="sum-val" id="out-fuel">Rp 120.000</span>
+            </div>
+            <div class="sum-div"></div>
+            <div class="sum-row">
+              <span class="sum-lbl" style="font-weight:700;color:var(--text);">Total Biaya Modal (COGS)</span>
+              <span class="sum-val" style="font-weight:800;color:var(--text);" id="out-cogs">Rp 5.480.000</span>
+            </div>
+
+            <!-- 44PX MARKUP ROW -->
+            <div class="markup-row">
+              <span class="markup-lbl">Markup</span>
+              <select class="markup-sel" id="sel-markup-type" onchange="recalc()">
+                <option value="1" selected>Persen (%)</option>
+                <option value="2">Nominal (Rp)</option>
+                <option value="3">Target Harga</option>
+              </select>
+              <input class="markup-inp" id="inp-markup-val" value="25" type="number" step="0.5" oninput="recalc()"/>
+              <span style="font-size:12px;font-weight:700;color:var(--muted);min-width:16px;" id="lbl-markup-unit">%</span>
+            </div>
+
+            <div class="sum-row">
+              <span class="sum-lbl">Harga Pokok Layanan</span>
+              <span class="sum-val" id="out-srv-price">Rp 6.850.000</span>
+            </div>
+            <div class="sum-row">
+              <span class="sum-lbl">Total Add-on &amp; Ekstra</span>
+              <span class="sum-val" id="out-addon">Rp 500.000</span>
+            </div>
+            <div class="sum-row">
+              <span class="sum-lbl">Diskon Khusus</span>
+              <input class="li-inp" id="inp-disc" style="width:85px;height:34px;min-height:34px;font-size:12px;" type="number" value="0" step="5000" oninput="recalc()"/>
+            </div>
+            <div class="sum-div"></div>
+            <div class="sum-row">
+              <span class="sum-lbl" style="font-weight:600;">Subtotal (DPP)</span>
+              <span class="sum-val" style="font-weight:700;" id="out-subtotal">Rp 7.350.000</span>
+            </div>
+            <div class="sum-row">
+              <span class="sum-lbl">PPN 11%</span>
+              <span class="sum-val" id="out-tax">Rp 808.500</span>
+            </div>
+          </div>
+
+          <!-- MARGIN & PROFITABILITY -->
+          <div class="sum-card">
+            <div class="sum-ttl">Metrik Margin &amp; Unit Rate</div>
+            <div class="margin-tiles">
+              <div class="margin-tile" style="background:rgba(16,185,129,0.1);border:1px solid rgba(16,185,129,0.2);">
+                <div class="margin-val" style="color:var(--ok);" id="out-margin-pct">20.0%</div>
+                <div class="margin-lbl">Margin Persen</div>
+              </div>
+              <div class="margin-tile" style="background:var(--subtle);border:1px solid var(--border);">
+                <div class="margin-val" style="font-size:14px;color:var(--text);" id="out-margin-amt">Rp 1,37jt</div>
+                <div class="margin-lbl">Nominal Margin</div>
+              </div>
+            </div>
+            <div style="display:flex;justify-content:space-between;font-size:12px;color:var(--sec);margin-top:10px;padding:2px 0;">
+              <span>Harga per Kunjungan</span>
+              <strong style="color:var(--text);font-variant-numeric:tabular-nums;" id="out-ppv">Rp 1.225.000</strong>
+            </div>
+            <div style="display:flex;justify-content:space-between;font-size:12px;color:var(--sec);margin-top:4px;padding:2px 0;">
+              <span>Harga per Bulan</span>
+              <strong style="color:var(--text);font-variant-numeric:tabular-nums;" id="out-ppm">Rp 612.500</strong>
+            </div>
+          </div>
+
+          <!-- 44PX CTA BUTTON -->
+          <button class="btn btn-primary calc-cta-btn" onclick="showToast('Kalkulasi harga berhasil disimpan.')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:18px;height:18px;"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v14a2 2 0 01-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/></svg>
+            Simpan Perhitungan Harga
+          </button>
+        </div>
+
+      </div>
+
+    </div><!-- /main -->
+  </div><!-- /app-shell -->
+
+  <!-- HOME INDICATOR -->
+  <div class="home-bar"><div></div></div>
+
+</div><!-- /device -->
+
+<script src="js/tablet.js"></script>
+<script>
+function fmtRp(n) {
+  return 'Rp ' + Math.round(n || 0).toLocaleString('id-ID');
+}
+
+function updateTabCounts() {
+  const pCount = document.querySelectorAll('#tb-persiapan tr.row-persiapan').length;
+  const tCount = document.querySelectorAll('#tb-teknisi tr.row-teknisi').length;
+  const iCount = document.querySelectorAll('#tb-items tr.row-item').length;
+  
+  const bP = document.getElementById('badge-persiapan-count');
+  const bT = document.getElementById('badge-teknisi-count');
+  const bI = document.getElementById('badge-items-count');
+  
+  if (bP) bP.textContent = pCount;
+  if (bT) bT.textContent = tCount;
+  if (bI) bI.textContent = iCount;
+}
+
+function recalc() {
+  const visitFreq = Math.max(1, parseFloat(document.getElementById('inp-freq')?.value) || 1);
+  const contractMonths = Math.max(1, parseFloat(document.getElementById('inp-months')?.value) || 12);
+
+  // 1. Material Cost (Persiapan Bahan & Alat)
+  let materialCost = 0;
+  document.querySelectorAll('#tb-persiapan .row-persiapan').forEach(row => {
+    const q = parseFloat(row.querySelector('.p-qty')?.value) || 0;
+    const f = parseFloat(row.querySelector('.p-frq')?.value) || 1;
+    const c = parseFloat(row.querySelector('.p-cst')?.value) || 0;
+    const lineCost = q * f * c;
+    materialCost += lineCost;
+    const pLine = row.querySelector('.p-line');
+    if (pLine) pLine.textContent = fmtRp(lineCost);
+  });
+
+  // 2. Labor Cost (Tenaga Kerja & Teknisi)
+  let laborCost = 0;
+  document.querySelectorAll('#tb-teknisi .row-teknisi').forEach(row => {
+    const vf = parseFloat(row.querySelector('.t-vfrq')?.value) || visitFreq;
+    const fhrs = parseFloat(row.querySelector('.t-fhrs')?.value) || 0;
+    const rhrs = parseFloat(row.querySelector('.t-rhrs')?.value) || 0;
+    const rate = parseFloat(row.querySelector('.t-rate')?.value) || 0;
+    const firstCost = fhrs * rate;
+    const routineCost = Math.max(0, vf - 1) * rhrs * rate;
+    const lineCost = firstCost + routineCost;
+    laborCost += lineCost;
+    const tLine = row.querySelector('.t-line');
+    if (tLine) tLine.textContent = fmtRp(lineCost);
+  });
+
+  // 3. Fuel & Add-on (Transport & Items)
+  let fuelCost = 0;
+  let addonAmount = 0;
+  document.querySelectorAll('#tb-items .row-item').forEach(row => {
+    const type = parseInt(row.getAttribute('data-type') || '1');
+    const role = parseInt(row.getAttribute('data-role') || '1');
+    const q = parseFloat(row.querySelector('.i-qty')?.value) || 0;
+    const f = parseFloat(row.querySelector('.i-frq')?.value) || 1;
+    const c = parseFloat(row.querySelector('.i-cst')?.value || '0');
+    const p = parseFloat(row.querySelector('.i-prc')?.value || '0');
+
+    if (role === 1) {
+      // Direct Cost (BBM / Transport)
+      const lineCost = q * f * c;
+      if (type === 1) fuelCost += lineCost;
+      const iTot = row.querySelector('.i-tot');
+      if (iTot) iTot.textContent = fmtRp(lineCost);
+    } else {
+      // Add-on Revenue
+      const lineTotal = q * f * p;
+      if (type === 2) addonAmount += lineTotal;
+      const iTot = row.querySelector('.i-tot');
+      if (iTot) iTot.textContent = fmtRp(lineTotal);
+    }
+  });
+
+  // Total COGS
+  const totalCogs = materialCost + laborCost + fuelCost;
+
+  // Markup & Service Price
+  const mkType = document.getElementById('sel-markup-type')?.value || '1';
+  const mkVal = parseFloat(document.getElementById('inp-markup-val')?.value) || 0;
+  const unitLbl = document.getElementById('lbl-markup-unit');
+  let servicePrice = 0;
+
+  if (mkType === '1') {
+    if (unitLbl) unitLbl.textContent = '%';
+    servicePrice = totalCogs * (1 + mkVal / 100);
+  } else if (mkType === '2') {
+    if (unitLbl) unitLbl.textContent = 'Rp';
+    servicePrice = totalCogs + mkVal;
+  } else {
+    if (unitLbl) unitLbl.textContent = 'Rp';
+    servicePrice = mkVal;
+  }
+
+  // Discount & Subtotal (DPP)
+  const discountAmount = parseFloat(document.getElementById('inp-disc')?.value) || 0;
+  const subtotal = Math.max(0, servicePrice + addonAmount - discountAmount);
+  
+  // Tax (PPN 11%) & Grand Total
+  const taxRate = 0.11;
+  const taxAmount = subtotal * taxRate;
+  const totalAmount = subtotal + taxAmount;
+
+  // Profitability Metrics
+  const marginAmount = servicePrice - totalCogs;
+  const marginPercent = servicePrice > 0 ? (marginAmount / servicePrice) * 100 : 0;
+  const pricePerVisit = visitFreq > 0 ? subtotal / visitFreq : 0;
+  const pricePerMonth = contractMonths > 0 ? subtotal / contractMonths : 0;
+
+  // Update Output DOM
+  const elOutMat = document.getElementById('out-mat');
+  const elOutLab = document.getElementById('out-lab');
+  const elOutFuel = document.getElementById('out-fuel');
+  const elOutCogs = document.getElementById('out-cogs');
+  const elOutSrvPrice = document.getElementById('out-srv-price');
+  const elOutAddon = document.getElementById('out-addon');
+  const elOutSubtotal = document.getElementById('out-subtotal');
+  const elOutTax = document.getElementById('out-tax');
+  const elOutTotalAmount = document.getElementById('out-total-amount');
+
+  if (elOutMat) elOutMat.textContent = fmtRp(materialCost);
+  if (elOutLab) elOutLab.textContent = fmtRp(laborCost);
+  if (elOutFuel) elOutFuel.textContent = fmtRp(fuelCost);
+  if (elOutCogs) elOutCogs.textContent = fmtRp(totalCogs);
+  if (elOutSrvPrice) elOutSrvPrice.textContent = fmtRp(servicePrice);
+  if (elOutAddon) elOutAddon.textContent = fmtRp(addonAmount);
+  if (elOutSubtotal) elOutSubtotal.textContent = fmtRp(subtotal);
+  if (elOutTax) elOutTax.textContent = fmtRp(taxAmount);
+  if (elOutTotalAmount) elOutTotalAmount.textContent = fmtRp(totalAmount);
+
+  const elMarginPct = document.getElementById('out-margin-pct');
+  const elMarginAmt = document.getElementById('out-margin-amt');
+  const elPpv = document.getElementById('out-ppv');
+  const elPpm = document.getElementById('out-ppm');
+
+  if (elMarginPct) elMarginPct.textContent = marginPercent.toFixed(1) + '%';
+  if (elMarginAmt) {
+    if (Math.abs(marginAmount) >= 1000000) {
+      elMarginAmt.textContent = 'Rp ' + (marginAmount / 1000000).toFixed(2).replace('.', ',') + 'jt';
+    } else {
+      elMarginAmt.textContent = fmtRp(marginAmount);
+    }
+  }
+  if (elPpv) elPpv.textContent = fmtRp(pricePerVisit);
+  if (elPpm) elPpm.textContent = fmtRp(pricePerMonth);
+}
+
+function addRowPersiapan() {
+  const tb = document.getElementById('tb-persiapan');
+  const tr = document.createElement('tr');
+  tr.className = 'row-persiapan';
+  tr.innerHTML = `
+    <td>
+      <input class="li-inp li-inp-text" style="font-weight:600;margin-bottom:3px;" value="Bahan Kimia Baru"/>
+      <div class="item-badge">Bahan Tambahan</div>
+    </td>
+    <td><input class="li-inp p-qty" type="number" value="1" min="1" step="1" oninput="recalc()"/></td>
+    <td><input class="li-inp p-frq" type="number" value="1" min="1" step="1" oninput="recalc()"/></td>
+    <td><input class="li-inp" style="width:55px;text-align:center;" value="pcs"/></td>
+    <td><input class="li-inp p-cst" type="number" value="50000" min="0" step="5000" oninput="recalc()"/></td>
+    <td><span class="li-price p-line">Rp 50.000</span></td>
+    <td style="text-align:center;"><button class="btn-del" title="Hapus Baris" onclick="this.closest('tr').remove();updateTabCounts();recalc();"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/></svg></button></td>
+  `;
+  tb.appendChild(tr);
+  updateTabCounts();
+  recalc();
+}
+
+function addRowTeknisi() {
+  const tb = document.getElementById('tb-teknisi');
+  const tr = document.createElement('tr');
+  tr.className = 'row-teknisi';
+  tr.innerHTML = `
+    <td>
+      <input class="li-inp li-inp-text" style="font-weight:600;margin-bottom:3px;" value="Teknisi Pendukung"/>
+      <div class="item-badge">Tenaga Pembantu</div>
+    </td>
+    <td><input class="li-inp t-vfrq" type="number" value="6" min="1" step="1" oninput="recalc()"/></td>
+    <td><input class="li-inp t-fhrs" type="number" value="3.0" step="0.5" min="0" oninput="recalc()"/></td>
+    <td><input class="li-inp t-rhrs" type="number" value="2.0" step="0.5" min="0" oninput="recalc()"/></td>
+    <td><input class="li-inp t-rate" type="number" value="30000" min="0" step="1000" oninput="recalc()"/></td>
+    <td><span class="li-price t-line">Rp 390.000</span></td>
+    <td style="text-align:center;"><button class="btn-del" title="Hapus Baris" onclick="this.closest('tr').remove();updateTabCounts();recalc();"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/></svg></button></td>
+  `;
+  tb.appendChild(tr);
+  updateTabCounts();
+  recalc();
+}
+
+function addItemRow(type, role, name, cost, price) {
+  const tb = document.getElementById('tb-items');
+  const tr = document.createElement('tr');
+  tr.className = 'row-item';
+  tr.setAttribute('data-type', type);
+  tr.setAttribute('data-role', role);
+  tr.innerHTML = `
+    <td>
+      <div class="item-title">${name}</div>
+      <div class="item-badge">${type === 1 ? 'Biaya Transport & BBM' : 'Layanan Tambahan (Add-on)'}</div>
+    </td>
+    <td><input class="li-inp i-qty" type="number" value="1" min="1" step="1" oninput="recalc()"/></td>
+    <td><input class="li-inp i-frq" type="number" value="1" min="1" step="1" oninput="recalc()"/></td>
+    <td><input class="li-inp i-cst" type="number" value="${cost}" min="0" step="5000" oninput="recalc()"/></td>
+    <td>${role === 2 ? `<input class="li-inp i-prc" type="number" value="${price}" min="0" step="5000" oninput="recalc()"/>` : `<span style="color:var(--muted);font-size:12px;display:block;text-align:center;">-</span>`}</td>
+    <td><span class="li-price i-tot">${fmtRp(role === 2 ? price : cost)}</span></td>
+    <td style="text-align:center;"><button class="btn-del" title="Hapus Baris" onclick="this.closest('tr').remove();updateTabCounts();recalc();"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/></svg></button></td>
+  `;
+  tb.appendChild(tr);
+  updateTabCounts();
+  recalc();
+}
+
+// Initial calculation & counts
+updateTabCounts();
+recalc();
+</script>
+</body>
+</html>

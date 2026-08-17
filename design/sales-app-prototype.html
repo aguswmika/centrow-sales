@@ -1,0 +1,1359 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=1024, initial-scale=1.0" />
+  <title>Centrow Sales — Prototype Tablet</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
+  <style>
+    /* =============================================
+       CENTROW DESIGN SYSTEM TOKENS
+       Source: DESIGN_SYSTEM.md
+    ============================================= */
+    :root {
+      --color-page: #F8F8F5;
+      --color-surface: #FFFFFF;
+      --color-subtle: #F8F8F5;
+      --color-brand-500: #1E40AF;
+      --color-brand-600: #1D4ED8;
+      --color-brand-50: rgba(30,64,175,.05);
+      --color-brand-100: rgba(30,64,175,.10);
+      --color-primary: #181A19;
+      --color-secondary: #5A5D5A;
+      --color-muted: #8C8E8B;
+      --color-inverse: #FFFFFF;
+      --color-border-default: #E4E5DF;
+      --color-border-strong: #CBD5E1;
+      --color-success-500: #10B981;
+      --color-warning-500: #BC7B43;
+      --color-danger-500: #EF4444;
+      --color-info-500: #3B82F6;
+      --shadow-sm: 0 1px 2px rgba(0,0,0,.04);
+      --shadow-md: 0 2px 8px rgba(0,0,0,.06), 0 1px 3px rgba(0,0,0,.04);
+      --shadow-lg: 0 8px 24px rgba(0,0,0,.08), 0 2px 8px rgba(0,0,0,.04);
+      --shadow-brand: 0 4px 12px rgba(30,64,175,.20);
+      --radius-sm: 6px;
+      --radius-md: 10px;
+      --radius-lg: 14px;
+      --radius-xl: 18px;
+      --radius-full: 9999px;
+      --sp1: 4px; --sp2: 8px; --sp3: 12px;
+      --sp4: 16px; --sp5: 20px; --sp6: 24px;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: #D1D5DB;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      padding: 24px;
+    }
+
+    .tablet-frame {
+      width: 1024px;
+      height: 768px;
+      background: var(--color-page);
+      border-radius: 20px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      box-shadow: 0 32px 80px rgba(0,0,0,.28), 0 2px 8px rgba(0,0,0,.12);
+      position: relative;
+    }
+
+    /* TOP NAV */
+    .topbar {
+      height: 56px;
+      background: var(--color-surface);
+      border-bottom: 1px solid var(--color-border-default);
+      display: flex;
+      align-items: center;
+      padding: 0 var(--sp6);
+      gap: var(--sp4);
+      flex-shrink: 0;
+      z-index: 20;
+    }
+    .topbar-brand {
+      display: flex;
+      align-items: center;
+      gap: var(--sp2);
+      margin-right: var(--sp4);
+    }
+    .topbar-logo {
+      width: 28px;
+      height: 28px;
+      background: var(--color-brand-500);
+      border-radius: var(--radius-md);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-weight: 800;
+      font-size: 13px;
+      color: #fff;
+    }
+    .topbar-name {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-weight: 700;
+      font-size: 15px;
+      color: var(--color-primary);
+    }
+    .nav-tabs { display: flex; gap: 2px; flex: 1; }
+    .nav-tab {
+      height: 40px;
+      padding: 0 var(--sp4);
+      border-radius: var(--radius-md);
+      border: none;
+      background: transparent;
+      font-family: 'Inter', sans-serif;
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--color-secondary);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: var(--sp2);
+      transition: background 0.15s, color 0.15s;
+      white-space: nowrap;
+    }
+    .nav-tab:hover { background: var(--color-brand-50); color: var(--color-brand-500); }
+    .nav-tab.active { background: var(--color-brand-100); color: var(--color-brand-500); font-weight: 600; }
+    .nav-tab svg { width: 15px; height: 15px; flex-shrink: 0; }
+    .topbar-right { display: flex; align-items: center; gap: var(--sp3); margin-left: auto; }
+    .avatar {
+      width: 32px; height: 32px;
+      border-radius: var(--radius-full);
+      background: var(--color-brand-500);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 12px; font-weight: 700; color: #fff; cursor: pointer;
+    }
+
+    /* MAIN */
+    .main-content { flex: 1; overflow: hidden; display: flex; flex-direction: column; }
+    .screen { display: none; flex: 1; overflow: hidden; }
+    .screen.active { display: flex; flex-direction: column; }
+
+    .page-header {
+      padding: var(--sp5) var(--sp6) var(--sp4);
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      flex-shrink: 0;
+    }
+    .page-title {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--color-primary);
+      line-height: 1.2;
+    }
+    .page-subtitle { font-size: 12px; color: var(--color-muted); margin-top: 2px; }
+
+    /* BUTTONS */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: var(--sp2);
+      border: none;
+      cursor: pointer;
+      font-family: 'Inter', sans-serif;
+      font-weight: 600;
+      font-size: 13px;
+      border-radius: var(--radius-md);
+      padding: 0 var(--sp4);
+      height: 36px;
+      transition: all 0.12s;
+      white-space: nowrap;
+    }
+    .btn:active { transform: scale(0.98); }
+    .btn-primary { background: var(--color-brand-500); color: #fff; box-shadow: var(--shadow-brand); }
+    .btn-primary:hover { background: var(--color-brand-600); }
+    .btn-secondary {
+      background: var(--color-surface);
+      color: var(--color-primary);
+      border: 1px solid var(--color-border-default);
+      box-shadow: var(--shadow-sm);
+    }
+    .btn-secondary:hover { border-color: var(--color-border-strong); }
+    .btn-sm { height: 30px; padding: 0 var(--sp3); font-size: 12px; border-radius: var(--radius-sm); }
+    .btn svg { width: 14px; height: 14px; }
+
+    /* BADGES */
+    .badge {
+      display: inline-flex; align-items: center;
+      padding: 2px 8px; border-radius: var(--radius-full);
+      font-size: 11px; font-weight: 600; white-space: nowrap;
+    }
+    .badge-success { background: rgba(16,185,129,.12); color: #059669; }
+    .badge-warning { background: rgba(188,123,67,.12); color: #92580F; }
+    .badge-danger  { background: rgba(239,68,68,.12);  color: #DC2626; }
+    .badge-info    { background: rgba(59,130,246,.12); color: #2563EB; }
+    .badge-brand   { background: var(--color-brand-100); color: var(--color-brand-500); }
+    .badge-neutral { background: rgba(140,142,139,.12); color: var(--color-secondary); }
+
+    /* CARDS */
+    .card { background: var(--color-surface); border: 1px solid var(--color-border-default); border-radius: var(--radius-lg); box-shadow: var(--shadow-sm); }
+    .card-p { padding: var(--sp5); }
+
+    /* KPI */
+    .kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: var(--sp4);
+      padding: 0 var(--sp6) var(--sp4);
+      flex-shrink: 0;
+    }
+    .kpi-card {
+      background: var(--color-surface);
+      border: 1px solid var(--color-border-default);
+      border-radius: var(--radius-lg);
+      padding: var(--sp4) var(--sp5);
+      box-shadow: var(--shadow-sm);
+    }
+    .kpi-label { font-size: 11px; font-weight: 600; color: var(--color-muted); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: var(--sp2); }
+    .kpi-value { font-family: 'Plus Jakarta Sans', sans-serif; font-size: 26px; font-weight: 800; color: var(--color-primary); line-height: 1; margin-bottom: var(--sp1); }
+    .kpi-sub { font-size: 12px; color: var(--color-secondary); display: flex; align-items: center; gap: 4px; }
+    .kpi-trend-up { color: var(--color-success-500); }
+    .kpi-trend-down { color: var(--color-danger-500); }
+
+    /* SCROLL */
+    .scroll-area { flex: 1; overflow-y: auto; padding: 0 var(--sp6) var(--sp6); }
+    .scroll-area::-webkit-scrollbar { width: 4px; }
+    .scroll-area::-webkit-scrollbar-thumb { background: var(--color-border-strong); border-radius: 99px; }
+
+    /* DASHBOARD GRID */
+    .dashboard-grid { display: grid; grid-template-columns: 1fr 1.6fr; gap: var(--sp4); }
+
+    .section-title {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: 13px; font-weight: 700; color: var(--color-primary);
+      margin-bottom: var(--sp4);
+      display: flex; align-items: center; justify-content: space-between;
+    }
+
+    /* FUNNEL */
+    .funnel-item { margin-bottom: var(--sp2); }
+    .funnel-bar-wrap { display: flex; align-items: center; gap: var(--sp3); margin-bottom: 2px; }
+    .funnel-stage { font-size: 11px; color: var(--color-secondary); width: 90px; flex-shrink: 0; text-align: right; }
+    .funnel-bar-bg { flex: 1; height: 22px; background: var(--color-brand-50); border-radius: var(--radius-sm); overflow: hidden; }
+    .funnel-bar-fill {
+      height: 100%; border-radius: var(--radius-sm);
+      display: flex; align-items: center; justify-content: flex-end; padding-right: 8px;
+      font-size: 11px; font-weight: 700; color: #fff;
+    }
+    .funnel-count { font-size: 11px; font-weight: 600; color: var(--color-muted); width: 28px; flex-shrink: 0; }
+
+    /* PROPOSAL ROW */
+    .proposal-row {
+      display: grid;
+      grid-template-columns: 1fr auto auto;
+      align-items: center;
+      gap: var(--sp4);
+      cursor: pointer;
+      padding: var(--sp3) var(--sp4);
+      border-radius: var(--radius-sm);
+      margin: 0 calc(-1 * var(--sp4));
+      border-bottom: 1px solid var(--color-border-default);
+      transition: background 0.1s;
+    }
+    .proposal-row:last-child { border-bottom: none; }
+    .proposal-row:hover { background: var(--color-brand-50); }
+    .proposal-customer { font-size: 13px; font-weight: 600; color: var(--color-primary); }
+    .proposal-meta { font-size: 11px; color: var(--color-muted); margin-top: 2px; }
+    .proposal-amount { font-family: 'Plus Jakarta Sans', sans-serif; font-size: 13px; font-weight: 700; color: var(--color-primary); text-align: right; }
+
+    /* TABLE */
+    .table-wrap { background: var(--color-surface); border: 1px solid var(--color-border-default); border-radius: var(--radius-lg); overflow: hidden; box-shadow: var(--shadow-sm); }
+    .data-table { width: 100%; border-collapse: collapse; }
+    .data-table th {
+      text-align: left; font-size: 11px; font-weight: 600; color: var(--color-muted);
+      text-transform: uppercase; letter-spacing: 0.05em;
+      padding: var(--sp2) var(--sp4);
+      border-bottom: 1px solid var(--color-border-default);
+      background: var(--color-subtle);
+      white-space: nowrap;
+    }
+    .data-table td {
+      padding: var(--sp3) var(--sp4);
+      border-bottom: 1px solid var(--color-border-default);
+      font-size: 13px; color: var(--color-primary); vertical-align: middle;
+    }
+    .data-table tr:last-child td { border-bottom: none; }
+    .data-table tbody tr { cursor: pointer; transition: background 0.1s; }
+    .data-table tbody tr:hover { background: var(--color-brand-50); }
+
+    /* TOOLBAR */
+    .proposals-toolbar {
+      display: flex; align-items: center; gap: var(--sp3);
+      padding: 0 var(--sp6) var(--sp4); flex-shrink: 0;
+    }
+    .search-bar {
+      display: flex; align-items: center;
+      background: var(--color-surface);
+      border: 1px solid var(--color-border-default);
+      border-radius: var(--radius-md);
+      padding: 0 var(--sp3); height: 36px; gap: var(--sp2);
+      box-shadow: var(--shadow-sm);
+    }
+    .search-bar svg { color: var(--color-muted); width: 15px; height: 15px; flex-shrink: 0; }
+    .search-bar input {
+      border: none; outline: none;
+      font-family: 'Inter', sans-serif; font-size: 13px;
+      color: var(--color-primary); background: transparent; width: 180px;
+    }
+    .search-bar input::placeholder { color: var(--color-muted); }
+    .filter-chips { display: flex; gap: var(--sp2); flex-wrap: nowrap; overflow-x: auto; }
+    .chip {
+      height: 28px; padding: 0 var(--sp3);
+      border-radius: var(--radius-full);
+      border: 1px solid var(--color-border-default);
+      background: var(--color-surface);
+      font-size: 12px; font-weight: 500; color: var(--color-secondary);
+      cursor: pointer; white-space: nowrap; transition: all 0.12s;
+    }
+    .chip:hover { border-color: var(--color-brand-500); color: var(--color-brand-500); }
+    .chip.active { background: var(--color-brand-500); border-color: var(--color-brand-500); color: #fff; font-weight: 600; }
+
+    /* ACTION BTNS */
+    .action-btn {
+      width: 28px; height: 28px;
+      border: none; background: transparent;
+      border-radius: var(--radius-sm);
+      display: inline-flex; align-items: center; justify-content: center;
+      cursor: pointer; color: var(--color-muted); transition: all 0.12s;
+    }
+    .action-btn:hover { background: var(--color-subtle); color: var(--color-primary); }
+    .action-btn.danger:hover { background: rgba(239,68,68,.1); color: var(--color-danger-500); }
+    .action-btn svg { width: 14px; height: 14px; }
+
+    /* BREADCRUMB */
+    .breadcrumb {
+      display: flex; align-items: center; gap: var(--sp2);
+      font-size: 12px; color: var(--color-muted);
+      padding: var(--sp3) var(--sp6) 0; flex-shrink: 0;
+    }
+    .breadcrumb a { color: var(--color-brand-500); text-decoration: none; cursor: pointer; }
+    .breadcrumb a:hover { text-decoration: underline; }
+
+    /* DETAIL LAYOUT */
+    .detail-layout {
+      display: grid;
+      grid-template-columns: 268px 1fr;
+      gap: var(--sp4);
+      flex: 1; overflow: hidden;
+      padding: 0 var(--sp6) var(--sp6);
+    }
+    .detail-sidebar { display: flex; flex-direction: column; gap: var(--sp4); overflow-y: auto; }
+    .detail-sidebar::-webkit-scrollbar { width: 0; }
+    .customer-avatar-lg {
+      width: 52px; height: 52px;
+      border-radius: var(--radius-lg);
+      background: var(--color-brand-500);
+      display: flex; align-items: center; justify-content: center;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-weight: 800; font-size: 20px; color: #fff; flex-shrink: 0;
+    }
+    .info-row {
+      display: flex; flex-direction: column; gap: 2px;
+      padding: var(--sp3) 0;
+      border-bottom: 1px solid var(--color-border-default);
+    }
+    .info-row:last-child { border-bottom: none; }
+    .info-label { font-size: 11px; color: var(--color-muted); font-weight: 500; }
+    .info-value { font-size: 13px; color: var(--color-primary); font-weight: 500; }
+    .detail-main { overflow-y: auto; display: flex; flex-direction: column; gap: var(--sp4); }
+    .detail-main::-webkit-scrollbar { width: 4px; }
+    .detail-main::-webkit-scrollbar-thumb { background: var(--color-border-strong); border-radius: 99px; }
+
+    .sub-tabs {
+      display: flex; border-bottom: 1px solid var(--color-border-default);
+    }
+    .sub-tab {
+      padding: var(--sp2) var(--sp4); font-size: 13px; font-weight: 500;
+      color: var(--color-secondary); cursor: pointer;
+      border-bottom: 2px solid transparent; margin-bottom: -1px;
+      transition: all 0.15s;
+    }
+    .sub-tab:hover { color: var(--color-primary); }
+    .sub-tab.active { color: var(--color-brand-500); border-bottom-color: var(--color-brand-500); font-weight: 600; }
+
+    /* TAB CONTENT */
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
+
+    /* REGION */
+    .region-row {
+      display: flex; justify-content: space-between;
+      font-size: 12px; padding: 5px 0;
+      border-bottom: 1px solid var(--color-border-default);
+    }
+    .region-row:last-child { border-bottom: none; }
+    .region-name { color: var(--color-secondary); }
+    .region-fee { font-weight: 600; color: var(--color-primary); font-variant-numeric: tabular-nums; }
+
+    /* CONTRACT KPIs */
+    .contract-stage-header {
+      display: flex; justify-content: space-between; gap: var(--sp3);
+      padding: 0 var(--sp6) var(--sp4); flex-shrink: 0;
+    }
+    .stage-kpi {
+      flex: 1;
+      background: var(--color-surface);
+      border: 1px solid var(--color-border-default);
+      border-radius: var(--radius-lg);
+      padding: var(--sp4) var(--sp5);
+      box-shadow: var(--shadow-sm);
+    }
+    .stage-kpi-value { font-family: 'Plus Jakarta Sans', sans-serif; font-size: 20px; font-weight: 800; color: var(--color-primary); }
+    .stage-kpi-label { font-size: 11px; color: var(--color-muted); font-weight: 500; margin-top: 2px; }
+    .progress-bar { height: 4px; background: var(--color-border-default); border-radius: 99px; overflow: hidden; margin-top: var(--sp2); }
+    .progress-fill { height: 100%; border-radius: 99px; background: var(--color-brand-500); }
+
+    /* CALC */
+    .calc-layout {
+      display: grid;
+      grid-template-columns: 1fr 272px;
+      gap: var(--sp4);
+      flex: 1; overflow: hidden;
+      padding: 0 var(--sp6) var(--sp6);
+    }
+    .calc-main { display: flex; flex-direction: column; overflow: hidden; }
+    .calc-tabs {
+      display: flex;
+      border-bottom: 1px solid var(--color-border-default);
+      background: var(--color-surface);
+      border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+      overflow: hidden;
+    }
+    .calc-tab {
+      flex: 1; padding: var(--sp3) var(--sp4);
+      font-size: 13px; font-weight: 500; color: var(--color-secondary);
+      cursor: pointer; border-bottom: 2px solid transparent;
+      text-align: center; transition: all 0.15s;
+      background: var(--color-subtle);
+      border-right: 1px solid var(--color-border-default);
+    }
+    .calc-tab:last-child { border-right: none; }
+    .calc-tab.active { background: var(--color-surface); color: var(--color-brand-500); border-bottom-color: var(--color-brand-500); font-weight: 600; }
+    .calc-tab:hover:not(.active) { background: var(--color-surface); color: var(--color-primary); }
+    .calc-table-wrap {
+      background: var(--color-surface);
+      border: 1px solid var(--color-border-default);
+      border-top: none;
+      border-radius: 0 0 var(--radius-lg) var(--radius-lg);
+      overflow-y: auto; flex: 1;
+    }
+    .calc-table-wrap::-webkit-scrollbar { width: 4px; }
+    .calc-table-wrap::-webkit-scrollbar-thumb { background: var(--color-border-strong); border-radius: 99px; }
+    .calc-input {
+      border: 1px solid var(--color-border-default);
+      border-radius: var(--radius-sm);
+      padding: 4px 8px;
+      font-family: 'Inter', sans-serif; font-size: 13px; color: var(--color-primary);
+      background: var(--color-page); outline: none; transition: border-color 0.12s;
+    }
+    .calc-input:focus { border-color: var(--color-brand-500); background: #fff; }
+    .calc-input-num { text-align: right; width: 72px; }
+
+    .calc-sidebar { display: flex; flex-direction: column; gap: var(--sp3); }
+
+    .summary-card {
+      background: var(--color-surface);
+      border: 1px solid var(--color-border-default);
+      border-radius: var(--radius-lg);
+      padding: var(--sp4);
+      box-shadow: var(--shadow-sm);
+    }
+    .summary-row { display: flex; justify-content: space-between; align-items: center; padding: 5px 0; font-size: 13px; }
+    .summary-row-label { color: var(--color-secondary); }
+    .summary-row-value { font-weight: 600; color: var(--color-primary); font-variant-numeric: tabular-nums; }
+    .summary-divider { height: 1px; background: var(--color-border-default); margin: var(--sp2) 0; }
+    .summary-total {
+      background: var(--color-brand-500);
+      border-radius: var(--radius-lg);
+      padding: var(--sp4); text-align: center;
+    }
+    .summary-total-label { font-size: 11px; color: rgba(255,255,255,.7); font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: var(--sp1); }
+    .summary-total-value { font-family: 'Plus Jakarta Sans', sans-serif; font-size: 26px; font-weight: 800; color: #fff; line-height: 1; }
+    .summary-total-sub { font-size: 11px; color: rgba(255,255,255,.7); margin-top: var(--sp1); }
+    .markup-row {
+      display: flex; align-items: center; gap: 6px;
+      padding: var(--sp3) 0;
+      border-top: 1px solid var(--color-border-default);
+      border-bottom: 1px solid var(--color-border-default);
+    }
+    .markup-row label { font-size: 12px; color: var(--color-secondary); white-space: nowrap; }
+    .markup-select {
+      border: 1px solid var(--color-border-default);
+      border-radius: var(--radius-sm);
+      padding: 3px 6px; font-family: 'Inter', sans-serif; font-size: 12px;
+      color: var(--color-primary); background: var(--color-page); outline: none; flex: 1;
+    }
+    .markup-input {
+      width: 52px; border: 1px solid var(--color-border-default);
+      border-radius: var(--radius-sm); padding: 3px 6px;
+      font-family: 'Inter', sans-serif; font-size: 12px;
+      color: var(--color-primary); background: var(--color-page);
+      outline: none; text-align: right;
+    }
+
+    /* MODAL */
+    .modal-overlay {
+      position: absolute; inset: 0;
+      background: rgba(24,26,25,.5);
+      display: flex; align-items: center; justify-content: center;
+      z-index: 100; opacity: 0; pointer-events: none;
+      transition: opacity 0.2s;
+    }
+    .modal-overlay.open { opacity: 1; pointer-events: all; }
+    .modal {
+      background: var(--color-surface);
+      border-radius: var(--radius-xl);
+      width: 540px; max-height: 90%;
+      overflow-y: auto; box-shadow: var(--shadow-lg);
+      transform: translateY(8px);
+      transition: transform 0.2s cubic-bezier(.16,1,.3,1);
+    }
+    .modal-overlay.open .modal { transform: translateY(0); }
+    .modal-header {
+      padding: var(--sp5) var(--sp6);
+      border-bottom: 1px solid var(--color-border-default);
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .modal-title { font-family: 'Plus Jakarta Sans', sans-serif; font-size: 16px; font-weight: 700; color: var(--color-primary); }
+    .modal-body { padding: var(--sp5) var(--sp6); }
+    .modal-footer {
+      padding: var(--sp4) var(--sp6);
+      border-top: 1px solid var(--color-border-default);
+      display: flex; justify-content: flex-end; gap: var(--sp3);
+    }
+    .field { margin-bottom: var(--sp4); }
+    .field label { display: block; font-size: 12px; font-weight: 600; color: var(--color-secondary); margin-bottom: 6px; }
+    .field-input, .field-select {
+      width: 100%; height: 38px;
+      border: 1px solid var(--color-border-default);
+      border-radius: var(--radius-md); padding: 0 var(--sp3);
+      font-family: 'Inter', sans-serif; font-size: 13px; color: var(--color-primary);
+      background: var(--color-page); outline: none; transition: border-color 0.12s, box-shadow 0.12s;
+    }
+    .field-input:focus, .field-select:focus {
+      border-color: var(--color-brand-500);
+      box-shadow: 0 0 0 3px var(--color-brand-100); background: #fff;
+    }
+    .field-grid { display: grid; grid-template-columns: 1fr 1fr; gap: var(--sp4); }
+
+    /* TOAST */
+    .toast {
+      position: absolute; bottom: 24px; right: 24px;
+      background: var(--color-primary); color: #fff;
+      font-size: 13px; font-weight: 500;
+      padding: var(--sp3) var(--sp5);
+      border-radius: var(--radius-lg); box-shadow: var(--shadow-lg);
+      z-index: 200; transform: translateY(20px); opacity: 0;
+      transition: all 0.25s cubic-bezier(.16,1,.3,1);
+      display: flex; align-items: center; gap: var(--sp2);
+    }
+    .toast.show { transform: translateY(0); opacity: 1; }
+    .toast svg { width: 16px; height: 16px; color: var(--color-success-500); flex-shrink: 0; }
+  </style>
+</head>
+<body>
+
+<div class="tablet-frame" id="tablet">
+
+  <!-- TOP NAV -->
+  <nav class="topbar">
+    <div class="topbar-brand">
+      <div class="topbar-logo">C</div>
+      <span class="topbar-name">Centrow Sales</span>
+    </div>
+    <div class="nav-tabs">
+      <button class="nav-tab active" onclick="showScreen('beranda',this)" id="tab-beranda">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+        Beranda
+      </button>
+      <button class="nav-tab" onclick="showScreen('pelanggan',this)" id="tab-pelanggan">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg>
+        Pelanggan
+      </button>
+      <button class="nav-tab" onclick="showScreen('proposal',this)" id="tab-proposal">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+        Proposal
+      </button>
+      <button class="nav-tab" onclick="showScreen('kontrak',this)" id="tab-kontrak">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+        Kontrak
+      </button>
+      <button class="nav-tab" onclick="showScreen('kalkulator',this)" id="tab-kalkulator">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="2" width="16" height="20" rx="2"/><line x1="8" y1="6" x2="16" y2="6"/><line x1="8" y1="10" x2="16" y2="10"/><line x1="8" y1="14" x2="12" y2="14"/><line x1="8" y1="18" x2="12" y2="18"/></svg>
+        Kalkulator
+      </button>
+    </div>
+    <div class="topbar-right">
+      <div style="font-size:12px;color:var(--color-secondary);">Sales · Bali</div>
+      <div class="avatar">AG</div>
+    </div>
+  </nav>
+
+  <div class="main-content">
+
+    <!-- =================== BERANDA =================== -->
+    <div class="screen active" id="screen-beranda">
+      <div class="page-header">
+        <div>
+          <div class="page-title">Selamat datang, Agus</div>
+          <div class="page-subtitle">Ringkasan aktivitas penjualan · Agustus 2026</div>
+        </div>
+        <button class="btn btn-primary" onclick="openModal()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          Buat Proposal
+        </button>
+      </div>
+      <div class="kpi-grid">
+        <div class="kpi-card">
+          <div class="kpi-label">Proposal Aktif</div>
+          <div class="kpi-value">24</div>
+          <div class="kpi-sub"><span class="kpi-trend-up">&#8593; 3</span><span>dari bulan lalu</span></div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-label">Kontrak Berjalan</div>
+          <div class="kpi-value">148</div>
+          <div class="kpi-sub"><span>3 jatuh tempo bulan ini</span></div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-label">Nilai Pipeline</div>
+          <div class="kpi-value" style="font-size:20px;">Rp 84,5 jt</div>
+          <div class="kpi-sub"><span class="kpi-trend-up">&#8593; 12%</span><span>vs bulan lalu</span></div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-label">Margin Rata-rata</div>
+          <div class="kpi-value">31,2%</div>
+          <div class="kpi-sub"><span class="kpi-trend-down">&#8595; 0.8%</span><span>vs target 32%</span></div>
+        </div>
+      </div>
+      <div class="scroll-area" style="padding-top:0;">
+        <div class="dashboard-grid">
+          <div class="card card-p" style="height:fit-content;">
+            <div class="section-title">
+              Pipeline Penjualan
+              <span style="font-size:11px;font-weight:500;color:var(--color-muted);">24 proposal</span>
+            </div>
+            <div class="funnel-item"><div class="funnel-bar-wrap"><div class="funnel-stage">Draft</div><div class="funnel-bar-bg"><div class="funnel-bar-fill" style="width:100%;background:#93C5FD;">6</div></div><div class="funnel-count">6</div></div></div>
+            <div class="funnel-item"><div class="funnel-bar-wrap"><div class="funnel-stage">Dikirim</div><div class="funnel-bar-bg"><div class="funnel-bar-fill" style="width:75%;background:#60A5FA;">8</div></div><div class="funnel-count">8</div></div></div>
+            <div class="funnel-item"><div class="funnel-bar-wrap"><div class="funnel-stage">Negosiasi</div><div class="funnel-bar-bg"><div class="funnel-bar-fill" style="width:42%;background:#3B82F6;">5</div></div><div class="funnel-count">5</div></div></div>
+            <div class="funnel-item"><div class="funnel-bar-wrap"><div class="funnel-stage">Disetujui</div><div class="funnel-bar-bg"><div class="funnel-bar-fill" style="width:25%;background:#1D4ED8;">3</div></div><div class="funnel-count">3</div></div></div>
+            <div class="funnel-item"><div class="funnel-bar-wrap"><div class="funnel-stage">Ditolak</div><div class="funnel-bar-bg"><div class="funnel-bar-fill" style="width:17%;background:#EF4444;">2</div></div><div class="funnel-count">2</div></div></div>
+
+            <div style="margin-top:var(--sp5);padding-top:var(--sp4);border-top:1px solid var(--color-border-default);">
+              <div class="section-title" style="margin-bottom:var(--sp3);">Segmen Pelanggan</div>
+              <div style="display:flex;gap:var(--sp2);flex-wrap:wrap;">
+                <span class="badge badge-brand">Villa 635</span>
+                <span class="badge badge-info">Hotel 84</span>
+                <span class="badge badge-neutral">Rumah 76</span>
+                <span class="badge badge-success">Restoran 60</span>
+                <span class="badge badge-neutral">Kantor 16</span>
+                <span class="badge badge-neutral">Lainnya</span>
+              </div>
+            </div>
+          </div>
+
+          <div style="display:flex;flex-direction:column;gap:var(--sp4);">
+            <div class="card card-p">
+              <div class="section-title">
+                Proposal Terbaru
+                <button class="btn btn-secondary btn-sm" onclick="showScreen('proposal',document.getElementById('tab-proposal'))">Lihat Semua</button>
+              </div>
+              <div class="proposal-row" onclick="showScreen('kalkulator',document.getElementById('tab-kalkulator'))">
+                <div><div class="proposal-customer">Villa Sari Dewi</div><div class="proposal-meta">PRO-2026-0042 · Termite Protection · Badung</div></div>
+                <span class="badge badge-info">Dikirim</span>
+                <div class="proposal-amount">Rp 4.800.000</div>
+              </div>
+              <div class="proposal-row">
+                <div><div class="proposal-customer">Hotel Surya Kuta</div><div class="proposal-meta">PRO-2026-0041 · Pest Control · Badung</div></div>
+                <span class="badge badge-warning">Negosiasi</span>
+                <div class="proposal-amount">Rp 12.500.000</div>
+              </div>
+              <div class="proposal-row">
+                <div><div class="proposal-customer">Resto Warung Bumi</div><div class="proposal-meta">PRO-2026-0040 · Disinfection · Denpasar</div></div>
+                <span class="badge badge-neutral">Draft</span>
+                <div class="proposal-amount">Rp 2.200.000</div>
+              </div>
+              <div class="proposal-row">
+                <div><div class="proposal-customer">Villa Karma Kandara</div><div class="proposal-meta">PRO-2026-0039 · Baiting · Nusa Dua</div></div>
+                <span class="badge badge-success">Disetujui</span>
+                <div class="proposal-amount">Rp 7.350.000</div>
+              </div>
+            </div>
+
+            <div class="card card-p">
+              <div class="section-title">
+                Kontrak Jatuh Tempo
+                <span class="badge badge-danger">3 bulan ini</span>
+              </div>
+              <div class="proposal-row">
+                <div><div class="proposal-customer">Villa Puri Tirtha</div><div class="proposal-meta">KON-2024-0112 · Termite 2 Thn · Gianyar</div></div>
+                <span style="font-size:12px;color:var(--color-danger-500);font-weight:600;white-space:nowrap;">28 Agt 2026</span>
+                <div class="proposal-amount">Rp 9.600.000</div>
+              </div>
+              <div class="proposal-row">
+                <div><div class="proposal-customer">Grand Hyatt Nusa Dua</div><div class="proposal-meta">KON-2024-0089 · Pest Control 3 Thn · Badung</div></div>
+                <span style="font-size:12px;color:var(--color-warning-500);font-weight:600;white-space:nowrap;">15 Sep 2026</span>
+                <div class="proposal-amount">Rp 38.000.000</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- =================== PELANGGAN =================== -->
+    <div class="screen" id="screen-pelanggan">
+      <div class="page-header">
+        <div><div class="page-title">Pelanggan</div><div class="page-subtitle">900 pelanggan terdaftar</div></div>
+        <button class="btn btn-primary"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>Tambah Pelanggan</button>
+      </div>
+      <div class="proposals-toolbar">
+        <div class="search-bar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg><input type="text" placeholder="Cari nama, kode…" /></div>
+        <div class="filter-chips">
+          <button class="chip active" onclick="setChip(this)">Semua (900)</button>
+          <button class="chip" onclick="setChip(this)">Villa (635)</button>
+          <button class="chip" onclick="setChip(this)">Hotel (84)</button>
+          <button class="chip" onclick="setChip(this)">Rumah (76)</button>
+          <button class="chip" onclick="setChip(this)">Restoran (60)</button>
+          <button class="chip" onclick="setChip(this)">Kantor (16)</button>
+          <button class="chip" onclick="setChip(this)">Lainnya</button>
+        </div>
+      </div>
+      <div class="scroll-area" style="padding-top:0;">
+        <div class="table-wrap">
+          <table class="data-table">
+            <thead>
+              <tr><th>Kode</th><th>Nama Pelanggan</th><th>Segmen</th><th>Kota</th><th>Telepon</th><th>Status</th><th style="width:72px;"></th></tr>
+            </thead>
+            <tbody>
+              <tr onclick="showDetail('Villa Sari Dewi','VS')">
+                <td style="font-family:'Plus Jakarta Sans',sans-serif;font-weight:600;font-size:12px;color:var(--color-muted);">CRM-0012</td>
+                <td><div style="display:flex;align-items:center;gap:10px;"><div style="width:32px;height:32px;border-radius:var(--radius-md);background:var(--color-brand-100);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:12px;color:var(--color-brand-500);flex-shrink:0;">VS</div><div><div style="font-weight:600;">Villa Sari Dewi</div><div style="font-size:11px;color:var(--color-muted);">contact@villasaridewi.com</div></div></div></td>
+                <td><span class="badge badge-brand">Villa</span></td>
+                <td style="color:var(--color-secondary);">Badung</td>
+                <td style="color:var(--color-secondary);font-size:12px;">+62 812-3456-7890</td>
+                <td><span class="badge badge-success">Aktif</span></td>
+                <td><div style="display:flex;gap:2px;"><button class="action-btn" onclick="showDetail('Villa Sari Dewi','VS')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg></button><button class="action-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button></div></td>
+              </tr>
+              <tr>
+                <td style="font-family:'Plus Jakarta Sans',sans-serif;font-weight:600;font-size:12px;color:var(--color-muted);">CRM-0084</td>
+                <td><div style="display:flex;align-items:center;gap:10px;"><div style="width:32px;height:32px;border-radius:var(--radius-md);background:rgba(16,185,129,.1);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:12px;color:#059669;flex-shrink:0;">GH</div><div><div style="font-weight:600;">Grand Hyatt Nusa Dua</div><div style="font-size:11px;color:var(--color-muted);">procurement@grandhyatt.com</div></div></div></td>
+                <td><span class="badge badge-info">Hotel</span></td>
+                <td style="color:var(--color-secondary);">Badung</td>
+                <td style="color:var(--color-secondary);font-size:12px;">+62 361-771-234</td>
+                <td><span class="badge badge-success">Aktif</span></td>
+                <td><div style="display:flex;gap:2px;"><button class="action-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg></button><button class="action-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button></div></td>
+              </tr>
+              <tr>
+                <td style="font-family:'Plus Jakarta Sans',sans-serif;font-weight:600;font-size:12px;color:var(--color-muted);">CRM-0201</td>
+                <td><div style="display:flex;align-items:center;gap:10px;"><div style="width:32px;height:32px;border-radius:var(--radius-md);background:rgba(188,123,67,.1);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:12px;color:#92580F;flex-shrink:0;">WB</div><div><div style="font-weight:600;">Resto Warung Bumi</div><div style="font-size:11px;color:var(--color-muted);">owner@warungbumi.id</div></div></div></td>
+                <td><span class="badge badge-success">Restoran</span></td>
+                <td style="color:var(--color-secondary);">Denpasar</td>
+                <td style="color:var(--color-secondary);font-size:12px;">+62 811-3892-xxx</td>
+                <td><span class="badge badge-success">Aktif</span></td>
+                <td><div style="display:flex;gap:2px;"><button class="action-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg></button><button class="action-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button></div></td>
+              </tr>
+              <tr>
+                <td style="font-family:'Plus Jakarta Sans',sans-serif;font-weight:600;font-size:12px;color:var(--color-muted);">CRM-0512</td>
+                <td><div style="display:flex;align-items:center;gap:10px;"><div style="width:32px;height:32px;border-radius:var(--radius-md);background:rgba(59,130,246,.1);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:12px;color:#2563EB;flex-shrink:0;">PB</div><div><div style="font-weight:600;">Puri Bali Residence</div><div style="font-size:11px;color:var(--color-muted);">admin@puribali.com</div></div></div></td>
+                <td><span class="badge badge-brand">Villa</span></td>
+                <td style="color:var(--color-secondary);">Gianyar</td>
+                <td style="color:var(--color-secondary);font-size:12px;">+62 361-978-xxx</td>
+                <td><span class="badge badge-success">Aktif</span></td>
+                <td><div style="display:flex;gap:2px;"><button class="action-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg></button><button class="action-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button></div></td>
+              </tr>
+              <tr>
+                <td style="font-family:'Plus Jakarta Sans',sans-serif;font-weight:600;font-size:12px;color:var(--color-muted);">CRM-0601</td>
+                <td><div style="display:flex;align-items:center;gap:10px;"><div style="width:32px;height:32px;border-radius:var(--radius-md);background:rgba(16,185,129,.1);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:12px;color:#059669;flex-shrink:0;">SK</div><div><div style="font-weight:600;">Hotel Surya Kuta</div><div style="font-size:11px;color:var(--color-muted);">gm@suryakuta.id</div></div></div></td>
+                <td><span class="badge badge-info">Hotel</span></td>
+                <td style="color:var(--color-secondary);">Badung</td>
+                <td style="color:var(--color-secondary);font-size:12px;">+62 361-754-xxx</td>
+                <td><span class="badge badge-success">Aktif</span></td>
+                <td><div style="display:flex;gap:2px;"><button class="action-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg></button><button class="action-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button></div></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- =================== DETAIL PELANGGAN =================== -->
+    <div class="screen" id="screen-detail-pelanggan">
+      <div class="breadcrumb">
+        <a onclick="showScreen('pelanggan',document.getElementById('tab-pelanggan'))">Pelanggan</a>
+        <span style="color:var(--color-border-strong);">›</span>
+        <span id="detail-name-bc">Villa Sari Dewi</span>
+      </div>
+      <div class="page-header" style="padding-top:var(--sp3);">
+        <div style="display:flex;align-items:center;gap:var(--sp4);">
+          <div class="customer-avatar-lg" id="detail-avatar">VS</div>
+          <div>
+            <div class="page-title" id="detail-name-title">Villa Sari Dewi</div>
+            <div style="display:flex;align-items:center;gap:var(--sp2);margin-top:4px;">
+              <span class="badge badge-brand">Villa</span>
+              <span class="badge badge-success">Aktif</span>
+              <span style="font-size:12px;color:var(--color-muted);">CRM-0012</span>
+            </div>
+          </div>
+        </div>
+        <div style="display:flex;gap:var(--sp2);">
+          <button class="btn btn-secondary" onclick="openModal()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>Buat Proposal</button>
+          <button class="btn btn-secondary"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>Edit</button>
+        </div>
+      </div>
+      <div class="detail-layout">
+        <div class="detail-sidebar">
+          <div class="card card-p">
+            <div style="font-family:'Plus Jakarta Sans',sans-serif;font-size:13px;font-weight:700;margin-bottom:var(--sp3);">Informasi Dasar</div>
+            <div class="info-row"><span class="info-label">NPWP</span><span class="info-value">12.345.678.9-567.000</span></div>
+            <div class="info-row"><span class="info-label">Telepon</span><span class="info-value">+62 812-3456-7890</span></div>
+            <div class="info-row"><span class="info-label">Email</span><span class="info-value">contact@villasaridewi.com</span></div>
+            <div class="info-row"><span class="info-label">Segmen</span><span class="info-value">Villa</span></div>
+            <div class="info-row"><span class="info-label">Catatan Risiko</span><span class="info-value" style="color:var(--color-muted);">—</span></div>
+          </div>
+          <div class="card card-p">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:var(--sp3);">
+              <div style="font-family:'Plus Jakarta Sans',sans-serif;font-size:13px;font-weight:700;">Lokasi</div>
+              <button class="btn btn-secondary btn-sm">+ Tambah</button>
+            </div>
+            <div style="padding:var(--sp3);background:var(--color-page);border-radius:var(--radius-md);border:1px solid var(--color-border-default);">
+              <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:4px;">
+                <span style="font-size:12px;font-weight:600;color:var(--color-primary);">Lokasi Utama</span>
+                <span class="badge badge-brand" style="font-size:10px;">Utama</span>
+              </div>
+              <div style="font-size:12px;color:var(--color-secondary);line-height:1.5;">Jl. Raya Seminyak No.88<br>Badung, Bali 80361</div>
+              <div style="font-size:12px;color:var(--color-muted);margin-top:4px;">Luas: 1.200 m&#178;</div>
+            </div>
+          </div>
+          <div class="card card-p">
+            <div style="font-family:'Plus Jakarta Sans',sans-serif;font-size:13px;font-weight:700;margin-bottom:var(--sp3);">Biaya Perjalanan</div>
+            <div class="region-row"><span class="region-name">Denpasar</span><span class="region-fee">Rp 15.000</span></div>
+            <div class="region-row"><span class="region-name">Badung &#9679;</span><span class="region-fee" style="color:var(--color-brand-500);">Rp 20.000</span></div>
+            <div class="region-row"><span class="region-name">Gianyar</span><span class="region-fee">Rp 25.000</span></div>
+            <div class="region-row"><span class="region-name">Tabanan</span><span class="region-fee">Rp 35.000</span></div>
+            <div class="region-row"><span class="region-name">Nusa Islands</span><span class="region-fee">Rp 300.000</span></div>
+          </div>
+        </div>
+
+        <div class="detail-main">
+          <div class="card" style="overflow:hidden;">
+            <div class="sub-tabs">
+              <div class="sub-tab active" onclick="switchDetailTab(this,'tab-kontak')">Kontak</div>
+              <div class="sub-tab" onclick="switchDetailTab(this,'tab-riwayat')">Riwayat Proposal</div>
+              <div class="sub-tab" onclick="switchDetailTab(this,'tab-kontrak-hist')">Kontrak</div>
+            </div>
+            <div id="tab-kontak" class="tab-content active" style="padding:var(--sp4);">
+              <div style="display:flex;justify-content:flex-end;margin-bottom:var(--sp3);"><button class="btn btn-secondary btn-sm">+ Kontak Baru</button></div>
+              <table class="data-table">
+                <thead><tr><th>Nama</th><th>Jabatan</th><th>Telepon</th><th>Email</th><th>Peran</th><th></th></tr></thead>
+                <tbody>
+                  <tr>
+                    <td><div style="display:flex;align-items:center;gap:8px;"><div style="width:28px;height:28px;border-radius:50%;background:var(--color-brand-500);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#fff;flex-shrink:0;">BD</div><span style="font-weight:600;">Budi Santoso</span></div></td>
+                    <td style="color:var(--color-secondary);">General Manager</td>
+                    <td style="color:var(--color-secondary);">+62 812-3456-7890</td>
+                    <td style="color:var(--color-secondary);">budi@villasaridewi.com</td>
+                    <td><span class="badge badge-brand">Pengambil Keputusan</span></td>
+                    <td><button class="action-btn danger"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/></svg></button></td>
+                  </tr>
+                  <tr>
+                    <td><div style="display:flex;align-items:center;gap:8px;"><div style="width:28px;height:28px;border-radius:50%;background:rgba(16,185,129,.2);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#059669;flex-shrink:0;">SR</div><span style="font-weight:600;">Sari Rahayu</span></div></td>
+                    <td style="color:var(--color-secondary);">Operasional</td>
+                    <td style="color:var(--color-secondary);">+62 811-987-xxx</td>
+                    <td style="color:var(--color-secondary);">sari@villasaridewi.com</td>
+                    <td><span class="badge badge-neutral">Koordinator</span></td>
+                    <td><button class="action-btn danger"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/></svg></button></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <div id="tab-riwayat" class="tab-content" style="padding:var(--sp4);">
+              <table class="data-table">
+                <thead><tr><th>Kode</th><th>Layanan</th><th>Tanggal</th><th>Nilai</th><th>Status</th><th></th></tr></thead>
+                <tbody>
+                  <tr onclick="showScreen('kalkulator',document.getElementById('tab-kalkulator'))">
+                    <td style="font-family:'Plus Jakarta Sans',sans-serif;font-weight:600;font-size:12px;">PRO-2026-0042</td>
+                    <td>Termite Protection Plan</td>
+                    <td style="color:var(--color-secondary);">12 Agt 2026</td>
+                    <td style="font-weight:600;">Rp 4.800.000</td>
+                    <td><span class="badge badge-info">Dikirim</span></td>
+                    <td><button class="action-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg></button></td>
+                  </tr>
+                  <tr>
+                    <td style="font-family:'Plus Jakarta Sans',sans-serif;font-weight:600;font-size:12px;">PRO-2025-0198</td>
+                    <td>Pest Control (Kontrak)</td>
+                    <td style="color:var(--color-secondary);">3 Mar 2025</td>
+                    <td style="font-weight:600;">Rp 3.200.000</td>
+                    <td><span class="badge badge-success">Disetujui</span></td>
+                    <td><button class="action-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg></button></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <div id="tab-kontrak-hist" class="tab-content" style="padding:var(--sp4);">
+              <table class="data-table">
+                <thead><tr><th>Kode</th><th>Layanan</th><th>Mulai</th><th>Selesai</th><th>Nilai</th><th>Status</th></tr></thead>
+                <tbody>
+                  <tr>
+                    <td style="font-family:'Plus Jakarta Sans',sans-serif;font-weight:600;font-size:12px;">KON-2025-0072</td>
+                    <td>Pest Control (12 bln)</td>
+                    <td style="color:var(--color-secondary);">1 Apr 2025</td>
+                    <td style="color:var(--color-secondary);">31 Mar 2026</td>
+                    <td style="font-weight:600;">Rp 3.200.000</td>
+                    <td><span class="badge badge-neutral">Selesai</span></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- =================== PROPOSAL =================== -->
+    <div class="screen" id="screen-proposal">
+      <div class="page-header">
+        <div><div class="page-title">Proposal</div><div class="page-subtitle">24 proposal aktif dalam pipeline</div></div>
+        <button class="btn btn-primary" onclick="openModal()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>Buat Proposal</button>
+      </div>
+      <div class="proposals-toolbar">
+        <div class="search-bar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg><input type="text" placeholder="Cari kode, pelanggan…" /></div>
+        <div class="filter-chips">
+          <button class="chip active" onclick="setChip(this)">Semua</button>
+          <button class="chip" onclick="setChip(this)">Draft</button>
+          <button class="chip" onclick="setChip(this)">Dikirim</button>
+          <button class="chip" onclick="setChip(this)">Negosiasi</button>
+          <button class="chip" onclick="setChip(this)">Disetujui</button>
+          <button class="chip" onclick="setChip(this)">Ditolak</button>
+        </div>
+      </div>
+      <div class="scroll-area" style="padding-top:0;">
+        <div class="table-wrap">
+          <table class="data-table">
+            <thead><tr><th>Kode</th><th>Pelanggan</th><th>Layanan</th><th>Tanggal</th><th>Berlaku Hingga</th><th style="text-align:right;">Nilai</th><th>Status</th><th></th></tr></thead>
+            <tbody>
+              <tr onclick="showScreen('kalkulator',document.getElementById('tab-kalkulator'))">
+                <td style="font-family:'Plus Jakarta Sans',sans-serif;font-weight:600;font-size:12px;white-space:nowrap;">PRO-2026-0042</td>
+                <td><div style="font-weight:600;">Villa Sari Dewi</div><div style="font-size:11px;color:var(--color-muted);">Badung</div></td>
+                <td style="color:var(--color-secondary);font-size:12px;">Termite Protection</td>
+                <td style="color:var(--color-secondary);font-size:12px;white-space:nowrap;">12 Agt 2026</td>
+                <td style="color:var(--color-secondary);font-size:12px;white-space:nowrap;">12 Sep 2026</td>
+                <td style="font-weight:700;font-variant-numeric:tabular-nums;text-align:right;">Rp 4.800.000</td>
+                <td><span class="badge badge-info">Dikirim</span></td>
+                <td><button class="action-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg></button></td>
+              </tr>
+              <tr>
+                <td style="font-family:'Plus Jakarta Sans',sans-serif;font-weight:600;font-size:12px;white-space:nowrap;">PRO-2026-0041</td>
+                <td><div style="font-weight:600;">Hotel Surya Kuta</div><div style="font-size:11px;color:var(--color-muted);">Badung</div></td>
+                <td style="color:var(--color-secondary);font-size:12px;">Pest Control</td>
+                <td style="color:var(--color-secondary);font-size:12px;white-space:nowrap;">10 Agt 2026</td>
+                <td style="color:var(--color-secondary);font-size:12px;white-space:nowrap;">10 Sep 2026</td>
+                <td style="font-weight:700;font-variant-numeric:tabular-nums;text-align:right;">Rp 12.500.000</td>
+                <td><span class="badge badge-warning">Negosiasi</span></td>
+                <td><button class="action-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg></button></td>
+              </tr>
+              <tr>
+                <td style="font-family:'Plus Jakarta Sans',sans-serif;font-weight:600;font-size:12px;white-space:nowrap;">PRO-2026-0040</td>
+                <td><div style="font-weight:600;">Resto Warung Bumi</div><div style="font-size:11px;color:var(--color-muted);">Denpasar</div></td>
+                <td style="color:var(--color-secondary);font-size:12px;">Disinfection Premium</td>
+                <td style="color:var(--color-secondary);font-size:12px;white-space:nowrap;">8 Agt 2026</td>
+                <td style="color:var(--color-secondary);font-size:12px;white-space:nowrap;">8 Sep 2026</td>
+                <td style="font-weight:700;font-variant-numeric:tabular-nums;text-align:right;">Rp 2.200.000</td>
+                <td><span class="badge badge-neutral">Draft</span></td>
+                <td><button class="action-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg></button></td>
+              </tr>
+              <tr>
+                <td style="font-family:'Plus Jakarta Sans',sans-serif;font-weight:600;font-size:12px;white-space:nowrap;">PRO-2026-0039</td>
+                <td><div style="font-weight:600;">Villa Karma Kandara</div><div style="font-size:11px;color:var(--color-muted);">Nusa Dua</div></td>
+                <td style="color:var(--color-secondary);font-size:12px;">Baiting Treatment</td>
+                <td style="color:var(--color-secondary);font-size:12px;white-space:nowrap;">5 Agt 2026</td>
+                <td style="color:var(--color-secondary);font-size:12px;white-space:nowrap;">—</td>
+                <td style="font-weight:700;font-variant-numeric:tabular-nums;text-align:right;">Rp 7.350.000</td>
+                <td><span class="badge badge-success">Disetujui</span></td>
+                <td><button class="action-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg></button></td>
+              </tr>
+              <tr>
+                <td style="font-family:'Plus Jakarta Sans',sans-serif;font-weight:600;font-size:12px;white-space:nowrap;">PRO-2026-0038</td>
+                <td><div style="font-weight:600;">Kantor Dinas Kesehatan</div><div style="font-size:11px;color:var(--color-muted);">Denpasar</div></td>
+                <td style="color:var(--color-secondary);font-size:12px;">Rodent Control</td>
+                <td style="color:var(--color-secondary);font-size:12px;white-space:nowrap;">1 Agt 2026</td>
+                <td style="color:var(--color-secondary);font-size:12px;white-space:nowrap;">1 Sep 2026</td>
+                <td style="font-weight:700;font-variant-numeric:tabular-nums;text-align:right;">Rp 1.800.000</td>
+                <td><span class="badge badge-danger">Ditolak</span></td>
+                <td><button class="action-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg></button></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- =================== KONTRAK =================== -->
+    <div class="screen" id="screen-kontrak">
+      <div class="page-header">
+        <div><div class="page-title">Kontrak</div><div class="page-subtitle">148 kontrak aktif · 3 jatuh tempo bulan ini</div></div>
+        <button class="btn btn-primary"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>Buat Kontrak</button>
+      </div>
+      <div class="contract-stage-header">
+        <div class="stage-kpi"><div class="stage-kpi-value">148</div><div class="stage-kpi-label">Kontrak Aktif</div><div class="progress-bar"><div class="progress-fill" style="width:82%;"></div></div></div>
+        <div class="stage-kpi"><div class="stage-kpi-value" style="color:var(--color-danger-500);">3</div><div class="stage-kpi-label">Jatuh Tempo Bulan Ini</div></div>
+        <div class="stage-kpi"><div class="stage-kpi-value" style="font-size:16px;">Rp 612 jt</div><div class="stage-kpi-label">Total Nilai Aktif</div></div>
+        <div class="stage-kpi"><div class="stage-kpi-value">12</div><div class="stage-kpi-label">Diperbarui Bulan Ini</div></div>
+      </div>
+      <div class="proposals-toolbar">
+        <div class="search-bar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg><input type="text" placeholder="Cari kode, pelanggan…" /></div>
+        <div class="filter-chips">
+          <button class="chip active" onclick="setChip(this)">Semua</button>
+          <button class="chip" onclick="setChip(this)">Aktif</button>
+          <button class="chip" onclick="setChip(this)">Jatuh Tempo</button>
+          <button class="chip" onclick="setChip(this)">Dihentikan</button>
+          <button class="chip" onclick="setChip(this)">Selesai</button>
+        </div>
+      </div>
+      <div class="scroll-area" style="padding-top:0;">
+        <div class="table-wrap">
+          <table class="data-table">
+            <thead><tr><th>Kode</th><th>Pelanggan</th><th>Layanan</th><th>Mulai</th><th>Jatuh Tempo</th><th style="text-align:right;">Nilai</th><th>Pembayaran</th><th>Status</th><th></th></tr></thead>
+            <tbody>
+              <tr>
+                <td style="font-family:'Plus Jakarta Sans',sans-serif;font-weight:600;font-size:12px;white-space:nowrap;">KON-2024-0112</td>
+                <td><div style="font-weight:600;">Villa Puri Tirtha</div><div style="font-size:11px;color:var(--color-muted);">Gianyar</div></td>
+                <td style="color:var(--color-secondary);font-size:12px;">Termite 2 Thn</td>
+                <td style="color:var(--color-secondary);font-size:12px;">1 Sep 2024</td>
+                <td style="color:var(--color-danger-500);font-size:12px;font-weight:600;">28 Agt 2026</td>
+                <td style="font-weight:700;text-align:right;">Rp 9.600.000</td>
+                <td><span class="badge badge-neutral">Termin</span></td>
+                <td><span class="badge badge-danger">Jatuh Tempo</span></td>
+                <td><button class="action-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg></button></td>
+              </tr>
+              <tr>
+                <td style="font-family:'Plus Jakarta Sans',sans-serif;font-weight:600;font-size:12px;white-space:nowrap;">KON-2024-0089</td>
+                <td><div style="font-weight:600;">Grand Hyatt Nusa Dua</div><div style="font-size:11px;color:var(--color-muted);">Badung</div></td>
+                <td style="color:var(--color-secondary);font-size:12px;">Pest Control 3 Thn</td>
+                <td style="color:var(--color-secondary);font-size:12px;">15 Sep 2023</td>
+                <td style="color:var(--color-warning-500);font-size:12px;font-weight:600;">15 Sep 2026</td>
+                <td style="font-weight:700;text-align:right;">Rp 38.000.000</td>
+                <td><span class="badge badge-brand">Bulanan</span></td>
+                <td><span class="badge badge-warning">Jatuh Tempo</span></td>
+                <td><button class="action-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg></button></td>
+              </tr>
+              <tr>
+                <td style="font-family:'Plus Jakarta Sans',sans-serif;font-weight:600;font-size:12px;white-space:nowrap;">KON-2025-0201</td>
+                <td><div style="font-weight:600;">Villa Karma Kandara</div><div style="font-size:11px;color:var(--color-muted);">Nusa Dua</div></td>
+                <td style="color:var(--color-secondary);font-size:12px;">Rodent Control</td>
+                <td style="color:var(--color-secondary);font-size:12px;">1 Jan 2025</td>
+                <td style="color:var(--color-secondary);font-size:12px;">31 Des 2025</td>
+                <td style="font-weight:700;text-align:right;">Rp 6.000.000</td>
+                <td><span class="badge badge-neutral">Deposit</span></td>
+                <td><span class="badge badge-success">Aktif</span></td>
+                <td><button class="action-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg></button></td>
+              </tr>
+              <tr>
+                <td style="font-family:'Plus Jakarta Sans',sans-serif;font-weight:600;font-size:12px;white-space:nowrap;">KON-2026-0003</td>
+                <td><div style="font-weight:600;">Hotel Surya Kuta</div><div style="font-size:11px;color:var(--color-muted);">Badung</div></td>
+                <td style="color:var(--color-secondary);font-size:12px;">Pest Control 1 Thn</td>
+                <td style="color:var(--color-secondary);font-size:12px;">1 Feb 2026</td>
+                <td style="color:var(--color-secondary);font-size:12px;">31 Jan 2027</td>
+                <td style="font-weight:700;text-align:right;">Rp 14.400.000</td>
+                <td><span class="badge badge-brand">Bulanan</span></td>
+                <td><span class="badge badge-success">Aktif</span></td>
+                <td><button class="action-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg></button></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- =================== KALKULATOR =================== -->
+    <div class="screen" id="screen-kalkulator">
+      <div class="breadcrumb">
+        <a onclick="showScreen('proposal',document.getElementById('tab-proposal'))">Proposal</a>
+        <span style="color:var(--color-border-strong);">›</span>
+        <span>PRO-2026-0042 · Villa Sari Dewi</span>
+      </div>
+      <div class="page-header" style="padding-top:var(--sp3);">
+        <div>
+          <div class="page-title">Kalkulator Harga</div>
+          <div style="display:flex;gap:var(--sp2);margin-top:4px;align-items:center;">
+            <span class="badge badge-brand">Termite Protection Plan</span>
+            <span class="badge badge-neutral">Villa · Badung</span>
+            <span style="font-size:12px;color:var(--color-muted);">Luas: 1.200 m&#178; · 6 kunjungan · 12 bulan</span>
+          </div>
+        </div>
+        <div style="display:flex;gap:var(--sp2);">
+          <button class="btn btn-secondary"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>Pratinjau</button>
+          <button class="btn btn-primary" onclick="showToast()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v14a2 2 0 01-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>Simpan</button>
+        </div>
+      </div>
+      <div class="calc-layout">
+        <div class="calc-main">
+          <div class="calc-tabs">
+            <div class="calc-tab active" onclick="switchCalcTab(this,'calc-persiapan')">Persiapan (Bahan &amp; Alat)</div>
+            <div class="calc-tab" onclick="switchCalcTab(this,'calc-teknisi')">Teknisi</div>
+            <div class="calc-tab" onclick="switchCalcTab(this,'calc-items')">Items (BBM &amp; Tambahan)</div>
+          </div>
+          <div class="calc-table-wrap">
+            <!-- PERSIAPAN -->
+            <div id="calc-persiapan" class="tab-content active">
+              <table class="data-table" style="border-radius:0;">
+                <thead><tr><th style="width:38%;">Produk / Bahan</th><th style="width:70px;">Qty</th><th style="width:70px;">Frek</th><th style="width:80px;">Satuan</th><th style="width:120px;text-align:right;">Harga Satuan</th><th style="width:120px;text-align:right;">Total Baris</th><th style="width:50px;"></th></tr></thead>
+                <tbody>
+                  <tr>
+                    <td><div style="font-weight:500;">Ficam W (25kg)</div><div style="font-size:11px;color:var(--color-muted);">Insektisida Rayap · PRD-001</div></td>
+                    <td><input class="calc-input calc-input-num" value="2" /></td>
+                    <td><input class="calc-input calc-input-num" value="1" /></td>
+                    <td style="color:var(--color-secondary);font-size:12px;">kg</td>
+                    <td style="text-align:right;font-weight:500;font-variant-numeric:tabular-nums;">Rp 380.000</td>
+                    <td style="text-align:right;font-weight:700;font-variant-numeric:tabular-nums;">Rp 760.000</td>
+                    <td><button class="action-btn danger"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/></svg></button></td>
+                  </tr>
+                  <tr>
+                    <td><div style="font-weight:500;">Termidor SC (1L)</div><div style="font-size:11px;color:var(--color-muted);">Fipronil Termiticide · PRD-002</div></td>
+                    <td><input class="calc-input calc-input-num" value="3" /></td>
+                    <td><input class="calc-input calc-input-num" value="1" /></td>
+                    <td style="color:var(--color-secondary);font-size:12px;">botol</td>
+                    <td style="text-align:right;font-weight:500;font-variant-numeric:tabular-nums;">Rp 650.000</td>
+                    <td style="text-align:right;font-weight:700;font-variant-numeric:tabular-nums;">Rp 1.950.000</td>
+                    <td><button class="action-btn danger"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/></svg></button></td>
+                  </tr>
+                  <tr>
+                    <td><div style="font-weight:500;">Solfac 10WP (1kg)</div><div style="font-size:11px;color:var(--color-muted);">Insektisida · PRD-008</div></td>
+                    <td><input class="calc-input calc-input-num" value="1" /></td>
+                    <td><input class="calc-input calc-input-num" value="2" /></td>
+                    <td style="color:var(--color-secondary);font-size:12px;">kg</td>
+                    <td style="text-align:right;font-weight:500;font-variant-numeric:tabular-nums;">Rp 290.000</td>
+                    <td style="text-align:right;font-weight:700;font-variant-numeric:tabular-nums;">Rp 580.000</td>
+                    <td><button class="action-btn danger"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/></svg></button></td>
+                  </tr>
+                  <tr>
+                    <td><div style="font-weight:500;">Sprayer Solo 425</div><div style="font-size:11px;color:var(--color-muted);">Peralatan · PRD-045</div></td>
+                    <td><input class="calc-input calc-input-num" value="1" /></td>
+                    <td><input class="calc-input calc-input-num" value="1" /></td>
+                    <td style="color:var(--color-secondary);font-size:12px;">unit</td>
+                    <td style="text-align:right;font-weight:500;font-variant-numeric:tabular-nums;">Rp 420.000</td>
+                    <td style="text-align:right;font-weight:700;font-variant-numeric:tabular-nums;">Rp 420.000</td>
+                    <td><button class="action-btn danger"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/></svg></button></td>
+                  </tr>
+                  <tr><td colspan="7" style="padding:var(--sp3);"><button class="btn btn-secondary btn-sm"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>Tambah Bahan</button></td></tr>
+                </tbody>
+              </table>
+            </div>
+            <!-- TEKNISI -->
+            <div id="calc-teknisi" class="tab-content">
+              <table class="data-table" style="border-radius:0;">
+                <thead><tr><th>No</th><th>Deskripsi</th><th>Frek Visit</th><th>Jam Pertama</th><th>Jam Rutin</th><th style="text-align:right;">Tarif/Jam</th><th style="text-align:right;">Total Baris</th><th></th></tr></thead>
+                <tbody>
+                  <tr>
+                    <td style="color:var(--color-muted);font-weight:600;">1</td>
+                    <td><div style="font-weight:500;">Teknisi Senior</div><div style="font-size:11px;color:var(--color-muted);">Lead technician</div></td>
+                    <td><input class="calc-input calc-input-num" value="6" /></td>
+                    <td><input class="calc-input calc-input-num" value="4.0" /></td>
+                    <td><input class="calc-input calc-input-num" value="3.0" /></td>
+                    <td style="text-align:right;font-weight:500;">Rp 45.000</td>
+                    <td style="text-align:right;font-weight:700;">Rp 990.000</td>
+                    <td><button class="action-btn danger"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/></svg></button></td>
+                  </tr>
+                  <tr>
+                    <td style="color:var(--color-muted);font-weight:600;">2</td>
+                    <td><div style="font-weight:500;">Teknisi Junior</div><div style="font-size:11px;color:var(--color-muted);">Asisten</div></td>
+                    <td><input class="calc-input calc-input-num" value="6" /></td>
+                    <td><input class="calc-input calc-input-num" value="4.0" /></td>
+                    <td><input class="calc-input calc-input-num" value="3.0" /></td>
+                    <td style="text-align:right;font-weight:500;">Rp 30.000</td>
+                    <td style="text-align:right;font-weight:700;">Rp 660.000</td>
+                    <td><button class="action-btn danger"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/></svg></button></td>
+                  </tr>
+                  <tr><td colspan="8" style="padding:var(--sp3);"><button class="btn btn-secondary btn-sm"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>Tambah Teknisi</button></td></tr>
+                </tbody>
+              </table>
+            </div>
+            <!-- ITEMS -->
+            <div id="calc-items" class="tab-content">
+              <table class="data-table" style="border-radius:0;">
+                <thead><tr><th>Jenis</th><th>Deskripsi</th><th>Qty</th><th>Frek</th><th style="text-align:right;">Harga Satuan</th><th style="text-align:right;">Total Baris</th><th></th></tr></thead>
+                <tbody>
+                  <tr>
+                    <td><span class="badge badge-neutral">BBM</span></td>
+                    <td><div style="font-weight:500;">Biaya Perjalanan Badung</div><div style="font-size:11px;color:var(--color-muted);">Biaya input</div></td>
+                    <td><input class="calc-input calc-input-num" value="6" /></td>
+                    <td><input class="calc-input calc-input-num" value="1" /></td>
+                    <td style="text-align:right;font-weight:500;">Rp 20.000</td>
+                    <td style="text-align:right;font-weight:700;">Rp 120.000</td>
+                    <td><button class="action-btn danger"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/></svg></button></td>
+                  </tr>
+                  <tr>
+                    <td><span class="badge badge-info">Tambahan</span></td>
+                    <td><div style="font-weight:500;">Pest Training</div><div style="font-size:11px;color:var(--color-muted);">Jual langsung</div></td>
+                    <td><input class="calc-input calc-input-num" value="1" /></td>
+                    <td><input class="calc-input calc-input-num" value="1" /></td>
+                    <td style="text-align:right;font-weight:500;">Rp 500.000</td>
+                    <td style="text-align:right;font-weight:700;">Rp 500.000</td>
+                    <td><button class="action-btn danger"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/></svg></button></td>
+                  </tr>
+                  <tr><td colspan="7" style="padding:var(--sp3);"><div style="display:flex;gap:var(--sp2);"><button class="btn btn-secondary btn-sm">+ BBM</button><button class="btn btn-secondary btn-sm">+ Tambahan</button><button class="btn btn-secondary btn-sm">+ Lainnya</button></div></td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- SIDEBAR SUMMARY -->
+        <div class="calc-sidebar">
+          <div class="summary-total">
+            <div class="summary-total-label">Total Harga Jual</div>
+            <div class="summary-total-value">Rp 8.158.500</div>
+            <div class="summary-total-sub">Termasuk PPN 11%</div>
+          </div>
+
+          <div class="summary-card">
+            <div style="font-family:'Plus Jakarta Sans',sans-serif;font-size:13px;font-weight:700;margin-bottom:var(--sp3);">Rincian Biaya</div>
+            <div class="summary-row"><span class="summary-row-label">Bahan &amp; Alat</span><span class="summary-row-value">Rp 3.710.000</span></div>
+            <div class="summary-row"><span class="summary-row-label">Biaya Teknisi</span><span class="summary-row-value">Rp 1.650.000</span></div>
+            <div class="summary-row"><span class="summary-row-label">BBM</span><span class="summary-row-value">Rp 120.000</span></div>
+            <div class="summary-divider"></div>
+            <div class="summary-row"><span class="summary-row-label" style="font-weight:600;color:var(--color-primary);">Total Biaya</span><span class="summary-row-value">Rp 5.480.000</span></div>
+
+            <div class="markup-row">
+              <label>Markup</label>
+              <select class="markup-select">
+                <option>Persen (%)</option>
+                <option>Fixed (Rp)</option>
+                <option>Target Harga</option>
+              </select>
+              <input class="markup-input" value="25" />
+              <span style="font-size:12px;color:var(--color-muted);">%</span>
+            </div>
+
+            <div class="summary-row" style="padding-top:var(--sp2);"><span class="summary-row-label">Harga Layanan</span><span class="summary-row-value">Rp 6.850.000</span></div>
+            <div class="summary-row"><span class="summary-row-label">Addon</span><span class="summary-row-value">Rp 500.000</span></div>
+            <div class="summary-row"><span class="summary-row-label">Diskon</span><span class="summary-row-value" style="color:var(--color-danger-500);">Rp 0</span></div>
+            <div class="summary-divider"></div>
+            <div class="summary-row"><span class="summary-row-label">Subtotal</span><span class="summary-row-value">Rp 7.350.000</span></div>
+            <div class="summary-row"><span class="summary-row-label">PPN (11%)</span><span class="summary-row-value">Rp 808.500</span></div>
+          </div>
+
+          <div class="summary-card">
+            <div style="font-family:'Plus Jakarta Sans',sans-serif;font-size:13px;font-weight:700;margin-bottom:var(--sp3);">Margin</div>
+            <div style="display:flex;gap:var(--sp3);">
+              <div style="flex:1;text-align:center;padding:var(--sp3);background:rgba(16,185,129,.08);border-radius:var(--radius-md);">
+                <div style="font-family:'Plus Jakarta Sans',sans-serif;font-size:22px;font-weight:800;color:var(--color-success-500);">20%</div>
+                <div style="font-size:11px;color:var(--color-muted);">Margin %</div>
+              </div>
+              <div style="flex:1;text-align:center;padding:var(--sp3);background:var(--color-subtle);border-radius:var(--radius-md);">
+                <div style="font-family:'Plus Jakarta Sans',sans-serif;font-size:18px;font-weight:800;color:var(--color-primary);">1,37jt</div>
+                <div style="font-size:11px;color:var(--color-muted);">Margin Rp</div>
+              </div>
+            </div>
+            <div style="margin-top:var(--sp3);">
+              <div style="display:flex;justify-content:space-between;font-size:12px;color:var(--color-secondary);margin-bottom:4px;"><span>Per Kunjungan</span><span style="font-weight:600;color:var(--color-primary);">Rp 1.225.000</span></div>
+              <div style="display:flex;justify-content:space-between;font-size:12px;color:var(--color-secondary);"><span>Per Bulan</span><span style="font-weight:600;color:var(--color-primary);">Rp 612.500</span></div>
+            </div>
+          </div>
+
+          <button class="btn btn-primary" style="width:100%;justify-content:center;height:40px;" onclick="showToast()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v14a2 2 0 01-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+            Simpan &amp; Perbarui Proposal
+          </button>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /main-content -->
+
+  <!-- MODAL -->
+  <div class="modal-overlay" id="modal-overlay" onclick="closeModalOnBg(event)">
+    <div class="modal">
+      <div class="modal-header">
+        <div class="modal-title">Buat Proposal Baru</div>
+        <button class="action-btn" onclick="closeModal()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+      </div>
+      <div class="modal-body">
+        <div class="field"><label>Pelanggan <span style="color:var(--color-danger-500);">*</span></label><input type="text" class="field-input" value="Villa Sari Dewi" /></div>
+        <div class="field"><label>Layanan <span style="color:var(--color-danger-500);">*</span></label><select class="field-select"><option>Pest Control</option><option>Rodent Control</option><option selected>Termite Protection Plan</option><option>Disinfection</option><option>Baiting Treatment</option></select></div>
+        <div class="field-grid">
+          <div class="field"><label>Tanggal Proposal</label><input type="date" class="field-input" value="2026-08-16" /></div>
+          <div class="field"><label>Berlaku Hingga</label><input type="date" class="field-input" value="2026-09-16" /></div>
+        </div>
+        <div class="field"><label>Lokasi</label><select class="field-select"><option>Lokasi Utama — Jl. Raya Seminyak No.88, Badung</option><option>+ Tambah lokasi baru</option></select></div>
+        <div class="field"><label>Catatan</label><textarea class="field-input" rows="2" style="height:auto;padding-top:8px;resize:none;" placeholder="Catatan tambahan…"></textarea></div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" onclick="closeModal()">Batal</button>
+        <button class="btn btn-primary" onclick="closeModal();showToast('Proposal PRO-2026-0043 berhasil dibuat.')">Buat &amp; Buka Kalkulator</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- TOAST -->
+  <div class="toast" id="toast">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+    <span id="toast-msg">Berhasil disimpan.</span>
+  </div>
+
+</div><!-- /tablet-frame -->
+
+<script>
+  function showScreen(id, tabEl) {
+    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+    document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+    const scr = document.getElementById('screen-' + id);
+    if (scr) scr.classList.add('active');
+    if (tabEl) tabEl.classList.add('active');
+  }
+
+  function showDetail(name, initials) {
+    document.getElementById('detail-name-bc').textContent = name;
+    document.getElementById('detail-name-title').textContent = name;
+    document.getElementById('detail-avatar').textContent = initials;
+    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+    document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+    document.getElementById('screen-detail-pelanggan').classList.add('active');
+    document.getElementById('tab-pelanggan').classList.add('active');
+  }
+
+  function switchDetailTab(tabEl, contentId) {
+    tabEl.parentElement.querySelectorAll('.sub-tab').forEach(t => t.classList.remove('active'));
+    tabEl.classList.add('active');
+    const parent = document.getElementById('tab-kontak').parentElement;
+    parent.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+    document.getElementById(contentId).classList.add('active');
+  }
+
+  function switchCalcTab(tabEl, contentId) {
+    tabEl.parentElement.querySelectorAll('.calc-tab').forEach(t => t.classList.remove('active'));
+    tabEl.classList.add('active');
+    document.querySelector('.calc-table-wrap').querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+    document.getElementById(contentId).classList.add('active');
+  }
+
+  function setChip(el) {
+    el.closest('.filter-chips').querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
+    el.classList.add('active');
+  }
+
+  function openModal() { document.getElementById('modal-overlay').classList.add('open'); }
+  function closeModal() { document.getElementById('modal-overlay').classList.remove('open'); }
+  function closeModalOnBg(e) { if (e.target === document.getElementById('modal-overlay')) closeModal(); }
+
+  let toastTimer;
+  function showToast(msg) {
+    const t = document.getElementById('toast');
+    document.getElementById('toast-msg').textContent = msg || 'Berhasil disimpan.';
+    t.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => t.classList.remove('show'), 3000);
+  }
+</script>
+</body>
+</html>

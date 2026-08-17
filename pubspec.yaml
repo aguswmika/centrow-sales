@@ -1,0 +1,28 @@
+name: centrow_sales
+description: "Centrow Sales - Mobile ERP & POS application"
+publish_to: "none"
+version: 1.0.0+1
+
+environment:
+  sdk: ^3.12.2
+
+dependencies:
+  flutter:
+    sdk: flutter
+  signals: ^5.5.0
+  signals_flutter: ^5.5.0
+  get_it: ^8.0.3
+  dio: ^5.8.0+1
+  go_router: ^14.8.1
+  google_fonts: ^6.2.1
+  flutter_svg: ^2.0.17
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^6.0.0
+
+flutter:
+  uses-material-design: true
+  assets:
+    - assets/img/

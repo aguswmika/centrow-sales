@@ -1,0 +1,995 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+  <title>Tambah Pelanggan Baru — Centrow Sales Tablet</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="css/tablet.css"/>
+  <style>
+    /* Scoped ergonomic tablet styling */
+    .form-col-side {
+      width: 280px;
+      min-width: 280px;
+      max-width: 280px;
+      padding: 20px 16px 60px;
+    }
+    .form-col-main {
+      padding: 20px 24px 60px;
+    }
+    .form-topbar {
+      padding: 12px 24px;
+      height: 68px;
+    }
+    .stepper {
+      height: 42px;
+      padding: 3px 6px;
+      gap: 4px;
+    }
+    .step {
+      height: 34px;
+      padding: 0 16px;
+      font-size: 13px;
+      font-weight: 600;
+    }
+    .field {
+      margin-bottom: 16px;
+    }
+    .field label {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--sec);
+      margin-bottom: 6px;
+    }
+    .field-inp,
+    .field-sel {
+      height: 44px;
+      min-height: 44px;
+      font-size: 14px;
+      padding: 0 14px;
+      border-radius: var(--r-md);
+    }
+    .field-ta {
+      min-height: 80px;
+      font-size: 14px;
+      padding: 12px 14px;
+      border-radius: var(--r-md);
+    }
+    .entry-card {
+      margin-bottom: 16px;
+      border-radius: var(--r-lg);
+    }
+    .entry-card-head {
+      padding: 12px 18px;
+    }
+    .entry-card-body {
+      padding: 18px;
+    }
+    .entry-card .abt {
+      width: 44px;
+      height: 44px;
+      min-width: 44px;
+      min-height: 44px;
+      border-radius: var(--r-md);
+    }
+    .toggle-row {
+      padding: 12px 0 4px;
+      min-height: 44px;
+    }
+    .toggle {
+      width: 46px;
+      height: 26px;
+      cursor: pointer;
+    }
+    .toggle::after {
+      width: 20px;
+      height: 20px;
+      top: 3px;
+      left: 3px;
+    }
+    .toggle.on::after {
+      transform: translateX(20px);
+    }
+    .add-entry-row {
+      height: 48px;
+      min-height: 48px;
+      font-size: 13.5px;
+      border-radius: var(--r-lg);
+      margin-bottom: 16px;
+    }
+  </style>
+</head>
+<body>
+<div class="device">
+
+  <!-- STATUS BAR -->
+  <div class="statusbar">
+    <span class="statusbar-time">20:00</span>
+    <div class="statusbar-icons">
+      <svg viewBox="0 0 24 24" fill="currentColor"><path d="M1 8.5C4.1 5.4 8.3 3.5 13 3.5s8.9 1.9 12 5L23 6.5C19.5 3 15.5 1 12.5 1S5.5 3 2 6.5L1 8.5zm4 4C7.2 10.3 9.9 9 13 9s5.8 1.3 8 3.5l1-1C19.7 9 16.5 7.5 13 7.5S6.3 9 4 11.5l1 1zm4 4a1.5 1.5 0 110-3 1.5 1.5 0 010 3z"/></svg>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="2" y="7" width="18" height="11" rx="2"/><path d="M20 11h2v3h-2"/><rect x="4" y="9" width="12" height="7" rx="1" fill="currentColor"/></svg>
+      <span class="statusbar-bat">92%</span>
+    </div>
+  </div>
+
+  <!-- APP SHELL -->
+  <div class="app-shell">
+
+    <!-- LEFT NAV RAIL (72px touch friendly) -->
+    <nav class="nav-rail">
+      <a href="index.html" class="nav-logo" title="Centrow Sales">C</a>
+
+      <a href="index.html" class="nav-item" title="Beranda">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+        <span>Beranda</span>
+      </a>
+      <a href="pelanggan.html" class="nav-item active" title="Pelanggan">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg>
+        <span>Pelanggan</span>
+      </a>
+      <a href="proposal.html" class="nav-item" title="Proposal">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+        <span>Proposal</span>
+      </a>
+      <a href="kontrak.html" class="nav-item" title="Kontrak">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+        <span>Kontrak</span>
+      </a>
+      <a href="kalkulator.html" class="nav-item" title="Kalkulator Harga">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="2" width="16" height="20" rx="2"/><line x1="8" y1="6" x2="16" y2="6"/><line x1="8" y1="10" x2="16" y2="10"/><line x1="8" y1="14" x2="12" y2="14"/><line x1="8" y1="18" x2="12" y2="18"/></svg>
+        <span>Harga</span>
+      </a>
+
+      <div class="nav-spacer"></div>
+      <a href="login.html" class="nav-avatar" title="Keluar / Ganti Akun (Agus)">AG</a>
+    </nav>
+
+    <!-- MAIN FORM PAGE -->
+    <div class="main">
+      <div class="form-page">
+
+        <!-- TOP BAR WITH BACK + 42px STEPPER PILLS + 44px ACTIONS -->
+        <div class="form-topbar">
+          <div class="form-topbar-left">
+            <a href="pelanggan.html" class="back-btn" title="Kembali ke Daftar Pelanggan">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>
+            </a>
+            <div>
+              <div style="font-family:'Plus Jakarta Sans',sans-serif;font-size:16px;font-weight:700;color:var(--text);">Tambah Pelanggan Baru</div>
+              <div style="font-size:12px;color:var(--muted);">Form pendaftaran data master pelanggan</div>
+            </div>
+          </div>
+
+          <!-- 42px STEPPER PILLS -->
+          <div class="stepper" id="stepper">
+            <div class="step active" id="step-1" onclick="goStep(1)">
+              <div class="step-num">1</div>
+              <span>1. Identitas &amp; Legal</span>
+            </div>
+            <div class="step" id="step-2" onclick="goStep(2)">
+              <div class="step-num">2</div>
+              <span>2. Lokasi &amp; Alamat</span>
+            </div>
+            <div class="step" id="step-3" onclick="goStep(3)">
+              <div class="step-num">3</div>
+              <span>3. Kontak Person &amp; PIC</span>
+            </div>
+          </div>
+
+          <!-- ACTION BUTTONS (44px touch ergonomic) -->
+          <div style="display:flex;align-items:center;gap:10px;">
+            <a href="pelanggan.html" class="btn btn-secondary">Batal</a>
+            <button class="btn btn-secondary" id="btn-prev" onclick="prevStep()" style="display:none;">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
+              Sebelumnya
+            </button>
+            <button class="btn btn-primary" id="btn-next" onclick="nextStep()">
+              Selanjutnya
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+            </button>
+          </div>
+        </div>
+
+        <!-- FORM BODY (Smooth scrolling with 60px bottom padding) -->
+        <div class="form-body">
+          <div class="form-col-main">
+
+            <!-- ═════════════════════════════════════════════
+                 STEP 1: IDENTITAS & LEGAL
+                 ═════════════════════════════════════════════ -->
+            <div id="fstep-1" class="fstep active">
+
+              <!-- Card 1: Identitas Entitas -->
+              <div class="fsec">
+                <div class="fsec-head">
+                  <div class="fsec-title">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                    Identitas Pelanggan
+                  </div>
+                </div>
+                <div class="fsec-body">
+                  <div class="field-grid">
+                    <div class="field">
+                      <label>Nama Pelanggan / Entitas Usaha <span class="req">*</span></label>
+                      <input class="field-inp" id="f-name" type="text" placeholder="cth: Villa Sari Dewi" value="Villa Sari Dewi" oninput="updatePreview()"/>
+                    </div>
+                    <div class="field">
+                      <label>Kode Pelanggan <span class="req">*</span></label>
+                      <input class="field-inp" id="f-code" type="text" value="CRM-0901" oninput="updatePreview()"/>
+                    </div>
+                  </div>
+
+                  <div class="field-grid">
+                    <div class="field">
+                      <label>Segmen Usaha <span class="req">*</span></label>
+                      <select class="field-sel" id="f-segment" onchange="updatePreview()">
+                        <option value="">— Pilih Segmen Usaha —</option>
+                        <option value="Villa" selected>Villa / Resor Privat</option>
+                        <option value="Hotel">Hotel &amp; Akomodasi</option>
+                        <option value="Restoran">Restoran, Kafe &amp; Kuliner</option>
+                        <option value="Komersial">Komersial &amp; Perkantoran</option>
+                        <option value="Residensial">Residensial / Rumah Tinggal</option>
+                        <option value="Fasilitas Publik">Fasilitas Publik / Rumah Sakit</option>
+                      </select>
+                    </div>
+                    <div class="field">
+                      <label>Kabupaten / Kota Domisili <span class="req">*</span></label>
+                      <select class="field-sel" id="f-regency" onchange="updatePreview()">
+                        <option value="Kabupaten Badung" selected>Kabupaten Badung</option>
+                        <option value="Kota Denpasar">Kota Denpasar</option>
+                        <option value="Kabupaten Gianyar">Kabupaten Gianyar</option>
+                        <option value="Kabupaten Tabanan">Kabupaten Tabanan</option>
+                        <option value="Kabupaten Klungkung">Kabupaten Klungkung</option>
+                        <option value="Kabupaten Buleleng">Kabupaten Buleleng</option>
+                        <option value="Kabupaten Karangasem">Kabupaten Karangasem</option>
+                        <option value="Kabupaten Jembrana">Kabupaten Jembrana</option>
+                        <option value="Kabupaten Bangli">Kabupaten Bangli</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  <div class="field-grid">
+                    <div class="field">
+                      <label>Status Pelanggan <span class="req">*</span></label>
+                      <select class="field-sel" id="f-status" onchange="updatePreview()">
+                        <option value="Aktif" selected>Aktif</option>
+                        <option value="Non-Aktif">Non-Aktif</option>
+                        <option value="Prospek">Prospek / Lead Baru</option>
+                        <option value="Blacklist">Blacklist</option>
+                      </select>
+                    </div>
+                    <div class="field">
+                      <label>Scan Barcode / Kode QR</label>
+                      <input class="field-inp" id="f-scan-code" type="text" placeholder="cth: QR-CRM-0901" value="QR-CRM-0901"/>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Card 2: Legalitas & Kontak Bisnis -->
+              <div class="fsec">
+                <div class="fsec-head">
+                  <div class="fsec-title">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="2" width="14" height="20" rx="2"/><line x1="9" y1="7" x2="15" y2="7"/><line x1="9" y1="11" x2="15" y2="11"/></svg>
+                    Legalitas &amp; Kontak Bisnis
+                  </div>
+                </div>
+                <div class="fsec-body">
+                  <div class="field">
+                    <label>Nomor NPWP Badan / Pribadi</label>
+                    <input class="field-inp" id="f-npwp" type="text" placeholder="00.000.000.0-000.000" value="12.345.678.9-567.000" oninput="updatePreview()"/>
+                  </div>
+                  <div class="field-grid">
+                    <div class="field">
+                      <label>Telepon Utama Perusahaan <span class="req">*</span></label>
+                      <input class="field-inp" id="f-phone" type="tel" placeholder="+62 812-xxxx-xxxx" value="+62 812-3456-7890" oninput="updatePreview()"/>
+                    </div>
+                    <div class="field">
+                      <label>Telepon Alternatif</label>
+                      <input class="field-inp" id="f-phone-alt" type="tel" placeholder="+62 811-xxxx-xxxx" value="+62 811-9876-5432"/>
+                    </div>
+                  </div>
+                  <div class="field">
+                    <label>Email Resmi Bisnis</label>
+                    <input class="field-inp" id="f-email" type="email" placeholder="contact@customer.com" value="contact@villasaridewi.com" oninput="updatePreview()"/>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Card 3: Catatan Operasional & Risiko -->
+              <div class="fsec">
+                <div class="fsec-head">
+                  <div class="fsec-title">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                    Catatan Internal &amp; Risiko
+                  </div>
+                </div>
+                <div class="fsec-body">
+                  <div class="field">
+                    <label>Catatan Risiko Finansial / Riwayat Kredit</label>
+                    <textarea class="field-ta" placeholder="Catatan kredit, komplain sebelumnya, atau syarat termin khusus…">Pembayaran lancar termin Net 30. Tidak ada catatan tunggakan.</textarea>
+                  </div>
+                  <div class="field" style="margin-bottom:0;">
+                    <label>Catatan Operasional &amp; Akses Layanan</label>
+                    <textarea class="field-ta" placeholder="Preferensi hari servis, akses gerbang, protokol keamanan lokasi…">Akses gerbang satpam 24 jam. Disarankan treatment pukul 08:00 – 10:00 WITA sebelum tamu check-in.</textarea>
+                  </div>
+                </div>
+              </div>
+
+            </div><!-- /fstep-1 -->
+
+            <!-- ═════════════════════════════════════════════
+                 STEP 2: LOKASI & TITIK SERVIS
+                 ═════════════════════════════════════════════ -->
+            <div id="fstep-2" class="fstep">
+
+              <div style="font-size:13.5px;color:var(--sec);margin-bottom:6px;line-height:1.5;">
+                Daftarkan seluruh titik servis / properti pelanggan. Setiap pelanggan dapat memiliki beberapa alamat lokasi penanganan.
+              </div>
+
+              <!-- Repeatable Address Cards Container -->
+              <div id="address-card-list">
+
+                <!-- Address Card 1 (Primary) -->
+                <div class="entry-card" id="addr-card-1">
+                  <div class="entry-card-head">
+                    <div class="entry-card-label">
+                      <span class="badge badge-brand" style="font-size:11px;">Lokasi Utama</span>
+                      Titik Servis #1 (Villa Utama &amp; Club House)
+                    </div>
+                    <button class="abt" style="color:var(--err);" onclick="removeEntry('addr-card-1', 'address')" title="Hapus Alamat Ini">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/></svg>
+                    </button>
+                  </div>
+                  <div class="entry-card-body">
+                    <div class="field-grid">
+                      <div class="field">
+                        <label>Label Nama Lokasi <span class="req">*</span></label>
+                        <input class="field-inp addr-label-inp" type="text" value="Villa Utama &amp; Club House" oninput="updatePreview()"/>
+                      </div>
+                      <div class="field">
+                        <label>Alamat Lengkap <span class="req">*</span></label>
+                        <input class="field-inp" type="text" value="Jl. Raya Seminyak No. 88"/>
+                      </div>
+                    </div>
+                    <div class="field-grid3">
+                      <div class="field">
+                        <label>Kabupaten / Kota <span class="req">*</span></label>
+                        <select class="field-sel">
+                          <option selected>Kabupaten Badung</option>
+                          <option>Kota Denpasar</option>
+                          <option>Kabupaten Gianyar</option>
+                          <option>Kabupaten Tabanan</option>
+                        </select>
+                      </div>
+                      <div class="field">
+                        <label>Kecamatan</label>
+                        <input class="field-inp" type="text" value="Kuta"/>
+                      </div>
+                      <div class="field">
+                        <label>Kelurahan / Desa</label>
+                        <input class="field-inp" type="text" value="Seminyak"/>
+                      </div>
+                    </div>
+                    <div class="field-grid3">
+                      <div class="field">
+                        <label>Luas Area Properti</label>
+                        <input class="field-inp" type="number" value="1200"/>
+                      </div>
+                      <div class="field">
+                        <label>Satuan Luas</label>
+                        <select class="field-sel">
+                          <option selected>m² (Meter Persegi)</option>
+                          <option>Ha (Hektar)</option>
+                        </select>
+                      </div>
+                      <div class="field">
+                        <label>Koordinat GPS</label>
+                        <input class="field-inp" type="text" value="-8.6913, 115.1682"/>
+                      </div>
+                    </div>
+                    <div class="toggle-row">
+                      <span class="toggle-lbl">Tandai sebagai Lokasi Servis &amp; Penagihan Utama</span>
+                      <button type="button" class="toggle on" onclick="togglePrimaryAddress(this)" aria-label="Toggle Lokasi Utama"></button>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Address Card 2 (Secondary) -->
+                <div class="entry-card" id="addr-card-2">
+                  <div class="entry-card-head">
+                    <div class="entry-card-label">
+                      <span class="badge badge-neutral" style="font-size:11px;">Sekunder</span>
+                      Titik Servis #2 (Gudang &amp; Annex Kuta)
+                    </div>
+                    <button class="abt" style="color:var(--err);" onclick="removeEntry('addr-card-2', 'address')" title="Hapus Alamat Ini">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/></svg>
+                    </button>
+                  </div>
+                  <div class="entry-card-body">
+                    <div class="field-grid">
+                      <div class="field">
+                        <label>Label Nama Lokasi <span class="req">*</span></label>
+                        <input class="field-inp addr-label-inp" type="text" value="Gudang Logistik &amp; Laundry Annex" oninput="updatePreview()"/>
+                      </div>
+                      <div class="field">
+                        <label>Alamat Lengkap <span class="req">*</span></label>
+                        <input class="field-inp" type="text" value="Jl. Sunset Road Gg. Melati No. 4"/>
+                      </div>
+                    </div>
+                    <div class="field-grid3">
+                      <div class="field">
+                        <label>Kabupaten / Kota <span class="req">*</span></label>
+                        <select class="field-sel">
+                          <option selected>Kabupaten Badung</option>
+                          <option>Kota Denpasar</option>
+                          <option>Kabupaten Gianyar</option>
+                        </select>
+                      </div>
+                      <div class="field">
+                        <label>Kecamatan</label>
+                        <input class="field-inp" type="text" value="Kuta"/>
+                      </div>
+                      <div class="field">
+                        <label>Kelurahan / Desa</label>
+                        <input class="field-inp" type="text" value="Kuta Barat"/>
+                      </div>
+                    </div>
+                    <div class="field-grid3">
+                      <div class="field">
+                        <label>Luas Area Properti</label>
+                        <input class="field-inp" type="number" value="450"/>
+                      </div>
+                      <div class="field">
+                        <label>Satuan Luas</label>
+                        <select class="field-sel">
+                          <option selected>m² (Meter Persegi)</option>
+                          <option>Ha (Hektar)</option>
+                        </select>
+                      </div>
+                      <div class="field">
+                        <label>Koordinat GPS</label>
+                        <input class="field-inp" type="text" value="-8.6980, 115.1740"/>
+                      </div>
+                    </div>
+                    <div class="toggle-row">
+                      <span class="toggle-lbl">Tandai sebagai Lokasi Servis &amp; Penagihan Utama</span>
+                      <button type="button" class="toggle" onclick="togglePrimaryAddress(this)" aria-label="Toggle Lokasi Utama"></button>
+                    </div>
+                  </div>
+                </div>
+
+              </div><!-- /address-card-list -->
+
+              <!-- 44px Add Button -->
+              <div class="add-entry-row" onclick="addAddressEntry()">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                + Tambah Alamat / Titik Servis Lain
+              </div>
+
+            </div><!-- /fstep-2 -->
+
+            <!-- ═════════════════════════════════════════════
+                 STEP 3: KONTAK PERSON & PIC
+                 ═════════════════════════════════════════════ -->
+            <div id="fstep-3" class="fstep">
+
+              <div style="font-size:13.5px;color:var(--sec);margin-bottom:6px;line-height:1.5;">
+                Daftarkan penanggung jawab (PIC) pelanggan. Minimal harus ada 1 PIC yang bertindak sebagai <strong>Pengambil Keputusan</strong>.
+              </div>
+
+              <!-- Repeatable Contact Cards Container -->
+              <div id="contact-card-list">
+
+                <!-- Contact Card 1 (Decision Maker) -->
+                <div class="entry-card" id="cnt-card-1">
+                  <div class="entry-card-head">
+                    <div class="entry-card-label">
+                      <span class="badge badge-brand" style="font-size:11px;">PIC Utama</span>
+                      Kontak #1 (Budi Santoso)
+                    </div>
+                    <button class="abt" style="color:var(--err);" onclick="removeEntry('cnt-card-1', 'contact')" title="Hapus Kontak Ini">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/></svg>
+                    </button>
+                  </div>
+                  <div class="entry-card-body">
+                    <div class="field-grid">
+                      <div class="field">
+                        <label>Nama Lengkap PIC <span class="req">*</span></label>
+                        <input class="field-inp cnt-name-inp" type="text" value="Budi Santoso" oninput="updatePreview()"/>
+                      </div>
+                      <div class="field">
+                        <label>Jabatan / Posisi</label>
+                        <input class="field-inp" type="text" value="General Manager"/>
+                      </div>
+                    </div>
+                    <div class="field-grid3">
+                      <div class="field">
+                        <label>Email PIC</label>
+                        <input class="field-inp" type="email" value="budi@villasaridewi.com"/>
+                      </div>
+                      <div class="field">
+                        <label>Nomor HP / WhatsApp <span class="req">*</span></label>
+                        <input class="field-inp" type="tel" value="+62 812-3456-7890"/>
+                      </div>
+                      <div class="field">
+                        <label>Peran PIC <span class="req">*</span></label>
+                        <select class="field-sel">
+                          <option value="1" selected>Pengambil Keputusan</option>
+                          <option value="2">Koordinator Lapangan</option>
+                          <option value="3">Teknis &amp; Supervisor</option>
+                          <option value="4">Keuangan &amp; Penagihan</option>
+                        </select>
+                      </div>
+                    </div>
+                    <div class="toggle-row">
+                      <span class="toggle-lbl">Tandai sebagai Kontak Person Utama</span>
+                      <button type="button" class="toggle on" onclick="togglePrimaryContact(this)" aria-label="Toggle Kontak Utama"></button>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Contact Card 2 (Operational Coordinator) -->
+                <div class="entry-card" id="cnt-card-2">
+                  <div class="entry-card-head">
+                    <div class="entry-card-label">
+                      <span class="badge badge-neutral" style="font-size:11px;">Sekunder</span>
+                      Kontak #2 (Sari Rahayu)
+                    </div>
+                    <button class="abt" style="color:var(--err);" onclick="removeEntry('cnt-card-2', 'contact')" title="Hapus Kontak Ini">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/></svg>
+                    </button>
+                  </div>
+                  <div class="entry-card-body">
+                    <div class="field-grid">
+                      <div class="field">
+                        <label>Nama Lengkap PIC <span class="req">*</span></label>
+                        <input class="field-inp cnt-name-inp" type="text" value="Sari Rahayu" oninput="updatePreview()"/>
+                      </div>
+                      <div class="field">
+                        <label>Jabatan / Posisi</label>
+                        <input class="field-inp" type="text" value="Duty Manager Operasional"/>
+                      </div>
+                    </div>
+                    <div class="field-grid3">
+                      <div class="field">
+                        <label>Email PIC</label>
+                        <input class="field-inp" type="email" value="sari@villasaridewi.com"/>
+                      </div>
+                      <div class="field">
+                        <label>Nomor HP / WhatsApp <span class="req">*</span></label>
+                        <input class="field-inp" type="tel" value="+62 811-9876-5432"/>
+                      </div>
+                      <div class="field">
+                        <label>Peran PIC <span class="req">*</span></label>
+                        <select class="field-sel">
+                          <option value="1">Pengambil Keputusan</option>
+                          <option value="2" selected>Koordinator Lapangan</option>
+                          <option value="3">Teknis &amp; Supervisor</option>
+                          <option value="4">Keuangan &amp; Penagihan</option>
+                        </select>
+                      </div>
+                    </div>
+                    <div class="toggle-row">
+                      <span class="toggle-lbl">Tandai sebagai Kontak Person Utama</span>
+                      <button type="button" class="toggle" onclick="togglePrimaryContact(this)" aria-label="Toggle Kontak Utama"></button>
+                    </div>
+                  </div>
+                </div>
+
+              </div><!-- /contact-card-list -->
+
+              <!-- 44px Add Button -->
+              <div class="add-entry-row" onclick="addContactEntry()">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                + Tambah Kontak Person Lain
+              </div>
+
+              <!-- Final Submit Row Card -->
+              <div style="display:flex;justify-content:flex-end;align-items:center;gap:12px;margin-top:16px;padding-top:16px;border-top:1.5px solid var(--border);">
+                <button class="btn btn-secondary" onclick="prevStep()">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
+                  Sebelumnya
+                </button>
+                <button class="btn btn-primary" onclick="submitCustomer()" style="min-width:200px;">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v14a2 2 0 01-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/></svg>
+                  Simpan Data Pelanggan
+                </button>
+              </div>
+
+            </div><!-- /fstep-3 -->
+
+          </div><!-- /form-col-main -->
+
+          <!-- ═════════════════════════════════════════════
+               SIDEBAR SUMMARY (280px Column)
+               ═════════════════════════════════════════════ -->
+          <div class="form-col-side">
+
+            <!-- Live Summary Card -->
+            <div class="preview-card">
+              <div class="preview-title">Ringkasan Data</div>
+              <div class="preview-row"><span class="preview-key">Kode</span><span class="preview-val" id="pv-code">CRM-0901</span></div>
+              <div class="preview-row"><span class="preview-key">Nama</span><span class="preview-val" id="pv-name">Villa Sari Dewi</span></div>
+              <div class="preview-row"><span class="preview-key">Segmen</span><span class="preview-val" id="pv-seg">Villa</span></div>
+              <div class="preview-row"><span class="preview-key">Wilayah</span><span class="preview-val" id="pv-reg">Kabupaten Badung</span></div>
+              <div class="preview-row"><span class="preview-key">Status</span><span class="preview-val" id="pv-status" style="color:var(--ok);font-weight:600;">Aktif</span></div>
+              <div class="preview-row"><span class="preview-key">Alamat Utama</span><span class="preview-val" id="pv-addr">Villa Utama (1.200 m²)</span></div>
+              <div class="preview-row"><span class="preview-key">PIC Utama</span><span class="preview-val" id="pv-pic">Budi Santoso</span></div>
+            </div>
+
+            <!-- Progress Indicator Card -->
+            <div class="preview-card">
+              <div class="preview-title">Progres Pendaftaran</div>
+              <div style="font-size:12px;color:var(--sec);margin-bottom:10px;">Langkah <strong id="step-txt">1</strong> dari 3</div>
+              <div style="display:flex;flex-direction:column;gap:8px;">
+                <div style="display:flex;align-items:center;gap:10px;" id="ind-1">
+                  <div style="width:20px;height:20px;border-radius:50%;background:var(--brand);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:#fff;">1</div>
+                  <span style="font-size:12.5px;color:var(--brand);font-weight:600;">1. Identitas &amp; Legal</span>
+                </div>
+                <div style="display:flex;align-items:center;gap:10px;" id="ind-2">
+                  <div style="width:20px;height:20px;border-radius:50%;background:var(--border);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:var(--muted);">2</div>
+                  <span style="font-size:12.5px;color:var(--muted);font-weight:500;">2. Lokasi &amp; Alamat</span>
+                </div>
+                <div style="display:flex;align-items:center;gap:10px;" id="ind-3">
+                  <div style="width:20px;height:20px;border-radius:50%;background:var(--border);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:var(--muted);">3</div>
+                  <span style="font-size:12.5px;color:var(--muted);font-weight:500;">3. Kontak Person &amp; PIC</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Guidance Card -->
+            <div class="preview-card">
+              <div class="preview-title">Petunjuk Pengisian</div>
+              <div style="font-size:12px;color:var(--sec);line-height:1.6;display:flex;flex-direction:column;gap:6px;">
+                <div>• Pastikan kode pelanggan unik dan sesuai format standar CRM.</div>
+                <div>• Satu entitas dapat memiliki beberapa titik layanan atau gudang penunjang.</div>
+                <div>• Setidaknya 1 lokasi wajib ditandai sebagai titik servis utama.</div>
+                <div>• Daftarkan minimal 1 PIC bertindak sebagai Pengambil Keputusan.</div>
+              </div>
+            </div>
+
+          </div><!-- /form-col-side -->
+
+        </div><!-- /form-body -->
+
+      </div><!-- /form-page -->
+    </div><!-- /main -->
+
+  </div><!-- /app-shell -->
+
+  <!-- HOME INDICATOR -->
+  <div class="home-bar"><div></div></div>
+
+</div><!-- /device -->
+
+<script src="js/tablet.js"></script>
+<script>
+let currentStep = 1;
+let addressCount = 2;
+let contactCount = 2;
+
+// Step Navigation Logic
+function goStep(n) {
+  for (let i = 1; i <= 3; i++) {
+    const s = document.getElementById('step-' + i);
+    const ind = document.getElementById('ind-' + i);
+    if (!s || !ind) continue;
+
+    s.classList.remove('active', 'done');
+    const numEl = s.querySelector('.step-num');
+    const indNum = ind.querySelector('div');
+    const indText = ind.querySelector('span');
+
+    if (i < n) {
+      s.classList.add('done');
+      numEl.textContent = '✓';
+      indNum.style.background = 'var(--ok)';
+      indNum.textContent = '✓';
+      indText.style.color = 'var(--ok)';
+      indText.style.fontWeight = '600';
+    } else if (i === n) {
+      s.classList.add('active');
+      numEl.textContent = i;
+      indNum.style.background = 'var(--brand)';
+      indNum.textContent = i;
+      indText.style.color = 'var(--brand)';
+      indText.style.fontWeight = '600';
+    } else {
+      numEl.textContent = i;
+      indNum.style.background = 'var(--border)';
+      indNum.textContent = i;
+      indText.style.color = 'var(--muted)';
+      indText.style.fontWeight = '500';
+    }
+  }
+
+  document.querySelectorAll('.fstep').forEach(fs => fs.classList.remove('active'));
+  const targetStep = document.getElementById('fstep-' + n);
+  if (targetStep) targetStep.classList.add('active');
+
+  const btnPrev = document.getElementById('btn-prev');
+  const btnNext = document.getElementById('btn-next');
+  if (btnPrev) btnPrev.style.display = n > 1 ? 'inline-flex' : 'none';
+  if (btnNext) btnNext.style.display = n === 3 ? 'none' : 'inline-flex';
+
+  const stepTxt = document.getElementById('step-txt');
+  if (stepTxt) stepTxt.textContent = n;
+  currentStep = n;
+
+  // Scroll main container to top smoothly on step transition
+  const mainCol = document.querySelector('.form-col-main');
+  if (mainCol) mainCol.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function nextStep() {
+  if (currentStep < 3) goStep(currentStep + 1);
+}
+
+function prevStep() {
+  if (currentStep > 1) goStep(currentStep - 1);
+}
+
+// Live Summary Sync
+function updatePreview() {
+  const name = document.getElementById('f-name')?.value;
+  const code = document.getElementById('f-code')?.value;
+  const seg = document.getElementById('f-segment')?.value;
+  const reg = document.getElementById('f-regency')?.value;
+  const status = document.getElementById('f-status')?.value;
+
+  if (name) document.getElementById('pv-name').textContent = name;
+  if (code) document.getElementById('pv-code').textContent = code;
+  if (seg) document.getElementById('pv-seg').textContent = seg;
+  if (reg) document.getElementById('pv-reg').textContent = reg;
+  if (status) {
+    const statusEl = document.getElementById('pv-status');
+    statusEl.textContent = status;
+    statusEl.style.color = status === 'Aktif' ? 'var(--ok)' : (status === 'Blacklist' ? 'var(--err)' : 'var(--warn)');
+  }
+
+  // Update primary address & contact preview
+  const primaryAddrInp = document.querySelector('#address-card-list .entry-card:first-child .addr-label-inp');
+  if (primaryAddrInp && primaryAddrInp.value) {
+    document.getElementById('pv-addr').textContent = primaryAddrInp.value;
+  }
+  const primaryPicInp = document.querySelector('#contact-card-list .entry-card:first-child .cnt-name-inp');
+  if (primaryPicInp && primaryPicInp.value) {
+    document.getElementById('pv-pic').textContent = primaryPicInp.value;
+  }
+}
+
+// Primary Address Toggle (single selection)
+function togglePrimaryAddress(btn) {
+  const allToggles = document.querySelectorAll('#address-card-list .toggle');
+  const allCards = document.querySelectorAll('#address-card-list .entry-card');
+
+  allToggles.forEach(t => t.classList.remove('on'));
+  allCards.forEach(card => {
+    const badge = card.querySelector('.entry-card-label .badge');
+    if (badge) {
+      badge.className = 'badge badge-neutral';
+      badge.textContent = 'Sekunder';
+    }
+  });
+
+  btn.classList.add('on');
+  const card = btn.closest('.entry-card');
+  if (card) {
+    const badge = card.querySelector('.entry-card-label .badge');
+    if (badge) {
+      badge.className = 'badge badge-brand';
+      badge.textContent = 'Lokasi Utama';
+    }
+  }
+}
+
+// Primary Contact Toggle (single selection)
+function togglePrimaryContact(btn) {
+  const allToggles = document.querySelectorAll('#contact-card-list .toggle');
+  const allCards = document.querySelectorAll('#contact-card-list .entry-card');
+
+  allToggles.forEach(t => t.classList.remove('on'));
+  allCards.forEach(card => {
+    const badge = card.querySelector('.entry-card-label .badge');
+    if (badge) {
+      badge.className = 'badge badge-neutral';
+      badge.textContent = 'Sekunder';
+    }
+  });
+
+  btn.classList.add('on');
+  const card = btn.closest('.entry-card');
+  if (card) {
+    const badge = card.querySelector('.entry-card-label .badge');
+    if (badge) {
+      badge.className = 'badge badge-brand';
+      badge.textContent = 'PIC Utama';
+    }
+  }
+}
+
+// Add Repeatable Address Card
+function addAddressEntry() {
+  addressCount++;
+  const container = document.getElementById('address-card-list');
+  const cardId = 'addr-card-' + addressCount;
+
+  const card = document.createElement('div');
+  card.className = 'entry-card';
+  card.id = cardId;
+  card.innerHTML = `
+    <div class="entry-card-head">
+      <div class="entry-card-label">
+        <span class="badge badge-neutral" style="font-size:11px;">Sekunder</span>
+        Titik Servis #${addressCount}
+      </div>
+      <button class="abt" style="color:var(--err);" onclick="removeEntry('${cardId}', 'address')" title="Hapus Alamat Ini">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/></svg>
+      </button>
+    </div>
+    <div class="entry-card-body">
+      <div class="field-grid">
+        <div class="field">
+          <label>Label Nama Lokasi <span class="req">*</span></label>
+          <input class="field-inp addr-label-inp" type="text" placeholder="cth: Gudang / Cabang ${addressCount}" oninput="updatePreview()"/>
+        </div>
+        <div class="field">
+          <label>Alamat Lengkap <span class="req">*</span></label>
+          <input class="field-inp" type="text" placeholder="Jl. Alamat lokasi…"/>
+        </div>
+      </div>
+      <div class="field-grid3">
+        <div class="field">
+          <label>Kabupaten / Kota <span class="req">*</span></label>
+          <select class="field-sel">
+            <option>Kabupaten Badung</option>
+            <option>Kota Denpasar</option>
+            <option>Kabupaten Gianyar</option>
+            <option>Kabupaten Tabanan</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Kecamatan</label>
+          <input class="field-inp" type="text" placeholder="Kecamatan"/>
+        </div>
+        <div class="field">
+          <label>Kelurahan / Desa</label>
+          <input class="field-inp" type="text" placeholder="Kelurahan / Desa"/>
+        </div>
+      </div>
+      <div class="field-grid3">
+        <div class="field">
+          <label>Luas Area Properti</label>
+          <input class="field-inp" type="number" placeholder="cth: 350"/>
+        </div>
+        <div class="field">
+          <label>Satuan Luas</label>
+          <select class="field-sel">
+            <option selected>m² (Meter Persegi)</option>
+            <option>Ha (Hektar)</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Koordinat GPS</label>
+          <input class="field-inp" type="text" placeholder="-8.xxxx, 115.xxxx"/>
+        </div>
+      </div>
+      <div class="toggle-row">
+        <span class="toggle-lbl">Tandai sebagai Lokasi Servis &amp; Penagihan Utama</span>
+        <button type="button" class="toggle" onclick="togglePrimaryAddress(this)" aria-label="Toggle Lokasi Utama"></button>
+      </div>
+    </div>
+  `;
+
+  container.appendChild(card);
+  showToast(`Titik servis #${addressCount} berhasil ditambahkan.`);
+}
+
+// Add Repeatable Contact Card
+function addContactEntry() {
+  contactCount++;
+  const container = document.getElementById('contact-card-list');
+  const cardId = 'cnt-card-' + contactCount;
+
+  const card = document.createElement('div');
+  card.className = 'entry-card';
+  card.id = cardId;
+  card.innerHTML = `
+    <div class="entry-card-head">
+      <div class="entry-card-label">
+        <span class="badge badge-neutral" style="font-size:11px;">Sekunder</span>
+        Kontak #${contactCount}
+      </div>
+      <button class="abt" style="color:var(--err);" onclick="removeEntry('${cardId}', 'contact')" title="Hapus Kontak Ini">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/></svg>
+      </button>
+    </div>
+    <div class="entry-card-body">
+      <div class="field-grid">
+        <div class="field">
+          <label>Nama Lengkap PIC <span class="req">*</span></label>
+          <input class="field-inp cnt-name-inp" type="text" placeholder="Nama lengkap personil" oninput="updatePreview()"/>
+        </div>
+        <div class="field">
+          <label>Jabatan / Posisi</label>
+          <input class="field-inp" type="text" placeholder="cth: Supervisor Lapangan"/>
+        </div>
+      </div>
+      <div class="field-grid3">
+        <div class="field">
+          <label>Email PIC</label>
+          <input class="field-inp" type="email" placeholder="pic@perusahaan.com"/>
+        </div>
+        <div class="field">
+          <label>Nomor HP / WhatsApp <span class="req">*</span></label>
+          <input class="field-inp" type="tel" placeholder="+62 812-xxxx-xxxx"/>
+        </div>
+        <div class="field">
+          <label>Peran PIC <span class="req">*</span></label>
+          <select class="field-sel">
+            <option value="1">Pengambil Keputusan</option>
+            <option value="2" selected>Koordinator Lapangan</option>
+            <option value="3">Teknis &amp; Supervisor</option>
+            <option value="4">Keuangan &amp; Penagihan</option>
+          </select>
+        </div>
+      </div>
+      <div class="toggle-row">
+        <span class="toggle-lbl">Tandai sebagai Kontak Person Utama</span>
+        <button type="button" class="toggle" onclick="togglePrimaryContact(this)" aria-label="Toggle Kontak Utama"></button>
+      </div>
+    </div>
+  `;
+
+  container.appendChild(card);
+  showToast(`Kontak #${contactCount} berhasil ditambahkan.`);
+}
+
+// Remove Entry Card with safety minimum
+function removeEntry(id, type) {
+  const container = type === 'address' ? document.getElementById('address-card-list') : document.getElementById('contact-card-list');
+  const count = container ? container.querySelectorAll('.entry-card').length : 0;
+
+  if (count <= 1) {
+    showToast(`Minimal harus memiliki 1 data ${type === 'address' ? 'alamat' : 'kontak PIC'}.`);
+    return;
+  }
+
+  const el = document.getElementById(id);
+  if (el) {
+    el.style.opacity = '0';
+    el.style.transform = 'scale(0.97)';
+    el.style.transition = 'all 0.15s ease-out';
+    setTimeout(() => {
+      el.remove();
+      updatePreview();
+      showToast('Data berhasil dihapus.');
+    }, 150);
+  }
+}
+
+// Form Submission
+function submitCustomer() {
+  const name = document.getElementById('f-name').value.trim();
+  const code = document.getElementById('f-code').value.trim();
+
+  if (!name || !code) {
+    showToast('Harap lengkapi nama pelanggan dan kode.');
+    goStep(1);
+    return;
+  }
+
+  showToast(`Pelanggan ${code} — ${name} berhasil disimpan!`);
+  setTimeout(() => {
+    window.location.href = 'pelanggan.html';
+  }, 700);
+}
+
+// Initialize preview on page load
+updatePreview();
+</script>
+</body>
+</html>
