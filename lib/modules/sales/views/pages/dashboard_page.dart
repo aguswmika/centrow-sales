@@ -7,7 +7,6 @@ import '../../../../shared/theme/app_colors.dart';
 import '../../../../shared/theme/app_radius.dart';
 import '../../../../shared/widgets/app_button.dart';
 import '../../../../shared/widgets/error_view.dart';
-import '../../../../shared/widgets/nav_rail_shell.dart';
 import '../../controllers/sales_dashboard_controller.dart';
 import '../../entities/sales_dashboard.dart';
 import '../widgets/expiring_contracts_list.dart';
@@ -31,7 +30,9 @@ class _DashboardPageState extends State<DashboardPage> {
   void initState() {
     super.initState();
     _controller = widget.controller ?? getIt<SalesDashboardController>();
-    _controller.loadDashboard();
+    if (widget.controller == null) {
+      _controller.loadDashboard();
+    }
   }
 
   @override
@@ -42,22 +43,22 @@ class _DashboardPageState extends State<DashboardPage> {
 
   @override
   Widget build(BuildContext context) {
-    return NavRailShell(
-      selectedIndex: 0,
-      child: SafeArea(
+    return Scaffold(
+      backgroundColor: AppColors.bg,
+      body: SafeArea(
         child: Watch.builder(
           builder: (context) {
             final state = _controller.state.value;
 
             return switch (state) {
               UiInitial() || UiLoading() => const Center(
-                  child: CircularProgressIndicator(color: AppColors.brand),
-                ),
+                child: CircularProgressIndicator(color: AppColors.brand),
+              ),
               UiFailure(:final failure) => ErrorView(
-                  message: failure.message,
-                  onRetry: _controller.loadDashboard,
-                ),
-              UiSuccess(:final data) => _buildDashboardContent(data),
+                message: failure.message,
+                onRetry: _controller.loadDashboard,
+              ),
+              UiSuccess(:final data) => _buildDashboardContent(context, data),
             };
           },
         ),
@@ -65,34 +66,53 @@ class _DashboardPageState extends State<DashboardPage> {
     );
   }
 
-  Widget _buildDashboardContent(SalesDashboardSummary data) {
-    return RefreshIndicator(
-      onRefresh: _controller.refresh,
-      color: AppColors.brand,
-      child: SingleChildScrollView(
-        physics: const AlwaysScrollableScrollPhysics(),
-        padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 20.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            _buildHeader(data.userName, data.branchName),
-            const SizedBox(height: 20.0),
-            _buildKpiSection(data.kpis),
-            const SizedBox(height: 20.0),
-            _buildMainGrid(data),
-          ],
+  Widget _buildDashboardContent(
+    BuildContext context,
+    SalesDashboardSummary summary,
+  ) {
+    final screenWidth = MediaQuery.sizeOf(context).width;
+    final isTablet = screenWidth >= 720;
+
+    return Column(
+      children: [
+        _buildFixedPageHeader(summary.userName, summary.branchName),
+        Expanded(
+          child: SingleChildScrollView(
+            padding: EdgeInsets.fromLTRB(
+              isTablet ? 24.0 : 16.0,
+              20.0,
+              isTablet ? 24.0 : 16.0,
+              36.0,
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _buildKpiSection(summary.kpis),
+                const SizedBox(height: 20.0),
+                if (isTablet)
+                  _buildTabletTwoColumnLayout(summary)
+                else
+                  _buildMobileLayout(summary),
+              ],
+            ),
+          ),
         ),
-      ),
+      ],
     );
   }
 
-  Widget _buildHeader(String userName, String branchName) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      crossAxisAlignment: CrossAxisAlignment.center,
-      children: [
-        Expanded(
-          child: Column(
+  Widget _buildFixedPageHeader(String userName, String branchName) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 16.0),
+      decoration: const BoxDecoration(
+        color: AppColors.surface,
+        border: Border(bottom: BorderSide(color: AppColors.border, width: 1.5)),
+      ),
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          final isNarrow = constraints.maxWidth < 600;
+
+          final greeting = Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
@@ -103,89 +123,146 @@ class _DashboardPageState extends State<DashboardPage> {
                   color: AppColors.text,
                   letterSpacing: -0.4,
                 ),
+                overflow: TextOverflow.ellipsis,
               ),
               const SizedBox(height: 3.0),
               Text(
                 'Agustus 2026 · Sales Wilayah $branchName',
                 style: GoogleFonts.inter(
-                  fontSize: 13.0,
+                  fontSize: 12.5,
                   fontWeight: FontWeight.w500,
                   color: AppColors.muted,
                 ),
+                overflow: TextOverflow.ellipsis,
               ),
             ],
+          );
+
+          final actions = Wrap(
+            spacing: 10.0,
+            runSpacing: 8.0,
+            children: [
+              AppButton.secondary(
+                text: 'Pelanggan',
+                height: 38.0,
+                isFullWidth: false,
+                borderRadius: AppRadius.borderPill,
+                icon: const Icon(
+                  Icons.person_add_outlined,
+                  size: 15,
+                  color: AppColors.text,
+                ),
+                onPressed: () {},
+              ),
+              AppButton(
+                text: 'Proposal',
+                height: 38.0,
+                isFullWidth: false,
+                borderRadius: AppRadius.borderPill,
+                icon: const Icon(
+                  Icons.add_rounded,
+                  size: 15,
+                  color: Colors.white,
+                ),
+                onPressed: () {},
+              ),
+            ],
+          );
+
+          if (isNarrow) {
+            return Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [greeting, const SizedBox(height: 12.0), actions],
+            );
+          }
+
+          return Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Expanded(child: greeting),
+              const SizedBox(width: 16.0),
+              actions,
+            ],
+          );
+        },
+      ),
+    );
+  }
+
+  Widget _buildKpiSection(List<KpiMetric> kpis) {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final isMobile = constraints.maxWidth < 600;
+
+        if (isMobile) {
+          final cardWidth = (constraints.maxWidth - 12.0) / 2;
+          return Wrap(
+            spacing: 12.0,
+            runSpacing: 12.0,
+            children: [
+              for (final metric in kpis)
+                SizedBox(
+                  width: cardWidth,
+                  child: KpiCard(metric: metric),
+                ),
+            ],
+          );
+        }
+
+        final cardWidth =
+            (constraints.maxWidth - (kpis.length - 1) * 14.0) / kpis.length;
+        return Row(
+          children: [
+            for (int i = 0; i < kpis.length; i++) ...[
+              if (i > 0) const SizedBox(width: 14.0),
+              SizedBox(
+                width: cardWidth,
+                child: KpiCard(metric: kpis[i]),
+              ),
+            ],
+          ],
+        );
+      },
+    );
+  }
+
+  Widget _buildTabletTwoColumnLayout(SalesDashboardSummary summary) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Expanded(
+          flex: 5,
+          child: PipelineFunnelCard(
+            stages: summary.pipelineStages,
+            segments: summary.clientSegments,
           ),
         ),
-        const SizedBox(width: 16.0),
-        Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            OutlinedButton.icon(
-              onPressed: () {},
-              icon: const Icon(Icons.person_add_outlined, size: 16),
-              label: const Text('+ Pelanggan'),
-              style: OutlinedButton.styleFrom(
-                foregroundColor: AppColors.text,
-                backgroundColor: AppColors.surface,
-                side: const BorderSide(color: AppColors.border, width: 1.5),
-                padding: const EdgeInsets.symmetric(horizontal: 14.0, vertical: 10.0),
-                shape: const RoundedRectangleBorder(borderRadius: AppRadius.borderSm),
-                textStyle: GoogleFonts.inter(fontSize: 12.5, fontWeight: FontWeight.w600),
-              ),
-            ),
-            const SizedBox(width: 10.0),
-            AppButton(
-              text: 'Buat Proposal',
-              height: 38.0,
-              icon: const Icon(Icons.add_rounded, size: 16, color: Colors.white),
-              onPressed: () {},
-            ),
-          ],
+        const SizedBox(width: 20.0),
+        Expanded(
+          flex: 5,
+          child: Column(
+            children: [
+              RecentProposalsList(proposals: summary.recentProposals),
+              const SizedBox(height: 20.0),
+              ExpiringContractsList(contracts: summary.expiringContracts),
+            ],
+          ),
         ),
       ],
     );
   }
 
-  Widget _buildKpiSection(List<KpiMetric> kpis) {
-    return Row(
-      children: kpis.map((kpi) {
-        return Expanded(
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 4.0),
-            child: KpiCard(metric: kpi),
-          ),
-        );
-      }).toList(),
-    );
-  }
-
-  Widget _buildMainGrid(SalesDashboardSummary data) {
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
+  Widget _buildMobileLayout(SalesDashboardSummary summary) {
+    return Column(
       children: [
-        Expanded(
-          flex: 10,
-          child: PipelineFunnelCard(
-            stages: data.pipelineStages,
-            segments: data.clientSegments,
-          ),
+        PipelineFunnelCard(
+          stages: summary.pipelineStages,
+          segments: summary.clientSegments,
         ),
-        const SizedBox(width: 18.0),
-        Expanded(
-          flex: 13,
-          child: Column(
-            children: [
-              RecentProposalsList(
-                proposals: data.recentProposals,
-                onSeeAll: () {},
-              ),
-              const SizedBox(height: 18.0),
-              ExpiringContractsList(
-                contracts: data.expiringContracts,
-              ),
-            ],
-          ),
-        ),
+        const SizedBox(height: 16.0),
+        RecentProposalsList(proposals: summary.recentProposals),
+        const SizedBox(height: 16.0),
+        ExpiringContractsList(contracts: summary.expiringContracts),
       ],
     );
   }

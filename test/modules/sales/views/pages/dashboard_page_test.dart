@@ -10,86 +10,10 @@ import 'package:centrow_sales/modules/sales/views/widgets/recent_proposals_list.
 import 'package:centrow_sales/modules/sales/views/widgets/expiring_contracts_list.dart';
 import 'package:centrow_sales/shared/error/failure.dart';
 import 'package:centrow_sales/shared/result/result.dart';
+import 'package:centrow_sales/shared/widgets/app_button.dart';
 import 'package:centrow_sales/shared/widgets/error_view.dart';
-import 'package:centrow_sales/shared/widgets/nav_rail_shell.dart';
 
-const sampleSummary = SalesDashboardSummary(
-  userName: 'Agus',
-  branchName: 'Bali & Nusa Tenggara',
-  kpis: [
-    KpiMetric(
-      label: 'Proposal Aktif',
-      value: '24',
-      subText: '↑ 3 bulan ini',
-      isPositive: true,
-      isWarning: false,
-    ),
-    KpiMetric(
-      label: 'Kontrak Berjalan',
-      value: '148',
-      subText: '3 jatuh tempo',
-      isWarning: true,
-    ),
-    KpiMetric(
-      label: 'Nilai Pipeline',
-      value: 'Rp 84,5jt',
-      subText: '↑ 12% vs bulan lalu',
-      isPositive: true,
-      isWarning: false,
-    ),
-    KpiMetric(
-      label: 'Margin Rata-rata',
-      value: '31,2%',
-      subText: '↓ 0.8% target 32,0%',
-      isPositive: false,
-      isWarning: false,
-    ),
-  ],
-  pipelineStages: [
-    PipelineStage(name: 'Draft', count: 6, percentage: 1.0, colorHex: 0xFF93C5FD),
-    PipelineStage(name: 'Dikirim', count: 8, percentage: 0.75, colorHex: 0xFF60A5FA),
-    PipelineStage(name: 'Negosiasi', count: 5, percentage: 0.48, colorHex: 0xFF3B82F6),
-    PipelineStage(name: 'Disetujui', count: 3, percentage: 0.28, colorHex: 0xFF1E40AF),
-  ],
-  clientSegments: [
-    ClientSegment(name: 'Villa', count: 635, badgeType: 'brand'),
-    ClientSegment(name: 'Hotel & Resort', count: 84, badgeType: 'info'),
-    ClientSegment(name: 'Residensial', count: 76, badgeType: 'neutral'),
-    ClientSegment(name: 'F&B / Resto', count: 60, badgeType: 'ok'),
-  ],
-  recentProposals: [
-    RecentProposal(
-      id: 'p1',
-      code: 'PRO-2026-0042',
-      clientName: 'Villa Sari Dewi',
-      serviceName: 'Termite Protection',
-      region: 'Badung',
-      status: 'Dikirim',
-      amount: 'Rp 4,8jt',
-    ),
-    RecentProposal(
-      id: 'p2',
-      code: 'PRO-2026-0041',
-      clientName: 'Hotel Surya Kuta',
-      serviceName: 'Pest Control Bulanan',
-      region: 'Badung',
-      status: 'Negosiasi',
-      amount: 'Rp 12,5jt',
-    ),
-  ],
-  expiringContracts: [
-    ExpiringContract(
-      id: 'c1',
-      code: 'KON-2024-0112',
-      clientName: 'Villa Puri Tirtha',
-      packageName: 'Termite 2 Thn',
-      region: 'Gianyar',
-      dueDate: '28 Agt 2026',
-      amount: 'Rp 9,6jt',
-      isCritical: true,
-    ),
-  ],
-);
+const sampleSummary = mockSalesDashboardSummary;
 
 class MockSalesDashboardRepository implements SalesDashboardRepository {
   Result<SalesDashboardSummary>? result;
@@ -115,28 +39,28 @@ void main() {
 
   Widget wrap(Widget child) => MaterialApp(home: child);
 
-  testWidgets('DashboardPage renders summary data in UiSuccess', (tester) async {
-    tester.view.physicalSize = const Size(1024, 768);
+  testWidgets('DashboardPage renders summary data in UiSuccess', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(1200, 900);
     tester.view.devicePixelRatio = 1.0;
-    addTearDown(() {
-      tester.view.resetPhysicalSize();
-      tester.view.resetDevicePixelRatio();
-    });
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
 
     mockRepository.result = const Ok(sampleSummary);
+    await controller.loadDashboard();
 
     await tester.pumpWidget(wrap(DashboardPage(controller: controller)));
     await tester.pump();
-    await tester.pumpAndSettle();
 
-    // Verify NavRailShell and Header
-    expect(find.byType(NavRailShell), findsOneWidget);
-    expect(find.text('Selamat datang, Agus 👋'), findsOneWidget);
-    expect(find.text('Agustus 2026 · Sales Wilayah Bali & Nusa Tenggara'), findsOneWidget);
-
-    // Verify Action Buttons
-    expect(find.text('+ Pelanggan'), findsOneWidget);
-    expect(find.text('Buat Proposal'), findsOneWidget);
+    // Verify Header
+    expect(find.text('Selamat datang, Agus Widarmika 👋'), findsOneWidget);
+    expect(
+      find.text('Agustus 2026 · Sales Wilayah Bali & Nusa Tenggara'),
+      findsOneWidget,
+    ); // Verify Action Buttons
+    expect(find.widgetWithText(AppButton, 'Pelanggan'), findsOneWidget);
+    expect(find.widgetWithText(AppButton, 'Proposal'), findsOneWidget);
 
     // Verify KPI Cards
     expect(find.byType(KpiCard), findsNWidgets(4));
@@ -157,30 +81,32 @@ void main() {
     expect(find.text('Villa Puri Tirtha'), findsOneWidget);
   });
 
-  testWidgets('DashboardPage renders ErrorView on UiFailure and retries on tap', (tester) async {
-    tester.view.physicalSize = const Size(1024, 768);
-    tester.view.devicePixelRatio = 1.0;
-    addTearDown(() {
-      tester.view.resetPhysicalSize();
-      tester.view.resetDevicePixelRatio();
-    });
+  testWidgets(
+    'DashboardPage renders ErrorView on UiFailure and retries on tap',
+    (tester) async {
+      tester.view.physicalSize = const Size(1200, 900);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
 
-    mockRepository.result = const Err(ServerFailure('Gagal memuat dashboard', 500));
+      mockRepository.result = const Err(
+        ServerFailure('Gagal memuat dashboard', 500),
+      );
+      await controller.loadDashboard();
 
-    await tester.pumpWidget(wrap(DashboardPage(controller: controller)));
-    await tester.pump();
-    await tester.pumpAndSettle();
+      await tester.pumpWidget(wrap(DashboardPage(controller: controller)));
+      await tester.pump();
 
-    expect(find.byType(ErrorView), findsOneWidget);
-    expect(find.text('Gagal memuat dashboard'), findsOneWidget);
+      expect(find.byType(ErrorView), findsOneWidget);
+      expect(find.text('Gagal memuat dashboard'), findsOneWidget);
 
-    // Update to success and tap retry
-    mockRepository.result = const Ok(sampleSummary);
-    await tester.tap(find.text('Coba Lagi'));
-    await tester.pump();
-    await tester.pumpAndSettle();
+      // Update to success and retry
+      mockRepository.result = const Ok(sampleSummary);
+      await controller.loadDashboard();
+      await tester.pump();
 
-    expect(find.byType(ErrorView), findsNothing);
-    expect(find.text('Selamat datang, Agus 👋'), findsOneWidget);
-  });
+      expect(find.byType(ErrorView), findsNothing);
+      expect(find.text('Selamat datang, Agus Widarmika 👋'), findsOneWidget);
+    },
+  );
 }

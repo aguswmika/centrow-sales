@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
+import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
+import '../config/app_assets.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_radius.dart';
 
@@ -8,6 +11,7 @@ class NavRailShell extends StatelessWidget {
   final int selectedIndex;
   final ValueChanged<int>? onDestinationSelected;
   final String userInitials;
+  final StatefulNavigationShell? navigationShell;
 
   const NavRailShell({
     super.key,
@@ -15,18 +19,50 @@ class NavRailShell extends StatelessWidget {
     this.selectedIndex = 0,
     this.onDestinationSelected,
     this.userInitials = 'AG',
+    this.navigationShell,
   });
+
+  void _handleNavigation(BuildContext context, int index) {
+    if (navigationShell != null) {
+      navigationShell!.goBranch(
+        index,
+        initialLocation: index == navigationShell!.currentIndex,
+      );
+      return;
+    }
+    if (onDestinationSelected != null) {
+      onDestinationSelected!(index);
+      return;
+    }
+    if (index == selectedIndex) return;
+
+    switch (index) {
+      case 0:
+        context.go('/dashboard');
+        break;
+      case 1:
+        context.go('/pelanggan');
+        break;
+      case 2:
+        context.go('/proposal');
+        break;
+      case 3:
+        context.go('/kontrak');
+        break;
+      case 4:
+        context.go('/harga');
+        break;
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        final isTabletOrDesktop = constraints.maxWidth >= 720;
+    final isTablet = MediaQuery.sizeOf(context).width >= 720;
 
-        if (isTabletOrDesktop) {
-          return Scaffold(
-            backgroundColor: AppColors.bg,
-            body: Row(
+    return Scaffold(
+      backgroundColor: AppColors.bg,
+      body: isTablet
+          ? Row(
               children: [
                 _buildNavRail(context),
                 const VerticalDivider(
@@ -36,154 +72,103 @@ class NavRailShell extends StatelessWidget {
                 ),
                 Expanded(child: child),
               ],
-            ),
-          );
-        }
-
-        return Scaffold(
-          backgroundColor: AppColors.bg,
-          body: child,
-          bottomNavigationBar: _buildBottomNav(context),
-        );
-      },
+            )
+          : child,
+      bottomNavigationBar: isTablet ? null : _buildBottomNav(context),
     );
   }
 
   Widget _buildNavRail(BuildContext context) {
-    return Container(
-      width: 72.0,
-      color: AppColors.surface,
-      child: SafeArea(
-        right: false,
-        child: Column(
-          children: [
-            const SizedBox(height: 12.0),
-            // Logo 'C' icon
-            Container(
+    return NavigationRail(
+      selectedIndex: navigationShell?.currentIndex ?? selectedIndex,
+      onDestinationSelected: (idx) => _handleNavigation(context, idx),
+      backgroundColor: AppColors.surface,
+      minWidth: 72.0,
+      labelType: NavigationRailLabelType.all,
+      selectedLabelTextStyle: GoogleFonts.inter(
+        fontSize: 10.5,
+        fontWeight: FontWeight.w700,
+        color: AppColors.brand,
+      ),
+      unselectedLabelTextStyle: GoogleFonts.inter(
+        fontSize: 10.5,
+        fontWeight: FontWeight.w500,
+        color: AppColors.muted,
+      ),
+      selectedIconTheme: const IconThemeData(
+        color: AppColors.brand,
+        size: 22.0,
+      ),
+      unselectedIconTheme: const IconThemeData(
+        color: AppColors.muted,
+        size: 22.0,
+      ),
+      useIndicator: true,
+      indicatorColor: AppColors.brand10,
+      leading: Padding(
+        padding: const EdgeInsets.only(bottom: 12.0, top: 8.0),
+        child: SizedBox(
+          width: 44.0,
+          height: 44.0,
+          child: ClipRRect(
+            borderRadius: AppRadius.borderSm,
+            child: SvgPicture.asset(
+              AppAssets.logoFilled,
               width: 44.0,
               height: 44.0,
-              decoration: const BoxDecoration(
-                color: AppColors.brand,
-                borderRadius: AppRadius.borderSm,
-                boxShadow: [
-                  BoxShadow(
-                    color: Color(0x331E40AF),
-                    blurRadius: 8.0,
-                    offset: Offset(0, 2),
-                  ),
-                ],
-              ),
-              child: Center(
-                child: Text(
-                  'C',
-                  style: GoogleFonts.plusJakartaSans(
-                    fontSize: 20.0,
-                    fontWeight: FontWeight.w800,
-                    color: Colors.white,
-                  ),
-                ),
-              ),
             ),
-            const SizedBox(height: 16.0),
-            _buildRailItem(
-              index: 0,
-              icon: Icons.home_outlined,
-              selectedIcon: Icons.home_rounded,
-              label: 'Beranda',
-            ),
-            _buildRailItem(
-              index: 1,
-              icon: Icons.people_outline_rounded,
-              selectedIcon: Icons.people_rounded,
-              label: 'Pelanggan',
-            ),
-            _buildRailItem(
-              index: 2,
-              icon: Icons.description_outlined,
-              selectedIcon: Icons.description_rounded,
-              label: 'Proposal',
-            ),
-            _buildRailItem(
-              index: 3,
-              icon: Icons.folder_outlined,
-              selectedIcon: Icons.folder_rounded,
-              label: 'Kontrak',
-            ),
-            _buildRailItem(
-              index: 4,
-              icon: Icons.calculate_outlined,
-              selectedIcon: Icons.calculate_rounded,
-              label: 'Harga',
-            ),
-            const Spacer(),
-            // Avatar Button
-            Container(
-              width: 40.0,
-              height: 40.0,
-              decoration: BoxDecoration(
-                color: AppColors.brand10,
-                shape: BoxShape.circle,
-                border: Border.all(color: AppColors.brand, width: 1.5),
-              ),
-              child: Center(
-                child: Text(
-                  userInitials,
-                  style: GoogleFonts.plusJakartaSans(
-                    fontSize: 13.0,
-                    fontWeight: FontWeight.w700,
-                    color: AppColors.brand,
-                  ),
-                ),
-              ),
-            ),
-            const SizedBox(height: 16.0),
-          ],
+          ),
         ),
       ),
-    );
-  }
-
-  Widget _buildRailItem({
-    required int index,
-    required IconData icon,
-    required IconData selectedIcon,
-    required String label,
-  }) {
-    final isSelected = selectedIndex == index;
-
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 4.0),
-      child: InkWell(
-        onTap: () => onDestinationSelected?.call(index),
-        borderRadius: AppRadius.borderSm,
+      trailing: Padding(
+        padding: const EdgeInsets.only(top: 24.0, bottom: 16.0),
         child: Container(
-          width: 58.0,
-          padding: const EdgeInsets.symmetric(vertical: 6.0),
+          width: 40.0,
+          height: 40.0,
           decoration: BoxDecoration(
-            color: isSelected ? AppColors.brand10 : Colors.transparent,
-            borderRadius: AppRadius.borderSm,
+            color: AppColors.brand10,
+            shape: BoxShape.circle,
+            border: Border.all(color: AppColors.brand, width: 1.5),
           ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(
-                isSelected ? selectedIcon : icon,
-                size: 22.0,
-                color: isSelected ? AppColors.brand : AppColors.muted,
+          child: Center(
+            child: Text(
+              userInitials,
+              style: GoogleFonts.plusJakartaSans(
+                fontSize: 13.0,
+                fontWeight: FontWeight.w700,
+                color: AppColors.brand,
               ),
-              const SizedBox(height: 3.0),
-              Text(
-                label,
-                style: GoogleFonts.inter(
-                  fontSize: 10.5,
-                  fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
-                  color: isSelected ? AppColors.brand : AppColors.muted,
-                ),
-              ),
-            ],
+            ),
           ),
         ),
       ),
+      destinations: const [
+        NavigationRailDestination(
+          icon: Icon(Icons.home_outlined),
+          selectedIcon: Icon(Icons.home_rounded),
+          label: Text('Beranda'),
+        ),
+        NavigationRailDestination(
+          icon: Icon(Icons.people_outline_rounded),
+          selectedIcon: Icon(Icons.people_rounded),
+          label: Text('Pelanggan'),
+        ),
+        NavigationRailDestination(
+          icon: Icon(Icons.description_outlined),
+          selectedIcon: Icon(Icons.description_rounded),
+          label: Text('Proposal'),
+        ),
+        NavigationRailDestination(
+          icon: Icon(Icons.folder_outlined),
+          selectedIcon: Icon(Icons.folder_rounded),
+          label: Text('Kontrak'),
+        ),
+        NavigationRailDestination(
+          icon: Icon(Icons.calculate_outlined),
+          selectedIcon: Icon(Icons.calculate_rounded),
+          label: Text('Harga'),
+        ),
+      ],
     );
   }
 
@@ -196,8 +181,8 @@ class NavRailShell extends StatelessWidget {
       child: SafeArea(
         top: false,
         child: BottomNavigationBar(
-          currentIndex: selectedIndex,
-          onTap: onDestinationSelected,
+          currentIndex: navigationShell?.currentIndex ?? selectedIndex,
+          onTap: (idx) => _handleNavigation(context, idx),
           type: BottomNavigationBarType.fixed,
           backgroundColor: AppColors.surface,
           selectedItemColor: AppColors.brand,

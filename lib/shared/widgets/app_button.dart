@@ -15,6 +15,7 @@ class AppButton extends StatelessWidget {
   final double height;
   final double? width;
   final bool isFullWidth;
+  final BorderRadius? borderRadius;
 
   const AppButton({
     super.key,
@@ -26,6 +27,7 @@ class AppButton extends StatelessWidget {
     this.height = AppSpacing.touchLg,
     this.width,
     this.isFullWidth = true,
+    this.borderRadius,
   });
 
   const AppButton.secondary({
@@ -37,6 +39,7 @@ class AppButton extends StatelessWidget {
     this.height = AppSpacing.touchLg,
     this.width,
     this.isFullWidth = true,
+    this.borderRadius,
   }) : variant = AppButtonVariant.secondary;
 
   const AppButton.danger({
@@ -48,6 +51,7 @@ class AppButton extends StatelessWidget {
     this.height = AppSpacing.touchLg,
     this.width,
     this.isFullWidth = true,
+    this.borderRadius,
   }) : variant = AppButtonVariant.danger;
 
   const AppButton.ghost({
@@ -59,11 +63,13 @@ class AppButton extends StatelessWidget {
     this.height = AppSpacing.touchLg,
     this.width,
     this.isFullWidth = true,
+    this.borderRadius,
   }) : variant = AppButtonVariant.ghost;
 
   @override
   Widget build(BuildContext context) {
     final bool isInteractive = onPressed != null && !isLoading;
+    final radius = borderRadius ?? AppRadius.borderMd;
 
     Color backgroundColor;
     Color foregroundColor;
@@ -151,23 +157,17 @@ class AppButton extends StatelessWidget {
     return Container(
       width: isFullWidth ? double.infinity : width,
       height: height,
-      decoration: BoxDecoration(
-        borderRadius: AppRadius.borderMd,
-        boxShadow: shadows,
-      ),
+      decoration: BoxDecoration(borderRadius: radius, boxShadow: shadows),
       child: Material(
         color: isInteractive
             ? backgroundColor
             : backgroundColor.withValues(
                 alpha: variant == AppButtonVariant.ghost ? 0 : 0.6,
               ),
-        shape: RoundedRectangleBorder(
-          borderRadius: AppRadius.borderMd,
-          side: borderSide,
-        ),
+        shape: RoundedRectangleBorder(borderRadius: radius, side: borderSide),
         child: InkWell(
           onTap: isInteractive ? onPressed : null,
-          borderRadius: AppRadius.borderMd,
+          borderRadius: radius,
           child: Container(
             padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
             alignment: Alignment.center,
