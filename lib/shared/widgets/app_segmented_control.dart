@@ -15,6 +15,8 @@ class AppSegmentedControl<T> extends StatelessWidget {
   final T selectedValue;
   final ValueChanged<T> onValueChanged;
   final double height;
+  final Duration animationDuration;
+  final Curve animationCurve;
 
   const AppSegmentedControl({
     super.key,
@@ -22,10 +24,17 @@ class AppSegmentedControl<T> extends StatelessWidget {
     required this.selectedValue,
     required this.onValueChanged,
     this.height = 36.0,
+    this.animationDuration = const Duration(milliseconds: 220),
+    this.animationCurve = Curves.easeInOutCubic,
   });
 
   @override
   Widget build(BuildContext context) {
+    final selectedIndex = items.indexWhere(
+      (item) => item.value == selectedValue,
+    );
+    final validIndex = selectedIndex >= 0 ? selectedIndex : 0;
+
     return Container(
       height: height,
       padding: const EdgeInsets.all(3.0),
@@ -34,44 +43,76 @@ class AppSegmentedControl<T> extends StatelessWidget {
         borderRadius: AppRadius.borderMd,
         border: Border.all(color: AppColors.border, width: 1.5),
       ),
-      child: Row(
-        children: items.map((item) {
-          final isSelected = item.value == selectedValue;
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          final count = items.length;
+          if (count == 0) return const SizedBox.shrink();
 
-          return Expanded(
-            child: InkWell(
-              onTap: () => onValueChanged(item.value),
-              borderRadius: AppRadius.borderSm,
-              child: AnimatedContainer(
-                duration: const Duration(milliseconds: 150),
-                alignment: Alignment.center,
-                decoration: BoxDecoration(
-                  color: isSelected ? AppColors.surface : Colors.transparent,
-                  borderRadius: AppRadius.borderSm,
-                  boxShadow: isSelected
-                      ? const [
-                          BoxShadow(
-                            color: Color(0x0F000000),
-                            offset: Offset(0, 1),
-                            blurRadius: 3.0,
-                          ),
-                        ]
-                      : null,
-                ),
-                child: Text(
-                  item.label,
-                  style: GoogleFonts.inter(
-                    fontSize: 12.0,
-                    fontWeight: isSelected ? FontWeight.w700 : FontWeight.w600,
-                    color: isSelected ? AppColors.brand : AppColors.sec,
+          final itemWidth = constraints.maxWidth / count;
+
+          return Stack(
+            children: [
+              // Smooth sliding indicator pill
+              AnimatedPositioned(
+                duration: animationDuration,
+                curve: animationCurve,
+                left: validIndex * itemWidth,
+                top: 0,
+                bottom: 0,
+                width: itemWidth,
+                child: Container(
+                  decoration: const BoxDecoration(
+                    color: AppColors.surface,
+                    borderRadius: AppRadius.borderSm,
+                    boxShadow: [
+                      BoxShadow(
+                        color: Color(0x14000000),
+                        offset: Offset(0, 1.5),
+                        blurRadius: 4.0,
+                      ),
+                    ],
                   ),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
                 ),
               ),
-            ),
+              // Segment label touch targets
+              Row(
+                children: items.map((item) {
+                  final isSelected = item.value == selectedValue;
+
+                  return Expanded(
+                    child: Material(
+                      color: Colors.transparent,
+                      child: InkWell(
+                        onTap: () => onValueChanged(item.value),
+                        borderRadius: AppRadius.borderSm,
+                        child: Center(
+                          child: AnimatedDefaultTextStyle(
+                            duration: animationDuration,
+                            curve: animationCurve,
+                            style: GoogleFonts.inter(
+                              fontSize: 12.0,
+                              fontWeight: isSelected
+                                  ? FontWeight.w700
+                                  : FontWeight.w600,
+                              color: isSelected
+                                  ? AppColors.brand
+                                  : AppColors.sec,
+                            ),
+                            child: Text(
+                              item.label,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  );
+                }).toList(),
+              ),
+            ],
           );
-        }).toList(),
+        },
       ),
     );
   }

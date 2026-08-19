@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+import 'auth_token_holder.dart';
 import '../config/app_config.dart';
 import '../error/failure.dart';
 
@@ -9,9 +10,11 @@ Dio createDio([String? baseUrl]) {
       connectTimeout: AppConfig.connectTimeout,
       receiveTimeout: AppConfig.receiveTimeout,
       sendTimeout: AppConfig.sendTimeout,
-      headers: const {
+      headers: {
         'Accept': 'application/json',
         'Content-Type': 'application/json',
+        'X-App-Client': 'sales',
+        'X-Version': AppConfig.appVersion,
       },
     ),
   );
@@ -19,7 +22,10 @@ Dio createDio([String? baseUrl]) {
   dio.interceptors.add(
     InterceptorsWrapper(
       onRequest: (options, handler) {
-        // Interceptor hook for auth token or custom headers if needed
+        final token = AuthTokenHolder.instance.token;
+        if (token != null && token.isNotEmpty) {
+          options.headers['Authorization'] = 'Bearer $token';
+        }
         return handler.next(options);
       },
       onResponse: (response, handler) {

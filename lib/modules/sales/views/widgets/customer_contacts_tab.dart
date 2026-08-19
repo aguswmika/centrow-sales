@@ -39,6 +39,13 @@ class CustomerContactsTab extends StatelessWidget {
   }
 
   Widget _buildContactCard(CustomerContact contact) {
+    final contactInfoParts = [
+      if (contact.email.isNotEmpty) contact.email,
+      if (contact.phone.isNotEmpty) contact.phone,
+    ];
+    final contactInfo =
+        contactInfoParts.isNotEmpty ? contactInfoParts.join(' · ') : '-';
+
     return Container(
       padding: const EdgeInsets.all(16.0),
       decoration: BoxDecoration(
@@ -78,17 +85,28 @@ class CustomerContactsTab extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  contact.name,
-                  style: GoogleFonts.plusJakartaSans(
-                    fontSize: 14.5,
-                    fontWeight: FontWeight.w700,
-                    color: AppColors.text,
-                  ),
+                Row(
+                  children: [
+                    Flexible(
+                      child: Text(
+                        contact.name,
+                        style: GoogleFonts.plusJakartaSans(
+                          fontSize: 14.5,
+                          fontWeight: FontWeight.w700,
+                          color: AppColors.text,
+                        ),
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                    if (contact.isPrimary) ...[
+                      const SizedBox(width: 8.0),
+                      const AppBadge.brand(text: 'Utama'),
+                    ],
+                  ],
                 ),
                 const SizedBox(height: 2.0),
                 Text(
-                  contact.position,
+                  contact.position.isNotEmpty ? contact.position : '-',
                   style: GoogleFonts.inter(
                     fontSize: 13.0,
                     fontWeight: FontWeight.w500,
@@ -97,7 +115,7 @@ class CustomerContactsTab extends StatelessWidget {
                 ),
                 const SizedBox(height: 3.0),
                 Text(
-                  '${contact.email} · ${contact.phone}',
+                  contactInfo,
                   style: GoogleFonts.inter(
                     fontSize: 12.0,
                     fontWeight: FontWeight.w500,
@@ -108,7 +126,7 @@ class CustomerContactsTab extends StatelessWidget {
             ),
           ),
           const SizedBox(width: 10.0),
-          AppBadge.fromType(contact.roleBadge, contact.role),
+          AppBadge.fromType(contact.roleBadge, contact.displayRole),
         ],
       ),
     );

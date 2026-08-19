@@ -154,27 +154,34 @@ class AppButton extends StatelessWidget {
       );
     }
 
-    return Container(
+    final button = Container(
       width: isFullWidth ? double.infinity : width,
       height: height,
-      decoration: BoxDecoration(borderRadius: radius, boxShadow: shadows),
-      child: Material(
+      decoration: BoxDecoration(
         color: isInteractive
             ? backgroundColor
             : backgroundColor.withValues(
                 alpha: variant == AppButtonVariant.ghost ? 0 : 0.6,
               ),
-        shape: RoundedRectangleBorder(borderRadius: radius, side: borderSide),
+        borderRadius: radius,
+        border: borderSide != BorderSide.none
+            ? Border.fromBorderSide(borderSide)
+            : null,
+        boxShadow: shadows,
+      ),
+      child: Material(
+        color: Colors.transparent,
         child: InkWell(
           onTap: isInteractive ? onPressed : null,
           borderRadius: radius,
-          child: Container(
+          child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
-            alignment: Alignment.center,
             child: content,
           ),
         ),
       ),
     );
+
+    return button;
   }
 }

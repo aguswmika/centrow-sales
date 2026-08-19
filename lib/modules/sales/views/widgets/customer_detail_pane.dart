@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import '../../../../shared/state/ui_state.dart';
 import '../../../../shared/theme/app_colors.dart';
 import '../../../../shared/theme/app_radius.dart';
 import '../../../../shared/widgets/app_badge.dart';
 import '../../../../shared/widgets/app_button.dart';
+import '../../../../shared/widgets/error_view.dart';
 import '../../entities/customer.dart';
 import 'customer_contacts_tab.dart';
 import 'customer_info_tab.dart';
@@ -12,18 +14,22 @@ import 'customer_proposals_tab.dart';
 
 class CustomerDetailPane extends StatelessWidget {
   final Customer? customer;
+  final UiState<Customer>? detailState;
   final int activeTab;
   final ValueChanged<int> onTabChanged;
   final VoidCallback? onAddProposal;
   final VoidCallback? onEditData;
+  final VoidCallback? onRetry;
 
   const CustomerDetailPane({
     super.key,
-    required this.customer,
+    this.customer,
+    this.detailState,
     required this.activeTab,
     required this.onTabChanged,
     this.onAddProposal,
     this.onEditData,
+    this.onRetry,
   });
 
   static const List<String> tabTitles = [
@@ -35,6 +41,26 @@ class CustomerDetailPane extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    if (detailState != null) {
+      return switch (detailState!) {
+        UiInitial() => _buildFallbackOrEmpty(),
+        UiLoading() => const Center(
+            child: CircularProgressIndicator(color: AppColors.brand),
+          ),
+        UiFailure(:final failure) => Center(
+            child: ErrorView(
+              message: failure.message,
+              onRetry: onRetry,
+            ),
+          ),
+        UiSuccess(:final data) => _buildDetailContent(data),
+      };
+    }
+
+    return _buildFallbackOrEmpty();
+  }
+
+  Widget _buildFallbackOrEmpty() {
     final c = customer;
     if (c == null) {
       return Center(
@@ -48,11 +74,14 @@ class CustomerDetailPane extends StatelessWidget {
         ),
       );
     }
+    return _buildDetailContent(c);
+  }
 
+  Widget _buildDetailContent(Customer customer) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        _buildHeader(c),
+        _buildHeader(customer),
         _buildTabBar(),
         Expanded(
           child: SingleChildScrollView(
@@ -60,7 +89,7 @@ class CustomerDetailPane extends StatelessWidget {
               horizontal: 24.0,
               vertical: 20.0,
             ),
-            child: _buildActiveTabContent(c),
+            child: _buildActiveTabContent(customer),
           ),
         ),
       ],
@@ -68,6 +97,10 @@ class CustomerDetailPane extends StatelessWidget {
   }
 
   Widget _buildHeader(Customer customer) {
+    final (avatarBg, avatarFg) = _getSegmentAvatarColors(customer.segment);
+    final isStatusActive = customer.status.toLowerCase() == 'active' ||
+        customer.status.toLowerCase() == 'aktif';
+
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 16.0),
       decoration: const BoxDecoration(
@@ -84,17 +117,17 @@ class CustomerDetailPane extends StatelessWidget {
               Container(
                 width: 50.0,
                 height: 50.0,
-                decoration: const BoxDecoration(
-                  color: AppColors.brand10,
+                decoration: BoxDecoration(
+                  color: avatarBg,
                   borderRadius: AppRadius.borderLg,
                 ),
                 child: Center(
                   child: Text(
-                    customer.initials,
+                    customer.initials.isNotEmpty ? customer.initials : 'CP',
                     style: GoogleFonts.plusJakartaSans(
                       fontSize: 18.0,
                       fontWeight: FontWeight.w800,
-                      color: AppColors.brand,
+                      color: avatarFg,
                     ),
                   ),
                 ),
@@ -119,13 +152,25 @@ class CustomerDetailPane extends StatelessWidget {
                       runSpacing: 4.0,
                       crossAxisAlignment: WrapCrossAlignment.center,
                       children: [
-                        AppBadge.brand(text: customer.segment),
-                        AppBadge.ok(text: customer.status),
+                        if (customer.segment.isNotEmpty)
+                          AppBadge.brand(text: customer.segment),
+                        isStatusActive
+                            ? const AppBadge.ok(text: 'Aktif')
+                            : const AppBadge.neutral(text: 'Non-Aktif'),
+                        if (customer.code.isNotEmpty)
+                          Text(
+                            customer.code,
+                            style: GoogleFonts.inter(
+                              fontSize: 12.0,
+                              fontWeight: FontWeight.w600,
+                              color: AppColors.muted,
+                            ),
+                          ),
                         Text(
-                          customer.code,
+                          '• ${customer.activeProposalsCount} Proposal Aktif',
                           style: GoogleFonts.inter(
                             fontSize: 12.0,
-                            fontWeight: FontWeight.w600,
+                            fontWeight: FontWeight.w500,
                             color: AppColors.muted,
                           ),
                         ),
@@ -244,6 +289,21 @@ class CustomerDetailPane extends StatelessWidget {
         return CustomerProposalsTab(proposals: customer.proposals);
       default:
         return CustomerInfoTab(customer: customer);
+    }
+  }
+
+  (Color, Color) _getSegmentAvatarColors(String segment) {
+    switch (segment.toLowerCase()) {
+      case 'villa':
+        return (AppColors.brand10, AppColors.brand);
+      case 'hotel':
+        return (const Color(0x1F10B981), const Color(0xFF059669));
+      case 'restoran' || 'resto':
+        return (const Color(0x24BC7B43), const Color(0xFF92580F));
+      case 'komersial' || 'lainnya':
+        return (const Color(0x1F8B5CF6), const Color(0xFF7C3AED));
+      default:
+        return (AppColors.brand10, AppColors.brand);
     }
   }
 }

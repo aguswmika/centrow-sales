@@ -1,6 +1,6 @@
 import 'package:signals/signals.dart';
-import '../../../shared/state/ui_state.dart';
 import '../../../shared/result/result.dart';
+import '../../../shared/state/ui_state.dart';
 import '../entities/customer.dart';
 import '../repositories/customer_repository.dart';
 
@@ -12,14 +12,21 @@ class CustomerController {
   final _customersState = signal<UiState<List<Customer>>>(const UiInitial());
   ReadonlySignal<UiState<List<Customer>>> get customersState => _customersState;
 
+  final _customerDetailState = signal<UiState<Customer>>(const UiInitial());
+  ReadonlySignal<UiState<Customer>> get customerDetailState =>
+      _customerDetailState;
+
+  final _selectedCustomerId = signal<String>('');
+  ReadonlySignal<String> get selectedCustomerId => _selectedCustomerId;
+
   final _searchQuery = signal<String>('');
   ReadonlySignal<String> get searchQuery => _searchQuery;
 
   final _selectedSegment = signal<String>('all');
   ReadonlySignal<String> get selectedSegment => _selectedSegment;
 
-  final _selectedCustomerId = signal<String>('');
-  ReadonlySignal<String> get selectedCustomerId => _selectedCustomerId;
+  final _selectedStatus = signal<String>('all');
+  ReadonlySignal<String> get selectedStatus => _selectedStatus;
 
   final _activeDetailTab = signal<int>(0);
   ReadonlySignal<int> get activeDetailTab => _activeDetailTab;
@@ -40,13 +47,35 @@ class CustomerController {
           )
           .toList();
     }
-    if (_selectedSegment.value != 'all') {
-      list = list.where((c) => c.segment == _selectedSegment.value).toList();
+    if (_selectedSegment.value != 'all' && _selectedSegment.value.isNotEmpty) {
+      list = list
+          .where(
+            (c) =>
+                c.segmentId == _selectedSegment.value ||
+                c.segment.toLowerCase() ==
+                    _selectedSegment.value.toLowerCase(),
+          )
+          .toList();
+    }
+    if (_selectedStatus.value != 'all' && _selectedStatus.value.isNotEmpty) {
+      list = list
+          .where(
+            (c) =>
+                c.status.toLowerCase() ==
+                _selectedStatus.value.toLowerCase(),
+          )
+          .toList();
     }
     return list;
   });
 
-  late final selectedCustomer = computed(() {
+  late final selectedCustomer = computed<Customer?>(() {
+    final detail = _customerDetailState.value.dataOrNull;
+    if (detail != null &&
+        (_selectedCustomerId.value.isEmpty ||
+            detail.id == _selectedCustomerId.value)) {
+      return detail;
+    }
     final list = filteredCustomers.value;
     if (list.isEmpty) return null;
     if (_selectedCustomerId.value.isNotEmpty) {
@@ -58,11 +87,45 @@ class CustomerController {
 
   Future<void> loadCustomers() async {
     _customersState.value = const UiLoading();
-    final result = await _repository.getCustomers();
+    final result = await _repository.getCustomers(
+      query: _searchQuery.value.isNotEmpty ? _searchQuery.value : null,
+      segmentId:
+          _selectedSegment.value != 'all' ? _selectedSegment.value : null,
+      status: _selectedStatus.value != 'all' ? _selectedStatus.value : null,
+    );
     _customersState.value = switch (result) {
-      Ok(:final value) => UiSuccess(value),
-      Err(:final failure) => UiFailure(failure),
+      Ok(:final value) => UiSuccess<List<Customer>>(value),
+      Err(:final failure) => UiFailure<List<Customer>>(failure),
     };
+
+    final state = _customersState.value;
+    if (state is UiSuccess<List<Customer>> && state.data.isNotEmpty) {
+      final targetId = _selectedCustomerId.value.isNotEmpty &&
+              state.data.any((c) => c.id == _selectedCustomerId.value)
+          ? _selectedCustomerId.value
+          : state.data.first.id;
+      await selectCustomer(targetId);
+    }
+  }
+
+  Future<void> selectCustomer(String id) async {
+    _selectedCustomerId.value = id;
+    if (id.isEmpty) {
+      _customerDetailState.value = const UiInitial();
+      return;
+    }
+    _customerDetailState.value = const UiLoading();
+    final result = await _repository.getCustomerById(id);
+    if (_selectedCustomerId.value == id) {
+      _customerDetailState.value = switch (result) {
+        Ok(:final value) => UiSuccess<Customer>(value),
+        Err(:final failure) => UiFailure<Customer>(failure),
+      };
+    }
+  }
+
+  Future<void> loadCustomerDetail(String id) async {
+    await selectCustomer(id);
   }
 
   void setSearchQuery(String query) {
@@ -73,8 +136,8 @@ class CustomerController {
     _selectedSegment.value = segment;
   }
 
-  void selectCustomer(String id) {
-    _selectedCustomerId.value = id;
+  void selectStatus(String status) {
+    _selectedStatus.value = status;
   }
 
   void setDetailTab(int tabIndex) {
@@ -83,9 +146,11 @@ class CustomerController {
 
   void dispose() {
     _customersState.dispose();
+    _customerDetailState.dispose();
+    _selectedCustomerId.dispose();
     _searchQuery.dispose();
     _selectedSegment.dispose();
-    _selectedCustomerId.dispose();
+    _selectedStatus.dispose();
     _activeDetailTab.dispose();
     filteredCustomers.dispose();
     selectedCustomer.dispose();

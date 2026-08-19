@@ -39,6 +39,12 @@ class CustomerProposalsTab extends StatelessWidget {
   }
 
   Widget _buildProposalCard(CustomerProposalSummary proposal) {
+    final title = proposal.title.isNotEmpty ? proposal.title : proposal.code;
+    final subtitle = [
+      if (proposal.code.isNotEmpty) proposal.code,
+      if (proposal.date.isNotEmpty) proposal.date,
+    ].join(' · ');
+
     return Container(
       padding: const EdgeInsets.all(16.0),
       decoration: BoxDecoration(
@@ -60,7 +66,7 @@ class CustomerProposalsTab extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  proposal.title,
+                  title,
                   style: GoogleFonts.plusJakartaSans(
                     fontSize: 14.0,
                     fontWeight: FontWeight.w700,
@@ -69,7 +75,7 @@ class CustomerProposalsTab extends StatelessWidget {
                 ),
                 const SizedBox(height: 3.0),
                 Text(
-                  '${proposal.code} · ${proposal.date}',
+                  subtitle.isNotEmpty ? subtitle : '-',
                   style: GoogleFonts.inter(
                     fontSize: 12.5,
                     fontWeight: FontWeight.w500,
@@ -92,11 +98,25 @@ class CustomerProposalsTab extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 4.0),
-              AppBadge.fromType(proposal.badgeType, proposal.status),
+              _buildProposalStatusBadge(proposal.status),
             ],
           ),
         ],
       ),
     );
+  }
+
+  Widget _buildProposalStatusBadge(String status) {
+    final s = status.toLowerCase().trim();
+    return switch (s) {
+      'accepted' || 'disetujui' => const AppBadge.ok(text: 'Disetujui'),
+      'sent' || 'dikirim' || 'terkirim' => const AppBadge.info(text: 'Terkirim'),
+      'negotiation' || 'negosiasi' => const AppBadge.warn(text: 'Negosiasi'),
+      'rejected' || 'ditolak' => const AppBadge.err(text: 'Ditolak'),
+      'expired' || 'kadaluarsa' => const AppBadge.err(text: 'Kadaluarsa'),
+      'cancelled' || 'dibatalkan' => const AppBadge.err(text: 'Dibatalkan'),
+      'draft' => const AppBadge.neutral(text: 'Draft'),
+      _ => AppBadge.neutral(text: status),
+    };
   }
 }

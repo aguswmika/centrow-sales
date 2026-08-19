@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:signals/signals_flutter.dart';
 import '../../../../app/di.dart';
@@ -30,14 +31,14 @@ class _DashboardPageState extends State<DashboardPage> {
   void initState() {
     super.initState();
     _controller = widget.controller ?? getIt<SalesDashboardController>();
-    if (widget.controller == null) {
-      _controller.loadDashboard();
-    }
+    _controller.loadDashboard();
   }
 
   @override
   void dispose() {
-    _controller.dispose();
+    if (widget.controller == null) {
+      _controller.dispose();
+    }
     super.dispose();
   }
 
@@ -152,7 +153,7 @@ class _DashboardPageState extends State<DashboardPage> {
                   size: 15,
                   color: AppColors.text,
                 ),
-                onPressed: () {},
+                onPressed: () => context.push('/pelanggan/tambah'),
               ),
               AppButton(
                 text: 'Proposal',

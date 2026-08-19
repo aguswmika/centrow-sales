@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:signals/signals_flutter.dart';
 import '../../../../app/di.dart';
 import '../../../../shared/state/ui_state.dart';
@@ -24,14 +25,14 @@ class _CustomerPageState extends State<CustomerPage> {
   void initState() {
     super.initState();
     _controller = widget.controller ?? getIt<CustomerController>();
-    if (widget.controller == null) {
-      _controller.loadCustomers();
-    }
+    _controller.loadCustomers();
   }
 
   @override
   void dispose() {
-    _controller.dispose();
+    if (widget.controller == null) {
+      _controller.dispose();
+    }
     super.dispose();
   }
 
@@ -64,10 +65,13 @@ class _CustomerPageState extends State<CustomerPage> {
     final isTablet = MediaQuery.sizeOf(context).width >= 720;
     final customers = _controller.filteredCustomers.value;
     final selectedCust = _controller.selectedCustomer.value;
-    final selectedId = selectedCust?.id ?? '';
+    final selectedId = _controller.selectedCustomerId.value.isNotEmpty
+        ? _controller.selectedCustomerId.value
+        : (selectedCust?.id ?? '');
     final selectedSeg = _controller.selectedSegment.value;
     final query = _controller.searchQuery.value;
     final activeTab = _controller.activeDetailTab.value;
+    final detailState = _controller.customerDetailState.value;
 
     final masterList = CustomerMasterList(
       customers: customers,
@@ -77,7 +81,7 @@ class _CustomerPageState extends State<CustomerPage> {
       onSelectCustomer: _controller.selectCustomer,
       onSelectSegment: _controller.selectSegment,
       onSearchChanged: _controller.setSearchQuery,
-      onAddCustomer: () {},
+      onAddCustomer: () => context.push('/pelanggan/tambah'),
     );
 
     if (isTablet) {
@@ -93,10 +97,12 @@ class _CustomerPageState extends State<CustomerPage> {
           Expanded(
             child: CustomerDetailPane(
               customer: selectedCust,
+              detailState: detailState,
               activeTab: activeTab,
               onTabChanged: _controller.setDetailTab,
               onAddProposal: () {},
               onEditData: () {},
+              onRetry: () => _controller.loadCustomerDetail(selectedId),
             ),
           ),
         ],

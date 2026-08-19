@@ -5,6 +5,7 @@ import '../modules/core/repositories/auth_repository.dart';
 import '../modules/sales/controllers/sales_dashboard_controller.dart';
 import '../modules/sales/repositories/sales_dashboard_repository.dart';
 import '../modules/sales/controllers/customer_controller.dart';
+import '../modules/sales/controllers/add_customer_controller.dart';
 import '../modules/sales/repositories/customer_repository.dart';
 import '../shared/network/dio_client.dart';
 
@@ -34,5 +35,8 @@ void setupDi() {
   );
   getIt.registerFactory<CustomerController>(
     () => CustomerController(getIt<CustomerRepository>()),
+  );
+  getIt.registerFactory<AddCustomerController>(
+    () => AddCustomerController(getIt<CustomerRepository>()),
   );
 }

@@ -1,0 +1,193 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_test/flutter_test.dart';
+import 'package:centrow_sales/modules/sales/controllers/add_customer_controller.dart';
+import 'package:centrow_sales/modules/sales/entities/create_customer_input.dart';
+import 'package:centrow_sales/modules/sales/entities/customer.dart';
+import 'package:centrow_sales/modules/sales/repositories/customer_repository.dart';
+import 'package:centrow_sales/modules/sales/views/pages/add_customer_page.dart';
+import 'package:centrow_sales/shared/error/failure.dart';
+import 'package:centrow_sales/shared/result/result.dart';
+
+class FakeCustomerRepository implements CustomerRepository {
+  List<Customer> customers = [];
+  bool shouldFail = false;
+
+  @override
+  Future<Result<List<Customer>>> getCustomers({
+    int page = 1,
+    int pageSize = 20,
+    String? query,
+    String? segmentId,
+    String? status,
+  }) async {
+    return Ok(customers);
+  }
+
+  @override
+  Future<Result<Customer>> getCustomerById(String id) async {
+    try {
+      final found = customers.firstWhere((c) => c.id == id);
+      return Ok(found);
+    } catch (_) {
+      return const Err(ServerFailure('Data tidak ditemukan', 404));
+    }
+  }
+
+  @override
+  Future<Result<Customer>> createCustomer(CreateCustomerInput input) async {
+    if (shouldFail) {
+      return const Err(ServerFailure('Gagal menyimpan pelanggan', 400));
+    }
+    final created = Customer(
+      id: 'c${customers.length + 1}',
+      code: input.code.isNotEmpty ? input.code : 'CUST-003',
+      name: input.name,
+      initials: input.name.isNotEmpty
+          ? input.name.substring(0, input.name.length >= 2 ? 2 : 1).toUpperCase()
+          : 'CP',
+      segmentId: input.segmentId,
+      segment: input.segment.isNotEmpty ? input.segment : 'Villa',
+      status: input.status.isNotEmpty ? input.status : 'active',
+      regency: input.regency,
+      phone: input.phone,
+      email: input.email,
+    );
+    customers.add(created);
+    return Ok(created);
+  }
+}
+
+void main() {
+  group('AddCustomerPage', () {
+    late FakeCustomerRepository repository;
+    late AddCustomerController controller;
+
+    setUp(() {
+      repository = FakeCustomerRepository();
+      controller = AddCustomerController(repository);
+    });
+
+    Widget createTestWidget() {
+      return MaterialApp(
+        home: Scaffold(
+          body: AddCustomerPage(controller: controller),
+        ),
+      );
+    }
+
+    testWidgets('renders step 1 and validates required fields before navigating', (tester) async {
+      tester.view.physicalSize = const Size(1200, 800);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(tester.view.resetPhysicalSize);
+
+      await tester.pumpWidget(createTestWidget());
+      await tester.pump();
+
+      expect(find.text('Tambah Pelanggan Baru'), findsOneWidget);
+      expect(find.text('Identitas Pelanggan'), findsOneWidget);
+      expect(find.text('Legalitas & Kontak Bisnis'), findsOneWidget);
+      expect(find.text('Ringkasan Data'), findsOneWidget);
+
+      // Attempting to advance while invalid stays on Step 1
+      await tester.tap(find.text('Selanjutnya').first);
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 100));
+      expect(controller.currentStep.value, 1);
+
+      // Populate Step 1 fields
+      controller.name.value = 'Villa Bali Resort';
+      controller.segmentId.value = '660e8400-e29b-41d4-a716-446655440001';
+      controller.segment.value = 'Villa';
+      controller.phone.value = '+62 812-3456-7890';
+      await tester.pump();
+
+      // Tap Selanjutnya to move to Step 2
+      await tester.tap(find.text('Selanjutnya').first);
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 100));
+
+      expect(controller.currentStep.value, 2);
+      expect(find.text('+ Tambah Alamat / Titik Servis Lain'), findsOneWidget);
+
+      // Attempting to advance while Step 2 is invalid stays on Step 2
+      await tester.tap(find.text('Selanjutnya').first);
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 100));
+      expect(controller.currentStep.value, 2);
+
+      // Populate Step 2 location address
+      controller.updateLocation(
+        0,
+        controller.locations.value.first.copyWith(
+          label: 'Main Resort',
+          address: 'Jalan Pantai Kuta',
+        ),
+      );
+      await tester.pump();
+
+      // Tap Selanjutnya to move to Step 3
+      await tester.tap(find.text('Selanjutnya').first);
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 100));
+
+      expect(controller.currentStep.value, 3);
+      expect(find.text('+ Tambah Kontak Person Lain'), findsOneWidget);
+      expect(find.text('Simpan Data Pelanggan'), findsWidgets);
+
+      // Populate Step 3 contact
+      controller.updateContact(
+        0,
+        controller.contacts.value.first.copyWith(
+          name: 'Budi Santoso',
+          phone: '+62 812-3456-7890',
+        ),
+      );
+      await tester.pump();
+
+      // Tap Simpan Data Pelanggan
+      await tester.tap(find.text('Simpan Data Pelanggan').first);
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 100));
+
+      expect(repository.customers.length, 1);
+      expect(repository.customers.first.name, 'Villa Bali Resort');
+    });
+
+    testWidgets('mobile layout renders without summary sidebar', (tester) async {
+      tester.view.physicalSize = const Size(400, 800);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(tester.view.resetPhysicalSize);
+
+      await tester.pumpWidget(createTestWidget());
+      await tester.pump();
+
+      expect(find.text('Tambah Pelanggan Baru'), findsOneWidget);
+      expect(find.text('Identitas Pelanggan'), findsOneWidget);
+      expect(find.text('Ringkasan Data'), findsNothing);
+    });
+
+    testWidgets('step 2 allows adding and removing location cards', (tester) async {
+      tester.view.physicalSize = const Size(1200, 800);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(tester.view.resetPhysicalSize);
+
+      controller.name.value = 'Villa Bali Resort';
+      controller.segmentId.value = '660e8400-e29b-41d4-a716-446655440001';
+      controller.phone.value = '+62 812-3456-7890';
+      controller.setStep(2);
+
+      await tester.pumpWidget(createTestWidget());
+      await tester.pump();
+
+      expect(controller.locations.value.length, 1);
+      await tester.tap(find.text('+ Tambah Alamat / Titik Servis Lain'));
+      await tester.pump();
+      expect(controller.locations.value.length, 2);
+
+      // Previous step navigation
+      await tester.tap(find.text('Sebelumnya').first);
+      await tester.pump();
+      expect(controller.currentStep.value, 1);
+    });
+  });
+}

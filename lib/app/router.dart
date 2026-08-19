@@ -2,10 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../modules/core/views/pages/login_page.dart';
 import '../modules/sales/views/pages/customer_page.dart';
+import '../modules/sales/views/pages/add_customer_page.dart';
 import '../modules/sales/views/pages/dashboard_page.dart';
 import '../shared/widgets/nav_rail_shell.dart';
 
-GoRouter createRouter({String initialLocation = '/dashboard'}) => GoRouter(
+GoRouter createRouter({String initialLocation = '/login'}) => GoRouter(
   initialLocation: initialLocation,
   routes: [
     GoRoute(
@@ -34,6 +35,13 @@ GoRouter createRouter({String initialLocation = '/dashboard'}) => GoRouter(
               path: '/pelanggan',
               name: 'pelanggan',
               builder: (context, state) => const CustomerPage(),
+              routes: [
+                GoRoute(
+                  path: 'tambah',
+                  name: 'tambah-pelanggan',
+                  builder: (context, state) => const AddCustomerPage(),
+                ),
+              ],
             ),
           ],
         ),

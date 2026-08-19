@@ -12,6 +12,24 @@ class CustomerInfoTab extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isStatusActive = customer.status.toLowerCase() == 'active' ||
+        customer.status.toLowerCase() == 'aktif';
+
+    final primaryLoc = customer.locations.firstWhere(
+      (l) => l.isPrimary,
+      orElse: () => customer.locations.isNotEmpty
+          ? customer.locations.first
+          : const CustomerLocation(),
+    );
+    final regionParts = [
+      if (primaryLoc.district.isNotEmpty) primaryLoc.district,
+      if (primaryLoc.regency.isNotEmpty) primaryLoc.regency,
+      if (primaryLoc.province.isNotEmpty) primaryLoc.province,
+    ];
+    final regionText = regionParts.isNotEmpty
+        ? regionParts.join(', ')
+        : (customer.regency.isNotEmpty ? customer.regency : '-');
+
     return Container(
       width: double.infinity,
       decoration: BoxDecoration(
@@ -31,12 +49,14 @@ class CustomerInfoTab extends StatelessWidget {
         children: [
           _buildInfoRow(
             'Status Pelanggan',
-            child: AppBadge.ok(text: customer.status),
+            child: isStatusActive
+                ? const AppBadge.ok(text: 'Aktif')
+                : const AppBadge.neutral(text: 'Non-Aktif'),
           ),
           _buildDivider(),
           _buildInfoRow('Segmen Usaha', text: customer.segment),
           _buildDivider(),
-          _buildInfoRow('Wilayah Domisili', text: customer.regency),
+          _buildInfoRow('Wilayah Domisili', text: regionText),
           _buildDivider(),
           _buildInfoRow('Nomor NPWP', text: customer.npwp),
           _buildDivider(),
@@ -48,14 +68,23 @@ class CustomerInfoTab extends StatelessWidget {
           _buildDivider(),
           _buildInfoRow(
             'Scan Barcode / QR',
-            child: Text(
-              customer.scanCode,
-              style: GoogleFonts.robotoMono(
-                fontSize: 13.5,
-                fontWeight: FontWeight.w600,
-                color: AppColors.text,
-              ),
-            ),
+            child: customer.scanCode.isNotEmpty
+                ? Text(
+                    customer.scanCode,
+                    style: GoogleFonts.robotoMono(
+                      fontSize: 13.5,
+                      fontWeight: FontWeight.w600,
+                      color: AppColors.text,
+                    ),
+                  )
+                : Text(
+                    '-',
+                    style: GoogleFonts.inter(
+                      fontSize: 14.0,
+                      fontWeight: FontWeight.w500,
+                      color: AppColors.text,
+                    ),
+                  ),
           ),
           _buildDivider(),
           _buildInfoRow('Catatan Risiko', text: customer.riskNotes),
@@ -71,6 +100,8 @@ class CustomerInfoTab extends StatelessWidget {
   }
 
   Widget _buildInfoRow(String key, {String? text, Widget? child}) {
+    final displayText = (text == null || text.trim().isEmpty) ? '-' : text.trim();
+
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 18.0, vertical: 13.0),
       child: Row(
@@ -91,10 +122,9 @@ class CustomerInfoTab extends StatelessWidget {
           Expanded(
             child: Align(
               alignment: Alignment.centerLeft,
-              child:
-                  child ??
+              child: child ??
                   Text(
-                    text ?? '-',
+                    displayText,
                     style: GoogleFonts.inter(
                       fontSize: 14.0,
                       fontWeight: FontWeight.w500,

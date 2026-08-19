@@ -9,6 +9,10 @@ import 'package:centrow_sales/modules/core/repositories/auth_repository.dart';
 import 'package:centrow_sales/shared/result/result.dart';
 import 'package:centrow_sales/shared/widgets/nav_rail_shell.dart';
 
+import 'package:centrow_sales/modules/sales/entities/create_customer_input.dart';
+import 'package:centrow_sales/modules/sales/entities/customer.dart';
+import 'package:centrow_sales/modules/sales/repositories/customer_repository.dart';
+
 class _MockAuthRepo implements AuthRepository {
   @override
   Future<Result<List<Tenant>>> getPublicTenants() async {
@@ -34,11 +38,63 @@ class _MockAuthRepo implements AuthRepository {
   }
 }
 
+class _MockCustomerRepo implements CustomerRepository {
+  @override
+  Future<Result<List<Customer>>> getCustomers({
+    int page = 1,
+    int pageSize = 20,
+    String? query,
+    String? segmentId,
+    String? status,
+  }) async {
+    return const Ok([
+      Customer(
+        id: 'c1',
+        code: 'CRM-0012',
+        name: 'Villa Sari Dewi',
+        initials: 'VS',
+        segment: 'Villa',
+        status: 'Aktif',
+      ),
+    ]);
+  }
+
+  @override
+  Future<Result<Customer>> getCustomerById(String id) async {
+    return const Ok(
+      Customer(
+        id: 'c1',
+        code: 'CRM-0012',
+        name: 'Villa Sari Dewi',
+        initials: 'VS',
+        segment: 'Villa',
+        status: 'Aktif',
+      ),
+    );
+  }
+
+  @override
+  Future<Result<Customer>> createCustomer(CreateCustomerInput input) async {
+    return const Ok(
+      Customer(
+        id: 'c1',
+        code: 'CRM-0012',
+        name: 'Villa Sari Dewi',
+        initials: 'VS',
+        segment: 'Villa',
+        status: 'Aktif',
+      ),
+    );
+  }
+}
+
 void main() {
   setUp(() {
     setupDi();
     getIt.unregister<AuthRepository>();
     getIt.registerLazySingleton<AuthRepository>(() => _MockAuthRepo());
+    getIt.unregister<CustomerRepository>();
+    getIt.registerLazySingleton<CustomerRepository>(() => _MockCustomerRepo());
   });
 
   tearDown(() {

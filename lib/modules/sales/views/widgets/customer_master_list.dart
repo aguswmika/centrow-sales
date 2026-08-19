@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../../shared/theme/app_colors.dart';
 import '../../../../shared/theme/app_radius.dart';
@@ -112,7 +113,7 @@ class CustomerMasterList extends StatelessWidget {
               ),
               const SizedBox(width: 8.0),
               InkWell(
-                onTap: onAddCustomer ?? () {},
+                onTap: onAddCustomer ?? () => context.push('/pelanggan/tambah'),
                 borderRadius: AppRadius.borderMd,
                 child: Container(
                   width: 42.0,
@@ -176,6 +177,14 @@ class CustomerMasterList extends StatelessWidget {
         final c = customers[index];
         final isSelected = c.id == selectedCustomerId;
         final (avatarBg, avatarFg) = _getSegmentAvatarColors(c.segment);
+        final isStatusActive = c.status.toLowerCase() == 'active' ||
+            c.status.toLowerCase() == 'aktif';
+        final regencyText = c.regency.isNotEmpty ? c.regency : '-';
+        final initialsText = c.initials.isNotEmpty
+            ? c.initials
+            : (c.name.isNotEmpty
+                ? c.name.substring(0, c.name.length >= 2 ? 2 : 1).toUpperCase()
+                : 'CP');
 
         return InkWell(
           onTap: () => onSelectCustomer(c.id),
@@ -206,7 +215,7 @@ class CustomerMasterList extends StatelessWidget {
                             ),
                             child: Center(
                               child: Text(
-                                c.initials,
+                                initialsText,
                                 style: GoogleFonts.plusJakartaSans(
                                   fontSize: 14.5,
                                   fontWeight: FontWeight.w700,
@@ -232,7 +241,7 @@ class CustomerMasterList extends StatelessWidget {
                                 ),
                                 const SizedBox(height: 3.0),
                                 Text(
-                                  '${c.code} · ${c.segment} · ${c.regency}',
+                                  '${c.code} · ${c.segment} · $regencyText',
                                   style: GoogleFonts.inter(
                                     fontSize: 12.5,
                                     fontWeight: FontWeight.w500,
@@ -244,7 +253,9 @@ class CustomerMasterList extends StatelessWidget {
                             ),
                           ),
                           const SizedBox(width: 8.0),
-                          AppBadge.ok(text: c.status),
+                          isStatusActive
+                              ? const AppBadge.ok(text: 'Aktif')
+                              : const AppBadge.neutral(text: 'Non-Aktif'),
                         ],
                       ),
                     ),

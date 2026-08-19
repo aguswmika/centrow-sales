@@ -39,6 +39,21 @@ class CustomerLocationsTab extends StatelessWidget {
   }
 
   Widget _buildLocationCard(CustomerLocation location) {
+    final regionParts = [
+      if (location.village.isNotEmpty) location.village,
+      if (location.district.isNotEmpty) location.district,
+      if (location.regency.isNotEmpty) location.regency,
+      if (location.province.isNotEmpty) location.province,
+    ];
+    final regionSummary = regionParts.join(', ');
+
+    final metaParts = [
+      if (location.area.isNotEmpty) location.area,
+      if (regionSummary.isNotEmpty) regionSummary,
+      if (location.coords.isNotEmpty) 'GPS: ${location.coords}',
+    ];
+    final metaText = metaParts.isNotEmpty ? metaParts.join(' · ') : '-';
+
     return Container(
       padding: const EdgeInsets.all(16.0),
       decoration: BoxDecoration(
@@ -80,7 +95,7 @@ class CustomerLocationsTab extends StatelessWidget {
                   children: [
                     Flexible(
                       child: Text(
-                        location.label,
+                        location.label.isNotEmpty ? location.label : 'Titik Servis',
                         style: GoogleFonts.plusJakartaSans(
                           fontSize: 14.5,
                           fontWeight: FontWeight.w700,
@@ -96,7 +111,7 @@ class CustomerLocationsTab extends StatelessWidget {
                 ),
                 const SizedBox(height: 4.0),
                 Text(
-                  location.address,
+                  location.address.isNotEmpty ? location.address : '-',
                   style: GoogleFonts.inter(
                     fontSize: 13.0,
                     fontWeight: FontWeight.w500,
@@ -105,7 +120,7 @@ class CustomerLocationsTab extends StatelessWidget {
                 ),
                 const SizedBox(height: 4.0),
                 Text(
-                  '${location.area} · ${location.district} · GPS: ${location.coords}',
+                  metaText,
                   style: GoogleFonts.inter(
                     fontSize: 12.0,
                     fontWeight: FontWeight.w500,
