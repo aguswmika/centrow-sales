@@ -1,5 +1,6 @@
 import 'package:dio/dio.dart';
 import '../../../shared/error/failure.dart';
+import '../../../shared/network/auth_token_holder.dart';
 import '../../../shared/network/dio_client.dart';
 import '../../../shared/result/result.dart';
 import '../entities/tenant.dart';
@@ -7,6 +8,7 @@ import '../entities/user.dart';
 import 'dtos/auth_dto.dart';
 import 'dtos/login_request_dto.dart';
 import 'dtos/tenant_dto.dart';
+import 'dtos/user_me_dto.dart';
 
 abstract interface class AuthRepository {
   Future<Result<List<Tenant>>> getPublicTenants();
@@ -15,6 +17,7 @@ abstract interface class AuthRepository {
     required String password,
     required String tenantId,
   });
+  Future<Result<User>> getMe();
 }
 
 class AuthRepositoryImpl implements AuthRepository {
@@ -25,7 +28,7 @@ class AuthRepositoryImpl implements AuthRepository {
   @override
   Future<Result<List<Tenant>>> getPublicTenants() async {
     try {
-      final response = await _dio.get<dynamic>('/v1/tenants/public');
+      final response = await _dio.get<dynamic>('/v1/tenants');
       final dynamic responseData = response.data;
       final List<dynamic> data;
       if (responseData is Map) {
@@ -113,6 +116,41 @@ class AuthRepositoryImpl implements AuthRepository {
         );
       }
 
+      return Err(mapDioException(e));
+    } catch (e) {
+      return Err(UnknownFailure(e.toString()));
+    }
+  }
+
+  @override
+  Future<Result<User>> getMe() async {
+    try {
+      final response = await _dio.get<dynamic>('/v1/auth/me');
+
+      final dynamic responseData = response.data;
+      final Map<String, dynamic> dataMap;
+      if (responseData is Map) {
+        dataMap = responseData.cast<String, dynamic>();
+      } else {
+        return const Err(
+          ServerFailure('Format respon dari server tidak valid.'),
+        );
+      }
+
+      final dto = UserMeDto.fromJson(dataMap);
+      final token = AuthTokenHolder.instance.token ?? '';
+      return Ok(dto.toEntity(token));
+    } on DioException catch (e) {
+      final statusCode = e.response?.statusCode;
+      if (statusCode == 401) {
+        return Err(
+          ServerFailure(
+            (e.response?.data?['message'] as String?) ??
+                'Sesi telah berakhir atau tidak valid.',
+            401,
+          ),
+        );
+      }
       return Err(mapDioException(e));
     } catch (e) {
       return Err(UnknownFailure(e.toString()));

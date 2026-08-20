@@ -1,4 +1,5 @@
 import 'package:signals/signals.dart';
+import '../../../shared/network/auth_token_holder.dart';
 import '../../../shared/result/result.dart';
 import '../../../shared/state/ui_state.dart';
 import '../entities/tenant.dart';
@@ -31,7 +32,6 @@ class LoginController {
   late final ReadonlySignal<bool> isValid = computed(
     () =>
         emailRegex.hasMatch(_email.value.trim()) &&
-        _password.value.length >= 6 &&
         _selectedTenantId.value.isNotEmpty,
   );
 
@@ -77,6 +77,10 @@ class LoginController {
       password: _password.value,
       tenantId: _selectedTenantId.value,
     );
+    if (result is Ok<User>) {
+      await AuthTokenHolder.instance.saveToken(result.value.token);
+      await AuthTokenHolder.instance.saveUser(result.value);
+    }
     _loginState.value = switch (result) {
       Ok(:final value) => UiSuccess(value),
       Err(:final failure) => UiFailure(failure),

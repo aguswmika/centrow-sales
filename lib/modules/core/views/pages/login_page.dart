@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:signals/signals_flutter.dart';
 import '../../../../app/di.dart';
@@ -54,6 +55,7 @@ class _LoginPageState extends State<LoginPage> {
           showAppToast(context, failure.message, isError: true);
         case UiSuccess<User>():
           showAppToast(context, 'Berhasil masuk ke sistem.', isSuccess: true);
+          context.go('/customers');
         default:
           break;
       }

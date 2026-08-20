@@ -28,6 +28,7 @@ class _AddCustomerPageState extends State<AddCustomerPage> {
   void initState() {
     super.initState();
     _controller = widget.controller ?? getIt<AddCustomerController>();
+    _controller.loadSegments();
 
     _cleanupSubscription = _controller.submissionState.subscribe((state) {
       if (!mounted) return;

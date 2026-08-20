@@ -3,11 +3,26 @@ import 'package:go_router/go_router.dart';
 import '../modules/core/views/pages/login_page.dart';
 import '../modules/sales/views/pages/customer_page.dart';
 import '../modules/sales/views/pages/add_customer_page.dart';
-import '../modules/sales/views/pages/dashboard_page.dart';
+import '../shared/network/auth_token_holder.dart';
 import '../shared/widgets/nav_rail_shell.dart';
 
-GoRouter createRouter({String initialLocation = '/login'}) => GoRouter(
-  initialLocation: initialLocation,
+GoRouter createRouter({String? initialLocation}) => GoRouter(
+  initialLocation:
+      initialLocation ??
+      (AuthTokenHolder.instance.hasToken ? '/customers' : '/login'),
+  redirect: (context, state) {
+    final hasToken = AuthTokenHolder.instance.hasToken;
+    final isLoggingIn = state.matchedLocation == '/login';
+    final isDashboard = state.matchedLocation == '/dashboard';
+
+    if (!hasToken && !isLoggingIn) {
+      return '/login';
+    }
+    if (hasToken && (isLoggingIn || isDashboard)) {
+      return '/customers';
+    }
+    return null;
+  },
   routes: [
     GoRoute(
       path: '/login',
@@ -23,22 +38,13 @@ GoRouter createRouter({String initialLocation = '/login'}) => GoRouter(
         StatefulShellBranch(
           routes: [
             GoRoute(
-              path: '/dashboard',
-              name: 'dashboard',
-              builder: (context, state) => const DashboardPage(),
-            ),
-          ],
-        ),
-        StatefulShellBranch(
-          routes: [
-            GoRoute(
-              path: '/pelanggan',
-              name: 'pelanggan',
+              path: '/customers',
+              name: 'customers',
               builder: (context, state) => const CustomerPage(),
               routes: [
                 GoRoute(
-                  path: 'tambah',
-                  name: 'tambah-pelanggan',
+                  path: 'create',
+                  name: 'create-customer',
                   builder: (context, state) => const AddCustomerPage(),
                 ),
               ],
@@ -48,8 +54,8 @@ GoRouter createRouter({String initialLocation = '/login'}) => GoRouter(
         StatefulShellBranch(
           routes: [
             GoRoute(
-              path: '/proposal',
-              name: 'proposal',
+              path: '/proposals',
+              name: 'proposals',
               builder: (context, state) =>
                   const Scaffold(body: Center(child: Text('Proposal'))),
             ),
@@ -58,8 +64,8 @@ GoRouter createRouter({String initialLocation = '/login'}) => GoRouter(
         StatefulShellBranch(
           routes: [
             GoRoute(
-              path: '/kontrak',
-              name: 'kontrak',
+              path: '/contracts',
+              name: 'contracts',
               builder: (context, state) =>
                   const Scaffold(body: Center(child: Text('Kontrak'))),
             ),
@@ -68,8 +74,8 @@ GoRouter createRouter({String initialLocation = '/login'}) => GoRouter(
         StatefulShellBranch(
           routes: [
             GoRoute(
-              path: '/harga',
-              name: 'harga',
+              path: '/pricings',
+              name: 'pricings',
               builder: (context, state) =>
                   const Scaffold(body: Center(child: Text('Kalkulator Harga'))),
             ),

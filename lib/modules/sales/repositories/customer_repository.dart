@@ -4,7 +4,9 @@ import '../../../shared/network/dio_client.dart';
 import '../../../shared/result/result.dart';
 import '../entities/create_customer_input.dart';
 import '../entities/customer.dart';
+import '../entities/segment.dart';
 import 'dtos/customer_dto.dart';
+import 'dtos/segment_dto.dart';
 
 abstract interface class CustomerRepository {
   Future<Result<List<Customer>>> getCustomers({
@@ -13,6 +15,12 @@ abstract interface class CustomerRepository {
     String? query,
     String? segmentId,
     String? status,
+  });
+
+  Future<Result<List<Segment>>> getSegments({
+    int page = 1,
+    int pageSize = 100,
+    String? query,
   });
 
   Future<Result<Customer>> getCustomerById(String id);
@@ -78,6 +86,52 @@ class CustomerRepositoryImpl implements CustomerRepository {
       final listResponseDto = CustomerListResponseDto.fromJson(dataMap);
       final customers = listResponseDto.items.map((e) => e.toEntity()).toList();
       return Ok(customers);
+    } on DioException catch (e) {
+      return Err(_handleDioError(e));
+    } catch (e) {
+      return Err(UnknownFailure(e.toString()));
+    }
+  }
+
+  @override
+  Future<Result<List<Segment>>> getSegments({
+    int page = 1,
+    int pageSize = 100,
+    String? query,
+  }) async {
+    try {
+      final queryParameters = <String, dynamic>{
+        'page': page,
+        'page_size': pageSize,
+      };
+
+      if (query != null && query.trim().isNotEmpty) {
+        queryParameters['q'] = query.trim();
+      }
+
+      final response = await _dio.get<dynamic>(
+        '/v1/sales/segments',
+        queryParameters: queryParameters,
+      );
+
+      final responseData = response.data;
+      final Map<String, dynamic> dataMap;
+
+      if (responseData is Map) {
+        if (responseData['data'] is Map) {
+          dataMap = (responseData['data'] as Map).cast<String, dynamic>();
+        } else {
+          dataMap = responseData.cast<String, dynamic>();
+        }
+      } else {
+        return const Err(
+          ServerFailure('Format respon dari server tidak valid.'),
+        );
+      }
+
+      final listResponseDto = SegmentListResponseDto.fromJson(dataMap);
+      final segments = listResponseDto.items.map((e) => e.toEntity()).toList();
+      return Ok(segments);
     } on DioException catch (e) {
       return Err(_handleDioError(e));
     } catch (e) {

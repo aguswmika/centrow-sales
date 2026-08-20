@@ -3,20 +3,13 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:centrow_sales/shared/theme/app_colors.dart';
 import 'package:centrow_sales/shared/theme/app_radius.dart';
 import 'package:centrow_sales/modules/sales/controllers/add_customer_controller.dart';
+import 'package:centrow_sales/modules/sales/entities/segment.dart';
+import 'package:signals/signals_flutter.dart';
 
 class Step1IdentityForm extends StatelessWidget {
   final AddCustomerController controller;
 
   const Step1IdentityForm({super.key, required this.controller});
-
-  static const List<({String id, String name})> segmentOptions = [
-    (id: '660e8400-e29b-41d4-a716-446655440001', name: 'Villa'),
-    (id: '660e8400-e29b-41d4-a716-446655440002', name: 'Hotel'),
-    (id: '660e8400-e29b-41d4-a716-446655440012', name: 'Restoran'),
-    (id: '660e8400-e29b-41d4-a716-446655440003', name: 'Komersial'),
-    (id: '660e8400-e29b-41d4-a716-446655440004', name: 'Residensial'),
-    (id: '660e8400-e29b-41d4-a716-446655440005', name: 'Fasilitas Publik'),
-  ];
 
   static const List<String> regencyOptions = [
     'Kabupaten Badung',
@@ -37,21 +30,37 @@ class Step1IdentityForm extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final currentSegmentId = controller.segmentId.value.isNotEmpty
-        ? controller.segmentId.value
-        : null;
+    return Watch.builder(
+      builder: (context) {
+        final segmentState = controller.segmentsState.value;
+        final segmentList = segmentState.dataOrNull ?? <Segment>[];
+        final isSegmentsLoading =
+            segmentState.isLoading || segmentState.isInitial;
+        final isSegmentDisabled = isSegmentsLoading || segmentList.isEmpty;
 
-    final currentRegency = controller.regency.value.isNotEmpty
-        ? controller.regency.value
-        : null;
+        final currentSegmentId = !isSegmentDisabled &&
+                controller.segmentId.value.isNotEmpty &&
+                segmentList.any((s) => s.id == controller.segmentId.value)
+            ? controller.segmentId.value
+            : null;
 
-    final currentStatus = controller.status.value.isNotEmpty
-        ? (controller.status.value.toLowerCase() == 'aktif' ? 'active' : controller.status.value.toLowerCase())
-        : 'active';
+        final segmentHint = isSegmentsLoading
+            ? 'Memuat segmen...'
+            : (segmentList.isEmpty ? 'Tidak ada segmen' : 'Pilih Segmen Usaha');
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
+        final currentRegency = controller.regency.value.isNotEmpty
+            ? controller.regency.value
+            : null;
+
+        final currentStatus = controller.status.value.isNotEmpty
+            ? (controller.status.value.toLowerCase() == 'aktif'
+                ? 'active'
+                : controller.status.value.toLowerCase())
+            : 'active';
+
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
         // Section 1: Identitas Pelanggan
         _buildSectionCard(
           icon: Icons.business_rounded,
@@ -66,28 +75,17 @@ class Step1IdentityForm extends StatelessWidget {
                 value: controller.name.value,
                 onChanged: (v) => controller.name.value = v,
               ),
-              right: _buildTextField(
-                label: 'Kode Pelanggan',
-                isRequired: false,
-                hint: 'cth: CUST-001 (Otomatis jika kosong)',
-                value: controller.code.value,
-                onChanged: (v) => controller.code.value = v,
-              ),
-            ),
-            const SizedBox(height: 16.0),
-            _buildFieldRow(
-              context,
-              left: _buildDropdownField<String>(
+              right: _buildDropdownField<String>(
                 label: 'Segmen Usaha',
                 isRequired: true,
-                hint: 'Pilih Segmen Usaha',
+                hint: segmentHint,
                 value: currentSegmentId,
-                items: segmentOptions
+                items: segmentList
                     .map(
-                      (e) => DropdownMenuItem<String>(
-                        value: e.id,
+                      (s) => DropdownMenuItem<String>(
+                        value: s.id,
                         child: Text(
-                          e.name,
+                          s.name,
                           style: GoogleFonts.inter(
                             fontSize: 14.0,
                             color: AppColors.text,
@@ -97,18 +95,24 @@ class Step1IdentityForm extends StatelessWidget {
                       ),
                     )
                     .toList(),
-                onChanged: (v) {
-                  if (v != null) {
-                    controller.segmentId.value = v;
-                    final match = segmentOptions.firstWhere(
-                      (s) => s.id == v,
-                      orElse: () => segmentOptions.first,
-                    );
-                    controller.segment.value = match.name;
-                  }
-                },
+                onChanged: isSegmentDisabled
+                    ? null
+                    : (v) {
+                        if (v != null) {
+                          controller.segmentId.value = v;
+                          final match = segmentList.firstWhere(
+                            (s) => s.id == v,
+                            orElse: () => segmentList.first,
+                          );
+                          controller.segment.value = match.name;
+                        }
+                      },
               ),
-              right: _buildDropdownField<String>(
+            ),
+            const SizedBox(height: 16.0),
+            _buildFieldRow(
+              context,
+              left: _buildDropdownField<String>(
                 label: 'Kabupaten / Kota Domisili',
                 isRequired: false,
                 hint: 'Pilih Kabupaten / Kota',
@@ -130,11 +134,7 @@ class Step1IdentityForm extends StatelessWidget {
                     .toList(),
                 onChanged: (v) => controller.regency.value = v ?? '',
               ),
-            ),
-            const SizedBox(height: 16.0),
-            _buildFieldRow(
-              context,
-              left: _buildDropdownField<String>(
+              right: _buildDropdownField<String>(
                 label: 'Status Pelanggan',
                 isRequired: true,
                 value: currentStatus,
@@ -155,12 +155,13 @@ class Step1IdentityForm extends StatelessWidget {
                     .toList(),
                 onChanged: (v) => controller.status.value = v ?? 'active',
               ),
-              right: _buildTextField(
-                label: 'Scan Barcode / Kode QR',
-                hint: 'cth: VC-550e8400',
-                value: controller.scanCode.value,
-                onChanged: (v) => controller.scanCode.value = v,
-              ),
+            ),
+            const SizedBox(height: 16.0),
+            _buildTextField(
+              label: 'Scan Barcode / Kode QR',
+              hint: 'cth: VC-550e8400',
+              value: controller.scanCode.value,
+              onChanged: (v) => controller.scanCode.value = v,
             ),
           ],
         ),
@@ -234,6 +235,8 @@ class Step1IdentityForm extends StatelessWidget {
         ),
         const SizedBox(height: 24.0),
       ],
+    );
+      },
     );
   }
 
@@ -409,7 +412,7 @@ class Step1IdentityForm extends StatelessWidget {
     String? hint,
     required T? value,
     required List<DropdownMenuItem<T>> items,
-    required ValueChanged<T?> onChanged,
+    ValueChanged<T?>? onChanged,
   }) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,

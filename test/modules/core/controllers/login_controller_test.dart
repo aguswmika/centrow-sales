@@ -3,6 +3,7 @@ import 'package:centrow_sales/modules/core/controllers/login_controller.dart';
 import 'package:centrow_sales/modules/core/entities/tenant.dart';
 import 'package:centrow_sales/modules/core/entities/user.dart';
 import 'package:centrow_sales/modules/core/repositories/auth_repository.dart';
+import 'package:centrow_sales/shared/network/auth_token_holder.dart';
 import 'package:centrow_sales/shared/result/result.dart';
 import 'package:centrow_sales/shared/state/ui_state.dart';
 
@@ -19,6 +20,9 @@ class MockAuthRepository implements AuthRepository {
     required String password,
     required String tenantId,
   }) async => loginResult;
+
+  @override
+  Future<Result<User>> getMe() async => loginResult;
 }
 
 void main() {
@@ -26,11 +30,13 @@ void main() {
   late LoginController controller;
 
   setUp(() {
+    AuthTokenHolder.instance.clear();
     mockAuthRepository = MockAuthRepository();
     controller = LoginController(mockAuthRepository);
   });
 
   tearDown(() {
+    AuthTokenHolder.instance.clear();
     controller.dispose();
   });
 
@@ -47,7 +53,7 @@ void main() {
     expect(controller.selectedTenantId.value, 't-1');
   });
 
-  test('submitLogin calls repository with correct parameters', () async {
+  test('submitLogin calls repository with correct parameters and sets token', () async {
     controller.setEmail('test@nohama.id');
     controller.setPassword('password123');
     controller.selectTenant('tenant_1');
@@ -58,12 +64,13 @@ void main() {
       email: 'test@nohama.id',
       role: 'Admin',
       branch: 'Bali',
-      token: 'token',
+      token: 'jwt_secret_token_123',
     );
     mockAuthRepository.loginResult = const Ok(user);
 
     await controller.submitLogin();
 
     expect(controller.state.value, isA<UiSuccess<User>>());
+    expect(AuthTokenHolder.instance.token, 'jwt_secret_token_123');
   });
 }

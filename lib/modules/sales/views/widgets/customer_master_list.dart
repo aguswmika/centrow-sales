@@ -6,9 +6,11 @@ import '../../../../shared/theme/app_radius.dart';
 import '../../../../shared/widgets/app_badge.dart';
 import '../../../../shared/widgets/app_segmented_control.dart';
 import '../../entities/customer.dart';
+import '../../entities/segment.dart';
 
 class CustomerMasterList extends StatelessWidget {
   final List<Customer> customers;
+  final List<Segment> segments;
   final String selectedCustomerId;
   final String selectedSegment;
   final String searchQuery;
@@ -16,10 +18,12 @@ class CustomerMasterList extends StatelessWidget {
   final ValueChanged<String> onSelectSegment;
   final ValueChanged<String> onSearchChanged;
   final VoidCallback? onAddCustomer;
+  final Future<void> Function()? onRefresh;
 
   const CustomerMasterList({
     super.key,
     required this.customers,
+    required this.segments,
     required this.selectedCustomerId,
     required this.selectedSegment,
     required this.searchQuery,
@@ -27,15 +31,8 @@ class CustomerMasterList extends StatelessWidget {
     required this.onSelectSegment,
     required this.onSearchChanged,
     this.onAddCustomer,
+    this.onRefresh,
   });
-
-  static const List<SegmentItem<String>> segments = [
-    SegmentItem(label: 'Semua', value: 'all'),
-    SegmentItem(label: 'Villa', value: 'Villa'),
-    SegmentItem(label: 'Hotel', value: 'Hotel'),
-    SegmentItem(label: 'Resto', value: 'Restoran'),
-    SegmentItem(label: 'Lainnya', value: 'Komersial'),
-  ];
 
   @override
   Widget build(BuildContext context) {
@@ -113,7 +110,7 @@ class CustomerMasterList extends StatelessWidget {
               ),
               const SizedBox(width: 8.0),
               InkWell(
-                onTap: onAddCustomer ?? () => context.push('/pelanggan/tambah'),
+                onTap: onAddCustomer ?? () => context.push('/customers/create'),
                 borderRadius: AppRadius.borderMd,
                 child: Container(
                   width: 42.0,
@@ -142,7 +139,12 @@ class CustomerMasterList extends StatelessWidget {
           ),
           const SizedBox(height: 12.0),
           AppSegmentedControl<String>(
-            items: segments,
+            items: [
+              const SegmentItem<String>(label: 'Semua', value: 'all'),
+              ...segments.map(
+                (s) => SegmentItem<String>(label: s.name, value: s.id),
+              ),
+            ],
             selectedValue: selectedSegment,
             onValueChanged: onSelectSegment,
           ),
@@ -152,120 +154,137 @@ class CustomerMasterList extends StatelessWidget {
   }
 
   Widget _buildList() {
+    final Widget content;
     if (customers.isEmpty) {
-      return Center(
-        child: Padding(
-          padding: const EdgeInsets.all(24.0),
-          child: Text(
-            'Tidak ada pelanggan yang cocok',
-            style: GoogleFonts.inter(
-              fontSize: 13.5,
-              fontWeight: FontWeight.w500,
-              color: AppColors.muted,
-            ),
-          ),
-        ),
-      );
-    }
-
-    return ListView.separated(
-      padding: EdgeInsets.zero,
-      itemCount: customers.length,
-      separatorBuilder: (context, index) =>
-          const Divider(height: 1.0, thickness: 1.0, color: AppColors.border),
-      itemBuilder: (context, index) {
-        final c = customers[index];
-        final isSelected = c.id == selectedCustomerId;
-        final (avatarBg, avatarFg) = _getSegmentAvatarColors(c.segment);
-        final isStatusActive = c.status.toLowerCase() == 'active' ||
-            c.status.toLowerCase() == 'aktif';
-        final regencyText = c.regency.isNotEmpty ? c.regency : '-';
-        final initialsText = c.initials.isNotEmpty
-            ? c.initials
-            : (c.name.isNotEmpty
-                ? c.name.substring(0, c.name.length >= 2 ? 2 : 1).toUpperCase()
-                : 'CP');
-
-        return InkWell(
-          onTap: () => onSelectCustomer(c.id),
-          child: Container(
-            color: isSelected ? AppColors.brand05 : Colors.transparent,
-            child: IntrinsicHeight(
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  Container(
-                    width: 3.5,
-                    color: isSelected ? AppColors.brand : Colors.transparent,
+      content = CustomScrollView(
+        slivers: [
+          SliverFillRemaining(
+            child: Center(
+              child: Padding(
+                padding: const EdgeInsets.all(24.0),
+                child: Text(
+                  'Tidak ada pelanggan yang cocok',
+                  style: GoogleFonts.inter(
+                    fontSize: 13.5,
+                    fontWeight: FontWeight.w500,
+                    color: AppColors.muted,
                   ),
-                  Expanded(
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 14.0,
-                        vertical: 13.0,
-                      ),
-                      child: Row(
-                        children: [
-                          Container(
-                            width: 44.0,
-                            height: 44.0,
-                            decoration: BoxDecoration(
-                              color: avatarBg,
-                              borderRadius: AppRadius.borderMd,
-                            ),
-                            child: Center(
-                              child: Text(
-                                initialsText,
-                                style: GoogleFonts.plusJakartaSans(
-                                  fontSize: 14.5,
-                                  fontWeight: FontWeight.w700,
-                                  color: avatarFg,
-                                ),
-                              ),
-                            ),
-                          ),
-                          const SizedBox(width: 12.0),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Text(
-                                  c.name,
-                                  style: GoogleFonts.plusJakartaSans(
-                                    fontSize: 14.5,
-                                    fontWeight: FontWeight.w600,
-                                    color: AppColors.text,
-                                  ),
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                                const SizedBox(height: 3.0),
-                                Text(
-                                  '${c.code} · ${c.segment} · $regencyText',
-                                  style: GoogleFonts.inter(
-                                    fontSize: 12.5,
-                                    fontWeight: FontWeight.w500,
-                                    color: AppColors.muted,
-                                  ),
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                              ],
-                            ),
-                          ),
-                          const SizedBox(width: 8.0),
-                          isStatusActive
-                              ? const AppBadge.ok(text: 'Aktif')
-                              : const AppBadge.neutral(text: 'Non-Aktif'),
-                        ],
-                      ),
-                    ),
-                  ),
-                ],
+                ),
               ),
             ),
           ),
-        );
-      },
+        ],
+      );
+    } else {
+      content = ListView.separated(
+        padding: EdgeInsets.zero,
+        itemCount: customers.length,
+        separatorBuilder: (context, index) =>
+            const Divider(height: 1.0, thickness: 1.0, color: AppColors.border),
+        itemBuilder: (context, index) {
+          final c = customers[index];
+          final isSelected = c.id == selectedCustomerId;
+          final (avatarBg, avatarFg) = _getSegmentAvatarColors(c.segment);
+          final isStatusActive =
+              c.status.toLowerCase() == 'active' ||
+              c.status.toLowerCase() == 'aktif';
+          final regencyText = c.regency.isNotEmpty ? c.regency : '-';
+          final initialsText = c.initials.isNotEmpty
+              ? c.initials
+              : (c.name.isNotEmpty
+                    ? c.name
+                          .substring(0, c.name.length >= 2 ? 2 : 1)
+                          .toUpperCase()
+                    : 'CP');
+
+          return InkWell(
+            onTap: () => onSelectCustomer(c.id),
+            child: Container(
+              color: isSelected ? AppColors.brand05 : Colors.transparent,
+              child: IntrinsicHeight(
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    Container(
+                      width: 3.5,
+                      color: isSelected ? AppColors.brand : Colors.transparent,
+                    ),
+                    Expanded(
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 14.0,
+                          vertical: 13.0,
+                        ),
+                        child: Row(
+                          children: [
+                            Container(
+                              width: 44.0,
+                              height: 44.0,
+                              decoration: BoxDecoration(
+                                color: avatarBg,
+                                borderRadius: AppRadius.borderMd,
+                              ),
+                              child: Center(
+                                child: Text(
+                                  initialsText,
+                                  style: GoogleFonts.plusJakartaSans(
+                                    fontSize: 14.5,
+                                    fontWeight: FontWeight.w700,
+                                    color: avatarFg,
+                                  ),
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: 12.0),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Text(
+                                    c.name,
+                                    style: GoogleFonts.plusJakartaSans(
+                                      fontSize: 14.5,
+                                      fontWeight: FontWeight.w600,
+                                      color: AppColors.text,
+                                    ),
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                  const SizedBox(height: 3.0),
+                                  Text(
+                                    '${c.code} · ${c.segment} · $regencyText',
+                                    style: GoogleFonts.inter(
+                                      fontSize: 12.5,
+                                      fontWeight: FontWeight.w500,
+                                      color: AppColors.muted,
+                                    ),
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ],
+                              ),
+                            ),
+                            const SizedBox(width: 8.0),
+                            isStatusActive
+                                ? const AppBadge.ok(text: 'Aktif')
+                                : const AppBadge.neutral(text: 'Non-Aktif'),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          );
+        },
+      );
+    }
+
+    if (onRefresh == null) return content;
+    return RefreshIndicator(
+      onRefresh: onRefresh!,
+      color: AppColors.brand,
+      child: content,
     );
   }
 

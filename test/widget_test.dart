@@ -8,6 +8,7 @@ import 'package:centrow_sales/modules/core/repositories/auth_repository.dart';
 import 'package:centrow_sales/shared/result/result.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class _MockAuthRepo implements AuthRepository {
   @override
@@ -32,12 +33,27 @@ class _MockAuthRepo implements AuthRepository {
       ),
     );
   }
+
+  @override
+  Future<Result<User>> getMe() async {
+    return const Ok(
+      User(
+        id: 'u1',
+        name: 'User Test',
+        email: 'test@example.com',
+        role: 'Sales',
+        branch: 'Bali',
+        token: 'mock_jwt_token',
+      ),
+    );
+  }
 }
 
 void main() {
-  setUp(() {
-    getIt.reset();
-    setupDi();
+  setUp(() async {
+    SharedPreferences.setMockInitialValues({});
+    await getIt.reset();
+    await setupDi();
     getIt.unregister<AuthRepository>();
     getIt.registerLazySingleton<AuthRepository>(() => _MockAuthRepo());
   });

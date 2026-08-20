@@ -2,6 +2,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:centrow_sales/modules/sales/controllers/customer_controller.dart';
 import 'package:centrow_sales/modules/sales/entities/create_customer_input.dart';
 import 'package:centrow_sales/modules/sales/entities/customer.dart';
+import 'package:centrow_sales/modules/sales/entities/segment.dart';
 import 'package:centrow_sales/modules/sales/repositories/customer_repository.dart';
 import 'package:centrow_sales/shared/error/failure.dart';
 import 'package:centrow_sales/shared/result/result.dart';
@@ -11,9 +12,14 @@ class FakeCustomerRepository implements CustomerRepository {
   List<Customer> customers;
   bool shouldFailGetCustomers = false;
   bool shouldFailGetCustomerById = false;
+  List<Segment> initialSegments;
+  bool failSegments;
 
-  FakeCustomerRepository({List<Customer>? initialCustomers})
-      : customers = initialCustomers ??
+  FakeCustomerRepository({
+    List<Customer>? initialCustomers,
+    List<Segment>? initialSegments,
+    this.failSegments = false,
+  })  : customers = initialCustomers ??
             [
               const Customer(
                 id: 'c1',
@@ -93,7 +99,8 @@ class FakeCustomerRepository implements CustomerRepository {
                 status: 'inactive',
                 regency: 'Kota Denpasar',
               ),
-            ];
+            ],
+        initialSegments = initialSegments ?? [];
 
   @override
   Future<Result<List<Customer>>> getCustomers({
@@ -163,6 +170,18 @@ class FakeCustomerRepository implements CustomerRepository {
     customers.add(created);
     return Ok(created);
   }
+
+  @override
+  Future<Result<List<Segment>>> getSegments({
+    int page = 1,
+    int pageSize = 100,
+    String? query,
+  }) async {
+    if (failSegments) {
+      return const Err(ServerFailure('Segment load failed', 500));
+    }
+    return Ok(initialSegments);
+  }
 }
 
 void main() {
@@ -180,6 +199,7 @@ void main() {
     });
 
     test('initial state is properly configured', () {
+      expect(controller.segmentsState.value, isA<UiInitial<List<Segment>>>());
       expect(controller.customersState.value, isA<UiInitial<List<Customer>>>());
       expect(controller.customerDetailState.value, isA<UiInitial<Customer>>());
       expect(controller.selectedCustomerId.value, '');
@@ -297,6 +317,29 @@ void main() {
     test('setDetailTab updates activeDetailTab signal', () {
       controller.setDetailTab(2);
       expect(controller.activeDetailTab.value, 2);
+    });
+
+    test('loadSegments transitions to UiSuccess with segment list', () async {
+      final segRepo = FakeCustomerRepository(
+        initialSegments: [
+          const Segment(id: 'seg-1', name: 'Villa'),
+          const Segment(id: 'seg-2', name: 'Hotel'),
+        ],
+      );
+      final ctrl = CustomerController(segRepo);
+      await ctrl.loadSegments();
+      expect(ctrl.segmentsState.value, isA<UiSuccess<List<Segment>>>());
+      final data = (ctrl.segmentsState.value as UiSuccess<List<Segment>>).data;
+      expect(data.length, 2);
+      ctrl.dispose();
+    });
+
+    test('loadSegments sets UiFailure on error', () async {
+      final failRepo = FakeCustomerRepository(failSegments: true);
+      final ctrl = CustomerController(failRepo);
+      await ctrl.loadSegments();
+      expect(ctrl.segmentsState.value, isA<UiFailure<List<Segment>>>());
+      ctrl.dispose();
     });
   });
 }

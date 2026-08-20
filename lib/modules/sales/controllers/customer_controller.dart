@@ -1,13 +1,18 @@
+import 'dart:async';
 import 'package:signals/signals.dart';
 import '../../../shared/result/result.dart';
 import '../../../shared/state/ui_state.dart';
 import '../entities/customer.dart';
+import '../entities/segment.dart';
 import '../repositories/customer_repository.dart';
 
 class CustomerController {
   final CustomerRepository _repository;
 
   CustomerController(this._repository);
+
+  final _segmentsState = signal<UiState<List<Segment>>>(const UiInitial());
+  ReadonlySignal<UiState<List<Segment>>> get segmentsState => _segmentsState;
 
   final _customersState = signal<UiState<List<Customer>>>(const UiInitial());
   ReadonlySignal<UiState<List<Customer>>> get customersState => _customersState;
@@ -85,7 +90,17 @@ class CustomerController {
     return list.first;
   });
 
+  Future<void> loadSegments() async {
+    _segmentsState.value = const UiLoading();
+    final result = await _repository.getSegments();
+    _segmentsState.value = switch (result) {
+      Ok(:final value) => UiSuccess<List<Segment>>(value),
+      Err(:final failure) => UiFailure<List<Segment>>(failure),
+    };
+  }
+
   Future<void> loadCustomers() async {
+    unawaited(loadSegments());
     _customersState.value = const UiLoading();
     final result = await _repository.getCustomers(
       query: _searchQuery.value.isNotEmpty ? _searchQuery.value : null,
@@ -145,6 +160,7 @@ class CustomerController {
   }
 
   void dispose() {
+    _segmentsState.dispose();
     _customersState.dispose();
     _customerDetailState.dispose();
     _selectedCustomerId.dispose();

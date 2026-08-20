@@ -29,12 +29,6 @@ class AddCustomerSidebar extends StatelessWidget {
             child: Column(
               children: [
                 _buildPreviewRow(
-                  'Kode',
-                  controller.code.value.isNotEmpty
-                      ? controller.code.value
-                      : '(Otomatis)',
-                ),
-                _buildPreviewRow(
                   'Nama',
                   controller.name.value.isNotEmpty
                       ? controller.name.value

@@ -45,14 +45,11 @@ class CustomerDetailPane extends StatelessWidget {
       return switch (detailState!) {
         UiInitial() => _buildFallbackOrEmpty(),
         UiLoading() => const Center(
-            child: CircularProgressIndicator(color: AppColors.brand),
-          ),
+          child: CircularProgressIndicator(color: AppColors.brand),
+        ),
         UiFailure(:final failure) => Center(
-            child: ErrorView(
-              message: failure.message,
-              onRetry: onRetry,
-            ),
-          ),
+          child: ErrorView(message: failure.message, onRetry: onRetry),
+        ),
         UiSuccess(:final data) => _buildDetailContent(data),
       };
     }
@@ -98,7 +95,8 @@ class CustomerDetailPane extends StatelessWidget {
 
   Widget _buildHeader(Customer customer) {
     final (avatarBg, avatarFg) = _getSegmentAvatarColors(customer.segment);
-    final isStatusActive = customer.status.toLowerCase() == 'active' ||
+    final isStatusActive =
+        customer.status.toLowerCase() == 'active' ||
         customer.status.toLowerCase() == 'aktif';
 
     return Container(

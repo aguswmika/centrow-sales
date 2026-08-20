@@ -48,6 +48,7 @@ class AuthDto {
       name: name,
       email: email,
       role: role,
+      roles: role.isNotEmpty ? [role] : const [],
       branch: branch,
       token: token,
     );

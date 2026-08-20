@@ -46,7 +46,7 @@ void main() {
   group('AuthRepositoryImpl - getPublicTenants', () {
     test('returns List<Tenant> on 200 OK', () async {
       mockAdapter.handler = (options) {
-        expect(options.path, '/v1/tenants/public');
+        expect(options.path, '/v1/tenants');
         final body = jsonEncode({
           'data': [
             {
@@ -267,6 +267,134 @@ void main() {
       expect(failure, isA<ServerFailure>());
       expect(failure.statusCode, 500);
       expect(failure.message, 'Internal database error');
+    });
+  });
+
+  group('AuthRepositoryImpl - getMe', () {
+    test('returns User on 200 OK', () async {
+      mockAdapter.handler = (options) {
+        expect(options.path, '/v1/auth/me');
+
+        final body = jsonEncode({
+          'data': {
+            'id': '5d3611bb-d413-4d03-95dc-57f1d1de572a',
+            'tenant_id': '8e4c1393-cdfb-4987-b842-a6653875435c',
+            'name': 'Jane Doe',
+            'email': 'sales@example.com',
+            'roles': ['sales'],
+            'position': 'Sales Executive',
+            'department': 'Sales',
+          },
+          'is_error': false,
+          'http_status': 200,
+        });
+        return ResponseBody.fromString(
+          body,
+          200,
+          headers: {
+            Headers.contentTypeHeader: [Headers.jsonContentType],
+          },
+        );
+      };
+
+      final result = await repository.getMe();
+
+      expect(result, isA<Ok<User>>());
+      final user = (result as Ok<User>).value;
+      expect(user.id, '5d3611bb-d413-4d03-95dc-57f1d1de572a');
+      expect(user.tenantId, '8e4c1393-cdfb-4987-b842-a6653875435c');
+      expect(user.name, 'Jane Doe');
+      expect(user.email, 'sales@example.com');
+      expect(user.roles, ['sales']);
+      expect(user.role, 'sales');
+      expect(user.position, 'Sales Executive');
+      expect(user.department, 'Sales');
+      expect(user.getInitials(), 'JD');
+    });
+
+    test('returns ServerFailure on 401 Unauthorized', () async {
+      mockAdapter.handler = (options) {
+        final body = jsonEncode({
+          'data': null,
+          'is_error': true,
+          'http_status': 401,
+          'message': 'Unauthorized [Request-ID: req_123]',
+        });
+        return ResponseBody.fromString(
+          body,
+          401,
+          headers: {
+            Headers.contentTypeHeader: [Headers.jsonContentType],
+          },
+        );
+      };
+
+      final result = await repository.getMe();
+
+      expect(result, isA<Err<User>>());
+      final failure = (result as Err<User>).failure;
+      expect(failure, isA<ServerFailure>());
+      expect(failure.statusCode, 401);
+      expect(failure.message, 'Unauthorized [Request-ID: req_123]');
+    });
+
+    test('returns ServerFailure on 500 Server Error', () async {
+      mockAdapter.handler = (options) {
+        final body = jsonEncode({
+          'data': null,
+          'is_error': true,
+          'http_status': 500,
+          'message': 'Internal database error',
+        });
+        return ResponseBody.fromString(
+          body,
+          500,
+          headers: {
+            Headers.contentTypeHeader: [Headers.jsonContentType],
+          },
+        );
+      };
+
+      final result = await repository.getMe();
+
+      expect(result, isA<Err<User>>());
+      final failure = (result as Err<User>).failure;
+      expect(failure, isA<ServerFailure>());
+      expect(failure.statusCode, 500);
+      expect(failure.message, 'Internal database error');
+    });
+
+    test('returns NetworkFailure on connection error', () async {
+      mockAdapter.handler = (options) {
+        throw DioException(
+          requestOptions: options,
+          type: DioExceptionType.connectionError,
+        );
+      };
+
+      final result = await repository.getMe();
+
+      expect(result, isA<Err<User>>());
+      final failure = (result as Err<User>).failure;
+      expect(failure, isA<NetworkFailure>());
+    });
+
+    test('returns ServerFailure on invalid response format', () async {
+      mockAdapter.handler = (options) {
+        return ResponseBody.fromString(
+          'not a json map',
+          200,
+          headers: {
+            Headers.contentTypeHeader: ['text/plain'],
+          },
+        );
+      };
+
+      final result = await repository.getMe();
+
+      expect(result, isA<Err<User>>());
+      final failure = (result as Err<User>).failure;
+      expect(failure, isA<ServerFailure>());
     });
   });
 }

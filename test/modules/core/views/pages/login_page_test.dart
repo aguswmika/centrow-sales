@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:go_router/go_router.dart';
 import 'package:centrow_sales/modules/core/controllers/login_controller.dart';
 import 'package:centrow_sales/modules/core/entities/tenant.dart';
 import 'package:centrow_sales/modules/core/entities/user.dart';
@@ -45,6 +46,22 @@ class MockAuthRepository implements AuthRepository {
       ),
     );
   }
+
+  @override
+  Future<Result<User>> getMe() async {
+    if (failure != null) return Err(failure!);
+    if (user != null) return Ok(user!);
+    return const Ok(
+      User(
+        id: '5d3611bb-d413-4d03-95dc-57f1d1de572a',
+        name: 'Jane Doe',
+        email: 'sales@example.com',
+        role: 'sales',
+        branch: 'Main Branch',
+        token: 'token123',
+      ),
+    );
+  }
 }
 
 void main() {
@@ -60,7 +77,27 @@ void main() {
     controller.dispose();
   });
 
-  Widget wrap(Widget child) => MaterialApp(home: Scaffold(body: child));
+  Widget wrap(Widget child) {
+    final router = GoRouter(
+      initialLocation: '/login',
+      routes: [
+        GoRoute(
+          path: '/login',
+          builder: (context, state) => child,
+        ),
+        GoRoute(
+          path: '/customers',
+          builder: (context, state) => const Scaffold(
+            body: Text('Customers Screen'),
+          ),
+        ),
+      ],
+    );
+
+    return MaterialApp.router(
+      routerConfig: router,
+    );
+  }
 
   testWidgets('LoginPage renders header, inputs, and login button', (
     tester,
@@ -119,7 +156,7 @@ void main() {
   });
 
   testWidgets(
-    'Submitting login executes repository call and shows success toast',
+    'Submitting login executes repository call, shows success toast, and navigates to customers',
     (tester) async {
       await tester.pumpWidget(wrap(LoginPage(controller: controller)));
       await tester.pumpAndSettle();
@@ -134,6 +171,7 @@ void main() {
 
       expect(mockRepository.loginCalled, isTrue);
       expect(find.text('Berhasil masuk ke sistem.'), findsOneWidget);
+      expect(find.text('Customers Screen'), findsOneWidget);
     },
   );
 
@@ -194,6 +232,11 @@ class _FailingTenantsAuthRepository implements AuthRepository {
     required String password,
     required String tenantId,
   }) async {
+    return const Err(ServerFailure('Server error'));
+  }
+
+  @override
+  Future<Result<User>> getMe() async {
     return const Err(ServerFailure('Server error'));
   }
 }

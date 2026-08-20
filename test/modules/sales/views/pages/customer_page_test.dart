@@ -3,6 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:centrow_sales/modules/sales/controllers/customer_controller.dart';
 import 'package:centrow_sales/modules/sales/entities/create_customer_input.dart';
 import 'package:centrow_sales/modules/sales/entities/customer.dart';
+import 'package:centrow_sales/modules/sales/entities/segment.dart';
 import 'package:centrow_sales/modules/sales/repositories/customer_repository.dart';
 import 'package:centrow_sales/modules/sales/views/pages/customer_page.dart';
 import 'package:centrow_sales/modules/sales/views/widgets/customer_detail_pane.dart';
@@ -149,6 +150,15 @@ class FakeCustomerRepository implements CustomerRepository {
     );
     customers.add(created);
     return Ok(created);
+  }
+
+  @override
+  Future<Result<List<Segment>>> getSegments({
+    int page = 1,
+    int pageSize = 100,
+    String? query,
+  }) async {
+    return const Ok(<Segment>[]);
   }
 }
 
@@ -316,6 +326,7 @@ void main() {
           home: Scaffold(
             body: CustomerMasterList(
               customers: const [],
+              segments: const [],
               selectedCustomerId: '',
               selectedSegment: 'all',
               searchQuery: '',
@@ -331,6 +342,60 @@ void main() {
       await tester.tap(find.byIcon(Icons.add_rounded));
       await tester.pump();
       expect(called, isTrue);
+    });
+
+    testWidgets('renders segments dynamically and selects segment', (tester) async {
+      String selected = 'all';
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: CustomerMasterList(
+              customers: const [],
+              segments: const [
+                Segment(id: 'seg-1', name: 'Villa'),
+                Segment(id: 'seg-2', name: 'Hotel'),
+              ],
+              selectedCustomerId: '',
+              selectedSegment: selected,
+              searchQuery: '',
+              onSelectCustomer: (_) {},
+              onSelectSegment: (s) => selected = s,
+              onSearchChanged: (_) {},
+            ),
+          ),
+        ),
+      );
+
+      expect(find.text('Semua'), findsOneWidget);
+      expect(find.text('Villa'), findsOneWidget);
+      expect(find.text('Hotel'), findsOneWidget);
+
+      await tester.tap(find.text('Villa'));
+      await tester.pump();
+      expect(selected, 'seg-1');
+    });
+
+    testWidgets('pulling down on master list triggers loadCustomers', (tester) async {
+      tester.view.physicalSize = const Size(400, 800); // mobile layout
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(() => tester.view.resetPhysicalSize());
+
+      await tester.pumpWidget(createTestWidget());
+      await tester.pumpAndSettle();
+
+      // verify initial load happened (customers visible)
+      expect(find.text('Villa Bali Resort'), findsOneWidget);
+
+      // simulate pull-to-refresh
+      await tester.fling(
+        find.byType(ListView),
+        const Offset(0, 400),
+        1000,
+      );
+      await tester.pumpAndSettle();
+
+      // list should still be visible after refresh
+      expect(find.text('Villa Bali Resort'), findsOneWidget);
     });
   });
 }

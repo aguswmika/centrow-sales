@@ -153,7 +153,7 @@ class _DashboardPageState extends State<DashboardPage> {
                   size: 15,
                   color: AppColors.text,
                 ),
-                onPressed: () => context.push('/pelanggan/tambah'),
+                onPressed: () => context.push('/customers/create'),
               ),
               AppButton(
                 text: 'Proposal',

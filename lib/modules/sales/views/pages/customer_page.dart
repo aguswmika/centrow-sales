@@ -6,6 +6,7 @@ import '../../../../shared/state/ui_state.dart';
 import '../../../../shared/theme/app_colors.dart';
 import '../../../../shared/widgets/error_view.dart';
 import '../../controllers/customer_controller.dart';
+import '../../entities/segment.dart';
 import '../widgets/customer_detail_pane.dart';
 import '../widgets/customer_master_list.dart';
 
@@ -64,6 +65,7 @@ class _CustomerPageState extends State<CustomerPage> {
   Widget _buildSplitContent(BuildContext context) {
     final isTablet = MediaQuery.sizeOf(context).width >= 720;
     final customers = _controller.filteredCustomers.value;
+    final segments = _controller.segmentsState.value.dataOrNull ?? <Segment>[];
     final selectedCust = _controller.selectedCustomer.value;
     final selectedId = _controller.selectedCustomerId.value.isNotEmpty
         ? _controller.selectedCustomerId.value
@@ -75,13 +77,15 @@ class _CustomerPageState extends State<CustomerPage> {
 
     final masterList = CustomerMasterList(
       customers: customers,
+      segments: segments,
       selectedCustomerId: selectedId,
       selectedSegment: selectedSeg,
       searchQuery: query,
       onSelectCustomer: _controller.selectCustomer,
       onSelectSegment: _controller.selectSegment,
       onSearchChanged: _controller.setSearchQuery,
-      onAddCustomer: () => context.push('/pelanggan/tambah'),
+      onAddCustomer: () => context.push('/customers/create'),
+      onRefresh: _controller.loadCustomers,
     );
 
     if (isTablet) {

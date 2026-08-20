@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:dio/dio.dart';
 import 'auth_token_holder.dart';
 import '../config/app_config.dart';
@@ -32,6 +33,14 @@ Dio createDio([String? baseUrl]) {
         return handler.next(response);
       },
       onError: (error, handler) {
+        if (error.response?.statusCode == 401) {
+          final path = error.requestOptions.path;
+          final isLogin =
+              path == '/v1/auth/login' || path.endsWith('/v1/auth/login');
+          if (!isLogin) {
+            unawaited(AuthTokenHolder.instance.handleSessionExpired());
+          }
+        }
         return handler.next(error);
       },
     ),

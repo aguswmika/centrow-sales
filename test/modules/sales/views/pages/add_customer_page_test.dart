@@ -3,6 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:centrow_sales/modules/sales/controllers/add_customer_controller.dart';
 import 'package:centrow_sales/modules/sales/entities/create_customer_input.dart';
 import 'package:centrow_sales/modules/sales/entities/customer.dart';
+import 'package:centrow_sales/modules/sales/entities/segment.dart';
 import 'package:centrow_sales/modules/sales/repositories/customer_repository.dart';
 import 'package:centrow_sales/modules/sales/views/pages/add_customer_page.dart';
 import 'package:centrow_sales/shared/error/failure.dart';
@@ -10,6 +11,7 @@ import 'package:centrow_sales/shared/result/result.dart';
 
 class FakeCustomerRepository implements CustomerRepository {
   List<Customer> customers = [];
+  List<Segment> segments = [];
   bool shouldFail = false;
 
   @override
@@ -54,6 +56,15 @@ class FakeCustomerRepository implements CustomerRepository {
     );
     customers.add(created);
     return Ok(created);
+  }
+
+  @override
+  Future<Result<List<Segment>>> getSegments({
+    int page = 1,
+    int pageSize = 100,
+    String? query,
+  }) async {
+    return Ok(segments);
   }
 }
 
@@ -188,6 +199,40 @@ void main() {
       await tester.tap(find.text('Sebelumnya').first);
       await tester.pump();
       expect(controller.currentStep.value, 1);
+    });
+
+    testWidgets('step 1 renders segments from repository and allows selecting a segment', (tester) async {
+      tester.view.physicalSize = const Size(1200, 800);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(tester.view.resetPhysicalSize);
+
+      final repoWithSegments = FakeCustomerRepository()
+        ..segments = [
+          const Segment(id: 'seg-villa', name: 'Villa'),
+          const Segment(id: 'seg-hotel', name: 'Hotel'),
+        ];
+      final ctrl = AddCustomerController(repoWithSegments);
+
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: AddCustomerPage(controller: ctrl),
+          ),
+        ),
+      );
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 100));
+
+      expect(find.text('Villa'), findsNothing);
+      await tester.tap(find.byType(DropdownButtonFormField<String>).first);
+      await tester.pumpAndSettle();
+
+      expect(find.text('Villa').last, findsOneWidget);
+      await tester.tap(find.text('Villa').last);
+      await tester.pumpAndSettle();
+
+      expect(ctrl.segmentId.value, 'seg-villa');
+      expect(ctrl.segment.value, 'Villa');
     });
   });
 }

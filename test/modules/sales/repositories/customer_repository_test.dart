@@ -3,6 +3,7 @@ import 'dart:typed_data';
 import 'package:dio/dio.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:centrow_sales/modules/sales/entities/create_customer_input.dart';
+import 'package:centrow_sales/modules/sales/entities/segment.dart';
 import 'package:centrow_sales/modules/sales/repositories/customer_repository.dart';
 import 'package:centrow_sales/shared/error/failure.dart';
 
@@ -486,6 +487,154 @@ void main() {
       expect(result.failureOrNull, isA<ServerFailure>());
       expect(result.failureOrNull?.message, 'Nama pelanggan wajib diisi');
       expect(result.failureOrNull?.statusCode, 400);
+    });
+  });
+
+  group('CustomerRepository - getSegments', () {
+    test('getSegments successfully parses items list and returns Ok(List<Segment>)',
+        () async {
+      mockAdapter.handler = (options) {
+        expect(options.path, '/v1/sales/segments');
+        expect(options.queryParameters['page'], 1);
+        expect(options.queryParameters['page_size'], 100);
+
+        final jsonResponse = {
+          'data': {
+            'items': [
+              {
+                'id': '660e8400-e29b-41d4-a716-446655440001',
+                'name': 'Hospitality',
+                'created_at': '2025-06-15T10:30:00Z',
+              },
+              {
+                'id': '660e8400-e29b-41d4-a716-446655440002',
+                'name': 'Food & Beverage',
+                'created_at': '2025-06-16T11:00:00Z',
+              },
+            ],
+            'pagination': {
+              'total': 2,
+              'total_page': 1,
+              'has_next': false,
+            },
+          },
+          'is_error': false,
+          'http_status': 200,
+        };
+
+        return ResponseBody.fromString(
+          jsonEncode(jsonResponse),
+          200,
+          headers: {
+            Headers.contentTypeHeader: [Headers.jsonContentType],
+          },
+        );
+      };
+
+      final result = await repository.getSegments();
+      expect(result.isOk, true);
+      final segments = result.valueOrNull!;
+      expect(segments.length, 2);
+      expect(segments.first, isA<Segment>());
+      expect(segments[0].id, '660e8400-e29b-41d4-a716-446655440001');
+      expect(segments[0].name, 'Hospitality');
+      expect(segments[0].createdAt, '2025-06-15T10:30:00Z');
+      expect(segments[1].id, '660e8400-e29b-41d4-a716-446655440002');
+      expect(segments[1].name, 'Food & Beverage');
+      expect(segments[1].createdAt, '2025-06-16T11:00:00Z');
+    });
+
+    test('getSegments correctly passes custom query parameters', () async {
+      mockAdapter.handler = (options) {
+        expect(options.queryParameters['page'], 2);
+        expect(options.queryParameters['page_size'], 50);
+        expect(options.queryParameters['q'], 'Hosp');
+
+        final jsonResponse = {
+          'data': {
+            'items': <dynamic>[],
+            'pagination': {'total': 0, 'total_page': 0, 'has_next': false},
+          },
+          'is_error': false,
+          'http_status': 200,
+        };
+
+        return ResponseBody.fromString(
+          jsonEncode(jsonResponse),
+          200,
+          headers: {
+            Headers.contentTypeHeader: [Headers.jsonContentType],
+          },
+        );
+      };
+
+      final result = await repository.getSegments(
+        page: 2,
+        pageSize: 50,
+        query: 'Hosp',
+      );
+      expect(result.isOk, true);
+      expect(result.valueOrNull, isEmpty);
+    });
+
+    test('getSegments returns ServerFailure on 400', () async {
+      mockAdapter.handler = (options) {
+        final errorResponse = {
+          'data': null,
+          'is_error': true,
+          'http_status': 400,
+          'message': 'Parameter segmen tidak valid',
+        };
+        return ResponseBody.fromString(
+          jsonEncode(errorResponse),
+          400,
+          headers: {
+            Headers.contentTypeHeader: [Headers.jsonContentType],
+          },
+        );
+      };
+
+      final result = await repository.getSegments();
+      expect(result.isErr, true);
+      expect(result.failureOrNull, isA<ServerFailure>());
+      expect(result.failureOrNull?.message, 'Parameter segmen tidak valid');
+      expect(result.failureOrNull?.statusCode, 400);
+    });
+
+    test('getSegments returns ServerFailure on 500', () async {
+      mockAdapter.handler = (options) {
+        final errorResponse = {
+          'data': null,
+          'is_error': true,
+          'http_status': 500,
+          'message': 'Internal server error',
+        };
+        return ResponseBody.fromString(
+          jsonEncode(errorResponse),
+          500,
+          headers: {
+            Headers.contentTypeHeader: [Headers.jsonContentType],
+          },
+        );
+      };
+
+      final result = await repository.getSegments();
+      expect(result.isErr, true);
+      expect(result.failureOrNull, isA<ServerFailure>());
+      expect(result.failureOrNull?.statusCode, 500);
+    });
+
+    test('getSegments returns NetworkFailure on connection timeout', () async {
+      mockAdapter.handler = (options) {
+        throw DioException(
+          requestOptions: options,
+          type: DioExceptionType.connectionTimeout,
+        );
+      };
+
+      final result = await repository.getSegments();
+      expect(result.isErr, true);
+      expect(result.failureOrNull, isA<NetworkFailure>());
     });
   });
 }

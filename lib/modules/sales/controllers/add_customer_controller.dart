@@ -3,10 +3,14 @@ import '../../../shared/result/result.dart';
 import '../../../shared/state/ui_state.dart';
 import '../entities/create_customer_input.dart';
 import '../entities/customer.dart';
+import '../entities/segment.dart';
 import '../repositories/customer_repository.dart';
 
 class AddCustomerController {
   final CustomerRepository _repository;
+
+  final _segmentsState = signal<UiState<List<Segment>>>(const UiInitial());
+  ReadonlySignal<UiState<List<Segment>>> get segmentsState => _segmentsState;
 
   final _currentStep = signal<int>(1);
 
@@ -64,9 +68,7 @@ class AddCustomerController {
   late final isStep2Valid = computed(
     () =>
         locations.value.isNotEmpty &&
-        locations.value.any(
-          (l) => l.address.trim().isNotEmpty,
-        ),
+        locations.value.any((l) => l.address.trim().isNotEmpty),
   );
 
   late final isStep3Valid = computed(
@@ -199,7 +201,7 @@ class AddCustomerController {
       code: code.value.trim(),
       segmentId: segmentId.value.trim().isNotEmpty
           ? segmentId.value.trim()
-          : '660e8400-e29b-41d4-a716-446655440001',
+          : '',
       segment: segment.value.trim(),
       regency: regency.value.trim(),
       status: status.value.trim(),
@@ -211,11 +213,11 @@ class AddCustomerController {
       riskNotes: riskNotes.value.trim(),
       notes: notes.value.trim(),
       locations: locations.value
-          .where((l) => l.label.trim().isNotEmpty || l.address.trim().isNotEmpty)
+          .where(
+            (l) => l.label.trim().isNotEmpty || l.address.trim().isNotEmpty,
+          )
           .toList(),
-      contacts: contacts.value
-          .where((c) => c.name.trim().isNotEmpty)
-          .toList(),
+      contacts: contacts.value.where((c) => c.name.trim().isNotEmpty).toList(),
     );
 
     final result = await _repository.createCustomer(input);
@@ -231,7 +233,17 @@ class AddCustomerController {
     };
   }
 
+  Future<void> loadSegments() async {
+    _segmentsState.value = const UiLoading();
+    final result = await _repository.getSegments();
+    _segmentsState.value = switch (result) {
+      Ok(:final value) => UiSuccess<List<Segment>>(value),
+      Err(:final failure) => UiFailure<List<Segment>>(failure),
+    };
+  }
+
   void dispose() {
+    _segmentsState.dispose();
     _currentStep.dispose();
     name.dispose();
     code.dispose();
