@@ -1,6 +1,6 @@
-import '../../../shared/error/failure.dart';
-import '../../../shared/result/result.dart';
-import '../entities/proposal.dart';
+import 'package:centrow_sales/shared/error/failure.dart';
+import 'package:centrow_sales/shared/result/result.dart';
+import 'package:centrow_sales/modules/sales/entities/proposal.dart';
 
 abstract interface class ProposalRepository {
   Future<Result<List<Proposal>>> getProposals({

@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import '../theme/app_colors.dart';
-import '../theme/app_radius.dart';
-import '../theme/app_spacing.dart';
-import '../theme/app_typography.dart';
+import 'package:centrow_sales/shared/theme/app_colors.dart';
+import 'package:centrow_sales/shared/theme/app_radius.dart';
+import 'package:centrow_sales/shared/theme/app_spacing.dart';
+import 'package:centrow_sales/shared/theme/app_typography.dart';
 
 enum AppButtonVariant { primary, secondary, danger, ghost }
 

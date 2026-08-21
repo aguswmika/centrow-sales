@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import '../shared/config/app_config.dart';
-import '../shared/theme/app_theme.dart';
-import 'router.dart';
+import 'package:centrow_sales/shared/config/app_config.dart';
+import 'package:centrow_sales/shared/theme/app_theme.dart';
+import 'package:centrow_sales/app/router.dart';
 
 class CentrowSalesApp extends StatelessWidget {
   final RouterConfig<Object>? routerConfig;

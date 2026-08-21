@@ -1,4 +1,4 @@
-import '../../entities/segment.dart';
+import 'package:centrow_sales/modules/sales/entities/segment.dart';
 
 class SegmentItemDto {
   final String id;

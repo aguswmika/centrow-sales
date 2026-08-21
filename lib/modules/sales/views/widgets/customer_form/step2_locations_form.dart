@@ -6,8 +6,8 @@ import 'package:centrow_sales/shared/theme/app_radius.dart';
 import 'package:centrow_sales/shared/widgets/app_badge.dart';
 import 'package:centrow_sales/modules/sales/controllers/customer_form_controller.dart';
 import 'package:centrow_sales/modules/sales/entities/create_customer_input.dart';
-import 'region_picker.dart';
-import 'map_picker_dialog.dart';
+import 'package:centrow_sales/modules/sales/views/widgets/customer_form/region_picker.dart';
+import 'package:centrow_sales/modules/sales/views/widgets/customer_form/map_picker_dialog.dart';
 
 class Step2LocationsForm extends StatelessWidget {
   final CustomerFormController controller;

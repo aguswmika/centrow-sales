@@ -1,4 +1,4 @@
-import '../../entities/tenant.dart';
+import 'package:centrow_sales/modules/core/entities/tenant.dart';
 
 class TenantDto {
   final String id;

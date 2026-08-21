@@ -1,9 +1,9 @@
 import 'package:dio/dio.dart';
-import '../../../shared/error/failure.dart';
-import '../../../shared/network/dio_client.dart';
-import '../../../shared/result/result.dart';
-import '../entities/region.dart';
-import 'dtos/region_dto.dart';
+import 'package:centrow_sales/shared/error/failure.dart';
+import 'package:centrow_sales/shared/network/dio_client.dart';
+import 'package:centrow_sales/shared/result/result.dart';
+import 'package:centrow_sales/modules/core/entities/region.dart';
+import 'package:centrow_sales/modules/core/repositories/dtos/region_dto.dart';
 
 abstract interface class RegionRepository {
   Future<Result<List<Province>>> getProvinces();

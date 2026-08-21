@@ -3,17 +3,17 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:signals/signals_flutter.dart';
-import '../../../../app/di.dart';
-import '../../../../shared/config/app_assets.dart';
-import '../../../../shared/state/ui_state.dart';
-import '../../../../shared/theme/app_colors.dart';
-import '../../../../shared/widgets/app_button.dart';
-import '../../../../shared/widgets/app_dropdown.dart';
-import '../../../../shared/widgets/app_text_field.dart';
-import '../../../../shared/widgets/toast.dart';
-import '../../controllers/login_controller.dart';
-import '../../entities/tenant.dart';
-import '../../entities/user.dart';
+import 'package:centrow_sales/app/di.dart';
+import 'package:centrow_sales/shared/config/app_assets.dart';
+import 'package:centrow_sales/shared/state/ui_state.dart';
+import 'package:centrow_sales/shared/theme/app_colors.dart';
+import 'package:centrow_sales/shared/widgets/app_button.dart';
+import 'package:centrow_sales/shared/widgets/app_dropdown.dart';
+import 'package:centrow_sales/shared/widgets/app_text_field.dart';
+import 'package:centrow_sales/shared/widgets/toast.dart';
+import 'package:centrow_sales/modules/core/controllers/login_controller.dart';
+import 'package:centrow_sales/modules/core/entities/tenant.dart';
+import 'package:centrow_sales/modules/core/entities/user.dart';
 
 class LoginPage extends StatefulWidget {
   final LoginController? controller;

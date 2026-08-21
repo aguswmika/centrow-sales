@@ -2,13 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
-import '../../app/di.dart';
-import '../../modules/core/repositories/auth_repository.dart';
-import '../config/app_assets.dart';
-import '../network/auth_token_holder.dart';
-import '../result/result.dart';
-import '../theme/app_colors.dart';
-import '../theme/app_radius.dart';
+import 'package:centrow_sales/app/di.dart';
+import 'package:centrow_sales/modules/core/repositories/auth_repository.dart';
+import 'package:centrow_sales/shared/config/app_assets.dart';
+import 'package:centrow_sales/shared/network/auth_token_holder.dart';
+import 'package:centrow_sales/shared/result/result.dart';
+import 'package:centrow_sales/shared/theme/app_colors.dart';
+import 'package:centrow_sales/shared/theme/app_radius.dart';
 
 class NavRailShell extends StatefulWidget {
   final Widget child;

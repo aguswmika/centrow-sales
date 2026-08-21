@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import '../../../../shared/state/ui_state.dart';
-import '../../../../shared/theme/app_colors.dart';
-import '../../../../shared/theme/app_radius.dart';
-import '../../../../shared/widgets/app_badge.dart';
-import '../../../../shared/widgets/app_button.dart';
-import '../../../../shared/widgets/error_view.dart';
-import '../../entities/proposal.dart';
+import 'package:centrow_sales/shared/state/ui_state.dart';
+import 'package:centrow_sales/shared/theme/app_colors.dart';
+import 'package:centrow_sales/shared/theme/app_radius.dart';
+import 'package:centrow_sales/shared/widgets/app_badge.dart';
+import 'package:centrow_sales/shared/widgets/app_button.dart';
+import 'package:centrow_sales/shared/widgets/error_view.dart';
+import 'package:centrow_sales/modules/sales/entities/proposal.dart';
 
 class ProposalDetailPane extends StatelessWidget {
   final Proposal? proposal;

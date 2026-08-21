@@ -1,10 +1,10 @@
 import 'dart:async';
 import 'package:signals/signals.dart';
-import '../../../shared/result/result.dart';
-import '../../../shared/state/ui_state.dart';
-import '../entities/customer.dart';
-import '../entities/segment.dart';
-import '../repositories/customer_repository.dart';
+import 'package:centrow_sales/shared/result/result.dart';
+import 'package:centrow_sales/shared/state/ui_state.dart';
+import 'package:centrow_sales/modules/sales/entities/customer.dart';
+import 'package:centrow_sales/modules/sales/entities/segment.dart';
+import 'package:centrow_sales/modules/sales/repositories/customer_repository.dart';
 
 class CustomerController {
   final CustomerRepository _repository;

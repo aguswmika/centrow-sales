@@ -1,4 +1,4 @@
-import '../../entities/sales_dashboard.dart';
+import 'package:centrow_sales/modules/sales/entities/sales_dashboard.dart';
 
 class KpiMetricDto {
   final String label;

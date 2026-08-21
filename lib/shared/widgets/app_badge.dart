@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import '../theme/app_colors.dart';
-import '../theme/app_radius.dart';
+import 'package:centrow_sales/shared/theme/app_colors.dart';
+import 'package:centrow_sales/shared/theme/app_radius.dart';
 
 enum AppBadgeVariant { ok, warn, err, info, brand, neutral }
 

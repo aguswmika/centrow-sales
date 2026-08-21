@@ -1,8 +1,8 @@
 import 'dart:async';
 import 'package:dio/dio.dart';
-import 'auth_token_holder.dart';
-import '../config/app_config.dart';
-import '../error/failure.dart';
+import 'package:centrow_sales/shared/network/auth_token_holder.dart';
+import 'package:centrow_sales/shared/config/app_config.dart';
+import 'package:centrow_sales/shared/error/failure.dart';
 
 Dio createDio([String? baseUrl]) {
   final dio = Dio(

@@ -1,9 +1,9 @@
 import 'dart:async';
 import 'package:signals/signals.dart';
-import '../../../shared/result/result.dart';
-import '../../../shared/state/ui_state.dart';
-import '../entities/proposal.dart';
-import '../repositories/proposal_repository.dart';
+import 'package:centrow_sales/shared/result/result.dart';
+import 'package:centrow_sales/shared/state/ui_state.dart';
+import 'package:centrow_sales/modules/sales/entities/proposal.dart';
+import 'package:centrow_sales/modules/sales/repositories/proposal_repository.dart';
 
 class ProposalController {
   final ProposalRepository _repository;

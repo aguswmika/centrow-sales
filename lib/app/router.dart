@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import '../modules/core/views/pages/login_page.dart';
-import '../modules/sales/views/pages/customer_page.dart';
-import '../modules/sales/views/pages/customer_form_page.dart';
-import '../modules/sales/views/pages/proposal_page.dart';
-import '../shared/network/auth_token_holder.dart';
-import '../shared/widgets/nav_rail_shell.dart';
+import 'package:centrow_sales/modules/core/views/pages/login_page.dart';
+import 'package:centrow_sales/modules/sales/views/pages/customer_page.dart';
+import 'package:centrow_sales/modules/sales/views/pages/customer_form_page.dart';
+import 'package:centrow_sales/modules/sales/views/pages/proposal_page.dart';
+import 'package:centrow_sales/shared/network/auth_token_holder.dart';
+import 'package:centrow_sales/shared/widgets/nav_rail_shell.dart';
 
 GoRouter createRouter({String? initialLocation}) => GoRouter(
   initialLocation:

@@ -1,20 +1,20 @@
 import 'package:dio/dio.dart';
 import 'package:get_it/get_it.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import '../modules/core/controllers/login_controller.dart';
-import '../modules/core/repositories/auth_repository.dart';
-import '../modules/core/repositories/region_repository.dart';
-import '../modules/sales/controllers/sales_dashboard_controller.dart';
-import '../modules/sales/repositories/sales_dashboard_repository.dart';
-import '../modules/sales/controllers/customer_controller.dart';
-import '../modules/sales/controllers/customer_form_controller.dart';
-import '../modules/sales/controllers/proposal_controller.dart';
-import '../modules/sales/repositories/customer_repository.dart';
-import '../modules/sales/repositories/proposal_repository.dart';
-import '../shared/network/auth_token_holder.dart';
-import '../shared/network/dio_client.dart';
-import '../shared/storage/local_storage.dart';
-import 'router.dart';
+import 'package:centrow_sales/modules/core/controllers/login_controller.dart';
+import 'package:centrow_sales/modules/core/repositories/auth_repository.dart';
+import 'package:centrow_sales/modules/core/repositories/region_repository.dart';
+import 'package:centrow_sales/modules/sales/controllers/sales_dashboard_controller.dart';
+import 'package:centrow_sales/modules/sales/repositories/sales_dashboard_repository.dart';
+import 'package:centrow_sales/modules/sales/controllers/customer_controller.dart';
+import 'package:centrow_sales/modules/sales/controllers/customer_form_controller.dart';
+import 'package:centrow_sales/modules/sales/controllers/proposal_controller.dart';
+import 'package:centrow_sales/modules/sales/repositories/customer_repository.dart';
+import 'package:centrow_sales/modules/sales/repositories/proposal_repository.dart';
+import 'package:centrow_sales/shared/network/auth_token_holder.dart';
+import 'package:centrow_sales/shared/network/dio_client.dart';
+import 'package:centrow_sales/shared/storage/local_storage.dart';
+import 'package:centrow_sales/app/router.dart';
 
 final GetIt getIt = GetIt.instance;
 

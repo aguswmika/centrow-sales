@@ -1,5 +1,5 @@
-import '../../entities/create_customer_input.dart';
-import '../../entities/customer.dart';
+import 'package:centrow_sales/modules/sales/entities/create_customer_input.dart';
+import 'package:centrow_sales/modules/sales/entities/customer.dart';
 
 class CustomerListItemDto {
   final String id;

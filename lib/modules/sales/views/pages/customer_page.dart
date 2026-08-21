@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:signals/signals_flutter.dart';
-import '../../../../app/di.dart';
-import '../../../../shared/state/ui_state.dart';
-import '../../../../shared/theme/app_colors.dart';
-import '../../../../shared/widgets/error_view.dart';
-import '../../controllers/customer_controller.dart';
-import '../../entities/segment.dart';
-import '../widgets/customer_detail_pane.dart';
-import '../widgets/customer_master_list.dart';
+import 'package:centrow_sales/app/di.dart';
+import 'package:centrow_sales/shared/state/ui_state.dart';
+import 'package:centrow_sales/shared/theme/app_colors.dart';
+import 'package:centrow_sales/shared/widgets/error_view.dart';
+import 'package:centrow_sales/modules/sales/controllers/customer_controller.dart';
+import 'package:centrow_sales/modules/sales/entities/segment.dart';
+import 'package:centrow_sales/modules/sales/views/widgets/customer_detail_pane.dart';
+import 'package:centrow_sales/modules/sales/views/widgets/customer_master_list.dart';
 
 class CustomerPage extends StatefulWidget {
   final CustomerController? controller;

@@ -1,5 +1,5 @@
 import 'package:flutter/foundation.dart';
-import '../../entities/user.dart';
+import 'package:centrow_sales/modules/core/entities/user.dart';
 
 class UserMeDto {
   final String id;
