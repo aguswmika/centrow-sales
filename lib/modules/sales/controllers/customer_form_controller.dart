@@ -1,13 +1,21 @@
+import 'package:collection/collection.dart';
 import 'package:signals/signals.dart';
+import '../../../app/di.dart';
 import '../../../shared/result/result.dart';
 import '../../../shared/state/ui_state.dart';
+import '../../core/entities/region.dart';
+import '../../core/repositories/region_repository.dart';
 import '../entities/create_customer_input.dart';
 import '../entities/customer.dart';
 import '../entities/segment.dart';
 import '../repositories/customer_repository.dart';
 
-class AddCustomerController {
+class CustomerFormController {
   final CustomerRepository _repository;
+  final RegionRepository _regionRepository;
+
+  final customerId = signal<String?>(null);
+  final isLoadingData = signal<bool>(false);
 
   final _segmentsState = signal<UiState<List<Segment>>>(const UiInitial());
   ReadonlySignal<UiState<List<Segment>>> get segmentsState => _segmentsState;
@@ -19,9 +27,7 @@ class AddCustomerController {
   final code = signal<String>('');
   final segmentId = signal<String>('');
   final segment = signal<String>('');
-  final regency = signal<String>('');
   final status = signal<String>('active');
-  final scanCode = signal<String>('');
   final npwp = signal<String>('');
   final phone = signal<String>('');
   final phoneAlt = signal<String>('');
@@ -45,15 +51,23 @@ class AddCustomerController {
       email: '',
       phone: '',
       role: 'pic',
-      roleBadge: 'brand',
       isPrimary: true,
-      roleCode: 1,
     ),
   ]);
 
   final _submissionState = signal<UiState<Customer>>(const UiInitial());
 
-  AddCustomerController(this._repository);
+  CustomerFormController(
+    this._repository, [
+    RegionRepository? regionRepository,
+  ]) : _regionRepository = regionRepository ?? _resolveRegionRepository();
+
+  static RegionRepository _resolveRegionRepository() {
+    if (getIt.isRegistered<RegionRepository>()) {
+      return getIt<RegionRepository>();
+    }
+    return const _DefaultRegionRepository();
+  }
 
   ReadonlySignal<int> get currentStep => _currentStep;
   ReadonlySignal<UiState<Customer>> get submissionState => _submissionState;
@@ -91,7 +105,7 @@ class AddCustomerController {
       final areaStr = primary.areaSize! % 1 == 0
           ? primary.areaSize!.toInt().toString()
           : primary.areaSize!.toString();
-      return '${primary.label} ($areaStr ${primary.areaUnit})';
+      return '${primary.label} ($areaStr m²)';
     }
     return primary.label;
   });
@@ -131,7 +145,6 @@ class AddCustomerController {
   void addLocation() {
     final newLoc = CreateLocationInput(
       label: 'Titik Servis #${locations.value.length + 1}',
-      regency: regency.value,
       isPrimary: locations.value.isEmpty,
     );
     locations.value = [...locations.value, newLoc];
@@ -163,9 +176,7 @@ class AddCustomerController {
   void addContact() {
     final newContact = CreateContactInput(
       name: '',
-      role: 'Koordinator Lapangan',
-      roleBadge: 'neutral',
-      roleCode: CustomerContactRole.picBackup.code,
+      role: 'pic_backup',
       isPrimary: contacts.value.isEmpty,
     );
     contacts.value = [...contacts.value, newContact];
@@ -194,18 +205,110 @@ class AddCustomerController {
     contacts.value = list;
   }
 
+  Future<void> loadInitialData(String id) async {
+    customerId.value = id;
+    isLoadingData.value = true;
+    final result = await _repository.getCustomerById(id);
+    isLoadingData.value = false;
+
+    if (result case Ok(value: final customer)) {
+      name.value = customer.name;
+      code.value = customer.code;
+      segmentId.value = customer.segmentId;
+      segment.value = customer.segment;
+      status.value = customer.status;
+      npwp.value = customer.npwp;
+      phone.value = customer.phone;
+      phoneAlt.value = customer.phoneAlt;
+      email.value = customer.email;
+      riskNotes.value = customer.riskNotes;
+      notes.value = customer.notes;
+
+      final resolvedLocations = <CreateLocationInput>[];
+      for (final l in customer.locations) {
+        int? pId, rId, dId, vId;
+        if (l.province.isNotEmpty) {
+          final pRes = await _regionRepository.getProvinces();
+          pId = pRes.valueOrNull
+              ?.firstWhereOrNull(
+                (e) => e.name.toLowerCase() == l.province.toLowerCase(),
+              )
+              ?.id;
+          if (pId != null && l.regency.isNotEmpty) {
+            final rRes = await _regionRepository.getRegencies(pId);
+            rId = rRes.valueOrNull
+                ?.firstWhereOrNull(
+                  (e) => e.name.toLowerCase() == l.regency.toLowerCase(),
+                )
+                ?.id;
+            if (rId != null && l.district.isNotEmpty) {
+              final dRes = await _regionRepository.getDistricts(pId, rId);
+              dId = dRes.valueOrNull
+                  ?.firstWhereOrNull(
+                    (e) => e.name.toLowerCase() == l.district.toLowerCase(),
+                  )
+                  ?.id;
+              if (dId != null && l.village.isNotEmpty) {
+                final vRes = await _regionRepository.getVillages(
+                  pId,
+                  rId,
+                  dId,
+                );
+                vId = vRes.valueOrNull
+                    ?.firstWhereOrNull(
+                      (e) => e.name.toLowerCase() == l.village.toLowerCase(),
+                    )
+                    ?.id;
+              }
+            }
+          }
+        }
+        resolvedLocations.add(
+          CreateLocationInput(
+            label: l.label,
+            address: l.addressLine,
+            province: l.province,
+            regency: l.regency,
+            district: l.district,
+            village: l.village,
+            provinceId: pId,
+            regencyId: rId,
+            districtId: dId,
+            villageId: vId,
+            areaSize: l.areaSize,
+            latitude: l.latitude,
+            longitude: l.longitude,
+            isPrimary: l.isPrimary,
+          ),
+        );
+      }
+      locations.value = resolvedLocations;
+
+      contacts.value = customer.contacts
+          .map(
+            (c) => CreateContactInput(
+              name: c.name,
+              position: c.position,
+              email: c.email,
+              phone: c.phone,
+              role: c.role,
+              isPrimary: c.isPrimary,
+            ),
+          )
+          .toList();
+    }
+  }
+
   Future<Customer?> submit() async {
     _submissionState.value = const UiLoading();
     final input = CreateCustomerInput(
       name: name.value.trim(),
       code: code.value.trim(),
+      status: status.value.trim(),
       segmentId: segmentId.value.trim().isNotEmpty
           ? segmentId.value.trim()
           : '',
       segment: segment.value.trim(),
-      regency: regency.value.trim(),
-      status: status.value.trim(),
-      scanCode: scanCode.value.trim(),
       npwp: npwp.value.trim(),
       phone: phone.value.trim(),
       phoneAlt: phoneAlt.value.trim(),
@@ -220,7 +323,9 @@ class AddCustomerController {
       contacts: contacts.value.where((c) => c.name.trim().isNotEmpty).toList(),
     );
 
-    final result = await _repository.createCustomer(input);
+    final result = customerId.value != null
+        ? await _repository.updateCustomer(customerId.value!, input)
+        : await _repository.createCustomer(input);
     return switch (result) {
       Ok(:final value) => () {
         _submissionState.value = UiSuccess(value);
@@ -245,19 +350,20 @@ class AddCustomerController {
   void dispose() {
     _segmentsState.dispose();
     _currentStep.dispose();
+    customerId.dispose();
+    isLoadingData.dispose();
+    status.dispose();
     name.dispose();
     code.dispose();
     segmentId.dispose();
     segment.dispose();
-    regency.dispose();
-    status.dispose();
-    scanCode.dispose();
     npwp.dispose();
     phone.dispose();
     phoneAlt.dispose();
     email.dispose();
     riskNotes.dispose();
     notes.dispose();
+    status.dispose();
     locations.dispose();
     contacts.dispose();
     _submissionState.dispose();
@@ -267,4 +373,30 @@ class AddCustomerController {
     primaryLocationSummary.dispose();
     primaryContactName.dispose();
   }
+}
+
+class _DefaultRegionRepository implements RegionRepository {
+  const _DefaultRegionRepository();
+
+  @override
+  Future<Result<List<Province>>> getProvinces() async => const Ok([]);
+
+  @override
+  Future<Result<List<Regency>>> getRegencies(int provinceId) async =>
+      const Ok([]);
+
+  @override
+  Future<Result<List<District>>> getDistricts(
+    int provinceId,
+    int regencyId,
+  ) async =>
+      const Ok([]);
+
+  @override
+  Future<Result<List<Village>>> getVillages(
+    int provinceId,
+    int regencyId,
+    int districtId,
+  ) async =>
+      const Ok([]);
 }

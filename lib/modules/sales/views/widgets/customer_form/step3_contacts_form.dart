@@ -1,102 +1,97 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:signals/signals_flutter.dart';
 import 'package:centrow_sales/shared/theme/app_colors.dart';
 import 'package:centrow_sales/shared/theme/app_radius.dart';
 import 'package:centrow_sales/shared/widgets/app_badge.dart';
-import 'package:centrow_sales/modules/sales/controllers/add_customer_controller.dart';
+import 'package:centrow_sales/modules/sales/controllers/customer_form_controller.dart';
 import 'package:centrow_sales/modules/sales/entities/create_customer_input.dart';
+import 'package:centrow_sales/modules/sales/entities/customer.dart';
 
-class Step2LocationsForm extends StatelessWidget {
-  final AddCustomerController controller;
+class Step3ContactsForm extends StatelessWidget {
+  final CustomerFormController controller;
+  final VoidCallback onPrev;
+  final VoidCallback onSubmit;
 
-  const Step2LocationsForm({super.key, required this.controller});
+  const Step3ContactsForm({
+    super.key,
+    required this.controller,
+    required this.onPrev,
+    required this.onSubmit,
+  });
 
-  static const List<String> regencyOptions = [
-    'Kabupaten Badung',
-    'Kota Denpasar',
-    'Kabupaten Gianyar',
-    'Kabupaten Tabanan',
-    'Kabupaten Klungkung',
-    'Kabupaten Buleleng',
-    'Kabupaten Karangasem',
-    'Kabupaten Jembrana',
-    'Kabupaten Bangli',
+  static const List<CustomerContactRole> roleOptions = [
+    CustomerContactRole.pic,
+    CustomerContactRole.picBackup,
+    CustomerContactRole.accounting,
+    CustomerContactRole.signatory,
   ];
-
-  static const List<String> areaUnitOptions = ['m²', 'Ha'];
 
   @override
   Widget build(BuildContext context) {
-    final list = controller.locations.value;
+    return Watch.builder(
+      builder: (context) {
+        final list = controller.contacts.value;
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        Text(
-          'Daftarkan seluruh titik servis / properti pelanggan. Setiap pelanggan dapat memiliki beberapa alamat lokasi penanganan.',
-          style: GoogleFonts.inter(
-            fontSize: 13.5,
-            fontWeight: FontWeight.w500,
-            color: AppColors.sec,
-            height: 1.5,
-          ),
-        ),
-        const SizedBox(height: 16.0),
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            // List of Repeatable Contact Cards
+            for (var i = 0; i < list.length; i++) ...[
+              _buildContactCard(context, index: i, item: list[i]),
+              const SizedBox(height: 16.0),
+            ],
 
-        // List of Repeatable Cards
-        for (var i = 0; i < list.length; i++) ...[
-          _buildLocationCard(context, index: i, item: list[i]),
-          const SizedBox(height: 16.0),
-        ],
-
-        // Add Location Button
-        InkWell(
-          onTap: () => controller.addLocation(),
-          borderRadius: AppRadius.borderLg,
-          child: Container(
-            height: 48.0,
-            decoration: BoxDecoration(
-              color: AppColors.brand05,
+            // Add Contact Button
+            InkWell(
+              onTap: () => controller.addContact(),
               borderRadius: AppRadius.borderLg,
-              border: Border.all(
-                color: AppColors.brand,
-                width: 1.5,
-                strokeAlign: BorderSide.strokeAlignCenter,
-              ),
-            ),
-            alignment: Alignment.center,
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                const Icon(
-                  Icons.add_location_alt_outlined,
-                  size: 18.0,
-                  color: AppColors.brand,
-                ),
-                const SizedBox(width: 8.0),
-                Text(
-                  '+ Tambah Alamat / Titik Servis Lain',
-                  style: GoogleFonts.inter(
-                    fontSize: 13.5,
-                    fontWeight: FontWeight.w600,
+              child: Container(
+                height: 48.0,
+                decoration: BoxDecoration(
+                  color: AppColors.brand05,
+                  borderRadius: AppRadius.borderLg,
+                  border: Border.all(
                     color: AppColors.brand,
+                    width: 1.5,
+                    strokeAlign: BorderSide.strokeAlignCenter,
                   ),
                 ),
-              ],
+                alignment: Alignment.center,
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const Icon(
+                      Icons.person_add_alt_1_outlined,
+                      size: 18.0,
+                      color: AppColors.brand,
+                    ),
+                    const SizedBox(width: 8.0),
+                    Text(
+                      '+ Tambah Kontak Person Lain',
+                      style: GoogleFonts.inter(
+                        fontSize: 13.5,
+                        fontWeight: FontWeight.w600,
+                        color: AppColors.brand,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
             ),
-          ),
-        ),
-      ],
+            const SizedBox(height: 24.0),
+          ],
+        );
+      },
     );
   }
 
-  Widget _buildLocationCard(
+  Widget _buildContactCard(
     BuildContext context, {
     required int index,
-    required CreateLocationInput item,
+    required CreateContactInput item,
   }) {
-    final currentRegency = item.regency.isNotEmpty ? item.regency : null;
-    final currentAreaUnit = item.areaUnit.isNotEmpty ? item.areaUnit : 'm²';
+    final currentRole = CustomerContactRole.fromString(item.role);
 
     return Container(
       decoration: BoxDecoration(
@@ -129,12 +124,12 @@ class Step2LocationsForm extends StatelessWidget {
             child: Row(
               children: [
                 item.isPrimary
-                    ? const AppBadge.brand(text: 'Lokasi Utama')
+                    ? const AppBadge.brand(text: 'PIC Utama')
                     : const AppBadge.neutral(text: 'Sekunder'),
                 const SizedBox(width: 10.0),
                 Expanded(
                   child: Text(
-                    'Titik Servis #${index + 1} (${item.label.isNotEmpty ? item.label : "Tanpa Label"})',
+                    'Kontak #${index + 1} (${item.name.isNotEmpty ? item.name : "Tanpa Nama"})',
                     style: GoogleFonts.plusJakartaSans(
                       fontSize: 14.0,
                       fontWeight: FontWeight.w700,
@@ -143,15 +138,15 @@ class Step2LocationsForm extends StatelessWidget {
                     overflow: TextOverflow.ellipsis,
                   ),
                 ),
-                if (controller.locations.value.length > 1)
+                if (controller.contacts.value.length > 1)
                   IconButton(
                     icon: const Icon(
                       Icons.delete_outline_rounded,
                       size: 20.0,
                       color: AppColors.err,
                     ),
-                    tooltip: 'Hapus Alamat Ini',
-                    onPressed: () => controller.removeLocation(index),
+                    tooltip: 'Hapus Kontak Ini',
+                    onPressed: () => controller.removeContact(index),
                   ),
               ],
             ),
@@ -163,107 +158,63 @@ class Step2LocationsForm extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                // Row 1: Label & Alamat
+                // Row 1: Nama & Jabatan
                 _buildFieldRow(
                   context,
                   left: _buildTextField(
-                    label: 'Label Nama Lokasi',
+                    label: 'Nama Lengkap PIC',
                     isRequired: true,
-                    value: item.label,
-                    hint: 'cth: Main Resort / Warehouse',
-                    onChanged: (v) => controller.updateLocation(
-                      index,
-                      item.copyWith(label: v),
-                    ),
+                    value: item.name,
+                    hint: 'cth: Budi Santoso',
+                    onChanged: (v) =>
+                        controller.updateContact(index, item.copyWith(name: v)),
                   ),
                   right: _buildTextField(
-                    label: 'Alamat Lengkap',
-                    isRequired: true,
-                    value: item.address,
-                    hint: 'cth: Jalan Pantai Kuta, Badung',
-                    onChanged: (v) => controller.updateLocation(
+                    label: 'Jabatan / Posisi',
+                    value: item.position,
+                    hint: 'cth: General Manager',
+                    onChanged: (v) => controller.updateContact(
                       index,
-                      item.copyWith(address: v),
+                      item.copyWith(position: v),
                     ),
                   ),
                 ),
                 const SizedBox(height: 14.0),
 
-                // Row 2: Kabupaten, Kecamatan, Kelurahan
-                _buildFieldGrid3(
-                  context,
-                  c1: _buildDropdownField<String>(
-                    label: 'Kabupaten / Kota',
-                    isRequired: false,
-                    hint: 'Pilih Kabupaten / Kota',
-                    value: currentRegency,
-                    items: regencyOptions
-                        .map(
-                          (e) => DropdownMenuItem<String>(
-                            value: e,
-                            child: Text(
-                              e,
-                              style: GoogleFonts.inter(
-                                fontSize: 14.0,
-                                color: AppColors.text,
-                                fontWeight: FontWeight.w500,
-                              ),
-                            ),
-                          ),
-                        )
-                        .toList(),
-                    onChanged: (v) => controller.updateLocation(
-                      index,
-                      item.copyWith(regency: v ?? ''),
-                    ),
-                  ),
-                  c2: _buildTextField(
-                    label: 'Kecamatan',
-                    value: item.district,
-                    hint: 'cth: Kuta',
-                    onChanged: (v) => controller.updateLocation(
-                      index,
-                      item.copyWith(district: v),
-                    ),
-                  ),
-                  c3: _buildTextField(
-                    label: 'Kelurahan / Desa',
-                    value: item.village,
-                    hint: 'cth: Seminyak',
-                    onChanged: (v) => controller.updateLocation(
-                      index,
-                      item.copyWith(village: v),
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 14.0),
-
-                // Row 3: Luas, Satuan, Coords
+                // Row 2: Email, Phone, Peran PIC
                 _buildFieldGrid3(
                   context,
                   c1: _buildTextField(
-                    label: 'Luas Area Properti',
-                    value: item.areaSize != null
-                        ? (item.areaSize! % 1 == 0
-                            ? item.areaSize!.toInt().toString()
-                            : item.areaSize!.toString())
-                        : '',
-                    hint: 'cth: 2500',
-                    keyboardType: TextInputType.number,
-                    onChanged: (v) => controller.updateLocation(
+                    label: 'Email PIC',
+                    value: item.email,
+                    hint: 'cth: budi@customer.com',
+                    keyboardType: TextInputType.emailAddress,
+                    onChanged: (v) => controller.updateContact(
                       index,
-                      item.copyWith(areaSize: double.tryParse(v)),
+                      item.copyWith(email: v),
                     ),
                   ),
-                  c2: _buildDropdownField<String>(
-                    label: 'Satuan Luas',
-                    value: currentAreaUnit,
-                    items: areaUnitOptions
+                  c2: _buildTextField(
+                    label: 'Nomor HP / WhatsApp',
+                    isRequired: true,
+                    value: item.phone,
+                    hint: '+62 812-3456-7890',
+                    keyboardType: TextInputType.phone,
+                    onChanged: (v) => controller.updateContact(
+                      index,
+                      item.copyWith(phone: v),
+                    ),
+                  ),
+                  c3: _buildDropdownField<String>(
+                    label: 'Peran PIC',
+                    isRequired: true,
+                    value: currentRole.value,
+                    items: roleOptions
                         .map(
-                          (e) => DropdownMenuItem<String>(
-                            value: e,
+                          (r) => DropdownMenuItem<String>(
+                            value: r.value,
                             child: Text(
-                              e,
+                              r.displayName,
                               style: GoogleFonts.inter(
                                 fontSize: 14.0,
                                 color: AppColors.text,
@@ -273,19 +224,15 @@ class Step2LocationsForm extends StatelessWidget {
                           ),
                         )
                         .toList(),
-                    onChanged: (v) => controller.updateLocation(
-                      index,
-                      item.copyWith(areaUnit: v ?? 'm²'),
-                    ),
-                  ),
-                  c3: _buildTextField(
-                    label: 'Koordinat GPS',
-                    value: item.coords,
-                    hint: '-8.6500, 115.1700',
-                    onChanged: (v) => controller.updateLocation(
-                      index,
-                      item.copyWith(coords: v),
-                    ),
+                    onChanged: (v) {
+                      final selected = CustomerContactRole.fromString(
+                        v ?? 'pic',
+                      );
+                      controller.updateContact(
+                        index,
+                        item.copyWith(role: selected.value),
+                      );
+                    },
                   ),
                 ),
                 const SizedBox(height: 14.0),
@@ -295,7 +242,7 @@ class Step2LocationsForm extends StatelessWidget {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text(
-                      'Tandai sebagai Lokasi Servis & Penagihan Utama',
+                      'Tandai sebagai Kontak Person Utama',
                       style: GoogleFonts.inter(
                         fontSize: 13.0,
                         fontWeight: FontWeight.w600,
@@ -307,7 +254,7 @@ class Step2LocationsForm extends StatelessWidget {
                       activeTrackColor: AppColors.brand,
                       onChanged: (val) {
                         if (val) {
-                          controller.setPrimaryLocation(index);
+                          controller.setPrimaryContact(index);
                         }
                       },
                     ),

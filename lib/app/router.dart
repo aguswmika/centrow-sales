@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../modules/core/views/pages/login_page.dart';
 import '../modules/sales/views/pages/customer_page.dart';
-import '../modules/sales/views/pages/add_customer_page.dart';
+import '../modules/sales/views/pages/customer_form_page.dart';
 import '../shared/network/auth_token_holder.dart';
 import '../shared/widgets/nav_rail_shell.dart';
 
@@ -45,7 +45,14 @@ GoRouter createRouter({String? initialLocation}) => GoRouter(
                 GoRoute(
                   path: 'create',
                   name: 'create-customer',
-                  builder: (context, state) => const AddCustomerPage(),
+                  builder: (context, state) => const CustomerFormPage(),
+                ),
+                GoRoute(
+                  path: ':id/edit',
+                  name: 'edit-customer',
+                  builder: (context, state) => CustomerFormPage(
+                    customerId: state.pathParameters['id'],
+                  ),
                 ),
               ],
             ),

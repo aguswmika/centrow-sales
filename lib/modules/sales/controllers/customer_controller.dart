@@ -99,9 +99,11 @@ class CustomerController {
     };
   }
 
-  Future<void> loadCustomers() async {
+  Future<void> loadCustomers({bool isRefresh = false}) async {
     unawaited(loadSegments());
-    _customersState.value = const UiLoading();
+    if (!isRefresh && _customersState.value is! UiSuccess) {
+      _customersState.value = const UiLoading();
+    }
     final result = await _repository.getCustomers(
       query: _searchQuery.value.isNotEmpty ? _searchQuery.value : null,
       segmentId:

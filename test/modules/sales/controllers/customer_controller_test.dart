@@ -162,13 +162,20 @@ class FakeCustomerRepository implements CustomerRepository {
           : 'CP',
       segmentId: input.segmentId,
       segment: input.segment.isNotEmpty ? input.segment : 'Villa',
-      status: input.status.isNotEmpty ? input.status : 'active',
-      regency: input.regency,
+      status: 'active',
       phone: input.phone,
       email: input.email,
     );
     customers.add(created);
     return Ok(created);
+  }
+
+  @override
+  Future<Result<Customer>> updateCustomer(
+    String id,
+    CreateCustomerInput input,
+  ) async {
+    return createCustomer(input);
   }
 
   @override

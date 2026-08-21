@@ -1,16 +1,33 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:centrow_sales/modules/sales/controllers/sales_dashboard_controller.dart';
+import 'package:centrow_sales/modules/sales/entities/sales_dashboard.dart';
 import 'package:centrow_sales/modules/sales/repositories/sales_dashboard_repository.dart';
 import 'package:centrow_sales/modules/sales/views/pages/dashboard_page.dart';
+import 'package:centrow_sales/shared/result/result.dart';
+
+class FakeSalesDashboardRepository implements SalesDashboardRepository {
+  @override
+  Future<Result<SalesDashboardSummary>> getDashboardSummary() async {
+    return const Ok(SalesDashboardSummary(
+      kpis: [],
+      pipelineStages: [],
+      clientSegments: [],
+      recentProposals: [],
+      expiringContracts: [],
+      userName: 'Agus',
+      branchName: 'Bali',
+    ));
+  }
+}
 
 void main() {
   group('DashboardPage', () {
-    late SalesDashboardRepository repository;
+    late FakeSalesDashboardRepository repository;
     late SalesDashboardController controller;
 
     setUp(() {
-      repository = SalesDashboardRepositoryImpl(null, true);
+      repository = FakeSalesDashboardRepository();
       controller = SalesDashboardController(repository);
     });
 

@@ -2,121 +2,113 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:centrow_sales/shared/theme/app_colors.dart';
 import 'package:centrow_sales/shared/theme/app_radius.dart';
-import 'package:centrow_sales/modules/sales/controllers/add_customer_controller.dart';
+import 'package:centrow_sales/modules/sales/controllers/customer_form_controller.dart';
+import 'package:signals/signals_flutter.dart';
 
-class AddCustomerSidebar extends StatelessWidget {
-  final AddCustomerController controller;
+class CustomerFormSidebar extends StatelessWidget {
+  final CustomerFormController controller;
 
-  const AddCustomerSidebar({super.key, required this.controller});
+  const CustomerFormSidebar({super.key, required this.controller});
 
   @override
   Widget build(BuildContext context) {
-    final currentStep = controller.currentStep.value;
+    return Watch.builder(
+      builder: (context) {
+        final currentStep = controller.currentStep.value;
 
-    return SingleChildScrollView(
-      padding: const EdgeInsets.only(
-        top: 20.0,
-        left: 16.0,
-        right: 16.0,
-        bottom: 60.0,
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          // 1. Live Summary Card
-          _buildPreviewCard(
-            title: 'Ringkasan Data',
-            child: Column(
-              children: [
-                _buildPreviewRow(
-                  'Nama',
-                  controller.name.value.isNotEmpty
-                      ? controller.name.value
-                      : '-',
-                ),
-                _buildPreviewRow(
-                  'Segmen',
-                  controller.segment.value.isNotEmpty
-                      ? controller.segment.value
-                      : '-',
-                ),
-                _buildPreviewRow(
-                  'Wilayah',
-                  controller.regency.value.isNotEmpty
-                      ? controller.regency.value
-                      : '-',
-                ),
-                _buildPreviewRow(
-                  'Status',
-                  controller.status.value.isNotEmpty
-                      ? controller.status.value
-                      : 'Aktif',
-                  isStatus: true,
-                ),
-                _buildPreviewRow(
-                  'Alamat Utama',
-                  controller.primaryLocationSummary.value,
-                ),
-                _buildPreviewRow(
-                  'PIC Utama',
-                  controller.primaryContactName.value,
-                ),
-              ],
-            ),
+        return SingleChildScrollView(
+          padding: const EdgeInsets.only(
+            top: 20.0,
+            left: 16.0,
+            right: 16.0,
+            bottom: 60.0,
           ),
-          const SizedBox(height: 16.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              // 1. Live Summary Card
+              _buildPreviewCard(
+                title: 'Ringkasan Data',
+                child: Column(
+                  children: [
+                    _buildPreviewRow(
+                      'Nama',
+                      controller.name.value.isNotEmpty
+                          ? controller.name.value
+                          : '-',
+                    ),
+                    _buildPreviewRow(
+                      'Segmen',
+                      controller.segment.value.isNotEmpty
+                          ? controller.segment.value
+                          : '-',
+                    ),
+                    _buildPreviewRow(
+                      'Alamat Utama',
+                      controller.primaryLocationSummary.value,
+                    ),
+                    _buildPreviewRow(
+                      'PIC Utama',
+                      controller.primaryContactName.value,
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 16.0),
 
-          // 2. Progress Indicator Card
-          _buildPreviewCard(
-            title: 'Progres Pendaftaran',
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Langkah $currentStep dari 3',
-                  style: GoogleFonts.inter(
-                    fontSize: 12.0,
-                    fontWeight: FontWeight.w600,
-                    color: AppColors.sec,
-                  ),
+              // 2. Progress Indicator Card
+              _buildPreviewCard(
+                title: 'Progres Pendaftaran',
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Langkah $currentStep dari 3',
+                      style: GoogleFonts.inter(
+                        fontSize: 12.0,
+                        fontWeight: FontWeight.w600,
+                        color: AppColors.sec,
+                      ),
+                    ),
+                    const SizedBox(height: 12.0),
+                    _buildProgressItem(1, '1. Identitas & Legal', currentStep),
+                    const SizedBox(height: 10.0),
+                    _buildProgressItem(2, '2. Lokasi & Alamat', currentStep),
+                    const SizedBox(height: 10.0),
+                    _buildProgressItem(
+                      3,
+                      '3. Kontak Person & PIC',
+                      currentStep,
+                    ),
+                  ],
                 ),
-                const SizedBox(height: 12.0),
-                _buildProgressItem(1, '1. Identitas & Legal', currentStep),
-                const SizedBox(height: 10.0),
-                _buildProgressItem(2, '2. Lokasi & Alamat', currentStep),
-                const SizedBox(height: 10.0),
-                _buildProgressItem(3, '3. Kontak Person & PIC', currentStep),
-              ],
-            ),
-          ),
-          const SizedBox(height: 16.0),
+              ),
+              const SizedBox(height: 16.0),
 
-          // 3. Guidance Card
-          _buildPreviewCard(
-            title: 'Petunjuk Pengisian',
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                _buildGuidanceBullet(
-                  'Kode pelanggan opsional dan otomatis digenerate backend jika kosong.',
+              // 3. Guidance Card
+              _buildPreviewCard(
+                title: 'Petunjuk Pengisian',
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    _buildGuidanceBullet(
+                      'Nama pelanggan dan nomor telepon utama perusahaan wajib diisi.',
+                    ),
+                    const SizedBox(height: 8.0),
+                    _buildGuidanceBullet(
+                      'Daftarkan minimal 1 lokasi operasional atau titik servis penanganan.',
+                    ),
+                    const SizedBox(height: 8.0),
+                    _buildGuidanceBullet(
+                      'Daftarkan minimal 1 PIC bertindak sebagai Pengambil Keputusan.',
+                    ),
+                  ],
                 ),
-                const SizedBox(height: 8.0),
-                _buildGuidanceBullet(
-                  'Nama pelanggan dan nomor telepon utama perusahaan wajib diisi.',
-                ),
-                const SizedBox(height: 8.0),
-                _buildGuidanceBullet(
-                  'Daftarkan minimal 1 lokasi operasional atau titik servis penanganan.',
-                ),
-                const SizedBox(height: 8.0),
-                _buildGuidanceBullet(
-                  'Daftarkan minimal 1 PIC bertindak sebagai Pengambil Keputusan.',
-                ),
-              ],
-            ),
+              ),
+            ],
           ),
-        ],
-      ),
+        );
+      },
     );
   }
 

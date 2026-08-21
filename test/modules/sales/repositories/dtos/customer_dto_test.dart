@@ -80,7 +80,7 @@ void main() {
       final entity = dto.toEntity();
       expect(entity.initials, 'BS');
       expect(entity.roleBadge, 'brand');
-      expect(entity.displayRole, 'Pengambil Keputusan');
+      expect(entity.displayRole, 'PIC');
     });
 
     test('CustomerProposalDto fromJson and toEntity', () {
@@ -184,7 +184,6 @@ void main() {
           CreateContactInput(
             name: 'Andi',
             role: 'pic',
-            roleCode: 1,
             isPrimary: true,
           ),
         ],
@@ -195,6 +194,49 @@ void main() {
 
       expect(json['name'], 'Resto Mewah');
       expect(json['segment_id'], 'seg-1');
+      expect(json['locations'], isA<List<dynamic>>());
+      final locJson = (json['locations'] as List).first as Map<String, dynamic>;
+      expect(locJson['province_id'], 1);
+      expect(locJson['regency_id'], 2);
+
+      final contactJson = (json['contacts'] as List).first as Map<String, dynamic>;
+      expect(contactJson['name'], 'Andi');
+      expect(contactJson['role'], 1);
+    });
+
+    test('UpdateCustomerRequestDto from input creates correct payload without code and with status', () {
+      const input = CreateCustomerInput(
+        name: 'Resto Mewah Updated',
+        code: 'IMMUTABLE-CODE',
+        status: 'inactive',
+        segmentId: 'seg-1',
+        locations: [
+          CreateLocationInput(
+            label: 'Main',
+            address: 'Jl. Sudirman',
+            provinceId: 1,
+            regencyId: 2,
+            districtId: 3,
+            villageId: 4,
+            areaSize: 100,
+          ),
+        ],
+        contacts: [
+          CreateContactInput(
+            name: 'Andi',
+            role: 'pic',
+            isPrimary: true,
+          ),
+        ],
+      );
+
+      final requestDto = UpdateCustomerRequestDto.fromInput(input);
+      final json = requestDto.toJson();
+
+      expect(json['name'], 'Resto Mewah Updated');
+      expect(json['segment_id'], 'seg-1');
+      expect(json['status'], 'inactive');
+      expect(json.containsKey('code'), false);
       expect(json['locations'], isA<List<dynamic>>());
       final locJson = (json['locations'] as List).first as Map<String, dynamic>;
       expect(locJson['province_id'], 1);

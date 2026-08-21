@@ -45,6 +45,7 @@ class CustomerInfoTab extends StatelessWidget {
         ],
       ),
       child: Column(
+        mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           _buildInfoRow(
@@ -90,9 +91,48 @@ class CustomerInfoTab extends StatelessWidget {
           _buildInfoRow('Catatan Risiko', text: customer.riskNotes),
           _buildDivider(),
           _buildInfoRow('Catatan Operasional', text: customer.notes),
+          _buildDivider(),
+          _buildInfoRow(
+            'Tanggal Dibuat',
+            text: _formatDate(customer.createdAt),
+          ),
+          _buildDivider(),
+          _buildInfoRow(
+            'Terakhir Diperbarui',
+            text: _formatDate(customer.updatedAt),
+          ),
         ],
       ),
     );
+  }
+
+  String _formatDate(String isoString) {
+    if (isoString.trim().isEmpty) return '-';
+    try {
+      final dt = DateTime.parse(isoString);
+      const months = [
+        'Jan',
+        'Feb',
+        'Mar',
+        'Apr',
+        'Mei',
+        'Jun',
+        'Jul',
+        'Agu',
+        'Sep',
+        'Okt',
+        'Nov',
+        'Des',
+      ];
+      final month = (dt.month >= 1 && dt.month <= 12)
+          ? months[dt.month - 1]
+          : dt.month.toString();
+      final hour = dt.hour.toString().padLeft(2, '0');
+      final minute = dt.minute.toString().padLeft(2, '0');
+      return '${dt.day} $month ${dt.year}, $hour:$minute WIB';
+    } catch (_) {
+      return isoString.isNotEmpty ? isoString : '-';
+    }
   }
 
   Widget _buildDivider() {

@@ -172,6 +172,14 @@ class CustomerDetailPane extends StatelessWidget {
                             color: AppColors.muted,
                           ),
                         ),
+                        Text(
+                          '• ${customer.activeContractsCount} Kontrak Aktif',
+                          style: GoogleFonts.inter(
+                            fontSize: 12.0,
+                            fontWeight: FontWeight.w500,
+                            color: AppColors.muted,
+                          ),
+                        ),
                       ],
                     ),
                   ],

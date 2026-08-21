@@ -15,8 +15,6 @@ void main() {
         district: 'Kuta',
         village: 'Seminyak',
         areaSize: 500,
-        areaUnit: 'm²',
-        coords: '-8.123, 115.123',
         latitude: -8.123,
         longitude: 115.123,
         isPrimary: true,
@@ -50,8 +48,7 @@ void main() {
         position: 'GM',
         email: 'budi@test.com',
         phone: '+62812345678',
-        role: 'Pengambil Keputusan',
-        roleBadge: 'brand',
+        role: 'pic',
         isPrimary: true,
       );
 
@@ -70,14 +67,13 @@ void main() {
       expect(json['is_primary'], true);
     });
 
-    test('CreateCustomerInput instantiation and toJson', () {
+    test('CreateCustomerInput instantiation, copyWith, and toJson', () {
       const customer = CreateCustomerInput(
         name: 'Villa Sari',
         code: 'CRM-100',
+        status: 'active',
         segmentId: '660e8400-e29b-41d4-a716-446655440001',
         segment: 'Villa',
-        regency: 'Badung',
-        status: 'Aktif',
         phone: '+6281234',
         locations: [
           CreateLocationInput(label: 'L1', address: 'A1', isPrimary: true),
@@ -88,15 +84,28 @@ void main() {
       );
 
       expect(customer.name, 'Villa Sari');
+      expect(customer.code, 'CRM-100');
+      expect(customer.status, 'active');
       expect(customer.segmentId, '660e8400-e29b-41d4-a716-446655440001');
       expect(customer.locations.length, 1);
       expect(customer.contacts.length, 1);
 
+      final copy = customer.copyWith(status: 'inactive', name: 'Villa Updated');
+      expect(copy.status, 'inactive');
+      expect(copy.name, 'Villa Updated');
+      expect(copy.code, 'CRM-100');
+
       final json = customer.toJson();
       expect(json['name'], 'Villa Sari');
+      expect(json['code'], 'CRM-100');
+      expect(json['status'], 'active');
       expect(json['segment_id'], '660e8400-e29b-41d4-a716-446655440001');
       expect(json['locations'], isA<List<dynamic>>());
       expect(json['contacts'], isA<List<dynamic>>());
+
+      expect(customer == copy, false);
+      expect(customer == customer.copyWith(), true);
+      expect(customer.toString(), contains('status: active'));
     });
   });
 }

@@ -1,20 +1,18 @@
 enum CustomerContactRole {
-  pic(1, 'pic', 'Pengambil Keputusan', 'PIC', 'brand'),
-  picBackup(2, 'pic_backup', 'Koordinator Lapangan', 'PIC Cadangan', 'neutral'),
-  accounting(3, 'accounting', 'Keuangan & Penagihan', 'Accounting', 'ok'),
-  signatory(4, 'signatory', 'Penandatangan Kontrak', 'Signatory', 'info');
+  pic(1, 'pic', 'PIC', 'brand'),
+  picBackup(2, 'pic_backup', 'PIC Cadangan', 'neutral'),
+  accounting(3, 'accounting', 'Accounting', 'ok'),
+  signatory(4, 'signatory', 'Penandatangan', 'info');
 
   final int code;
   final String value;
   final String displayName;
-  final String shortName;
   final String badgeType;
 
   const CustomerContactRole(
     this.code,
     this.value,
     this.displayName,
-    this.shortName,
     this.badgeType,
   );
 
@@ -30,8 +28,7 @@ enum CustomerContactRole {
     for (final role in CustomerContactRole.values) {
       if (role.value == lower ||
           role.name.toLowerCase() == lower ||
-          role.displayName.toLowerCase() == lower ||
-          role.shortName.toLowerCase() == lower) {
+          role.displayName.toLowerCase() == lower) {
         return role;
       }
     }
@@ -137,19 +134,19 @@ class CustomerLocation {
 
   @override
   int get hashCode => Object.hash(
-        id,
-        customerId,
-        isPrimary,
-        label,
-        addressLine,
-        village,
-        district,
-        regency,
-        province,
-        areaSize,
-        latitude,
-        longitude,
-      );
+    id,
+    customerId,
+    isPrimary,
+    label,
+    addressLine,
+    village,
+    district,
+    regency,
+    province,
+    areaSize,
+    latitude,
+    longitude,
+  );
 
   @override
   String toString() =>
@@ -178,13 +175,10 @@ class CustomerContact {
   });
 
   String get initials {
-    final parts =
-        name.trim().split(' ').where((e) => e.isNotEmpty).toList();
+    final parts = name.trim().split(' ').where((e) => e.isNotEmpty).toList();
     if (parts.isEmpty) return 'CP';
     if (parts.length == 1) {
-      return parts[0]
-          .substring(0, parts[0].length >= 2 ? 2 : 1)
-          .toUpperCase();
+      return parts[0].substring(0, parts[0].length >= 2 ? 2 : 1).toUpperCase();
     }
     return '${parts[0][0]}${parts[1][0]}'.toUpperCase();
   }
@@ -231,15 +225,15 @@ class CustomerContact {
 
   @override
   int get hashCode => Object.hash(
-        id,
-        customerId,
-        name,
-        position,
-        email,
-        phone,
-        role,
-        isPrimary,
-      );
+    id,
+    customerId,
+    name,
+    position,
+    email,
+    phone,
+    role,
+    isPrimary,
+  );
 
   @override
   String toString() =>
@@ -269,14 +263,17 @@ class CustomerProposalSummary {
     required this.status,
   });
 
-  String get title =>
-      serviceName.isNotEmpty ? serviceName : (code.isNotEmpty ? 'Proposal $code' : '');
+  String get title => serviceName.isNotEmpty
+      ? serviceName
+      : (code.isNotEmpty ? 'Proposal $code' : '');
 
   String get date => proposalDate;
 
   String get amount {
     if (totalAmount <= 0) return 'Rp 0';
-    final formatted = totalAmount.toStringAsFixed(0).replaceAllMapped(
+    final formatted = totalAmount
+        .toStringAsFixed(0)
+        .replaceAllMapped(
           RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'),
           (Match m) => '${m[1]}.',
         );
@@ -284,19 +281,18 @@ class CustomerProposalSummary {
   }
 
   String get badgeType => switch (status.toLowerCase()) {
-        'accepted' || 'disetujui' => 'ok',
-        'sent' || 'dikirim' => 'info',
-        'negotiation' || 'negosiasi' => 'warn',
-        'rejected' ||
-        'ditolak' ||
-        'cancelled' ||
-        'dibatalkan' ||
-        'expired' ||
-        'kadaluarsa' =>
-          'err',
-        'draft' => 'neutral',
-        _ => 'neutral',
-      };
+    'accepted' || 'disetujui' => 'ok',
+    'sent' || 'dikirim' => 'info',
+    'negotiation' || 'negosiasi' => 'warn',
+    'rejected' ||
+    'ditolak' ||
+    'cancelled' ||
+    'dibatalkan' ||
+    'expired' ||
+    'kadaluarsa' => 'err',
+    'draft' => 'neutral',
+    _ => 'neutral',
+  };
 
   @override
   bool operator ==(Object other) =>
@@ -315,16 +311,16 @@ class CustomerProposalSummary {
 
   @override
   int get hashCode => Object.hash(
-        id,
-        customerId,
-        code,
-        serviceId,
-        serviceName,
-        proposalDate,
-        validUntil,
-        totalAmount,
-        status,
-      );
+    id,
+    customerId,
+    code,
+    serviceId,
+    serviceName,
+    proposalDate,
+    validUntil,
+    totalAmount,
+    status,
+  );
 
   @override
   String toString() =>
@@ -469,26 +465,27 @@ class Customer {
 
   @override
   int get hashCode => Object.hash(
-        id,
-        code,
-        name,
-        initials,
-        segmentId,
-        segment,
-        status,
-        npwp,
-        phone,
-        phoneAlt,
-        email,
-        scanCode,
-        riskNotes,
-        notes,
-        activeProposalsCount,
-        activeContractsCount,
-        createdAt,
-        updatedAt,
-      );
+    id,
+    code,
+    name,
+    initials,
+    segmentId,
+    segment,
+    status,
+    npwp,
+    phone,
+    phoneAlt,
+    email,
+    scanCode,
+    riskNotes,
+    notes,
+    activeProposalsCount,
+    activeContractsCount,
+    createdAt,
+    updatedAt,
+  );
 
   @override
-  String toString() => 'Customer(id: $id, code: $code, name: $name, segment: $segment)';
+  String toString() =>
+      'Customer(id: $id, code: $code, name: $name, segment: $segment)';
 }

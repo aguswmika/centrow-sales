@@ -39,16 +39,7 @@ void main() {
     dio = Dio(BaseOptions(baseUrl: 'https://api.centrow.id'));
     mockAdapter = MockAdapter();
     dio.httpClientAdapter = mockAdapter;
-    repository = SalesDashboardRepositoryImpl(dio, false);
-  });
-
-  test('getDashboardSummary returns mock data when useMock is true', () async {
-    final mockRepo = SalesDashboardRepositoryImpl(dio, true);
-    final result = await mockRepo.getDashboardSummary();
-    expect(result, isA<Ok<SalesDashboardSummary>>());
-    final summary = (result as Ok<SalesDashboardSummary>).value;
-    expect(summary.userName, 'Agus Widarmika');
-    expect(summary.kpis.length, 4);
+    repository = SalesDashboardRepositoryImpl(dio);
   });
 
   test('getDashboardSummary returns Ok when API call is successful', () async {

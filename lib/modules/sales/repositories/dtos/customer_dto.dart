@@ -584,6 +584,76 @@ class CreateCustomerRequestDto {
   }
 }
 
+class UpdateCustomerRequestDto {
+  final String name;
+  final String status;
+  final String segmentId;
+  final String? npwpNumber;
+  final String? email;
+  final String? phone;
+  final String? phoneAlt;
+  final String? riskNotes;
+  final String? notes;
+  final List<CreateCustomerLocationRequestDto> locations;
+  final List<CreateCustomerContactRequestDto> contacts;
+
+  const UpdateCustomerRequestDto({
+    required this.name,
+    this.status = 'active',
+    required this.segmentId,
+    this.npwpNumber,
+    this.email,
+    this.phone,
+    this.phoneAlt,
+    this.riskNotes,
+    this.notes,
+    this.locations = const [],
+    this.contacts = const [],
+  });
+
+  factory UpdateCustomerRequestDto.fromInput(CreateCustomerInput input) {
+    return UpdateCustomerRequestDto(
+      name: input.name,
+      status: input.status,
+      segmentId: input.segmentId,
+      npwpNumber: input.npwp.isNotEmpty ? input.npwp : null,
+      email: input.email.isNotEmpty ? input.email : null,
+      phone: input.phone.isNotEmpty ? input.phone : null,
+      phoneAlt: input.phoneAlt.isNotEmpty ? input.phoneAlt : null,
+      riskNotes: input.riskNotes.isNotEmpty ? input.riskNotes : null,
+      notes: input.notes.isNotEmpty ? input.notes : null,
+      locations: input.locations
+          .map((l) => CreateCustomerLocationRequestDto.fromInput(l))
+          .toList(),
+      contacts: input.contacts
+          .where((c) => c.name.trim().isNotEmpty)
+          .map((c) => CreateCustomerContactRequestDto.fromInput(c))
+          .toList(),
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    final map = <String, dynamic>{
+      'name': name,
+      'segment_id': segmentId,
+    };
+    if (status.isNotEmpty) map['status'] = status;
+    if (npwpNumber != null) map['npwp_number'] = npwpNumber;
+    if (email != null) map['email'] = email;
+    if (phone != null) map['phone'] = phone;
+    if (phoneAlt != null) map['phone_alt'] = phoneAlt;
+    if (riskNotes != null) map['risk_notes'] = riskNotes;
+    if (notes != null) map['notes'] = notes;
+    if (locations.isNotEmpty) {
+      map['locations'] = locations.map((l) => l.toJson()).toList();
+    }
+    if (contacts.isNotEmpty) {
+      map['contacts'] = contacts.map((c) => c.toJson()).toList();
+    }
+    return map;
+  }
+}
+
 class CreateCustomerResponseDto {
   final String id;
   final String code;

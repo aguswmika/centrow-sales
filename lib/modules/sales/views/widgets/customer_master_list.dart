@@ -163,7 +163,7 @@ class CustomerMasterList extends StatelessWidget {
               child: Padding(
                 padding: const EdgeInsets.all(24.0),
                 child: Text(
-                  'Tidak ada pelanggan yang cocok',
+                  'Tidak ada pelanggan',
                   style: GoogleFonts.inter(
                     fontSize: 13.5,
                     fontWeight: FontWeight.w500,

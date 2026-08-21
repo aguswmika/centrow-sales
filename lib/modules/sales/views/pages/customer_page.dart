@@ -84,8 +84,13 @@ class _CustomerPageState extends State<CustomerPage> {
       onSelectCustomer: _controller.selectCustomer,
       onSelectSegment: _controller.selectSegment,
       onSearchChanged: _controller.setSearchQuery,
-      onAddCustomer: () => context.push('/customers/create'),
-      onRefresh: _controller.loadCustomers,
+      onAddCustomer: () async {
+        final result = await context.push('/customers/create');
+        if (result != null && context.mounted) {
+          await _controller.loadCustomers(isRefresh: true);
+        }
+      },
+      onRefresh: () => _controller.loadCustomers(isRefresh: true),
     );
 
     if (isTablet) {
@@ -105,7 +110,14 @@ class _CustomerPageState extends State<CustomerPage> {
               activeTab: activeTab,
               onTabChanged: _controller.setDetailTab,
               onAddProposal: () {},
-              onEditData: () {},
+              onEditData: () async {
+                if (selectedCust == null) return;
+                final result =
+                    await context.push('/customers/${selectedCust.id}/edit');
+                if (result != null && context.mounted) {
+                  await _controller.loadCustomers(isRefresh: true);
+                }
+              },
               onRetry: () => _controller.loadCustomerDetail(selectedId),
             ),
           ),

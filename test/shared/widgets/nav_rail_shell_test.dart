@@ -105,6 +105,14 @@ class _MockCustomerRepo implements CustomerRepository {
   }
 
   @override
+  Future<Result<Customer>> updateCustomer(
+    String id,
+    CreateCustomerInput input,
+  ) async {
+    return createCustomer(input);
+  }
+
+  @override
   Future<Result<List<Segment>>> getSegments({
     int page = 1,
     int pageSize = 100,

@@ -43,8 +43,9 @@ class CustomerContactsTab extends StatelessWidget {
       if (contact.email.isNotEmpty) contact.email,
       if (contact.phone.isNotEmpty) contact.phone,
     ];
-    final contactInfo =
-        contactInfoParts.isNotEmpty ? contactInfoParts.join(' · ') : '-';
+    final contactInfo = contactInfoParts.isNotEmpty
+        ? contactInfoParts.join(' · ')
+        : '-';
 
     return Container(
       padding: const EdgeInsets.all(16.0),

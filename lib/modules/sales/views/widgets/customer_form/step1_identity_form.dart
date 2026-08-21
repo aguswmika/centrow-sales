@@ -2,31 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:centrow_sales/shared/theme/app_colors.dart';
 import 'package:centrow_sales/shared/theme/app_radius.dart';
-import 'package:centrow_sales/modules/sales/controllers/add_customer_controller.dart';
+import 'package:centrow_sales/modules/sales/controllers/customer_form_controller.dart';
 import 'package:centrow_sales/modules/sales/entities/segment.dart';
 import 'package:signals/signals_flutter.dart';
 
 class Step1IdentityForm extends StatelessWidget {
-  final AddCustomerController controller;
+  final CustomerFormController controller;
 
   const Step1IdentityForm({super.key, required this.controller});
-
-  static const List<String> regencyOptions = [
-    'Kabupaten Badung',
-    'Kota Denpasar',
-    'Kabupaten Gianyar',
-    'Kabupaten Tabanan',
-    'Kabupaten Klungkung',
-    'Kabupaten Buleleng',
-    'Kabupaten Karangasem',
-    'Kabupaten Jembrana',
-    'Kabupaten Bangli',
-  ];
-
-  static const List<({String value, String label})> statusOptions = [
-    (value: 'active', label: 'Aktif'),
-    (value: 'inactive', label: 'Non-Aktif'),
-  ];
 
   @override
   Widget build(BuildContext context) {
@@ -47,16 +30,6 @@ class Step1IdentityForm extends StatelessWidget {
         final segmentHint = isSegmentsLoading
             ? 'Memuat segmen...'
             : (segmentList.isEmpty ? 'Tidak ada segmen' : 'Pilih Segmen Usaha');
-
-        final currentRegency = controller.regency.value.isNotEmpty
-            ? controller.regency.value
-            : null;
-
-        final currentStatus = controller.status.value.isNotEmpty
-            ? (controller.status.value.toLowerCase() == 'aktif'
-                ? 'active'
-                : controller.status.value.toLowerCase())
-            : 'active';
 
         return Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -108,60 +81,6 @@ class Step1IdentityForm extends StatelessWidget {
                         }
                       },
               ),
-            ),
-            const SizedBox(height: 16.0),
-            _buildFieldRow(
-              context,
-              left: _buildDropdownField<String>(
-                label: 'Kabupaten / Kota Domisili',
-                isRequired: false,
-                hint: 'Pilih Kabupaten / Kota',
-                value: currentRegency,
-                items: regencyOptions
-                    .map(
-                      (e) => DropdownMenuItem<String>(
-                        value: e,
-                        child: Text(
-                          e,
-                          style: GoogleFonts.inter(
-                            fontSize: 14.0,
-                            color: AppColors.text,
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                      ),
-                    )
-                    .toList(),
-                onChanged: (v) => controller.regency.value = v ?? '',
-              ),
-              right: _buildDropdownField<String>(
-                label: 'Status Pelanggan',
-                isRequired: true,
-                value: currentStatus,
-                items: statusOptions
-                    .map(
-                      (e) => DropdownMenuItem<String>(
-                        value: e.value,
-                        child: Text(
-                          e.label,
-                          style: GoogleFonts.inter(
-                            fontSize: 14.0,
-                            color: AppColors.text,
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                      ),
-                    )
-                    .toList(),
-                onChanged: (v) => controller.status.value = v ?? 'active',
-              ),
-            ),
-            const SizedBox(height: 16.0),
-            _buildTextField(
-              label: 'Scan Barcode / Kode QR',
-              hint: 'cth: VC-550e8400',
-              value: controller.scanCode.value,
-              onChanged: (v) => controller.scanCode.value = v,
             ),
           ],
         ),
@@ -215,7 +134,7 @@ class Step1IdentityForm extends StatelessWidget {
           title: 'Catatan Internal & Risiko',
           children: [
             _buildTextField(
-              label: 'Catatan Risiko Finansial / Riwayat Kredit',
+              label: 'Site Risk Assessment',
               hint:
                   'Catatan kredit, komplain sebelumnya, atau syarat termin khusus…',
               maxLines: 3,
@@ -233,6 +152,79 @@ class Step1IdentityForm extends StatelessWidget {
             ),
           ],
         ),
+        if (controller.customerId.value != null) ...[
+          const SizedBox(height: 16.0),
+          _buildSectionCard(
+            icon: Icons.toggle_on_rounded,
+            title: 'Status Pelanggan',
+            children: [
+              _buildDropdownField<String>(
+                label: 'Status Pelanggan',
+                isRequired: true,
+                value: controller.status.value.toLowerCase() == 'inactive'
+                    ? 'inactive'
+                    : 'active',
+                items: [
+                  DropdownMenuItem<String>(
+                    value: 'active',
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Container(
+                          width: 8.0,
+                          height: 8.0,
+                          decoration: const BoxDecoration(
+                            color: AppColors.ok,
+                            shape: BoxShape.circle,
+                          ),
+                        ),
+                        const SizedBox(width: 8.0),
+                        Text(
+                          'Aktif',
+                          style: GoogleFonts.inter(
+                            fontSize: 14.0,
+                            color: AppColors.text,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  DropdownMenuItem<String>(
+                    value: 'inactive',
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Container(
+                          width: 8.0,
+                          height: 8.0,
+                          decoration: const BoxDecoration(
+                            color: AppColors.muted,
+                            shape: BoxShape.circle,
+                          ),
+                        ),
+                        const SizedBox(width: 8.0),
+                        Text(
+                          'Non-Aktif',
+                          style: GoogleFonts.inter(
+                            fontSize: 14.0,
+                            color: AppColors.text,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+                onChanged: (v) {
+                  if (v != null) {
+                    controller.status.value = v;
+                  }
+                },
+              ),
+            ],
+          ),
+        ],
         const SizedBox(height: 24.0),
       ],
     );

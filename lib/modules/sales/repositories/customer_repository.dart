@@ -26,6 +26,11 @@ abstract interface class CustomerRepository {
   Future<Result<Customer>> getCustomerById(String id);
 
   Future<Result<Customer>> createCustomer(CreateCustomerInput input);
+
+  Future<Result<Customer>> updateCustomer(
+    String id,
+    CreateCustomerInput input,
+  );
 }
 
 class CustomerRepositoryImpl implements CustomerRepository {
@@ -195,6 +200,43 @@ class CustomerRepositoryImpl implements CustomerRepository {
 
       final createdDto = CreateCustomerResponseDto.fromJson(dataMap);
       return Ok(createdDto.toEntity());
+    } on DioException catch (e) {
+      return Err(_handleDioError(e));
+    } catch (e) {
+      return Err(UnknownFailure(e.toString()));
+    }
+  }
+
+  @override
+  Future<Result<Customer>> updateCustomer(
+    String id,
+    CreateCustomerInput input,
+  ) async {
+    try {
+      final requestDto = UpdateCustomerRequestDto.fromInput(input);
+
+      final response = await _dio.put<dynamic>(
+        '/v1/sales/customers/$id',
+        data: requestDto.toJson(),
+      );
+
+      final responseData = response.data;
+      final Map<String, dynamic> dataMap;
+
+      if (responseData is Map) {
+        if (responseData['data'] is Map) {
+          dataMap = (responseData['data'] as Map).cast<String, dynamic>();
+        } else {
+          dataMap = responseData.cast<String, dynamic>();
+        }
+      } else {
+        return const Err(
+          ServerFailure('Format respon dari server tidak valid.'),
+        );
+      }
+
+      final updatedDto = CreateCustomerResponseDto.fromJson(dataMap);
+      return Ok(updatedDto.toEntity());
     } on DioException catch (e) {
       return Err(_handleDioError(e));
     } catch (e) {

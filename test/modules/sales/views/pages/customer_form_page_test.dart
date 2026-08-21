@@ -1,13 +1,30 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:centrow_sales/modules/sales/controllers/add_customer_controller.dart';
+import 'package:centrow_sales/app/di.dart';
+import 'package:centrow_sales/modules/core/entities/region.dart';
+import 'package:centrow_sales/modules/core/repositories/region_repository.dart';
+import 'package:centrow_sales/modules/sales/controllers/customer_form_controller.dart';
 import 'package:centrow_sales/modules/sales/entities/create_customer_input.dart';
 import 'package:centrow_sales/modules/sales/entities/customer.dart';
 import 'package:centrow_sales/modules/sales/entities/segment.dart';
 import 'package:centrow_sales/modules/sales/repositories/customer_repository.dart';
-import 'package:centrow_sales/modules/sales/views/pages/add_customer_page.dart';
+import 'package:centrow_sales/modules/sales/views/pages/customer_form_page.dart';
 import 'package:centrow_sales/shared/error/failure.dart';
 import 'package:centrow_sales/shared/result/result.dart';
+
+class FakeRegionRepository implements RegionRepository {
+  @override
+  Future<Result<List<Province>>> getProvinces() async => const Ok([]);
+
+  @override
+  Future<Result<List<Regency>>> getRegencies(int provinceId) async => const Ok([]);
+
+  @override
+  Future<Result<List<District>>> getDistricts(int provinceId, int regencyId) async => const Ok([]);
+
+  @override
+  Future<Result<List<Village>>> getVillages(int provinceId, int regencyId, int districtId) async => const Ok([]);
+}
 
 class FakeCustomerRepository implements CustomerRepository {
   List<Customer> customers = [];
@@ -49,13 +66,20 @@ class FakeCustomerRepository implements CustomerRepository {
           : 'CP',
       segmentId: input.segmentId,
       segment: input.segment.isNotEmpty ? input.segment : 'Villa',
-      status: input.status.isNotEmpty ? input.status : 'active',
-      regency: input.regency,
+      status: 'active',
       phone: input.phone,
       email: input.email,
     );
     customers.add(created);
     return Ok(created);
+  }
+
+  @override
+  Future<Result<Customer>> updateCustomer(
+    String id,
+    CreateCustomerInput input,
+  ) async {
+    return createCustomer(input);
   }
 
   @override
@@ -69,19 +93,29 @@ class FakeCustomerRepository implements CustomerRepository {
 }
 
 void main() {
-  group('AddCustomerPage', () {
+  group('CustomerFormPage', () {
     late FakeCustomerRepository repository;
-    late AddCustomerController controller;
+    late CustomerFormController controller;
 
     setUp(() {
       repository = FakeCustomerRepository();
-      controller = AddCustomerController(repository);
+      controller = CustomerFormController(repository);
+      if (getIt.isRegistered<RegionRepository>()) {
+        getIt.unregister<RegionRepository>();
+      }
+      getIt.registerSingleton<RegionRepository>(FakeRegionRepository());
+    });
+
+    tearDown(() {
+      if (getIt.isRegistered<RegionRepository>()) {
+        getIt.unregister<RegionRepository>();
+      }
     });
 
     Widget createTestWidget() {
       return MaterialApp(
         home: Scaffold(
-          body: AddCustomerPage(controller: controller),
+          body: CustomerFormPage(controller: controller),
         ),
       );
     }
@@ -143,7 +177,7 @@ void main() {
 
       expect(controller.currentStep.value, 3);
       expect(find.text('+ Tambah Kontak Person Lain'), findsOneWidget);
-      expect(find.text('Simpan Data Pelanggan'), findsWidgets);
+      expect(find.text('Simpan'), findsWidgets);
 
       // Populate Step 3 contact
       controller.updateContact(
@@ -155,8 +189,8 @@ void main() {
       );
       await tester.pump();
 
-      // Tap Simpan Data Pelanggan
-      await tester.tap(find.text('Simpan Data Pelanggan').first);
+      // Tap Simpan
+      await tester.tap(find.text('Simpan').first);
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 100));
 
@@ -211,12 +245,12 @@ void main() {
           const Segment(id: 'seg-villa', name: 'Villa'),
           const Segment(id: 'seg-hotel', name: 'Hotel'),
         ];
-      final ctrl = AddCustomerController(repoWithSegments);
+      final ctrl = CustomerFormController(repoWithSegments);
 
       await tester.pumpWidget(
         MaterialApp(
           home: Scaffold(
-            body: AddCustomerPage(controller: ctrl),
+            body: CustomerFormPage(controller: ctrl),
           ),
         ),
       );
@@ -233,6 +267,160 @@ void main() {
 
       expect(ctrl.segmentId.value, 'seg-villa');
       expect(ctrl.segment.value, 'Villa');
+    });
+
+    testWidgets('edit mode loads customer initial data and updates topbar title', (tester) async {
+      tester.view.physicalSize = const Size(1200, 800);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(tester.view.resetPhysicalSize);
+
+      final repo = FakeCustomerRepository()
+        ..customers = [
+          const Customer(
+            id: 'c123',
+            code: 'CUST-123',
+            name: 'Hotel Mulia Bali',
+            initials: 'HM',
+            segmentId: 'seg-hotel',
+            segment: 'Hotel',
+            status: 'active',
+            phone: '+62 811-222-333',
+            locations: [
+              CustomerLocation(
+                label: 'Main Building',
+                addressLine: 'Jl. Raya Nusa Dua',
+                isPrimary: true,
+              ),
+            ],
+            contacts: [
+              CustomerContact(
+                name: 'Dewi Lestari',
+                phone: '+62 811-222-333',
+                role: 'pic',
+                isPrimary: true,
+              ),
+            ],
+          ),
+        ];
+
+      final ctrl = CustomerFormController(repo);
+
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: CustomerFormPage(
+              controller: ctrl,
+              customerId: 'c123',
+            ),
+          ),
+        ),
+      );
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 100));
+
+      expect(find.text('Edit Data Pelanggan'), findsOneWidget);
+      expect(ctrl.name.value, 'Hotel Mulia Bali');
+      expect(ctrl.phone.value, '+62 811-222-333');
+
+      // Tap Selanjutnya to step 2
+      await tester.tap(find.text('Selanjutnya').first);
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 100));
+      expect(ctrl.currentStep.value, 2);
+
+      // Tap Selanjutnya to step 3
+      await tester.tap(find.text('Selanjutnya').first);
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 100));
+      expect(ctrl.currentStep.value, 3);
+
+      // Tap Simpan to trigger update
+      await tester.tap(find.text('Simpan').first);
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 100));
+
+      expect(find.text('Pelanggan "Hotel Mulia Bali" berhasil diperbarui'), findsOneWidget);
+    });
+
+    testWidgets('edit mode allows saving directly from step 1 via topbar Simpan button', (tester) async {
+      tester.view.physicalSize = const Size(1200, 800);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(tester.view.resetPhysicalSize);
+
+      final repo = FakeCustomerRepository()
+        ..customers = [
+          const Customer(
+            id: 'c123',
+            code: 'CUST-123',
+            name: 'Hotel Mulia Bali',
+            initials: 'HM',
+            segmentId: 'seg-hotel',
+            segment: 'Hotel',
+            status: 'active',
+            phone: '+62 811-222-333',
+            locations: [
+              CustomerLocation(
+                label: 'Main Building',
+                addressLine: 'Jl. Raya Nusa Dua',
+                isPrimary: true,
+              ),
+            ],
+            contacts: [
+              CustomerContact(
+                name: 'Dewi Lestari',
+                phone: '+62 811-222-333',
+                role: 'pic',
+                isPrimary: true,
+              ),
+            ],
+          ),
+        ];
+
+      final ctrl = CustomerFormController(repo);
+
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: CustomerFormPage(
+              controller: ctrl,
+              customerId: 'c123',
+            ),
+          ),
+        ),
+      );
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 100));
+
+      expect(ctrl.currentStep.value, 1);
+      expect(find.text('Simpan'), findsOneWidget);
+
+      ctrl.name.value = 'Hotel Mulia Bali Updated';
+      await tester.pump();
+
+      await tester.tap(find.text('Simpan'));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 100));
+
+      expect(
+        find.text('Pelanggan "Hotel Mulia Bali Updated" berhasil diperbarui'),
+        findsOneWidget,
+      );
+    });
+
+    testWidgets('shows loading bar when isLoadingData is true', (tester) async {
+      tester.view.physicalSize = const Size(1200, 800);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(tester.view.resetPhysicalSize);
+
+      await tester.pumpWidget(createTestWidget());
+      await tester.pump();
+
+      expect(find.byType(LinearProgressIndicator), findsNothing);
+
+      controller.isLoadingData.value = true;
+      await tester.pump();
+
+      expect(find.byType(CircularProgressIndicator), findsOneWidget);
     });
   });
 }

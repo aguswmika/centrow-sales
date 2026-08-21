@@ -437,7 +437,6 @@ void main() {
             email: 'eko@mewahjakarta.example.com',
             phone: '+62-21-555-9999',
             role: 'pic',
-            roleCode: 1,
             isPrimary: true,
           ),
           CreateContactInput(
@@ -446,7 +445,6 @@ void main() {
             email: 'dwi@mewahjakarta.example.com',
             phone: '+62-21-555-9998',
             role: 'pic_backup',
-            roleCode: 2,
             isPrimary: false,
           ),
         ],
@@ -487,6 +485,87 @@ void main() {
       expect(result.failureOrNull, isA<ServerFailure>());
       expect(result.failureOrNull?.message, 'Nama pelanggan wajib diisi');
       expect(result.failureOrNull?.statusCode, 400);
+    });
+  });
+
+  group('CustomerRepository - updateCustomer', () {
+    const customerId = '11e8400-e29b-41d4-a716-446655440013';
+
+    test('updateCustomer sends PUT request and returns updated Customer entity',
+        () async {
+      mockAdapter.handler = (options) {
+        expect(options.path, '/v1/sales/customers/$customerId');
+        expect(options.method, 'PUT');
+
+        final body = options.data is String
+            ? jsonDecode(options.data as String)
+            : options.data as Map<String, dynamic>;
+
+        expect(body['name'], 'Restoran Mewah Jakarta Updated');
+        expect(body['segment_id'], '660e8400-e29b-41d4-a716-446655440012');
+        expect(body['status'], 'active');
+        expect(body.containsKey('code'), false);
+
+        final jsonResponse = {
+          'data': {
+            'id': customerId,
+            'code': 'CUST-003',
+            'name': 'Restoran Mewah Jakarta Updated',
+            'initials': 'RM',
+            'segment': 'Food & Beverage',
+            'status': 'active',
+            'created_at': '2025-08-18T15:30:45Z',
+          },
+          'is_error': false,
+          'http_status': 200,
+        };
+
+        return ResponseBody.fromString(
+          jsonEncode(jsonResponse),
+          200,
+          headers: {
+            Headers.contentTypeHeader: [Headers.jsonContentType],
+          },
+        );
+      };
+
+      const input = CreateCustomerInput(
+        code: 'CUST-003',
+        name: 'Restoran Mewah Jakarta Updated',
+        segmentId: '660e8400-e29b-41d4-a716-446655440012',
+        segment: 'Food & Beverage',
+      );
+
+      final result = await repository.updateCustomer(customerId, input);
+      expect(result.isOk, true);
+      final customer = result.valueOrNull!;
+      expect(customer.id, customerId);
+      expect(customer.name, 'Restoran Mewah Jakarta Updated');
+    });
+
+    test('updateCustomer returns 404 failure when not found', () async {
+      mockAdapter.handler = (options) {
+        final errorResponse = {
+          'data': null,
+          'is_error': true,
+          'http_status': 404,
+          'message': 'Pelanggan tidak ditemukan',
+        };
+        return ResponseBody.fromString(
+          jsonEncode(errorResponse),
+          404,
+          headers: {
+            Headers.contentTypeHeader: [Headers.jsonContentType],
+          },
+        );
+      };
+
+      const input = CreateCustomerInput(name: 'Updated Name');
+      final result = await repository.updateCustomer('non-existent-id', input);
+      expect(result.isErr, true);
+      expect(result.failureOrNull, isA<ServerFailure>());
+      expect(result.failureOrNull?.message, 'Pelanggan tidak ditemukan');
+      expect(result.failureOrNull?.statusCode, 404);
     });
   });
 

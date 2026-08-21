@@ -1,5 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:centrow_sales/modules/sales/controllers/add_customer_controller.dart';
+import 'package:centrow_sales/modules/core/entities/region.dart';
+import 'package:centrow_sales/modules/core/repositories/region_repository.dart';
+import 'package:centrow_sales/modules/sales/controllers/customer_form_controller.dart';
 import 'package:centrow_sales/modules/sales/entities/create_customer_input.dart';
 import 'package:centrow_sales/modules/sales/entities/customer.dart';
 import 'package:centrow_sales/modules/sales/entities/segment.dart';
@@ -8,9 +10,41 @@ import 'package:centrow_sales/shared/error/failure.dart';
 import 'package:centrow_sales/shared/result/result.dart';
 import 'package:centrow_sales/shared/state/ui_state.dart';
 
+class FakeRegionRepository implements RegionRepository {
+  List<Province> provinces = [];
+  List<Regency> regencies = [];
+  List<District> districts = [];
+  List<Village> villages = [];
+
+  @override
+  Future<Result<List<Province>>> getProvinces() async => Ok(provinces);
+
+  @override
+  Future<Result<List<Regency>>> getRegencies(int provinceId) async =>
+      Ok(regencies);
+
+  @override
+  Future<Result<List<District>>> getDistricts(
+    int provinceId,
+    int regencyId,
+  ) async =>
+      Ok(districts);
+
+  @override
+  Future<Result<List<Village>>> getVillages(
+    int provinceId,
+    int regencyId,
+    int districtId,
+  ) async =>
+      Ok(villages);
+}
+
 class FakeCustomerRepository implements CustomerRepository {
   List<Customer> customers = [];
   bool shouldFailCreate = false;
+  bool shouldFailUpdate = false;
+  String? lastUpdatedId;
+  CreateCustomerInput? lastUpdatedInput;
   List<Segment> initialSegments;
   bool failSegments;
 
@@ -54,8 +88,7 @@ class FakeCustomerRepository implements CustomerRepository {
           : 'CP',
       segmentId: input.segmentId,
       segment: input.segment.isNotEmpty ? input.segment : 'Villa',
-      status: input.status.isNotEmpty ? input.status : 'active',
-      regency: input.regency,
+      status: 'active',
       phone: input.phone,
       phoneAlt: input.phoneAlt,
       email: input.email,
@@ -66,7 +99,6 @@ class FakeCustomerRepository implements CustomerRepository {
                 label: l.label,
                 addressLine: l.address,
                 isPrimary: l.isPrimary,
-                regency: l.regency,
                 areaSize: l.areaSize,
               ))
           .toList(),
@@ -86,6 +118,59 @@ class FakeCustomerRepository implements CustomerRepository {
   }
 
   @override
+  Future<Result<Customer>> updateCustomer(
+    String id,
+    CreateCustomerInput input,
+  ) async {
+    lastUpdatedId = id;
+    lastUpdatedInput = input;
+    if (shouldFailUpdate) {
+      return const Err(ServerFailure('Gagal memperbarui pelanggan', 400));
+    }
+    final existingIndex = customers.indexWhere((c) => c.id == id);
+    final updated = Customer(
+      id: id,
+      code: input.code.isNotEmpty ? input.code : 'CRM-0901',
+      name: input.name,
+      initials: input.name.isNotEmpty
+          ? input.name.substring(0, 2).toUpperCase()
+          : 'CP',
+      segmentId: input.segmentId,
+      segment: input.segment.isNotEmpty ? input.segment : 'Villa',
+      status: 'active',
+      phone: input.phone,
+      phoneAlt: input.phoneAlt,
+      email: input.email,
+      riskNotes: input.riskNotes,
+      notes: input.notes,
+      locations: input.locations
+          .map((l) => CustomerLocation(
+                label: l.label,
+                addressLine: l.address,
+                isPrimary: l.isPrimary,
+                areaSize: l.areaSize,
+              ))
+          .toList(),
+      contacts: input.contacts
+          .map((c) => CustomerContact(
+                name: c.name,
+                position: c.position,
+                email: c.email,
+                phone: c.phone,
+                role: c.role,
+                isPrimary: c.isPrimary,
+              ))
+          .toList(),
+    );
+    if (existingIndex >= 0) {
+      customers[existingIndex] = updated;
+    } else {
+      customers.add(updated);
+    }
+    return Ok(updated);
+  }
+
+  @override
   Future<Result<List<Segment>>> getSegments({
     int page = 1,
     int pageSize = 100,
@@ -99,13 +184,13 @@ class FakeCustomerRepository implements CustomerRepository {
 }
 
 void main() {
-  group('AddCustomerController', () {
+  group('CustomerFormController', () {
     late FakeCustomerRepository repository;
-    late AddCustomerController controller;
+    late CustomerFormController controller;
 
     setUp(() {
       repository = FakeCustomerRepository();
-      controller = AddCustomerController(repository);
+      controller = CustomerFormController(repository);
     });
 
     tearDown(() {
@@ -117,11 +202,9 @@ void main() {
       expect(controller.currentStep.value, 1);
       expect(controller.name.value, '');
       expect(controller.code.value, '');
+      expect(controller.status.value, 'active');
       expect(controller.segmentId.value, '');
       expect(controller.segment.value, '');
-      expect(controller.regency.value, '');
-      expect(controller.status.value, 'active');
-      expect(controller.scanCode.value, '');
       expect(controller.npwp.value, '');
       expect(controller.phone.value, '');
       expect(controller.phoneAlt.value, '');
@@ -322,7 +405,7 @@ void main() {
     });
 
     test('loadSegments transitions to UiSuccess', () async {
-      final ctrl = AddCustomerController(FakeCustomerRepository(
+      final ctrl = CustomerFormController(FakeCustomerRepository(
         initialSegments: [const Segment(id: 's1', name: 'Villa')],
       ));
       await ctrl.loadSegments();
@@ -334,12 +417,233 @@ void main() {
     });
 
     test('loadSegments sets UiFailure on error', () async {
-      final ctrl = AddCustomerController(FakeCustomerRepository(
+      final ctrl = CustomerFormController(FakeCustomerRepository(
         failSegments: true,
       ));
       await ctrl.loadSegments();
       expect(ctrl.segmentsState.value, isA<UiFailure<List<Segment>>>());
       ctrl.dispose();
+    });
+
+    test('loadInitialData populates all signals, locations, and contacts', () async {
+      const existingCustomer = Customer(
+        id: 'cust-123',
+        code: 'CRM-1001',
+        name: 'Grand Hotel Bali',
+        initials: 'GH',
+        segmentId: 'seg-hotel',
+        segment: 'Hospitality',
+        status: 'active',
+        npwp: '01.234.567.8-999.000',
+        phone: '+62 811 2233 4455',
+        phoneAlt: '+62 811 2233 4456',
+        email: 'info@grandhotelbali.com',
+        riskNotes: 'VIP client, high volume',
+        notes: 'Annual contract renewal every January',
+        locations: [
+          CustomerLocation(
+            label: 'Main Resort Wing',
+            addressLine: 'Jl. Pantai Kuta No. 99',
+            province: 'Bali',
+            regency: 'Badung',
+            district: 'Kuta',
+            village: 'Kuta',
+            areaSize: 12000.0,
+            latitude: -8.723,
+            longitude: 115.169,
+            isPrimary: true,
+          ),
+          CustomerLocation(
+            label: 'Beach Club',
+            addressLine: 'Jl. Pantai Kuta No. 100',
+            province: 'Bali',
+            regency: 'Badung',
+            district: 'Kuta',
+            village: 'Kuta',
+            areaSize: 3500.0,
+            isPrimary: false,
+          ),
+        ],
+        contacts: [
+          CustomerContact(
+            name: 'Made Wijaya',
+            position: 'General Manager',
+            email: 'made@grandhotelbali.com',
+            phone: '+62 811 2233 4455',
+            role: 'pic',
+            isPrimary: true,
+          ),
+          CustomerContact(
+            name: 'Ketut Suardana',
+            position: 'Chief Engineer',
+            email: 'ketut@grandhotelbali.com',
+            phone: '+62 811 2233 4457',
+            role: 'pic_backup',
+            isPrimary: false,
+          ),
+        ],
+      );
+
+      repository.customers.add(existingCustomer);
+
+      expect(controller.customerId.value, isNull);
+      expect(controller.isLoadingData.value, false);
+
+      final loadFuture = controller.loadInitialData('cust-123');
+      expect(controller.isLoadingData.value, true);
+      expect(controller.customerId.value, 'cust-123');
+
+      await loadFuture;
+      expect(controller.isLoadingData.value, false);
+
+      expect(controller.name.value, 'Grand Hotel Bali');
+      expect(controller.code.value, 'CRM-1001');
+      expect(controller.status.value, 'active');
+      expect(controller.segmentId.value, 'seg-hotel');
+      expect(controller.segment.value, 'Hospitality');
+      expect(controller.npwp.value, '01.234.567.8-999.000');
+      expect(controller.phone.value, '+62 811 2233 4455');
+      expect(controller.phoneAlt.value, '+62 811 2233 4456');
+      expect(controller.email.value, 'info@grandhotelbali.com');
+      expect(controller.riskNotes.value, 'VIP client, high volume');
+      expect(controller.notes.value, 'Annual contract renewal every January');
+
+      // Verify locations mapped correctly
+      expect(controller.locations.value.length, 2);
+      final loc1 = controller.locations.value[0];
+      expect(loc1.label, 'Main Resort Wing');
+      expect(loc1.address, 'Jl. Pantai Kuta No. 99');
+      expect(loc1.province, 'Bali');
+      expect(loc1.regency, 'Badung');
+      expect(loc1.district, 'Kuta');
+      expect(loc1.village, 'Kuta');
+      expect(loc1.areaSize, 12000.0);
+      expect(loc1.latitude, -8.723);
+      expect(loc1.longitude, 115.169);
+      expect(loc1.isPrimary, true);
+
+      final loc2 = controller.locations.value[1];
+      expect(loc2.label, 'Beach Club');
+      expect(loc2.address, 'Jl. Pantai Kuta No. 100');
+      expect(loc2.isPrimary, false);
+
+      // Verify contacts mapped correctly
+      expect(controller.contacts.value.length, 2);
+      final c1 = controller.contacts.value[0];
+      expect(c1.name, 'Made Wijaya');
+      expect(c1.position, 'General Manager');
+      expect(c1.email, 'made@grandhotelbali.com');
+      expect(c1.phone, '+62 811 2233 4455');
+      expect(c1.role, 'pic');
+      expect(c1.isPrimary, true);
+
+      final c2 = controller.contacts.value[1];
+      expect(c2.name, 'Ketut Suardana');
+      expect(c2.position, 'Chief Engineer');
+      expect(c2.email, 'ketut@grandhotelbali.com');
+      expect(c2.phone, '+62 811 2233 4457');
+      expect(c2.role, 'pic_backup');
+      expect(c2.isPrimary, false);
+    });
+
+    test('loadInitialData resolves region IDs using RegionRepository', () async {
+      final regionRepo = FakeRegionRepository()
+        ..provinces = [const Province(id: 10, name: 'Bali')]
+        ..regencies = [const Regency(id: 101, name: 'Badung')]
+        ..districts = [
+          const District(id: 1011, name: 'Kuta'),
+        ]
+        ..villages = [
+          const Village(id: 10111, name: 'Seminyak'),
+        ];
+
+      final ctrl = CustomerFormController(repository, regionRepo);
+
+      repository.customers.add(
+        const Customer(
+          id: 'cust-with-regions',
+          code: 'CRM-1002',
+          name: 'Villa Seminyak',
+          initials: 'VS',
+          segment: 'Villa',
+          status: 'inactive',
+          locations: [
+            CustomerLocation(
+              label: 'Villa 1',
+              addressLine: 'Jl. Kayu Aya',
+              province: 'Bali',
+              regency: 'Badung',
+              district: 'Kuta',
+              village: 'Seminyak',
+              isPrimary: true,
+            ),
+          ],
+        ),
+      );
+
+      await ctrl.loadInitialData('cust-with-regions');
+
+      expect(ctrl.status.value, 'inactive');
+      expect(ctrl.locations.value.length, 1);
+      final loc = ctrl.locations.value.first;
+      expect(loc.provinceId, 10);
+      expect(loc.regencyId, 101);
+      expect(loc.districtId, 1011);
+      expect(loc.villageId, 10111);
+
+      ctrl.dispose();
+    });
+
+    test('loadInitialData handles not found gracefully', () async {
+      await controller.loadInitialData('non-existent');
+      expect(controller.isLoadingData.value, false);
+      expect(controller.customerId.value, 'non-existent');
+      expect(controller.name.value, '');
+    });
+
+    test('submit calls updateCustomer when customerId is set', () async {
+      controller.customerId.value = 'cust-999';
+      controller.name.value = 'Updated Name';
+      controller.status.value = 'inactive';
+      controller.segmentId.value = 'seg-1';
+      controller.phone.value = '+62 812-0000';
+      controller.updateLocation(
+        0,
+        controller.locations.value.first.copyWith(
+          label: 'Updated Loc',
+          address: 'Jl. Baru No. 1',
+        ),
+      );
+      controller.updateContact(
+        0,
+        controller.contacts.value.first.copyWith(
+          name: 'Updated Contact',
+          phone: '+62 812-0000',
+        ),
+      );
+
+      final updated = await controller.submit();
+      expect(updated, isNotNull);
+      expect(repository.lastUpdatedId, 'cust-999');
+      expect(repository.lastUpdatedInput?.name, 'Updated Name');
+      expect(repository.lastUpdatedInput?.status, 'inactive');
+      expect(controller.submissionState.value, isA<UiSuccess<Customer>>());
+    });
+
+    test('submit in update mode sets UiFailure on update error', () async {
+      repository.shouldFailUpdate = true;
+      controller.customerId.value = 'cust-999';
+      controller.name.value = 'Updated Name';
+      controller.segmentId.value = 'seg-1';
+      controller.phone.value = '+62 812-0000';
+
+      final result = await controller.submit();
+      expect(result, isNull);
+      expect(controller.submissionState.value, isA<UiFailure<Customer>>());
+      expect(
+        controller.submissionState.value.failureOrNull?.message,
+        'Gagal memperbarui pelanggan',
+      );
     });
   });
 }

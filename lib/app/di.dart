@@ -3,10 +3,11 @@ import 'package:get_it/get_it.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../modules/core/controllers/login_controller.dart';
 import '../modules/core/repositories/auth_repository.dart';
+import '../modules/core/repositories/region_repository.dart';
 import '../modules/sales/controllers/sales_dashboard_controller.dart';
 import '../modules/sales/repositories/sales_dashboard_repository.dart';
 import '../modules/sales/controllers/customer_controller.dart';
-import '../modules/sales/controllers/add_customer_controller.dart';
+import '../modules/sales/controllers/customer_form_controller.dart';
 import '../modules/sales/repositories/customer_repository.dart';
 import '../shared/network/auth_token_holder.dart';
 import '../shared/network/dio_client.dart';
@@ -39,6 +40,9 @@ Future<void> setupDi({LocalStorage? storage}) async {
   getIt.registerLazySingleton<AuthRepository>(
     () => AuthRepositoryImpl(getIt<Dio>()),
   );
+  getIt.registerLazySingleton<RegionRepository>(
+    () => RegionRepositoryImpl(getIt<Dio>()),
+  );
   getIt.registerLazySingleton<SalesDashboardRepository>(
     () => SalesDashboardRepositoryImpl(getIt<Dio>()),
   );
@@ -56,7 +60,10 @@ Future<void> setupDi({LocalStorage? storage}) async {
   getIt.registerFactory<CustomerController>(
     () => CustomerController(getIt<CustomerRepository>()),
   );
-  getIt.registerFactory<AddCustomerController>(
-    () => AddCustomerController(getIt<CustomerRepository>()),
+  getIt.registerFactory<CustomerFormController>(
+    () => CustomerFormController(
+      getIt<CustomerRepository>(),
+      getIt<RegionRepository>(),
+    ),
   );
 }

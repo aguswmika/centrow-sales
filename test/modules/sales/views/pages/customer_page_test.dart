@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:go_router/go_router.dart';
 import 'package:centrow_sales/modules/sales/controllers/customer_controller.dart';
 import 'package:centrow_sales/modules/sales/entities/create_customer_input.dart';
 import 'package:centrow_sales/modules/sales/entities/customer.dart';
@@ -143,13 +144,20 @@ class FakeCustomerRepository implements CustomerRepository {
           ? input.name.substring(0, 2).toUpperCase()
           : 'CP',
       segment: input.segment.isNotEmpty ? input.segment : 'Hospitality',
-      status: input.status.isNotEmpty ? input.status : 'active',
-      regency: input.regency,
+      status: 'active',
       phone: input.phone,
       email: input.email,
     );
     customers.add(created);
     return Ok(created);
+  }
+
+  @override
+  Future<Result<Customer>> updateCustomer(
+    String id,
+    CreateCustomerInput input,
+  ) async {
+    return createCustomer(input);
   }
 
   @override
@@ -396,6 +404,43 @@ void main() {
 
       // list should still be visible after refresh
       expect(find.text('Villa Bali Resort'), findsOneWidget);
+    });
+
+    testWidgets('tapping Edit Data in detail pane navigates to edit page', (tester) async {
+      tester.view.physicalSize = const Size(1200, 800);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(tester.view.resetPhysicalSize);
+
+      bool routedToEdit = false;
+      final testRouter = GoRouter(
+        initialLocation: '/customers',
+        routes: [
+          GoRoute(
+            path: '/customers',
+            builder: (context, state) => CustomerPage(controller: controller),
+            routes: [
+              GoRoute(
+                path: ':id/edit',
+                builder: (context, state) {
+                  routedToEdit = true;
+                  return const Scaffold(body: Text('Edit Page'));
+                },
+              ),
+            ],
+          ),
+        ],
+      );
+
+      await tester.pumpWidget(MaterialApp.router(routerConfig: testRouter));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 100));
+
+      final editButton = find.text('Edit Data');
+      expect(editButton, findsOneWidget);
+      await tester.tap(editButton);
+      await tester.pumpAndSettle();
+
+      expect(routedToEdit, isTrue);
     });
   });
 }

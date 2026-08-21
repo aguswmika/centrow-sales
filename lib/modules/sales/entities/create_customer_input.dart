@@ -12,8 +12,6 @@ class CreateLocationInput {
   final String district;
   final String village;
   final double? areaSize;
-  final String areaUnit;
-  final String coords;
   final double? latitude;
   final double? longitude;
   final bool isPrimary;
@@ -30,8 +28,6 @@ class CreateLocationInput {
     this.district = '',
     this.village = '',
     this.areaSize,
-    this.areaUnit = 'm²',
-    this.coords = '',
     this.latitude,
     this.longitude,
     this.isPrimary = false,
@@ -49,8 +45,6 @@ class CreateLocationInput {
     String? district,
     String? village,
     double? areaSize,
-    String? areaUnit,
-    String? coords,
     double? latitude,
     double? longitude,
     bool? isPrimary,
@@ -67,8 +61,6 @@ class CreateLocationInput {
       district: district ?? this.district,
       village: village ?? this.village,
       areaSize: areaSize ?? this.areaSize,
-      areaUnit: areaUnit ?? this.areaUnit,
-      coords: coords ?? this.coords,
       latitude: latitude ?? this.latitude,
       longitude: longitude ?? this.longitude,
       isPrimary: isPrimary ?? this.isPrimary,
@@ -82,13 +74,7 @@ class CreateLocationInput {
         if (regencyId != null) 'regency_id': regencyId,
         if (districtId != null) 'district_id': districtId,
         if (villageId != null) 'village_id': villageId,
-        if (province.isNotEmpty) 'province': province,
-        if (regency.isNotEmpty) 'regency': regency,
-        if (district.isNotEmpty) 'district': district,
-        if (village.isNotEmpty) 'village': village,
         'area_size': areaSize,
-        'area_unit': areaUnit,
-        'coords': coords,
         if (latitude != null) 'latitude': latitude,
         if (longitude != null) 'longitude': longitude,
         'is_primary': isPrimary,
@@ -110,8 +96,6 @@ class CreateLocationInput {
           district == other.district &&
           village == other.village &&
           areaSize == other.areaSize &&
-          areaUnit == other.areaUnit &&
-          coords == other.coords &&
           latitude == other.latitude &&
           longitude == other.longitude &&
           isPrimary == other.isPrimary;
@@ -129,8 +113,6 @@ class CreateLocationInput {
         district,
         village,
         areaSize,
-        areaUnit,
-        coords,
         latitude,
         longitude,
         isPrimary,
@@ -147,24 +129,20 @@ class CreateContactInput {
   final String email;
   final String phone;
   final String role;
-  final String roleBadge;
   final bool isPrimary;
-  final int? explicitRoleCode;
 
   const CreateContactInput({
     this.name = '',
     this.position = '',
     this.email = '',
     this.phone = '',
-    this.role = 'Pengambil Keputusan',
-    this.roleBadge = 'brand',
+    this.role = 'pic',
     this.isPrimary = false,
-    int? roleCode,
-  }) : explicitRoleCode = roleCode;
+  });
 
   CustomerContactRole get contactRole => CustomerContactRole.fromString(role);
 
-  int get roleCode => explicitRoleCode ?? contactRole.code;
+  int get roleCode => contactRole.code;
 
   CreateContactInput copyWith({
     String? name,
@@ -172,9 +150,7 @@ class CreateContactInput {
     String? email,
     String? phone,
     String? role,
-    String? roleBadge,
     bool? isPrimary,
-    int? roleCode,
   }) {
     return CreateContactInput(
       name: name ?? this.name,
@@ -182,9 +158,7 @@ class CreateContactInput {
       email: email ?? this.email,
       phone: phone ?? this.phone,
       role: role ?? this.role,
-      roleBadge: roleBadge ?? this.roleBadge,
       isPrimary: isPrimary ?? this.isPrimary,
-      roleCode: roleCode ?? explicitRoleCode,
     );
   }
 
@@ -194,7 +168,6 @@ class CreateContactInput {
         'email': email,
         'phone': phone,
         'role': roleCode,
-        'role_badge': roleBadge,
         'is_primary': isPrimary,
       };
 
@@ -208,9 +181,7 @@ class CreateContactInput {
           email == other.email &&
           phone == other.phone &&
           role == other.role &&
-          roleBadge == other.roleBadge &&
-          isPrimary == other.isPrimary &&
-          roleCode == other.roleCode;
+          isPrimary == other.isPrimary;
 
   @override
   int get hashCode => Object.hash(
@@ -219,9 +190,7 @@ class CreateContactInput {
         email,
         phone,
         role,
-        roleBadge,
         isPrimary,
-        roleCode,
       );
 
   @override
@@ -231,11 +200,9 @@ class CreateContactInput {
 class CreateCustomerInput {
   final String name;
   final String code;
+  final String status;
   final String segmentId;
   final String segment;
-  final String regency;
-  final String status;
-  final String scanCode;
   final String npwp;
   final String phone;
   final String phoneAlt;
@@ -248,11 +215,9 @@ class CreateCustomerInput {
   const CreateCustomerInput({
     this.name = '',
     this.code = '',
+    this.status = 'active',
     this.segmentId = '',
     this.segment = '',
-    this.regency = '',
-    this.status = 'Aktif',
-    this.scanCode = '',
     this.npwp = '',
     this.phone = '',
     this.phoneAlt = '',
@@ -266,11 +231,9 @@ class CreateCustomerInput {
   CreateCustomerInput copyWith({
     String? name,
     String? code,
+    String? status,
     String? segmentId,
     String? segment,
-    String? regency,
-    String? status,
-    String? scanCode,
     String? npwp,
     String? phone,
     String? phoneAlt,
@@ -283,11 +246,9 @@ class CreateCustomerInput {
     return CreateCustomerInput(
       name: name ?? this.name,
       code: code ?? this.code,
+      status: status ?? this.status,
       segmentId: segmentId ?? this.segmentId,
       segment: segment ?? this.segment,
-      regency: regency ?? this.regency,
-      status: status ?? this.status,
-      scanCode: scanCode ?? this.scanCode,
       npwp: npwp ?? this.npwp,
       phone: phone ?? this.phone,
       phoneAlt: phoneAlt ?? this.phoneAlt,
@@ -302,11 +263,8 @@ class CreateCustomerInput {
   Map<String, dynamic> toJson() => {
         'name': name,
         'code': code,
-        'segment_id': segmentId,
-        'segment': segment,
-        'regency': regency,
         'status': status,
-        'scan_code': scanCode,
+        'segment_id': segmentId,
         'npwp_number': npwp,
         'phone': phone,
         'phone_alt': phoneAlt,
@@ -324,11 +282,9 @@ class CreateCustomerInput {
           runtimeType == other.runtimeType &&
           name == other.name &&
           code == other.code &&
+          status == other.status &&
           segmentId == other.segmentId &&
           segment == other.segment &&
-          regency == other.regency &&
-          status == other.status &&
-          scanCode == other.scanCode &&
           npwp == other.npwp &&
           phone == other.phone &&
           phoneAlt == other.phoneAlt &&
@@ -340,11 +296,9 @@ class CreateCustomerInput {
   int get hashCode => Object.hash(
         name,
         code,
+        status,
         segmentId,
         segment,
-        regency,
-        status,
-        scanCode,
         npwp,
         phone,
         phoneAlt,
@@ -354,5 +308,6 @@ class CreateCustomerInput {
       );
 
   @override
-  String toString() => 'CreateCustomerInput(name: $name, code: $code)';
+  String toString() =>
+      'CreateCustomerInput(name: $name, code: $code, status: $status)';
 }
