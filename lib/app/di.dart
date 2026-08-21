@@ -8,7 +8,9 @@ import '../modules/sales/controllers/sales_dashboard_controller.dart';
 import '../modules/sales/repositories/sales_dashboard_repository.dart';
 import '../modules/sales/controllers/customer_controller.dart';
 import '../modules/sales/controllers/customer_form_controller.dart';
+import '../modules/sales/controllers/proposal_controller.dart';
 import '../modules/sales/repositories/customer_repository.dart';
+import '../modules/sales/repositories/proposal_repository.dart';
 import '../shared/network/auth_token_holder.dart';
 import '../shared/network/dio_client.dart';
 import '../shared/storage/local_storage.dart';
@@ -49,6 +51,9 @@ Future<void> setupDi({LocalStorage? storage}) async {
   getIt.registerLazySingleton<CustomerRepository>(
     () => CustomerRepositoryImpl(getIt<Dio>()),
   );
+  getIt.registerLazySingleton<ProposalRepository>(
+    () => MockProposalRepositoryImpl(),
+  );
 
   // Controllers
   getIt.registerFactory<LoginController>(
@@ -65,5 +70,8 @@ Future<void> setupDi({LocalStorage? storage}) async {
       getIt<CustomerRepository>(),
       getIt<RegionRepository>(),
     ),
+  );
+  getIt.registerFactory<ProposalController>(
+    () => ProposalController(getIt<ProposalRepository>()),
   );
 }

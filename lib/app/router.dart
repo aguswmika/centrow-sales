@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 import '../modules/core/views/pages/login_page.dart';
 import '../modules/sales/views/pages/customer_page.dart';
 import '../modules/sales/views/pages/customer_form_page.dart';
+import '../modules/sales/views/pages/proposal_page.dart';
 import '../shared/network/auth_token_holder.dart';
 import '../shared/widgets/nav_rail_shell.dart';
 
@@ -63,8 +64,7 @@ GoRouter createRouter({String? initialLocation}) => GoRouter(
             GoRoute(
               path: '/proposals',
               name: 'proposals',
-              builder: (context, state) =>
-                  const Scaffold(body: Center(child: Text('Proposal'))),
+              builder: (context, state) => const ProposalPage(),
             ),
           ],
         ),
