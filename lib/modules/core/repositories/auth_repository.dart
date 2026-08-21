@@ -1,15 +1,15 @@
 import 'package:dio/dio.dart';
-import '../../../shared/error/failure.dart';
-import '../../../shared/network/auth_token_holder.dart';
-import '../../../shared/network/dio_client.dart';
-import '../../../shared/result/result.dart';
-import '../entities/tenant.dart';
-import '../entities/user.dart';
-import 'dtos/auth_dto.dart';
-import 'dtos/login_request_dto.dart';
-import 'dtos/tenant_dto.dart';
-import 'dtos/token_dto.dart';
-import 'dtos/user_me_dto.dart';
+import 'package:centrow_sales/shared/error/failure.dart';
+import 'package:centrow_sales/shared/network/auth_token_holder.dart';
+import 'package:centrow_sales/shared/network/dio_client.dart';
+import 'package:centrow_sales/shared/result/result.dart';
+import 'package:centrow_sales/modules/core/entities/tenant.dart';
+import 'package:centrow_sales/modules/core/entities/user.dart';
+import 'package:centrow_sales/modules/core/repositories/dtos/auth_dto.dart';
+import 'package:centrow_sales/modules/core/repositories/dtos/login_request_dto.dart';
+import 'package:centrow_sales/modules/core/repositories/dtos/tenant_dto.dart';
+import 'package:centrow_sales/modules/core/repositories/dtos/token_dto.dart';
+import 'package:centrow_sales/modules/core/repositories/dtos/user_me_dto.dart';
 
 abstract interface class AuthRepository {
   Future<Result<List<Tenant>>> getPublicTenants();

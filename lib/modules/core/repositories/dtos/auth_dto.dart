@@ -1,4 +1,4 @@
-import '../../entities/user.dart';
+import 'package:centrow_sales/modules/core/entities/user.dart';
 
 class AuthDto {
   final String id;

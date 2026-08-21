@@ -1,4 +1,4 @@
-import '../../entities/region.dart';
+import 'package:centrow_sales/modules/core/entities/region.dart';
 
 class RegionItemDto {
   final int id;

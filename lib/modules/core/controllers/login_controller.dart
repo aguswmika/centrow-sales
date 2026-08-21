@@ -1,10 +1,10 @@
 import 'package:signals/signals.dart';
-import '../../../shared/network/auth_token_holder.dart';
-import '../../../shared/result/result.dart';
-import '../../../shared/state/ui_state.dart';
-import '../entities/tenant.dart';
-import '../entities/user.dart';
-import '../repositories/auth_repository.dart';
+import 'package:centrow_sales/shared/network/auth_token_holder.dart';
+import 'package:centrow_sales/shared/result/result.dart';
+import 'package:centrow_sales/shared/state/ui_state.dart';
+import 'package:centrow_sales/modules/core/entities/tenant.dart';
+import 'package:centrow_sales/modules/core/entities/user.dart';
+import 'package:centrow_sales/modules/core/repositories/auth_repository.dart';
 
 class LoginController {
   final AuthRepository _repository;
