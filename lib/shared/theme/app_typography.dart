@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'app_colors.dart';
+import 'package:centrow_sales/shared/theme/app_colors.dart';
 
 abstract final class AppTypography {
   // Headings & Display (Plus Jakarta Sans)

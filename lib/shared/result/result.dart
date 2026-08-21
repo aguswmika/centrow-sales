@@ -1,4 +1,4 @@
-import '../error/failure.dart';
+import 'package:centrow_sales/shared/error/failure.dart';
 
 sealed class Result<T> {
   const Result();

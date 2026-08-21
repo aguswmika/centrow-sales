@@ -1,7 +1,7 @@
 import 'dart:convert';
-import '../../modules/core/entities/user.dart';
-import '../../modules/core/repositories/dtos/auth_dto.dart';
-import '../storage/local_storage.dart';
+import 'package:centrow_sales/modules/core/entities/user.dart';
+import 'package:centrow_sales/modules/core/repositories/dtos/auth_dto.dart';
+import 'package:centrow_sales/shared/storage/local_storage.dart';
 
 class AuthTokenHolder {
   AuthTokenHolder._();

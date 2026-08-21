@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'app_colors.dart';
-import 'app_radius.dart';
-import 'app_spacing.dart';
-import 'app_typography.dart';
+import 'package:centrow_sales/shared/theme/app_colors.dart';
+import 'package:centrow_sales/shared/theme/app_radius.dart';
+import 'package:centrow_sales/shared/theme/app_spacing.dart';
+import 'package:centrow_sales/shared/theme/app_typography.dart';
 
 abstract final class AppTheme {
   static ThemeData get lightTheme {
