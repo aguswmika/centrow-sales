@@ -127,6 +127,7 @@ void main() {
       // Remove the second location
       final deleteButtons = find.byIcon(Icons.delete_outline_rounded);
       expect(deleteButtons, findsNWidgets(2));
+      await tester.ensureVisible(deleteButtons.at(1));
       await tester.tap(deleteButtons.at(1));
       await tester.pumpAndSettle();
 

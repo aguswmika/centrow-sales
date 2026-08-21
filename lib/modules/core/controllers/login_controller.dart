@@ -78,7 +78,10 @@ class LoginController {
       tenantId: _selectedTenantId.value,
     );
     if (result is Ok<User>) {
-      await AuthTokenHolder.instance.saveToken(result.value.token);
+      await AuthTokenHolder.instance.saveToken(
+        result.value.token,
+        newRefreshToken: result.value.refreshToken,
+      );
       await AuthTokenHolder.instance.saveUser(result.value);
     }
     _loginState.value = switch (result) {
@@ -89,6 +92,14 @@ class LoginController {
 
   void resetState() {
     _loginState.value = const UiInitial();
+  }
+
+  Future<void> logout() async {
+    final refreshToken = AuthTokenHolder.instance.refreshToken;
+    if (refreshToken != null && refreshToken.isNotEmpty) {
+      await _repository.logout(refreshToken);
+    }
+    await AuthTokenHolder.instance.handleSessionExpired();
   }
 
   void dispose() {

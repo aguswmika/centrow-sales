@@ -9,6 +9,7 @@ class User {
   final String position;
   final String department;
   final String token;
+  final String refreshToken;
   final String branch;
   final String? _legacyRole;
 
@@ -21,6 +22,7 @@ class User {
     this.position = '',
     this.department = '',
     required this.token,
+    this.refreshToken = '',
     String? role,
     this.branch = '',
   }) : _legacyRole = role;
@@ -50,6 +52,7 @@ class User {
     String? position,
     String? department,
     String? token,
+    String? refreshToken,
     String? role,
     String? branch,
   }) {
@@ -62,6 +65,7 @@ class User {
       position: position ?? this.position,
       department: department ?? this.department,
       token: token ?? this.token,
+      refreshToken: refreshToken ?? this.refreshToken,
       role: role ?? _legacyRole,
       branch: branch ?? this.branch,
     );
@@ -69,7 +73,7 @@ class User {
 
   @override
   String toString() {
-    return 'User(id: $id, tenantId: $tenantId, name: $name, email: $email, roles: $roles, position: $position, department: $department, token: $token)';
+    return 'User(id: $id, tenantId: $tenantId, name: $name, email: $email, roles: $roles, position: $position, department: $department, token: $token, refreshToken: $refreshToken)';
   }
 
   @override
@@ -83,7 +87,8 @@ class User {
         listEquals(other.roles, roles) &&
         other.position == position &&
         other.department == department &&
-        other.token == token;
+        other.token == token &&
+        other.refreshToken == refreshToken;
   }
 
   @override
@@ -97,6 +102,7 @@ class User {
       position,
       department,
       token,
+      refreshToken,
     );
   }
 }

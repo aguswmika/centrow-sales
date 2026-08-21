@@ -218,20 +218,16 @@ void main() {
       expect(controller.selectedCustomer.value, isNull);
     });
 
-    test('loadCustomers populates list, defaults selection, and loads full detail', () async {
+    test('loadCustomers populates list but does not default selection', () async {
       await controller.loadCustomers();
 
       expect(controller.customersState.value, isA<UiSuccess<List<Customer>>>());
       final list = controller.filteredCustomers.value;
       expect(list.length, 3);
 
-      expect(controller.selectedCustomerId.value, 'c1');
-      expect(controller.customerDetailState.value, isA<UiSuccess<Customer>>());
-      expect(controller.selectedCustomer.value, isNotNull);
-      expect(controller.selectedCustomer.value?.id, 'c1');
-      expect(controller.selectedCustomer.value?.locations.length, 1);
-      expect(controller.selectedCustomer.value?.contacts.length, 1);
-      expect(controller.selectedCustomer.value?.proposals.length, 1);
+      expect(controller.selectedCustomerId.value, '');
+      expect(controller.customerDetailState.value, isA<UiInitial<Customer>>());
+      expect(controller.selectedCustomer.value, isNull);
     });
 
     test('loadCustomers sets UiFailure on repository error', () async {
@@ -257,6 +253,16 @@ void main() {
       await controller.loadCustomers();
 
       await controller.selectCustomer('');
+      expect(controller.selectedCustomerId.value, '');
+      expect(controller.customerDetailState.value, isA<UiInitial<Customer>>());
+    });
+
+    test('selectCustomer toggles selection off if clicking the same id', () async {
+      await controller.loadCustomers();
+      await controller.selectCustomer('c2');
+      expect(controller.selectedCustomerId.value, 'c2');
+      
+      await controller.selectCustomer(''); // simulate UI passing empty string to unselect
       expect(controller.selectedCustomerId.value, '');
       expect(controller.customerDetailState.value, isA<UiInitial<Customer>>());
     });

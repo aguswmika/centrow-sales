@@ -134,7 +134,7 @@ void main() {
       expect(find.text('Ringkasan Data'), findsOneWidget);
 
       // Attempting to advance while invalid stays on Step 1
-      await tester.tap(find.text('Selanjutnya').first);
+      await tester.tap(find.byIcon(Icons.chevron_right).first);
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 100));
       expect(controller.currentStep.value, 1);
@@ -147,7 +147,7 @@ void main() {
       await tester.pump();
 
       // Tap Selanjutnya to move to Step 2
-      await tester.tap(find.text('Selanjutnya').first);
+      await tester.tap(find.byIcon(Icons.chevron_right).first);
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 100));
 
@@ -155,7 +155,7 @@ void main() {
       expect(find.text('+ Tambah Alamat / Titik Servis Lain'), findsOneWidget);
 
       // Attempting to advance while Step 2 is invalid stays on Step 2
-      await tester.tap(find.text('Selanjutnya').first);
+      await tester.tap(find.byIcon(Icons.chevron_right).first);
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 100));
       expect(controller.currentStep.value, 2);
@@ -171,7 +171,7 @@ void main() {
       await tester.pump();
 
       // Tap Selanjutnya to move to Step 3
-      await tester.tap(find.text('Selanjutnya').first);
+      await tester.tap(find.byIcon(Icons.chevron_right).first);
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 100));
 
@@ -230,7 +230,7 @@ void main() {
       expect(controller.locations.value.length, 2);
 
       // Previous step navigation
-      await tester.tap(find.text('Sebelumnya').first);
+      await tester.tap(find.byIcon(Icons.chevron_left).first);
       await tester.pump();
       expect(controller.currentStep.value, 1);
     });
@@ -323,13 +323,13 @@ void main() {
       expect(ctrl.phone.value, '+62 811-222-333');
 
       // Tap Selanjutnya to step 2
-      await tester.tap(find.text('Selanjutnya').first);
+      await tester.tap(find.byIcon(Icons.chevron_right).first);
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 100));
       expect(ctrl.currentStep.value, 2);
 
       // Tap Selanjutnya to step 3
-      await tester.tap(find.text('Selanjutnya').first);
+      await tester.tap(find.byIcon(Icons.chevron_right).first);
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 100));
       expect(ctrl.currentStep.value, 3);

@@ -1,3 +1,4 @@
+import 'package:centrow_sales/modules/core/repositories/dtos/token_dto.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
@@ -16,6 +17,10 @@ const List<Tenant> sampleTenants = [
 ];
 
 class MockAuthRepository implements AuthRepository {
+  @override
+  Future<Result<TokenDto>> refreshToken(String refreshToken) async => throw UnimplementedError();
+  @override
+  Future<Result<void>> logout(String refreshToken) async => throw UnimplementedError();
   List<Tenant>? tenants;
   User? user;
   Failure? failure;
@@ -221,6 +226,10 @@ void main() {
 }
 
 class _FailingTenantsAuthRepository implements AuthRepository {
+  @override
+  Future<Result<TokenDto>> refreshToken(String refreshToken) async => throw UnimplementedError();
+  @override
+  Future<Result<void>> logout(String refreshToken) async => throw UnimplementedError();
   @override
   Future<Result<List<Tenant>>> getPublicTenants() async {
     return const Err(ServerFailure('Server error'));

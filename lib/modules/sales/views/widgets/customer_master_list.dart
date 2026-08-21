@@ -198,7 +198,7 @@ class CustomerMasterList extends StatelessWidget {
                     : 'CP');
 
           return InkWell(
-            onTap: () => onSelectCustomer(c.id),
+            onTap: () => onSelectCustomer(isSelected ? '' : c.id),
             child: Container(
               color: isSelected ? AppColors.brand05 : Colors.transparent,
               child: IntrinsicHeight(

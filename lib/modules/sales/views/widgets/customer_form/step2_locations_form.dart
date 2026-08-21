@@ -7,6 +7,7 @@ import 'package:centrow_sales/shared/widgets/app_badge.dart';
 import 'package:centrow_sales/modules/sales/controllers/customer_form_controller.dart';
 import 'package:centrow_sales/modules/sales/entities/create_customer_input.dart';
 import 'region_picker.dart';
+import 'map_picker_dialog.dart';
 
 class Step2LocationsForm extends StatelessWidget {
   final CustomerFormController controller;
@@ -154,15 +155,42 @@ class Step2LocationsForm extends StatelessWidget {
                       item.copyWith(label: v),
                     ),
                   ),
-                  right: _buildTextField(
-                    label: 'Alamat Lengkap',
-                    isRequired: true,
-                    value: item.address,
-                    hint: 'cth: Jalan Pantai Kuta, Badung',
-                    onChanged: (v) => controller.updateLocation(
-                      index,
-                      item.copyWith(address: v),
-                    ),
+                  right: Column(
+                    children: [
+                      _buildTextField(
+                        label: 'Alamat Lengkap',
+                        isRequired: true,
+                        value: item.address,
+                        hint: 'cth: Jalan Pantai Kuta, Badung',
+                        onChanged: (v) => controller.updateLocation(
+                          index,
+                          item.copyWith(address: v),
+                        ),
+                        suffixIcon: IconButton(
+                          tooltip: 'Cari di Peta',
+                          icon: const Icon(Icons.map_outlined, color: AppColors.brand),
+                          onPressed: () async {
+                            final result = await Navigator.of(context).push<dynamic>(
+                              MaterialPageRoute(builder: (_) => const MapPickerDialog()),
+                            );
+                            if (result != null && result is MapLocationResult) {
+                              controller.applyMapLocation(index, result.lat, result.lng, result.address, result.province, result.regency, result.district, result.village);
+                            }
+                          },
+                        ),
+                      ),
+                      if (item.latitude != null && item.longitude != null)
+                        Align(
+                          alignment: Alignment.centerLeft,
+                          child: Text(
+                            'Lat: ${item.latitude}, Lng: ${item.longitude}',
+                            style: GoogleFonts.inter(
+                              fontSize: 12.0,
+                              color: AppColors.muted,
+                            ),
+                          ),
+                        ),
+                    ],
                   ),
                 ),
                 const SizedBox(height: 14.0),
@@ -252,24 +280,89 @@ class Step2LocationsForm extends StatelessWidget {
     required String label,
     bool isRequired = false,
     String? hint,
-    String? value,
-    TextInputType? keyboardType,
+    required String value,
+    TextInputType keyboardType = TextInputType.text,
     required ValueChanged<String> onChanged,
+    Widget? suffixIcon,
   }) {
+    return _ControlledTextField(
+      label: label,
+      isRequired: isRequired,
+      hint: hint,
+      value: value,
+      keyboardType: keyboardType,
+      onChanged: onChanged,
+      suffixIcon: suffixIcon,
+    );
+  }
+}
+
+class _ControlledTextField extends StatefulWidget {
+  final String label;
+  final bool isRequired;
+  final String? hint;
+  final String value;
+  final TextInputType keyboardType;
+  final ValueChanged<String> onChanged;
+  final Widget? suffixIcon;
+
+  const _ControlledTextField({
+    required this.label,
+    this.isRequired = false,
+    this.hint,
+    required this.value,
+    this.keyboardType = TextInputType.text,
+    required this.onChanged,
+    this.suffixIcon,
+  });
+
+  @override
+  State<_ControlledTextField> createState() => _ControlledTextFieldState();
+}
+
+class _ControlledTextFieldState extends State<_ControlledTextField> {
+  late TextEditingController _controller;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = TextEditingController(text: widget.value);
+  }
+
+  @override
+  void didUpdateWidget(covariant _ControlledTextField oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.value != widget.value && _controller.text != widget.value) {
+      _controller.value = _controller.value.copyWith(
+        text: widget.value,
+        selection: TextSelection.collapsed(offset: widget.value.length),
+        composing: TextRange.empty,
+      );
+    }
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Row(
           children: [
             Text(
-              label,
+              widget.label,
               style: GoogleFonts.inter(
                 fontSize: 13.0,
                 fontWeight: FontWeight.w600,
                 color: AppColors.sec,
               ),
             ),
-            if (isRequired) ...[
+            if (widget.isRequired) ...[
               const SizedBox(width: 4.0),
               Text(
                 '*',
@@ -284,16 +377,16 @@ class Step2LocationsForm extends StatelessWidget {
         ),
         const SizedBox(height: 6.0),
         TextFormField(
-          initialValue: value,
-          keyboardType: keyboardType,
-          onChanged: onChanged,
+          controller: _controller,
+          keyboardType: widget.keyboardType,
+          onChanged: widget.onChanged,
           style: GoogleFonts.inter(
             fontSize: 14.0,
             color: AppColors.text,
             fontWeight: FontWeight.w500,
           ),
           decoration: InputDecoration(
-            hintText: hint,
+            hintText: widget.hint,
             hintStyle: GoogleFonts.inter(
               fontSize: 14.0,
               color: AppColors.muted,
@@ -302,6 +395,7 @@ class Step2LocationsForm extends StatelessWidget {
               horizontal: 14.0,
               vertical: 10.0,
             ),
+            suffixIcon: widget.suffixIcon,
             filled: true,
             fillColor: AppColors.surface,
             border: const OutlineInputBorder(

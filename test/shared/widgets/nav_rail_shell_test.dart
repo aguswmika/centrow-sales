@@ -1,3 +1,4 @@
+import 'package:centrow_sales/modules/core/repositories/dtos/token_dto.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -17,6 +18,10 @@ import 'package:centrow_sales/modules/sales/entities/segment.dart';
 import 'package:centrow_sales/modules/sales/repositories/customer_repository.dart';
 
 class _MockAuthRepo implements AuthRepository {
+  @override
+  Future<Result<TokenDto>> refreshToken(String refreshToken) async => throw UnimplementedError();
+  @override
+  Future<Result<void>> logout(String refreshToken) async => throw UnimplementedError();
   @override
   Future<Result<List<Tenant>>> getPublicTenants() async {
     return const Ok([Tenant(id: 't1', name: 'Cabang Bali', slug: 'bali')]);

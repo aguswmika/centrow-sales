@@ -1,3 +1,4 @@
+import 'package:centrow_sales/modules/core/repositories/dtos/token_dto.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:centrow_sales/modules/core/controllers/login_controller.dart';
 import 'package:centrow_sales/modules/core/entities/tenant.dart';
@@ -8,6 +9,10 @@ import 'package:centrow_sales/shared/result/result.dart';
 import 'package:centrow_sales/shared/state/ui_state.dart';
 
 class MockAuthRepository implements AuthRepository {
+  @override
+  Future<Result<TokenDto>> refreshToken(String refreshToken) async => throw UnimplementedError();
+  @override
+  Future<Result<void>> logout(String refreshToken) async => throw UnimplementedError();
   late Result<List<Tenant>> publicTenantsResult;
   late Result<User> loginResult;
 

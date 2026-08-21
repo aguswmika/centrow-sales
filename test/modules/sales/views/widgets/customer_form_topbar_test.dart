@@ -94,11 +94,11 @@ void main() {
           ),
         );
 
-        expect(find.text('Selanjutnya'), findsOneWidget);
+        expect(find.byIcon(Icons.chevron_right), findsOneWidget);
         expect(find.text('Simpan'), findsNothing);
-        expect(find.text('Sebelumnya'), findsNothing);
+        expect(find.byIcon(Icons.chevron_left), findsNothing);
 
-        await tester.tap(find.text('Selanjutnya'));
+        await tester.tap(find.byIcon(Icons.chevron_right));
         expect(nextCalled, isTrue);
       });
 
@@ -115,14 +115,14 @@ void main() {
           ),
         );
 
-        expect(find.text('Sebelumnya'), findsOneWidget);
-        expect(find.text('Selanjutnya'), findsOneWidget);
+        expect(find.byIcon(Icons.chevron_left), findsOneWidget);
+        expect(find.byIcon(Icons.chevron_right), findsOneWidget);
         expect(find.text('Simpan'), findsNothing);
 
-        await tester.tap(find.text('Sebelumnya'));
+        await tester.tap(find.byIcon(Icons.chevron_left));
         expect(prevCalled, isTrue);
 
-        await tester.tap(find.text('Selanjutnya'));
+        await tester.tap(find.byIcon(Icons.chevron_right));
         expect(nextCalled, isTrue);
       });
 
@@ -137,9 +137,9 @@ void main() {
           ),
         );
 
-        expect(find.text('Sebelumnya'), findsOneWidget);
+        expect(find.byIcon(Icons.chevron_left), findsOneWidget);
         expect(find.text('Simpan'), findsOneWidget);
-        expect(find.text('Selanjutnya'), findsNothing);
+        expect(find.byIcon(Icons.chevron_right), findsNothing);
 
         await tester.tap(find.text('Simpan'));
         expect(nextCalled, isTrue);
@@ -160,11 +160,11 @@ void main() {
           ),
         );
 
-        expect(find.text('Sebelumnya'), findsNothing);
-        expect(find.text('Selanjutnya'), findsOneWidget);
+        expect(find.byIcon(Icons.chevron_left), findsNothing);
+        expect(find.byIcon(Icons.chevron_right), findsOneWidget);
         expect(find.text('Simpan'), findsOneWidget);
 
-        await tester.tap(find.text('Selanjutnya'));
+        await tester.tap(find.byIcon(Icons.chevron_right));
         expect(nextCalled, isTrue);
 
         await tester.tap(find.text('Simpan'));
@@ -186,14 +186,14 @@ void main() {
           ),
         );
 
-        expect(find.text('Sebelumnya'), findsOneWidget);
-        expect(find.text('Selanjutnya'), findsOneWidget);
+        expect(find.byIcon(Icons.chevron_left), findsOneWidget);
+        expect(find.byIcon(Icons.chevron_right), findsOneWidget);
         expect(find.text('Simpan'), findsOneWidget);
 
-        await tester.tap(find.text('Sebelumnya'));
+        await tester.tap(find.byIcon(Icons.chevron_left));
         expect(prevCalled, isTrue);
 
-        await tester.tap(find.text('Selanjutnya'));
+        await tester.tap(find.byIcon(Icons.chevron_right));
         expect(nextCalled, isTrue);
 
         await tester.tap(find.text('Simpan'));
@@ -213,11 +213,11 @@ void main() {
           ),
         );
 
-        expect(find.text('Sebelumnya'), findsOneWidget);
+        expect(find.byIcon(Icons.chevron_left), findsOneWidget);
         expect(find.text('Simpan'), findsOneWidget);
-        expect(find.text('Selanjutnya'), findsNothing);
+        expect(find.byIcon(Icons.chevron_right), findsNothing);
 
-        await tester.tap(find.text('Sebelumnya'));
+        await tester.tap(find.byIcon(Icons.chevron_left));
         expect(prevCalled, isTrue);
 
         await tester.tap(find.text('Simpan'));

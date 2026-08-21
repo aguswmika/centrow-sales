@@ -52,6 +52,9 @@ class CustomerFormTopbar extends StatelessWidget {
         //   ),
         // );
 
+        final showSimpan = isEditMode || currentStep == 3;
+        final simpanAction = isEditMode ? onSubmit : onNext;
+
         final actions = Row(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -66,52 +69,7 @@ class CustomerFormTopbar extends StatelessWidget {
               ),
               const SizedBox(width: 8.0),
             ],
-            if (currentStep > 1) ...[
-              AppButton.secondary(
-                text: isMobile ? 'Kembali' : 'Sebelumnya',
-                height: 38.0,
-                isFullWidth: false,
-                borderRadius: AppRadius.borderPill,
-                icon: const Icon(Icons.arrow_back_rounded, size: 14.0),
-                onPressed: onPrev ?? () {},
-              ),
-              const SizedBox(width: 8.0),
-            ],
-            if (!isEditMode)
-              AppButton(
-                text: currentStep == 3 ? 'Simpan' : 'Selanjutnya',
-                height: 38.0,
-                isFullWidth: false,
-                borderRadius: AppRadius.borderPill,
-                icon: currentStep == 3
-                    ? const Icon(
-                        Icons.save_outlined,
-                        size: 15.0,
-                        color: Colors.white,
-                      )
-                    : const Icon(
-                        Icons.arrow_forward_rounded,
-                        size: 14.0,
-                        color: Colors.white,
-                      ),
-                onPressed: onNext,
-              )
-            else ...[
-              if (currentStep < 3) ...[
-                AppButton.secondary(
-                  text: 'Selanjutnya',
-                  height: 38.0,
-                  isFullWidth: false,
-                  borderRadius: AppRadius.borderPill,
-                  icon: const Icon(
-                    Icons.arrow_forward_rounded,
-                    size: 14.0,
-                    color: AppColors.text,
-                  ),
-                  onPressed: onNext,
-                ),
-                const SizedBox(width: 8.0),
-              ],
+            if (showSimpan) ...[
               AppButton(
                 text: 'Simpan',
                 height: 38.0,
@@ -122,7 +80,39 @@ class CustomerFormTopbar extends StatelessWidget {
                   size: 15.0,
                   color: Colors.white,
                 ),
-                onPressed: onSubmit,
+                onPressed: simpanAction,
+              ),
+              if (currentStep > 1 || currentStep < 3) const SizedBox(width: 8.0),
+            ],
+            if (currentStep > 1) ...[
+              InkWell(
+                onTap: onPrev ?? () {},
+                borderRadius: AppRadius.borderMd,
+                child: Container(
+                  width: 64.0,
+                  height: 38.0,
+                  decoration: const BoxDecoration(
+                    color: AppColors.brand,
+                    borderRadius: AppRadius.borderMd,
+                  ),
+                  child: const Icon(Icons.chevron_left, size: 22.0, color: Colors.white),
+                ),
+              ),
+              if (currentStep < 3) const SizedBox(width: 8.0),
+            ],
+            if (currentStep < 3) ...[
+              InkWell(
+                onTap: onNext,
+                borderRadius: AppRadius.borderMd,
+                child: Container(
+                  width: 64.0,
+                  height: 38.0,
+                  decoration: const BoxDecoration(
+                    color: AppColors.brand,
+                    borderRadius: AppRadius.borderMd,
+                  ),
+                  child: const Icon(Icons.chevron_right, size: 22.0, color: Colors.white),
+                ),
               ),
             ],
           ],

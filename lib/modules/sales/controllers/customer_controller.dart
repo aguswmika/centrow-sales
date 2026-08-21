@@ -10,6 +10,8 @@ class CustomerController {
   final CustomerRepository _repository;
 
   CustomerController(this._repository);
+  
+  bool _isDisposed = false;
 
   final _segmentsState = signal<UiState<List<Segment>>>(const UiInitial());
   ReadonlySignal<UiState<List<Segment>>> get segmentsState => _segmentsState;
@@ -87,12 +89,13 @@ class CustomerController {
       final idx = list.indexWhere((c) => c.id == _selectedCustomerId.value);
       if (idx != -1) return list[idx];
     }
-    return list.first;
+    return null;
   });
 
   Future<void> loadSegments() async {
     _segmentsState.value = const UiLoading();
     final result = await _repository.getSegments();
+    if (_isDisposed) return;
     _segmentsState.value = switch (result) {
       Ok(:final value) => UiSuccess<List<Segment>>(value),
       Err(:final failure) => UiFailure<List<Segment>>(failure),
@@ -110,6 +113,7 @@ class CustomerController {
           _selectedSegment.value != 'all' ? _selectedSegment.value : null,
       status: _selectedStatus.value != 'all' ? _selectedStatus.value : null,
     );
+    if (_isDisposed) return;
     _customersState.value = switch (result) {
       Ok(:final value) => UiSuccess<List<Customer>>(value),
       Err(:final failure) => UiFailure<List<Customer>>(failure),
@@ -117,11 +121,10 @@ class CustomerController {
 
     final state = _customersState.value;
     if (state is UiSuccess<List<Customer>> && state.data.isNotEmpty) {
-      final targetId = _selectedCustomerId.value.isNotEmpty &&
-              state.data.any((c) => c.id == _selectedCustomerId.value)
-          ? _selectedCustomerId.value
-          : state.data.first.id;
-      await selectCustomer(targetId);
+      final targetId = _selectedCustomerId.value;
+      if (targetId.isNotEmpty && !state.data.any((c) => c.id == targetId)) {
+        await selectCustomer('');
+      }
     }
   }
 
@@ -133,6 +136,7 @@ class CustomerController {
     }
     _customerDetailState.value = const UiLoading();
     final result = await _repository.getCustomerById(id);
+    if (_isDisposed) return;
     if (_selectedCustomerId.value == id) {
       _customerDetailState.value = switch (result) {
         Ok(:final value) => UiSuccess<Customer>(value),
@@ -150,7 +154,9 @@ class CustomerController {
   }
 
   void selectSegment(String segment) {
+    if (_selectedSegment.value == segment) return;
     _selectedSegment.value = segment;
+    unawaited(loadCustomers(isRefresh: true));
   }
 
   void selectStatus(String status) {
@@ -162,6 +168,7 @@ class CustomerController {
   }
 
   void dispose() {
+    _isDisposed = true;
     _segmentsState.dispose();
     _customersState.dispose();
     _customerDetailState.dispose();

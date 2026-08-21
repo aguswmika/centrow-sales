@@ -347,7 +347,30 @@ class CustomerFormController {
     };
   }
 
+  void applyMapLocation(int index, double lat, double lng, String address, String? provinceName, String? regencyName, String? districtName, String? villageName) {
+    final list = locations.value.toList();
+    final item = list[index];
+
+    String newLabel = item.label;
+    if (newLabel.startsWith('Titik Servis #') || newLabel == 'Main Location' || newLabel.isEmpty) {
+      final parts = address.split(',');
+      if (parts.isNotEmpty) {
+        newLabel = parts.first.trim();
+      }
+    }
+
+    list[index] = item.copyWith(
+      label: newLabel,
+      latitude: lat,
+      longitude: lng,
+      address: address,
+    );
+    
+    locations.value = list;
+  }
+
   void dispose() {
+
     _segmentsState.dispose();
     _currentStep.dispose();
     customerId.dispose();

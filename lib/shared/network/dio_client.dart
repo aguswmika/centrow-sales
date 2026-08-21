@@ -32,12 +32,53 @@ Dio createDio([String? baseUrl]) {
       onResponse: (response, handler) {
         return handler.next(response);
       },
-      onError: (error, handler) {
+      onError: (error, handler) async {
         if (error.response?.statusCode == 401) {
           final path = error.requestOptions.path;
           final isLogin =
               path == '/v1/auth/login' || path.endsWith('/v1/auth/login');
           if (!isLogin) {
+            final refreshToken = AuthTokenHolder.instance.refreshToken;
+            if (refreshToken != null && refreshToken.isNotEmpty) {
+              try {
+                // Create a basic Dio without interceptors to avoid loops
+                final refreshDio = Dio(
+                  BaseOptions(
+                    baseUrl: AppConfig.apiBaseUrl,
+                    headers: {
+                      'Accept': 'application/json',
+                      'Content-Type': 'application/json',
+                    },
+                  ),
+                );
+
+                final refreshResponse = await refreshDio.post<dynamic>(
+                  '/v1/auth/refresh',
+                  data: {'refresh_token': refreshToken},
+                );
+
+                if (refreshResponse.statusCode == 200 && refreshResponse.data != null) {
+                  final data = refreshResponse.data['data'] as Map<String, dynamic>? ?? refreshResponse.data;
+                  final newToken = data['token']?.toString() ?? '';
+                  final newRefreshToken = data['refresh_token']?.toString() ?? '';
+
+                  if (newToken.isNotEmpty) {
+                    await AuthTokenHolder.instance.saveToken(
+                      newToken,
+                      newRefreshToken: newRefreshToken.isNotEmpty ? newRefreshToken : null,
+                    );
+
+                    // Retry original request
+                    error.requestOptions.headers['Authorization'] = 'Bearer $newToken';
+                    final retryResponse = await dio.fetch<dynamic>(error.requestOptions);
+                    return handler.resolve(retryResponse);
+                  }
+                }
+              } catch (_) {
+                // Refresh failed
+              }
+            }
+
             unawaited(AuthTokenHolder.instance.handleSessionExpired());
           }
         }

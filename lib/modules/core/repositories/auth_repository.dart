@@ -8,6 +8,7 @@ import '../entities/user.dart';
 import 'dtos/auth_dto.dart';
 import 'dtos/login_request_dto.dart';
 import 'dtos/tenant_dto.dart';
+import 'dtos/token_dto.dart';
 import 'dtos/user_me_dto.dart';
 
 abstract interface class AuthRepository {
@@ -18,6 +19,8 @@ abstract interface class AuthRepository {
     required String tenantId,
   });
   Future<Result<User>> getMe();
+  Future<Result<TokenDto>> refreshToken(String refreshToken);
+  Future<Result<void>> logout(String refreshToken);
 }
 
 class AuthRepositoryImpl implements AuthRepository {
@@ -151,6 +154,58 @@ class AuthRepositoryImpl implements AuthRepository {
           ),
         );
       }
+      return Err(mapDioException(e));
+    } catch (e) {
+      return Err(UnknownFailure(e.toString()));
+    }
+  }
+
+  @override
+  Future<Result<TokenDto>> refreshToken(String refreshToken) async {
+    try {
+      final response = await _dio.post<dynamic>(
+        '/v1/auth/refresh',
+        data: {'refresh_token': refreshToken},
+      );
+
+      final dynamic responseData = response.data;
+      final Map<String, dynamic> dataMap;
+      if (responseData is Map) {
+        dataMap = responseData.cast<String, dynamic>();
+      } else {
+        return const Err(
+          ServerFailure('Format respon dari server tidak valid.'),
+        );
+      }
+
+      final dto = TokenDto.fromJson(dataMap);
+      return Ok(dto);
+    } on DioException catch (e) {
+      final statusCode = e.response?.statusCode;
+      if (statusCode == 401 || statusCode == 400) {
+        return Err(
+          ServerFailure(
+            (e.response?.data?['message'] as String?) ??
+                'Sesi telah berakhir atau token tidak valid.',
+            statusCode,
+          ),
+        );
+      }
+      return Err(mapDioException(e));
+    } catch (e) {
+      return Err(UnknownFailure(e.toString()));
+    }
+  }
+
+  @override
+  Future<Result<void>> logout(String refreshToken) async {
+    try {
+      await _dio.post<dynamic>(
+        '/v1/auth/logout',
+        data: {'refresh_token': refreshToken},
+      );
+      return const Ok(null);
+    } on DioException catch (e) {
       return Err(mapDioException(e));
     } catch (e) {
       return Err(UnknownFailure(e.toString()));

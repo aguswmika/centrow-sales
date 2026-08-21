@@ -199,6 +199,12 @@ void main() {
 
       expect(find.text('Daftar Pelanggan'), findsOneWidget);
       expect(find.text('Villa Bali Resort'), findsWidgets);
+      
+      // Tap customer to populate detail pane
+      await tester.tap(find.text('Villa Bali Resort').first);
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 100));
+
       expect(find.text('Informasi Utama'), findsOneWidget);
       expect(find.text('Lokasi & Titik Servis'), findsOneWidget);
       expect(find.text('Kontak Person & PIC'), findsOneWidget);
@@ -246,6 +252,11 @@ void main() {
       addTearDown(tester.view.resetPhysicalSize);
 
       await tester.pumpWidget(createTestWidget());
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 100));
+
+      // Tap customer to populate detail pane
+      await tester.tap(find.text('Villa Bali Resort').first);
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 100));
 
@@ -432,6 +443,11 @@ void main() {
       );
 
       await tester.pumpWidget(MaterialApp.router(routerConfig: testRouter));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 100));
+
+      // Tap customer to populate detail pane
+      await tester.tap(find.text('Villa Bali Resort').first);
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 100));
 

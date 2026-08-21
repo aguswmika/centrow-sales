@@ -7,6 +7,7 @@ class AuthDto {
   final String role;
   final String branch;
   final String token;
+  final String refreshToken;
 
   const AuthDto({
     required this.id,
@@ -15,6 +16,7 @@ class AuthDto {
     required this.role,
     required this.branch,
     required this.token,
+    required this.refreshToken,
   });
 
   factory AuthDto.fromJson(Map<String, dynamic> json) {
@@ -28,6 +30,7 @@ class AuthDto {
       role: user['role']?.toString() ?? '',
       branch: user['branch']?.toString() ?? '',
       token: data['token']?.toString() ?? '',
+      refreshToken: data['refresh_token']?.toString() ?? '',
     );
   }
 
@@ -39,6 +42,7 @@ class AuthDto {
       'role': role,
       'branch': branch,
       'token': token,
+      'refresh_token': refreshToken,
     };
   }
 
@@ -51,6 +55,7 @@ class AuthDto {
       roles: role.isNotEmpty ? [role] : const [],
       branch: branch,
       token: token,
+      refreshToken: refreshToken,
     );
   }
 }
