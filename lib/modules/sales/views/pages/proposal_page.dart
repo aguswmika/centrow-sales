@@ -82,7 +82,12 @@ class _ProposalPageState extends State<ProposalPage> {
       onSelectProposal: _controller.selectProposal,
       onSelectStatus: _controller.selectStatus,
       onSearchChanged: _controller.setSearchQuery,
-      onCreateProposal: () => context.go('/pricings'),
+      onCreateProposal: () async {
+          final result = await context.push('/proposals/create');
+          if (result != null onCreateProposal: () => context.go('/pricings'),onCreateProposal: () => context.go('/pricings'), context.mounted) {
+            await _controller.loadProposals(isRefresh: true);
+          }
+        },
       onRefresh: () => _controller.loadProposals(isRefresh: true),
     );
 
