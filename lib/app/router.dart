@@ -4,6 +4,7 @@ import 'package:centrow_sales/modules/core/views/pages/login_page.dart';
 import 'package:centrow_sales/modules/sales/views/pages/customer_page.dart';
 import 'package:centrow_sales/modules/sales/views/pages/customer_form_page.dart';
 import 'package:centrow_sales/modules/sales/views/pages/proposal_page.dart';
+import 'package:centrow_sales/modules/sales/views/pages/proposal_form_page.dart';
 import 'package:centrow_sales/shared/network/auth_token_holder.dart';
 import 'package:centrow_sales/shared/widgets/nav_rail_shell.dart';
 
@@ -64,6 +65,15 @@ GoRouter createRouter({String? initialLocation}) => GoRouter(
             GoRoute(
               path: '/proposals',
               name: 'proposals',
+              routes: [
+                GoRoute(
+                  path: 'create',
+                  name: 'create-proposal',
+                  builder: (context, state) => ProposalFormPage(
+                    customerId: state.uri.queryParameters['customerId'],
+                  ),
+                ),
+              ],
               builder: (context, state) => const ProposalPage(),
             ),
           ],
