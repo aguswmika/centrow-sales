@@ -1,3 +1,4 @@
+import 'package:centrow_sales/modules/sales/entities/create_proposal_input.dart';
 import 'package:centrow_sales/shared/error/failure.dart';
 import 'package:centrow_sales/shared/result/result.dart';
 import 'package:centrow_sales/modules/sales/entities/proposal.dart';
@@ -9,6 +10,28 @@ abstract interface class ProposalRepository {
   });
 
   Future<Result<Proposal>> getProposalById(String id);
+
+  Future<Result<Proposal>> createProposal(CreateProposalInput input);
+
+  @override
+  Future<Result<Proposal>> createProposal(CreateProposalInput input) async {
+    try {
+      final newProposal = Proposal(
+        id: "pro-${DateTime.now().millisecondsSinceEpoch}",
+        code: "PRO-2026-${DateTime.now().millisecondsSinceEpoch.toString().substring(8)}",
+        clientName: input.customerId, 
+        serviceName: input.serviceId,
+        status: ProposalStatus.draft,
+        date: input.proposalDate,
+        validUntil: input.validUntil ?? "N/A",
+        location: input.addressId ?? "N/A",
+      );
+      _proposals.add(newProposal);
+      return Ok(newProposal);
+    } catch (e) {
+      return Err(ServerFailure(e.toString()));
+    }
+  }
 }
 
 class MockProposalRepositoryImpl implements ProposalRepository {
