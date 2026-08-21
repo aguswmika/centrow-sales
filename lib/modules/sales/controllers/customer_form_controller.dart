@@ -1,14 +1,14 @@
 import 'package:collection/collection.dart';
 import 'package:signals/signals.dart';
-import '../../../app/di.dart';
-import '../../../shared/result/result.dart';
-import '../../../shared/state/ui_state.dart';
-import '../../core/entities/region.dart';
-import '../../core/repositories/region_repository.dart';
-import '../entities/create_customer_input.dart';
-import '../entities/customer.dart';
-import '../entities/segment.dart';
-import '../repositories/customer_repository.dart';
+import 'package:centrow_sales/app/di.dart';
+import 'package:centrow_sales/shared/result/result.dart';
+import 'package:centrow_sales/shared/state/ui_state.dart';
+import 'package:centrow_sales/modules/core/entities/region.dart';
+import 'package:centrow_sales/modules/core/repositories/region_repository.dart';
+import 'package:centrow_sales/modules/sales/entities/create_customer_input.dart';
+import 'package:centrow_sales/modules/sales/entities/customer.dart';
+import 'package:centrow_sales/modules/sales/entities/segment.dart';
+import 'package:centrow_sales/modules/sales/repositories/customer_repository.dart';
 
 class CustomerFormController {
   final CustomerRepository _repository;

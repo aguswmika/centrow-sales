@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import '../../../../shared/theme/app_colors.dart';
-import '../../../../shared/theme/app_radius.dart';
-import '../../../../shared/widgets/app_badge.dart';
-import '../../entities/customer.dart';
+import 'package:centrow_sales/shared/theme/app_colors.dart';
+import 'package:centrow_sales/shared/theme/app_radius.dart';
+import 'package:centrow_sales/shared/widgets/app_badge.dart';
+import 'package:centrow_sales/modules/sales/entities/customer.dart';
 
 class CustomerContactsTab extends StatelessWidget {
   final List<CustomerContact> contacts;

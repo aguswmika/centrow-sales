@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import '../../../../shared/theme/app_colors.dart';
-import '../../../../shared/theme/app_radius.dart';
-import '../../entities/sales_dashboard.dart';
+import 'package:centrow_sales/shared/theme/app_colors.dart';
+import 'package:centrow_sales/shared/theme/app_radius.dart';
+import 'package:centrow_sales/modules/sales/entities/sales_dashboard.dart';
 
 class KpiCard extends StatelessWidget {
   final KpiMetric metric;

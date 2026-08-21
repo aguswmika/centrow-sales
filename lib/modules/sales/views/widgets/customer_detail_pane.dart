@@ -1,16 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import '../../../../shared/state/ui_state.dart';
-import '../../../../shared/theme/app_colors.dart';
-import '../../../../shared/theme/app_radius.dart';
-import '../../../../shared/widgets/app_badge.dart';
-import '../../../../shared/widgets/app_button.dart';
-import '../../../../shared/widgets/error_view.dart';
-import '../../entities/customer.dart';
-import 'customer_contacts_tab.dart';
-import 'customer_info_tab.dart';
-import 'customer_locations_tab.dart';
-import 'customer_proposals_tab.dart';
+import 'package:centrow_sales/shared/state/ui_state.dart';
+import 'package:centrow_sales/shared/theme/app_colors.dart';
+import 'package:centrow_sales/shared/theme/app_radius.dart';
+import 'package:centrow_sales/shared/widgets/app_badge.dart';
+import 'package:centrow_sales/shared/widgets/app_button.dart';
+import 'package:centrow_sales/shared/widgets/error_view.dart';
+import 'package:centrow_sales/modules/sales/entities/customer.dart';
+import 'package:centrow_sales/modules/sales/views/widgets/customer_contacts_tab.dart';
+import 'package:centrow_sales/modules/sales/views/widgets/customer_info_tab.dart';
+import 'package:centrow_sales/modules/sales/views/widgets/customer_locations_tab.dart';
+import 'package:centrow_sales/modules/sales/views/widgets/customer_proposals_tab.dart';
 
 class CustomerDetailPane extends StatelessWidget {
   final Customer? customer;

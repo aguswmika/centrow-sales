@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:signals/signals_flutter.dart';
-import '../../../../app/di.dart';
-import '../../../../shared/state/ui_state.dart';
-import '../../../../shared/theme/app_colors.dart';
-import '../../../../shared/widgets/error_view.dart';
-import '../../../../shared/widgets/toast.dart';
-import '../../controllers/proposal_controller.dart';
-import '../widgets/proposal_detail_pane.dart';
-import '../widgets/proposal_master_list.dart';
+import 'package:centrow_sales/app/di.dart';
+import 'package:centrow_sales/shared/state/ui_state.dart';
+import 'package:centrow_sales/shared/theme/app_colors.dart';
+import 'package:centrow_sales/shared/widgets/error_view.dart';
+import 'package:centrow_sales/shared/widgets/toast.dart';
+import 'package:centrow_sales/modules/sales/controllers/proposal_controller.dart';
+import 'package:centrow_sales/modules/sales/views/widgets/proposal_detail_pane.dart';
+import 'package:centrow_sales/modules/sales/views/widgets/proposal_master_list.dart';
 
 class ProposalPage extends StatefulWidget {
   final ProposalController? controller;

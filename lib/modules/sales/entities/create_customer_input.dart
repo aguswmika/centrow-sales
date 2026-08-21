@@ -1,4 +1,4 @@
-import 'customer.dart';
+import 'package:centrow_sales/modules/sales/entities/customer.dart';
 
 class CreateLocationInput {
   final String label;

@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
-import '../../../../shared/theme/app_colors.dart';
-import '../../../../shared/theme/app_radius.dart';
-import '../../../../shared/widgets/app_badge.dart';
-import '../../../../shared/widgets/app_segmented_control.dart';
-import '../../entities/customer.dart';
-import '../../entities/segment.dart';
+import 'package:centrow_sales/shared/theme/app_colors.dart';
+import 'package:centrow_sales/shared/theme/app_radius.dart';
+import 'package:centrow_sales/shared/widgets/app_badge.dart';
+import 'package:centrow_sales/shared/widgets/app_segmented_control.dart';
+import 'package:centrow_sales/modules/sales/entities/customer.dart';
+import 'package:centrow_sales/modules/sales/entities/segment.dart';
 
 class CustomerMasterList extends StatelessWidget {
   final List<Customer> customers;

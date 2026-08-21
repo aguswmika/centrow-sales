@@ -1,12 +1,12 @@
 import 'package:dio/dio.dart';
-import '../../../shared/error/failure.dart';
-import '../../../shared/network/dio_client.dart';
-import '../../../shared/result/result.dart';
-import '../entities/create_customer_input.dart';
-import '../entities/customer.dart';
-import '../entities/segment.dart';
-import 'dtos/customer_dto.dart';
-import 'dtos/segment_dto.dart';
+import 'package:centrow_sales/shared/error/failure.dart';
+import 'package:centrow_sales/shared/network/dio_client.dart';
+import 'package:centrow_sales/shared/result/result.dart';
+import 'package:centrow_sales/modules/sales/entities/create_customer_input.dart';
+import 'package:centrow_sales/modules/sales/entities/customer.dart';
+import 'package:centrow_sales/modules/sales/entities/segment.dart';
+import 'package:centrow_sales/modules/sales/repositories/dtos/customer_dto.dart';
+import 'package:centrow_sales/modules/sales/repositories/dtos/segment_dto.dart';
 
 abstract interface class CustomerRepository {
   Future<Result<List<Customer>>> getCustomers({

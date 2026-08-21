@@ -1,9 +1,9 @@
 import 'package:dio/dio.dart';
-import '../../../shared/error/failure.dart';
-import '../../../shared/network/dio_client.dart';
-import '../../../shared/result/result.dart';
-import '../entities/sales_dashboard.dart';
-import 'dtos/sales_dashboard_dto.dart';
+import 'package:centrow_sales/shared/error/failure.dart';
+import 'package:centrow_sales/shared/network/dio_client.dart';
+import 'package:centrow_sales/shared/result/result.dart';
+import 'package:centrow_sales/modules/sales/entities/sales_dashboard.dart';
+import 'package:centrow_sales/modules/sales/repositories/dtos/sales_dashboard_dto.dart';
 
 abstract interface class SalesDashboardRepository {
   Future<Result<SalesDashboardSummary>> getDashboardSummary();

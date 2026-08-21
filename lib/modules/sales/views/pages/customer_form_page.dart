@@ -1,15 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:signals/signals_flutter.dart';
-import '../../../../app/di.dart';
-import '../../../../shared/state/ui_state.dart';
-import '../../../../shared/theme/app_colors.dart';
-import '../../controllers/customer_form_controller.dart';
-import '../../entities/customer.dart';
-import '../widgets/customer_form/customer_form_sidebar.dart';
-import '../widgets/customer_form/customer_form_topbar.dart';
-import '../widgets/customer_form/step1_identity_form.dart';
-import '../widgets/customer_form/step2_locations_form.dart';
-import '../widgets/customer_form/step3_contacts_form.dart';
+import 'package:centrow_sales/app/di.dart';
+import 'package:centrow_sales/shared/state/ui_state.dart';
+import 'package:centrow_sales/shared/theme/app_colors.dart';
+import 'package:centrow_sales/modules/sales/controllers/customer_form_controller.dart';
+import 'package:centrow_sales/modules/sales/entities/customer.dart';
+import 'package:centrow_sales/modules/sales/views/widgets/customer_form/customer_form_sidebar.dart';
+import 'package:centrow_sales/modules/sales/views/widgets/customer_form/customer_form_topbar.dart';
+import 'package:centrow_sales/modules/sales/views/widgets/customer_form/step1_identity_form.dart';
+import 'package:centrow_sales/modules/sales/views/widgets/customer_form/step2_locations_form.dart';
+import 'package:centrow_sales/modules/sales/views/widgets/customer_form/step3_contacts_form.dart';
 
 class CustomerFormPage extends StatefulWidget {
   final CustomerFormController? controller;
