@@ -1,6 +1,7 @@
 import 'package:centrow_sales/modules/sales/entities/create_proposal_input.dart';
 import 'package:centrow_sales/modules/sales/entities/proposal.dart';
 import 'package:centrow_sales/modules/sales/repositories/proposal_repository.dart';
+import 'package:centrow_sales/shared/error/failure.dart';
 import 'package:centrow_sales/shared/result/result.dart';
 import 'package:flutter/foundation.dart';
 
@@ -17,7 +18,7 @@ class ProposalFormController extends ChangeNotifier {
 
   Future<Result<Proposal>> submit() async {
     if (customerId == null || serviceId == null || proposalDate == null) {
-      return Err(Exception('Field wajib harus diisi'));
+      return const Err(UnknownFailure('Field wajib harus diisi'));
     }
 
     final input = CreateProposalInput(

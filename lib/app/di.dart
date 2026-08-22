@@ -9,6 +9,7 @@ import 'package:centrow_sales/modules/sales/repositories/sales_dashboard_reposit
 import 'package:centrow_sales/modules/sales/controllers/customer_controller.dart';
 import 'package:centrow_sales/modules/sales/controllers/customer_form_controller.dart';
 import 'package:centrow_sales/modules/sales/controllers/proposal_controller.dart';
+import 'package:centrow_sales/modules/sales/controllers/proposal_form_controller.dart';
 import 'package:centrow_sales/modules/sales/repositories/customer_repository.dart';
 import 'package:centrow_sales/modules/sales/repositories/proposal_repository.dart';
 import 'package:centrow_sales/shared/network/auth_token_holder.dart';
@@ -73,5 +74,8 @@ Future<void> setupDi({LocalStorage? storage}) async {
   );
   getIt.registerFactory<ProposalController>(
     () => ProposalController(getIt<ProposalRepository>()),
+  );
+  getIt.registerFactory<ProposalFormController>(
+    () => ProposalFormController(getIt<ProposalRepository>()),
   );
 }

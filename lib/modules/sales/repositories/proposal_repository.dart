@@ -4,22 +4,24 @@ import 'package:centrow_sales/shared/result/result.dart';
 import 'package:centrow_sales/modules/sales/entities/proposal.dart';
 
 abstract interface class ProposalRepository {
-  Future<Result<List<Proposal>>> getProposals({
-    String? query,
-    String? status,
-  });
+  Future<Result<List<Proposal>>> getProposals({String? query, String? status});
 
   Future<Result<Proposal>> getProposalById(String id);
 
   Future<Result<Proposal>> createProposal(CreateProposalInput input);
+}
+
+class MockProposalRepositoryImpl implements ProposalRepository {
+  final List<Proposal> _proposals;
 
   @override
   Future<Result<Proposal>> createProposal(CreateProposalInput input) async {
     try {
       final newProposal = Proposal(
         id: "pro-${DateTime.now().millisecondsSinceEpoch}",
-        code: "PRO-2026-${DateTime.now().millisecondsSinceEpoch.toString().substring(8)}",
-        clientName: input.customerId, 
+        code:
+            "PRO-2026-${DateTime.now().millisecondsSinceEpoch.toString().substring(8)}",
+        clientName: input.customerId,
         serviceName: input.serviceId,
         status: ProposalStatus.draft,
         date: input.proposalDate,
@@ -32,13 +34,9 @@ abstract interface class ProposalRepository {
       return Err(ServerFailure(e.toString()));
     }
   }
-}
-
-class MockProposalRepositoryImpl implements ProposalRepository {
-  final List<Proposal> _proposals;
 
   MockProposalRepositoryImpl({List<Proposal>? seedProposals})
-      : _proposals = seedProposals ?? _defaultProposals;
+    : _proposals = seedProposals ?? _defaultProposals;
 
   static final List<Proposal> _defaultProposals = [
     const Proposal(
@@ -227,8 +225,7 @@ class MockProposalRepositoryImpl implements ProposalRepository {
         ProposalItem(
           id: 'item-3-1',
           title: 'Desinfektan Broad Spectrum (5L)',
-          description:
-              'Jumlah: 2 jerigen · Biaya Satuan: Rp 350.000 / jerigen',
+          description: 'Jumlah: 2 jerigen · Biaya Satuan: Rp 350.000 / jerigen',
           category: ProposalItemCategory.persiapan,
           price: 700000.0,
         ),
@@ -287,8 +284,7 @@ class MockProposalRepositoryImpl implements ProposalRepository {
         ProposalItem(
           id: 'item-4-1',
           title: 'Rodent Bait Station (Tamper-Resistant)',
-          description:
-              'Jumlah: 20 unit · Biaya Satuan: Rp 180.000 / unit',
+          description: 'Jumlah: 20 unit · Biaya Satuan: Rp 180.000 / unit',
           category: ProposalItemCategory.persiapan,
           price: 3600000.0,
         ),
@@ -358,7 +354,8 @@ class MockProposalRepositoryImpl implements ProposalRepository {
     try {
       final target = _proposals.firstWhere(
         (p) => p.id == id || p.code == id,
-        orElse: () => throw Exception('Proposal dengan ID $id tidak ditemukan.'),
+        orElse: () =>
+            throw Exception('Proposal dengan ID $id tidak ditemukan.'),
       );
       return Ok(target);
     } catch (e) {

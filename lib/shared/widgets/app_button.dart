@@ -128,12 +128,14 @@ class AppButton extends StatelessWidget {
 
     Widget content;
     if (isLoading) {
-      content = SizedBox(
-        width: 20,
-        height: 20,
-        child: CircularProgressIndicator(
-          strokeWidth: 2.5,
-          valueColor: AlwaysStoppedAnimation<Color>(foregroundColor),
+      content = Center(
+        child: SizedBox(
+          width: 20,
+          height: 20,
+          child: CircularProgressIndicator(
+            strokeWidth: 2.5,
+            valueColor: AlwaysStoppedAnimation<Color>(foregroundColor),
+          ),
         ),
       );
     } else {

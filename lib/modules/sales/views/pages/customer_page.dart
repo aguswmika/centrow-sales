@@ -111,15 +111,18 @@ class _CustomerPageState extends State<CustomerPage> {
               onTabChanged: _controller.setDetailTab,
               onAddProposal: () async {
                 if (selectedCust == null) return;
-                final result = await context.push('/proposals/create?customerId=${selectedCust.id}');
-                if (result != null onAddProposal: () {},onAddProposal: () {}, context.mounted) {
+                final result = await context.push(
+                  '/proposals/create?customerId=${selectedCust.id}',
+                );
+                if (result != null && context.mounted) {
                   await _controller.loadCustomers(isRefresh: true);
                 }
               },
               onEditData: () async {
                 if (selectedCust == null) return;
-                final result =
-                    await context.push('/customers/${selectedCust.id}/edit');
+                final result = await context.push(
+                  '/customers/${selectedCust.id}/edit',
+                );
                 if (result != null && context.mounted) {
                   await _controller.loadCustomers(isRefresh: true);
                 }

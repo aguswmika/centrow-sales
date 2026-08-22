@@ -11,66 +11,72 @@ class FakeProposalRepository implements ProposalRepository {
   bool shouldFailGetProposals = false;
   bool shouldFailGetProposalById = false;
 
+  @override
+  Future<Result<Proposal>> createProposal(dynamic input) async {
+    return const Err(ServerFailure('Not implemented'));
+  }
+
   FakeProposalRepository({List<Proposal>? initialProposals})
-      : proposals = initialProposals ??
-            [
-              const Proposal(
-                id: 'p1',
-                code: 'PRO-2026-0042',
-                clientName: 'Villa Sari Dewi',
-                serviceName: 'Termite Protection Plan',
-                status: ProposalStatus.dikirim,
-                date: '12 Agt 2026',
-                validUntil: '12 Sep 2026',
-                location: 'Villa Utama Seminyak',
-                version: '1',
-                total: 8158500.0,
-                items: [
-                  ProposalItem(
-                    id: 'item-1',
-                    title: 'Ficam W',
-                    category: ProposalItemCategory.persiapan,
-                    price: 760000.0,
-                  ),
-                  ProposalItem(
-                    id: 'item-2',
-                    title: 'Teknisi Senior',
-                    category: ProposalItemCategory.teknisi,
-                    price: 990000.0,
-                  ),
-                  ProposalItem(
-                    id: 'item-3',
-                    title: 'Biaya Perjalanan Badung',
-                    category: ProposalItemCategory.transport,
-                    price: 120000.0,
-                  ),
-                ],
-              ),
-              const Proposal(
-                id: 'p2',
-                code: 'PRO-2026-0041',
-                clientName: 'Hotel Surya Kuta',
-                serviceName: 'Pest Control Full Commercial',
-                status: ProposalStatus.negosiasi,
-                date: '10 Agt 2026',
-                validUntil: '10 Sep 2026',
-                location: 'Resort & Resto Kuta',
-                version: '2',
-                total: 12500000.0,
-              ),
-              const Proposal(
-                id: 'p3',
-                code: 'PRO-2026-0040',
-                clientName: 'Resto Warung Bumi',
-                serviceName: 'Disinfection & Sanitasi Ruang',
-                status: ProposalStatus.draft,
-                date: '15 Agt 2026',
-                validUntil: '15 Sep 2026',
-                location: 'Restoran Denpasar',
-                version: '1',
-                total: 2200000.0,
-              ),
-            ];
+    : proposals =
+          initialProposals ??
+          [
+            const Proposal(
+              id: 'p1',
+              code: 'PRO-2026-0042',
+              clientName: 'Villa Sari Dewi',
+              serviceName: 'Termite Protection Plan',
+              status: ProposalStatus.dikirim,
+              date: '12 Agt 2026',
+              validUntil: '12 Sep 2026',
+              location: 'Villa Utama Seminyak',
+              version: '1',
+              total: 8158500.0,
+              items: [
+                ProposalItem(
+                  id: 'item-1',
+                  title: 'Ficam W',
+                  category: ProposalItemCategory.persiapan,
+                  price: 760000.0,
+                ),
+                ProposalItem(
+                  id: 'item-2',
+                  title: 'Teknisi Senior',
+                  category: ProposalItemCategory.teknisi,
+                  price: 990000.0,
+                ),
+                ProposalItem(
+                  id: 'item-3',
+                  title: 'Biaya Perjalanan Badung',
+                  category: ProposalItemCategory.transport,
+                  price: 120000.0,
+                ),
+              ],
+            ),
+            const Proposal(
+              id: 'p2',
+              code: 'PRO-2026-0041',
+              clientName: 'Hotel Surya Kuta',
+              serviceName: 'Pest Control Full Commercial',
+              status: ProposalStatus.negosiasi,
+              date: '10 Agt 2026',
+              validUntil: '10 Sep 2026',
+              location: 'Resort & Resto Kuta',
+              version: '2',
+              total: 12500000.0,
+            ),
+            const Proposal(
+              id: 'p3',
+              code: 'PRO-2026-0040',
+              clientName: 'Resto Warung Bumi',
+              serviceName: 'Disinfection & Sanitasi Ruang',
+              status: ProposalStatus.draft,
+              date: '15 Agt 2026',
+              validUntil: '15 Sep 2026',
+              location: 'Restoran Denpasar',
+              version: '1',
+              total: 2200000.0,
+            ),
+          ];
 
   @override
   Future<Result<List<Proposal>>> getProposals({
@@ -110,9 +116,7 @@ class FakeProposalRepository implements ProposalRepository {
       return const Err(ServerFailure('Gagal memuat detail'));
     }
     try {
-      final target = proposals.firstWhere(
-        (p) => p.id == id || p.code == id,
-      );
+      final target = proposals.firstWhere((p) => p.id == id || p.code == id);
       return Ok(target);
     } catch (_) {
       return const Err(ServerFailure('Proposal tidak ditemukan', 404));
@@ -145,17 +149,29 @@ void main() {
       expect(controller.selectedProposal.value, isNull);
     });
 
-    test('loadProposals populates list and selects first item by default', () async {
-      await controller.loadProposals();
+    test(
+      'loadProposals populates list and selects first item by default',
+      () async {
+        await controller.loadProposals();
 
-      expect(controller.proposalsState.value, isA<UiSuccess<List<Proposal>>>());
-      final list = controller.filteredProposals.value;
-      expect(list.length, 3);
-      expect(controller.selectedProposalId.value, 'p1');
-      expect(controller.proposalDetailState.value, isA<UiSuccess<Proposal>>());
-      expect(controller.selectedProposal.value?.id, 'p1');
-      expect(controller.selectedProposal.value?.clientName, 'Villa Sari Dewi');
-    });
+        expect(
+          controller.proposalsState.value,
+          isA<UiSuccess<List<Proposal>>>(),
+        );
+        final list = controller.filteredProposals.value;
+        expect(list.length, 3);
+        expect(controller.selectedProposalId.value, 'p1');
+        expect(
+          controller.proposalDetailState.value,
+          isA<UiSuccess<Proposal>>(),
+        );
+        expect(controller.selectedProposal.value?.id, 'p1');
+        expect(
+          controller.selectedProposal.value?.clientName,
+          'Villa Sari Dewi',
+        );
+      },
+    );
 
     test('loadProposals sets UiFailure on repository error', () async {
       repository.shouldFailGetProposals = true;
@@ -165,15 +181,24 @@ void main() {
       expect(controller.filteredProposals.value, isEmpty);
     });
 
-    test('selectProposal updates selectedProposalId and fetches detail', () async {
-      await controller.loadProposals();
+    test(
+      'selectProposal updates selectedProposalId and fetches detail',
+      () async {
+        await controller.loadProposals();
 
-      await controller.selectProposal('p2');
-      expect(controller.selectedProposalId.value, 'p2');
-      expect(controller.proposalDetailState.value, isA<UiSuccess<Proposal>>());
-      expect(controller.selectedProposal.value?.id, 'p2');
-      expect(controller.selectedProposal.value?.clientName, 'Hotel Surya Kuta');
-    });
+        await controller.selectProposal('p2');
+        expect(controller.selectedProposalId.value, 'p2');
+        expect(
+          controller.proposalDetailState.value,
+          isA<UiSuccess<Proposal>>(),
+        );
+        expect(controller.selectedProposal.value?.id, 'p2');
+        expect(
+          controller.selectedProposal.value?.clientName,
+          'Hotel Surya Kuta',
+        );
+      },
+    );
 
     test('selectProposal with empty id resets proposalDetailState', () async {
       await controller.loadProposals();
@@ -219,29 +244,47 @@ void main() {
       expect(sentList.first.id, 'p1');
     });
 
-    test('activePricingTab and activePricingCategory behave correctly', () async {
-      await controller.loadProposals();
+    test(
+      'activePricingTab and activePricingCategory behave correctly',
+      () async {
+        await controller.loadProposals();
 
-      expect(controller.activePricingTab.value, 0);
-      expect(controller.activePricingCategory.value, ProposalItemCategory.persiapan);
-      expect(controller.activePricingItems.value.length, 1);
-      expect(controller.activePricingItems.value.first.title, 'Ficam W');
+        expect(controller.activePricingTab.value, 0);
+        expect(
+          controller.activePricingCategory.value,
+          ProposalItemCategory.persiapan,
+        );
+        expect(controller.activePricingItems.value.length, 1);
+        expect(controller.activePricingItems.value.first.title, 'Ficam W');
 
-      controller.setPricingTab(1);
-      expect(controller.activePricingCategory.value, ProposalItemCategory.teknisi);
-      expect(controller.activePricingItems.value.length, 1);
-      expect(controller.activePricingItems.value.first.title, 'Teknisi Senior');
+        controller.setPricingTab(1);
+        expect(
+          controller.activePricingCategory.value,
+          ProposalItemCategory.teknisi,
+        );
+        expect(controller.activePricingItems.value.length, 1);
+        expect(
+          controller.activePricingItems.value.first.title,
+          'Teknisi Senior',
+        );
 
-      controller.setActivePricingTab(2);
-      expect(controller.activePricingCategory.value, ProposalItemCategory.transport);
-      expect(controller.activePricingItems.value.length, 1);
-      expect(controller.activePricingItems.value.first.title, 'Biaya Perjalanan Badung');
+        controller.setActivePricingTab(2);
+        expect(
+          controller.activePricingCategory.value,
+          ProposalItemCategory.transport,
+        );
+        expect(controller.activePricingItems.value.length, 1);
+        expect(
+          controller.activePricingItems.value.first.title,
+          'Biaya Perjalanan Badung',
+        );
 
-      controller.setPricingCategory(ProposalItemCategory.persiapan);
-      expect(controller.activePricingTab.value, 0);
+        controller.setPricingCategory(ProposalItemCategory.persiapan);
+        expect(controller.activePricingTab.value, 0);
 
-      controller.changeTab(1);
-      expect(controller.activePricingTab.value, 1);
-    });
+        controller.changeTab(1);
+        expect(controller.activePricingTab.value, 1);
+      },
+    );
   });
 }

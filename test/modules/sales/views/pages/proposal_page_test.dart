@@ -30,6 +30,11 @@ class _FakeProposalRepo implements ProposalRepository {
     final target = proposals.firstWhere((p) => p.id == id || p.code == id);
     return Ok(target);
   }
+
+  @override
+  Future<Result<Proposal>> createProposal(dynamic input) async {
+    return const Err(ServerFailure('Not implemented'));
+  }
 }
 
 void main() {
@@ -97,9 +102,7 @@ void main() {
     final controller = ProposalController(repo);
 
     await tester.pumpWidget(
-      MaterialApp(
-        home: ProposalPage(controller: controller),
-      ),
+      MaterialApp(home: ProposalPage(controller: controller)),
     );
     await tester.pumpAndSettle();
 
@@ -132,9 +135,7 @@ void main() {
     final controller = ProposalController(repo);
 
     await tester.pumpWidget(
-      MaterialApp(
-        home: ProposalPage(controller: controller),
-      ),
+      MaterialApp(home: ProposalPage(controller: controller)),
     );
     await tester.pumpAndSettle();
 
@@ -149,9 +150,7 @@ void main() {
     final controller = ProposalController(repo);
 
     await tester.pumpWidget(
-      MaterialApp(
-        home: ProposalPage(controller: controller),
-      ),
+      MaterialApp(home: ProposalPage(controller: controller)),
     );
     await tester.pumpAndSettle();
 

@@ -1,6 +1,6 @@
 {
-    "name": "centrow_sales",
-    "short_name": "centrow_sales",
+    "name": "Centrow Sales",
+    "short_name": "Centrow Sales",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0175C2",

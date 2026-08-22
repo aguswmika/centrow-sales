@@ -166,7 +166,7 @@ class _LoginPageState extends State<LoginPage> {
             mainAxisSize: MainAxisSize.min,
             children: [
               AppTextField(
-                label: 'Email / Nama Pengguna',
+                label: 'Email',
                 hint: 'nama@nohama.id',
                 prefixIcon: const Icon(
                   Icons.mail_outline_rounded,
