@@ -2,22 +2,24 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:centrow_sales/app/di.dart';
 import 'package:centrow_sales/modules/sales/controllers/proposal_form_controller.dart';
-import 'package:centrow_sales/shared/theme/app_colors.dart';
 import 'package:centrow_sales/shared/widgets/app_searchable_selector.dart';
 import 'package:centrow_sales/shared/widgets/app_dropdown.dart';
 import 'package:centrow_sales/modules/sales/entities/customer.dart';
 import 'package:centrow_sales/modules/sales/entities/service.dart';
 
-class ProposalFormPage extends StatefulWidget {
+import 'package:centrow_sales/shared/theme/app_typography.dart';
+import 'package:centrow_sales/shared/theme/app_colors.dart';
+
+class ProposalFormBottomSheet extends StatefulWidget {
   final String? customerId;
 
-  const ProposalFormPage({super.key, this.customerId});
+  const ProposalFormBottomSheet({super.key, this.customerId});
 
   @override
-  State<ProposalFormPage> createState() => _ProposalFormPageState();
+  State<ProposalFormBottomSheet> createState() => _ProposalFormBottomSheetState();
 }
 
-class _ProposalFormPageState extends State<ProposalFormPage> {
+class _ProposalFormBottomSheetState extends State<ProposalFormBottomSheet> {
   late final ProposalFormController _controller;
   final TextEditingController _dateController = TextEditingController();
   final TextEditingController _validUntilController = TextEditingController();
@@ -39,7 +41,11 @@ class _ProposalFormPageState extends State<ProposalFormPage> {
     super.dispose();
   }
 
-  Future<void> _selectDate(BuildContext context, TextEditingController controller, ValueChanged<String> onSelected) async {
+  Future<void> _selectDate(
+    BuildContext context,
+    TextEditingController controller,
+    ValueChanged<String> onSelected,
+  ) async {
     final DateTime? picked = await showDatePicker(
       context: context,
       initialDate: DateTime.now(),
@@ -47,7 +53,8 @@ class _ProposalFormPageState extends State<ProposalFormPage> {
       lastDate: DateTime(2100),
     );
     if (picked != null) {
-      final dateString = "${picked.year}-${picked.month.toString().padLeft(2, '0')}-${picked.day.toString().padLeft(2, '0')}";
+      final dateString =
+          "${picked.year}-${picked.month.toString().padLeft(2, '0')}-${picked.day.toString().padLeft(2, '0')}";
       controller.text = dateString;
       onSelected(dateString);
     }
@@ -55,24 +62,52 @@ class _ProposalFormPageState extends State<ProposalFormPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Buat Proposal Baru'),
-        leading: IconButton(
-          icon: const Icon(Icons.close_rounded),
-          onPressed: () => context.pop(),
-        ),
+    return Container(
+      constraints: BoxConstraints(
+        maxHeight: MediaQuery.of(context).size.height * 0.9,
       ),
-      body: ListenableBuilder(
+      decoration: const BoxDecoration(
+        color: AppColors.surface,
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      child: ListenableBuilder(
         listenable: _controller,
         builder: (context, child) {
           return SingleChildScrollView(
-            padding: const EdgeInsets.all(24.0),
+            padding: EdgeInsets.only(
+              bottom: MediaQuery.of(context).viewInsets.bottom + 24.0,
+              left: 24.0,
+              right: 24.0,
+              top: 12.0,
+            ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
+                Center(
+                  child: Container(
+                    width: 40,
+                    height: 4,
+                    decoration: BoxDecoration(
+                      color: AppColors.borderStrong,
+                      borderRadius: BorderRadius.circular(2),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 16),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text('Buat Proposal Baru', style: AppTypography.heading2()),
+                    IconButton(
+                      icon: const Icon(Icons.close_rounded, color: AppColors.sec),
+                      onPressed: () => context.pop(),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 24),
                 AppSearchableSelector<Customer>(
                   label: 'Pelanggan',
+                  value: null,
                   onSearch: _controller.searchCustomers,
                   itemAsString: (c) => c.name,
                   onChanged: (c) => _controller.updateFields(customerId: c?.id),
@@ -80,6 +115,7 @@ class _ProposalFormPageState extends State<ProposalFormPage> {
                 const SizedBox(height: 16),
                 AppSearchableSelector<Service>(
                   label: 'Layanan',
+                  value: null,
                   onSearch: _controller.searchServices,
                   itemAsString: (s) => s.name,
                   onChanged: (s) => _controller.updateFields(serviceId: s?.id),
@@ -88,7 +124,14 @@ class _ProposalFormPageState extends State<ProposalFormPage> {
                 AppDropdown<String>(
                   label: 'Lokasi',
                   value: null,
-                  items: _controller.availableLocations.map((l) => DropdownMenuItem(value: l.id, child: Text(l.address))).toList(),
+                  items: _controller.availableLocations
+                      .map(
+                        (l) => DropdownMenuItem(
+                          value: l.id,
+                          child: Text(l.address),
+                        ),
+                      )
+                      .toList(),
                   onChanged: (val) {
                     _controller.updateFields(addressId: val);
                   },
@@ -97,15 +140,29 @@ class _ProposalFormPageState extends State<ProposalFormPage> {
                 TextFormField(
                   controller: _dateController,
                   readOnly: true,
-                  decoration: const InputDecoration(labelText: 'Tanggal Proposal', suffixIcon: Icon(Icons.calendar_today)),
-                  onTap: () => _selectDate(context, _dateController, (val) => _controller.updateFields(proposalDate: val)),
+                  decoration: const InputDecoration(
+                    labelText: 'Tanggal Proposal',
+                    suffixIcon: Icon(Icons.calendar_today),
+                  ),
+                  onTap: () => _selectDate(
+                    context,
+                    _dateController,
+                    (val) => _controller.updateFields(proposalDate: val),
+                  ),
                 ),
                 const SizedBox(height: 16),
                 TextFormField(
                   controller: _validUntilController,
                   readOnly: true,
-                  decoration: const InputDecoration(labelText: 'Berlaku Hingga', suffixIcon: Icon(Icons.calendar_today)),
-                  onTap: () => _selectDate(context, _validUntilController, (val) => _controller.updateFields(validUntil: val)),
+                  decoration: const InputDecoration(
+                    labelText: 'Berlaku Hingga',
+                    suffixIcon: Icon(Icons.calendar_today),
+                  ),
+                  onTap: () => _selectDate(
+                    context,
+                    _validUntilController,
+                    (val) => _controller.updateFields(validUntil: val),
+                  ),
                 ),
                 const SizedBox(height: 32),
                 ElevatedButton(

@@ -9,6 +9,7 @@ import 'package:centrow_sales/shared/widgets/toast.dart';
 import 'package:centrow_sales/modules/sales/controllers/proposal_controller.dart';
 import 'package:centrow_sales/modules/sales/views/widgets/proposal_detail_pane.dart';
 import 'package:centrow_sales/modules/sales/views/widgets/proposal_master_list.dart';
+import 'package:centrow_sales/modules/sales/views/widgets/proposal_form_bottom_sheet.dart' as centrow_sales_bs;
 
 class ProposalPage extends StatefulWidget {
   final ProposalController? controller;
@@ -83,7 +84,12 @@ class _ProposalPageState extends State<ProposalPage> {
       onSelectStatus: _controller.selectStatus,
       onSearchChanged: _controller.setSearchQuery,
       onCreateProposal: () async {
-        final result = await context.push('/proposals/create');
+        final result = await showModalBottomSheet<bool>(
+          context: context,
+          isScrollControlled: true,
+          backgroundColor: Colors.transparent,
+          builder: (_) => const centrow_sales_bs.ProposalFormBottomSheet(),
+        );
         if (result != null && context.mounted) {
           await _controller.loadProposals(isRefresh: true);
         }
