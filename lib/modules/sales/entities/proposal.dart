@@ -332,7 +332,6 @@ class Proposal {
         total,
       ]);
 
-  @override
   factory Proposal.fromJson(Map<String, dynamic> json) {
     return Proposal(
       id: json["id"]?.toString() ?? "",
