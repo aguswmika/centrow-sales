@@ -3,6 +3,10 @@ import 'package:go_router/go_router.dart';
 import 'package:centrow_sales/app/di.dart';
 import 'package:centrow_sales/modules/sales/controllers/proposal_form_controller.dart';
 import 'package:centrow_sales/shared/theme/app_colors.dart';
+import 'package:centrow_sales/shared/widgets/app_searchable_selector.dart';
+import 'package:centrow_sales/shared/widgets/app_dropdown.dart';
+import 'package:centrow_sales/modules/sales/entities/customer.dart';
+import 'package:centrow_sales/modules/sales/entities/service.dart';
 
 class ProposalFormPage extends StatefulWidget {
   final String? customerId;
@@ -15,6 +19,8 @@ class ProposalFormPage extends StatefulWidget {
 
 class _ProposalFormPageState extends State<ProposalFormPage> {
   late final ProposalFormController _controller;
+  final TextEditingController _dateController = TextEditingController();
+  final TextEditingController _validUntilController = TextEditingController();
 
   @override
   void initState() {
@@ -25,7 +31,23 @@ class _ProposalFormPageState extends State<ProposalFormPage> {
   @override
   void dispose() {
     _controller.dispose();
+    _dateController.dispose();
+    _validUntilController.dispose();
     super.dispose();
+  }
+
+  Future<void> _selectDate(BuildContext context, TextEditingController controller, ValueChanged<String> onSelected) async {
+    final DateTime? picked = await showDatePicker(
+      context: context,
+      initialDate: DateTime.now(),
+      firstDate: DateTime(2000),
+      lastDate: DateTime(2100),
+    );
+    if (picked != null) {
+      final dateString = "${picked.year}-${picked.month.toString().padLeft(2, '0')}-${picked.day.toString().padLeft(2, '0')}";
+      controller.text = dateString;
+      onSelected(dateString);
+    }
   }
 
   @override
@@ -38,11 +60,53 @@ class _ProposalFormPageState extends State<ProposalFormPage> {
           onPressed: () => context.pop(),
         ),
       ),
-      body: const Center(
-        child: Padding(
-          padding: EdgeInsets.all(24.0),
-          child: Text('Formulir Proposal (UI Placeholder)'),
-        ),
+      body: ListenableBuilder(
+        listenable: _controller,
+        builder: (context, child) {
+          return Padding(
+            padding: const EdgeInsets.all(24.0),
+            child: Column(
+              children: [
+                AppSearchableSelector<Customer>(
+                  label: 'Pelanggan',
+                  onSearch: _controller.searchCustomers,
+                  itemAsString: (c) => c.name,
+                  onChanged: (c) => _controller.updateFields(customerId: c?.id),
+                ),
+                const SizedBox(height: 16),
+                AppSearchableSelector<Service>(
+                  label: 'Layanan',
+                  onSearch: _controller.searchServices,
+                  itemAsString: (s) => s.name,
+                  onChanged: (s) => _controller.updateFields(serviceId: s?.id),
+                ),
+                const SizedBox(height: 16),
+                AppDropdown<String>(
+                  label: 'Lokasi',
+                  items: _controller.availableLocations.map((l) => l.address).toList(),
+                  onChanged: (val) {
+                    final location = _controller.availableLocations.firstWhere((l) => l.address == val);
+                    _controller.updateFields(addressId: location.id);
+                  },
+                ),
+                const SizedBox(height: 16),
+                TextFormField(
+                  controller: _dateController,
+                  readOnly: true,
+                  decoration: const InputDecoration(labelText: 'Tanggal Proposal', suffixIcon: Icon(Icons.calendar_today)),
+                  onTap: () => _selectDate(context, _dateController, (val) => _controller.updateFields(proposalDate: val)),
+                ),
+                const SizedBox(height: 16),
+                TextFormField(
+                  controller: _validUntilController,
+                  readOnly: true,
+                  decoration: const InputDecoration(labelText: 'Berlaku Hingga', suffixIcon: Icon(Icons.calendar_today)),
+                  onTap: () => _selectDate(context, _validUntilController, (val) => _controller.updateFields(validUntil: val)),
+                ),
+              ],
+            ),
+          );
+        },
       ),
     );
   }
