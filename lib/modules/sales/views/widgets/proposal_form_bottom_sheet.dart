@@ -16,7 +16,8 @@ class ProposalFormBottomSheet extends StatefulWidget {
   const ProposalFormBottomSheet({super.key, this.customerId});
 
   @override
-  State<ProposalFormBottomSheet> createState() => _ProposalFormBottomSheetState();
+  State<ProposalFormBottomSheet> createState() =>
+      _ProposalFormBottomSheetState();
 }
 
 class _ProposalFormBottomSheetState extends State<ProposalFormBottomSheet> {
@@ -99,7 +100,10 @@ class _ProposalFormBottomSheetState extends State<ProposalFormBottomSheet> {
                   children: [
                     Text('Buat Proposal Baru', style: AppTypography.heading2()),
                     IconButton(
-                      icon: const Icon(Icons.close_rounded, color: AppColors.sec),
+                      icon: const Icon(
+                        Icons.close_rounded,
+                        color: AppColors.sec,
+                      ),
                       onPressed: () => context.pop(),
                     ),
                   ],

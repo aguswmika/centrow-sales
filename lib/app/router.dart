@@ -51,9 +51,8 @@ GoRouter createRouter({String? initialLocation}) => GoRouter(
                 GoRoute(
                   path: ':id/edit',
                   name: 'edit-customer',
-                  builder: (context, state) => CustomerFormPage(
-                    customerId: state.pathParameters['id'],
-                  ),
+                  builder: (context, state) =>
+                      CustomerFormPage(customerId: state.pathParameters['id']),
                 ),
               ],
             ),

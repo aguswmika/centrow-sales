@@ -9,7 +9,8 @@ import 'package:centrow_sales/modules/sales/controllers/customer_controller.dart
 import 'package:centrow_sales/modules/sales/entities/segment.dart';
 import 'package:centrow_sales/modules/sales/views/widgets/customer_detail_pane.dart';
 import 'package:centrow_sales/modules/sales/views/widgets/customer_master_list.dart';
-import 'package:centrow_sales/modules/sales/views/widgets/proposal_form_bottom_sheet.dart' as centrow_sales_bs;
+import 'package:centrow_sales/modules/sales/views/widgets/proposal_form_bottom_sheet.dart'
+    as centrow_sales_bs;
 
 class CustomerPage extends StatefulWidget {
   final CustomerController? controller;
@@ -116,7 +117,9 @@ class _CustomerPageState extends State<CustomerPage> {
                   context: context,
                   isScrollControlled: true,
                   backgroundColor: Colors.transparent,
-                  builder: (_) => centrow_sales_bs.ProposalFormBottomSheet(customerId: selectedCust.id),
+                  builder: (_) => centrow_sales_bs.ProposalFormBottomSheet(
+                    customerId: selectedCust.id,
+                  ),
                 );
                 if (result != null && context.mounted) {
                   await _controller.loadCustomers(isRefresh: true);

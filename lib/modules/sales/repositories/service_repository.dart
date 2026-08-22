@@ -2,6 +2,7 @@ import 'package:dio/dio.dart';
 import 'package:centrow_sales/modules/sales/entities/service.dart';
 import 'package:centrow_sales/shared/network/dio_client.dart';
 import 'package:centrow_sales/shared/result/result.dart';
+import 'package:centrow_sales/shared/error/failure.dart';
 
 abstract interface class ServiceRepository {
   Future<Result<List<Service>>> getServices({String? query});

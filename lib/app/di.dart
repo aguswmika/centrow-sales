@@ -54,10 +54,10 @@ Future<void> setupDi({LocalStorage? storage}) async {
     () => CustomerRepositoryImpl(getIt<Dio>()),
   );
   getIt.registerLazySingleton<ProposalRepository>(
-    () => MockProposalRepositoryImpl(),
+    () => ProposalRepositoryImpl(getIt<Dio>()),
   );
   getIt.registerLazySingleton<ServiceRepository>(
-    () => MockServiceRepositoryImpl(),
+    () => ServiceRepositoryImpl(getIt<Dio>()),
   );
 
   // Controllers

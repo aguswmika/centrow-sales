@@ -1,3 +1,5 @@
+import 'package:dio/dio.dart';
+import 'package:centrow_sales/shared/network/dio_client.dart';
 import 'package:centrow_sales/modules/sales/entities/create_proposal_input.dart';
 import 'package:centrow_sales/shared/error/failure.dart';
 import 'package:centrow_sales/shared/result/result.dart';
@@ -360,6 +362,54 @@ class MockProposalRepositoryImpl implements ProposalRepository {
       return Ok(target);
     } catch (e) {
       return Err(ServerFailure(e.toString()));
+    }
+  }
+}
+
+class ProposalRepositoryImpl implements ProposalRepository {
+  final Dio _dio;
+  final MockProposalRepositoryImpl _mockFallback = MockProposalRepositoryImpl();
+
+  ProposalRepositoryImpl(this._dio);
+
+  @override
+  Future<Result<List<Proposal>>> getProposals({String? query, String? status}) {
+    return _mockFallback.getProposals(query: query, status: status);
+  }
+
+  @override
+  Future<Result<Proposal>> getProposalById(String id) {
+    return _mockFallback.getProposalById(id);
+  }
+
+  @override
+  Future<Result<Proposal>> createProposal(CreateProposalInput input) async {
+    try {
+      final response = await _dio.post<Map<String, dynamic>>(
+        '/v1/sales/proposals',
+        data: input.toJson(),
+      );
+      final data = response.data?['data'] as Map<String, dynamic>?;
+      if (data == null) {
+        return const Err(ServerFailure('Invalid response data from server'));
+      }
+      // Map response to Proposal
+      final proposal = Proposal(
+        id: data['id'] as String? ?? '',
+        code: data['code'] as String? ?? '',
+        clientName: 'Unknown Client', // From mock UI until GET works
+        serviceName: 'Unknown Service',
+        status: ProposalStatus.draft,
+        date: data['proposal_date'] as String? ?? '',
+        validUntil: input.validUntil ?? 'N/A',
+        location: input.addressId ?? 'N/A',
+        total: (data['total_amount'] as num?)?.toDouble() ?? 0.0,
+      );
+      return Ok(proposal);
+    } on DioException catch (e) {
+      return Err(mapDioException(e));
+    } catch (e) {
+      return Err(UnknownFailure(e.toString()));
     }
   }
 }

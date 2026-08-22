@@ -9,7 +9,8 @@ import 'package:centrow_sales/shared/widgets/toast.dart';
 import 'package:centrow_sales/modules/sales/controllers/proposal_controller.dart';
 import 'package:centrow_sales/modules/sales/views/widgets/proposal_detail_pane.dart';
 import 'package:centrow_sales/modules/sales/views/widgets/proposal_master_list.dart';
-import 'package:centrow_sales/modules/sales/views/widgets/proposal_form_bottom_sheet.dart' as centrow_sales_bs;
+import 'package:centrow_sales/modules/sales/views/widgets/proposal_form_bottom_sheet.dart'
+    as centrow_sales_bs;
 
 class ProposalPage extends StatefulWidget {
   final ProposalController? controller;
