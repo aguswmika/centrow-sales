@@ -373,7 +373,10 @@ class ProposalRepositoryImpl implements ProposalRepository {
   ProposalRepositoryImpl(this._dio);
 
   @override
-  Future<Result<List<Proposal>>> getProposals({String? query, String? status}) async {
+  Future<Result<List<Proposal>>> getProposals({
+    String? query,
+    String? status,
+  }) async {
     try {
       final Map<String, dynamic> params = {};
       if (query != null && query.trim().isNotEmpty) {
@@ -396,11 +399,14 @@ class ProposalRepositoryImpl implements ProposalRepository {
         '/v1/sales/proposals',
         queryParameters: params,
       );
-      final List<dynamic>? items = response.data?['data']?['items'] as List<dynamic>?;
+      final List<dynamic>? items =
+          response.data?['data']?['items'] as List<dynamic>?;
       if (items == null) {
         return const Ok([]);
       }
-      final proposals = items.map((i) => Proposal.fromJson(i as Map<String, dynamic>)).toList();
+      final proposals = items
+          .map((i) => Proposal.fromJson(i as Map<String, dynamic>))
+          .toList();
       return Ok(proposals);
     } on DioException catch (e) {
       return Err(mapDioException(e));

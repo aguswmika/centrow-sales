@@ -160,14 +160,18 @@ class Proposal {
     String? initials,
     String? shortAmount,
     String? shortMarginAmt,
-  })  : explicitInitials = initials,
-        explicitShortAmount = shortAmount,
-        explicitShortMarginAmt = shortMarginAmt;
+  }) : explicitInitials = initials,
+       explicitShortAmount = shortAmount,
+       explicitShortMarginAmt = shortMarginAmt;
 
   String get initials {
     final exp = explicitInitials;
     if (exp != null && exp.isNotEmpty) return exp;
-    final parts = clientName.trim().split(' ').where((e) => e.isNotEmpty).toList();
+    final parts = clientName
+        .trim()
+        .split(' ')
+        .where((e) => e.isNotEmpty)
+        .toList();
     if (parts.isEmpty) return 'PR';
     if (parts.length == 1) {
       return parts[0].substring(0, parts[0].length >= 2 ? 2 : 1).toUpperCase();
@@ -191,6 +195,7 @@ class Proposal {
     }
     return '+ ${_formatCurrency(markup)}';
   }
+
   String get formattedServicePrice => _formatCurrency(servicePrice);
   String get formattedAddon => _formatCurrency(addon);
   String get formattedSubtotal => _formatCurrency(subtotal);
@@ -310,27 +315,27 @@ class Proposal {
 
   @override
   int get hashCode => Object.hashAll([
-        id,
-        code,
-        clientName,
-        serviceName,
-        status,
-        date,
-        validUntil,
-        location,
-        version,
-        cogs,
-        materialCost,
-        laborCost,
-        fuelCost,
-        markup,
-        markupPercent,
-        servicePrice,
-        addon,
-        subtotal,
-        tax,
-        total,
-      ]);
+    id,
+    code,
+    clientName,
+    serviceName,
+    status,
+    date,
+    validUntil,
+    location,
+    version,
+    cogs,
+    materialCost,
+    laborCost,
+    fuelCost,
+    markup,
+    markupPercent,
+    servicePrice,
+    addon,
+    subtotal,
+    tax,
+    total,
+  ]);
 
   factory Proposal.fromJson(Map<String, dynamic> json) {
     return Proposal(
@@ -343,7 +348,19 @@ class Proposal {
       validUntil: json["valid_until"]?.toString() ?? "N/A",
       location: json["location"]?.toString() ?? "N/A",
       cogs: (json["cogs"] as num?)?.toDouble() ?? 0.0,
-      items: (json["items"] as List<dynamic>?)?.map((i) => ProposalItem(title: i["title"]?.toString() ?? "", category: ProposalItemCategory.fromString(i["category"]?.toString() ?? ""), price: (i["price"] as num?)?.toDouble() ?? 0.0)).toList() ?? const [],
+      items:
+          (json["items"] as List<dynamic>?)
+              ?.map(
+                (i) => ProposalItem(
+                  title: i["title"]?.toString() ?? "",
+                  category: ProposalItemCategory.fromString(
+                    i["category"]?.toString() ?? "",
+                  ),
+                  price: (i["price"] as num?)?.toDouble() ?? 0.0,
+                ),
+              )
+              .toList() ??
+          const [],
       total: (json["total_amount"] as num?)?.toDouble() ?? 0.0,
     );
   }
@@ -371,24 +388,36 @@ String _formatShortCurrency(double amount) {
   String result;
   if (absAmount >= 1000000000) {
     final b = absAmount / 1000000000;
-    final formatted = (b % 1 == 0
-            ? b.toInt().toString()
-            : b.toStringAsFixed(2).replaceAll(RegExp(r'0+$'), '').replaceAll(RegExp(r'\.$'), ''))
-        .replaceAll('.', ',');
+    final formatted =
+        (b % 1 == 0
+                ? b.toInt().toString()
+                : b
+                      .toStringAsFixed(2)
+                      .replaceAll(RegExp(r'0+$'), '')
+                      .replaceAll(RegExp(r'\.$'), ''))
+            .replaceAll('.', ',');
     result = 'Rp ${formatted}M';
   } else if (absAmount >= 1000000) {
     final m = absAmount / 1000000;
-    final formatted = (m % 1 == 0
-            ? m.toInt().toString()
-            : m.toStringAsFixed(2).replaceAll(RegExp(r'0+$'), '').replaceAll(RegExp(r'\.$'), ''))
-        .replaceAll('.', ',');
+    final formatted =
+        (m % 1 == 0
+                ? m.toInt().toString()
+                : m
+                      .toStringAsFixed(2)
+                      .replaceAll(RegExp(r'0+$'), '')
+                      .replaceAll(RegExp(r'\.$'), ''))
+            .replaceAll('.', ',');
     result = 'Rp ${formatted}jt';
   } else if (absAmount >= 1000) {
     final k = absAmount / 1000;
-    final formatted = (k % 1 == 0
-            ? k.toInt().toString()
-            : k.toStringAsFixed(1).replaceAll(RegExp(r'0+$'), '').replaceAll(RegExp(r'\.$'), ''))
-        .replaceAll('.', ',');
+    final formatted =
+        (k % 1 == 0
+                ? k.toInt().toString()
+                : k
+                      .toStringAsFixed(1)
+                      .replaceAll(RegExp(r'0+$'), '')
+                      .replaceAll(RegExp(r'\.$'), ''))
+            .replaceAll('.', ',');
     result = 'Rp ${formatted}rb';
   } else {
     result = _formatCurrency(amount);
