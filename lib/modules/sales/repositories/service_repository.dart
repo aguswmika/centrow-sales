@@ -21,7 +21,8 @@ class ServiceRepositoryImpl implements ServiceRepository {
         queryParameters: query != null ? {'q': query} : null,
       );
 
-      final List<dynamic> items = response.data?['items'] as List<dynamic>? ?? [];
+      final List<dynamic> items =
+          response.data?['items'] as List<dynamic>? ?? [];
       final services = items
           .map((item) => Service.fromJson(item as Map<String, dynamic>))
           .toList();

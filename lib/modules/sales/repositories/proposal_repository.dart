@@ -373,8 +373,40 @@ class ProposalRepositoryImpl implements ProposalRepository {
   ProposalRepositoryImpl(this._dio);
 
   @override
-  Future<Result<List<Proposal>>> getProposals({String? query, String? status}) {
-    return _mockFallback.getProposals(query: query, status: status);
+  Future<Result<List<Proposal>>> getProposals({String? query, String? status}) async {
+    try {
+      final Map<String, dynamic> params = {};
+      if (query != null && query.trim().isNotEmpty) {
+        params['q'] = query;
+      }
+      if (status != null && status.trim().isNotEmpty) {
+        final statusEnum = ProposalStatus.fromString(status);
+        final statusMap = {
+          ProposalStatus.draft: 1,
+          ProposalStatus.dikirim: 2,
+          ProposalStatus.disetujui: 3,
+          ProposalStatus.ditolak: 4,
+        };
+        final statusCode = statusMap[statusEnum];
+        if (statusCode != null) {
+          params['status'] = statusCode;
+        }
+      }
+      final response = await _dio.get<Map<String, dynamic>>(
+        '/v1/sales/proposals',
+        queryParameters: params,
+      );
+      final List<dynamic>? items = response.data?['data']?['items'] as List<dynamic>?;
+      if (items == null) {
+        return const Ok([]);
+      }
+      final proposals = items.map((i) => Proposal.fromJson(i as Map<String, dynamic>)).toList();
+      return Ok(proposals);
+    } on DioException catch (e) {
+      return Err(mapDioException(e));
+    } catch (e) {
+      return Err(UnknownFailure(e.toString()));
+    }
   }
 
   @override
@@ -393,19 +425,7 @@ class ProposalRepositoryImpl implements ProposalRepository {
       if (data == null) {
         return const Err(ServerFailure('Invalid response data from server'));
       }
-      // Map response to Proposal
-      final proposal = Proposal(
-        id: data['id'] as String? ?? '',
-        code: data['code'] as String? ?? '',
-        clientName: 'Unknown Client', // From mock UI until GET works
-        serviceName: 'Unknown Service',
-        status: ProposalStatus.draft,
-        date: data['proposal_date'] as String? ?? '',
-        validUntil: input.validUntil ?? 'N/A',
-        location: input.addressId ?? 'N/A',
-        total: (data['total_amount'] as num?)?.toDouble() ?? 0.0,
-      );
-      return Ok(proposal);
+      return Ok(Proposal.fromJson(data));
     } on DioException catch (e) {
       return Err(mapDioException(e));
     } catch (e) {

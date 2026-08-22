@@ -338,12 +338,12 @@ class Proposal {
       code: json["code"]?.toString() ?? "",
       clientName: json["customer_name"]?.toString() ?? "",
       serviceName: json["service_name"]?.toString() ?? "",
-      status: ProposalStatus.fromString(json["status"] ?? ""),
+      status: ProposalStatus.fromString(json["status"]?.toString() ?? ""),
       date: json["proposal_date"]?.toString() ?? "",
       validUntil: json["valid_until"]?.toString() ?? "N/A",
       location: json["location"]?.toString() ?? "N/A",
       cogs: (json["cogs"] as num?)?.toDouble() ?? 0.0,
-      items: (json["items"] as List<dynamic>?)?.map((i) => ProposalItem(title: i["title"] ?? "", category: ProposalItemCategory.fromString(i["category"] ?? ""), price: (i["price"] as num?)?.toDouble() ?? 0.0)).toList() ?? const [],
+      items: (json["items"] as List<dynamic>?)?.map((i) => ProposalItem(title: i["title"]?.toString() ?? "", category: ProposalItemCategory.fromString(i["category"]?.toString() ?? ""), price: (i["price"] as num?)?.toDouble() ?? 0.0)).toList() ?? const [],
       total: (json["total_amount"] as num?)?.toDouble() ?? 0.0,
     );
   }
