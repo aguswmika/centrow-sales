@@ -333,8 +333,25 @@ class Proposal {
       ]);
 
   @override
+  factory Proposal.fromJson(Map<String, dynamic> json) {
+    return Proposal(
+      id: json["id"]?.toString() ?? "",
+      code: json["code"]?.toString() ?? "",
+      clientName: json["customer_name"]?.toString() ?? "",
+      serviceName: json["service_name"]?.toString() ?? "",
+      status: ProposalStatus.fromString(json["status"] ?? ""),
+      date: json["proposal_date"]?.toString() ?? "",
+      validUntil: json["valid_until"]?.toString() ?? "N/A",
+      location: json["location"]?.toString() ?? "N/A",
+      cogs: (json["cogs"] as num?)?.toDouble() ?? 0.0,
+      items: (json["items"] as List<dynamic>?)?.map((i) => ProposalItem(title: i["title"] ?? "", category: ProposalItemCategory.fromString(i["category"] ?? ""), price: (i["price"] as num?)?.toDouble() ?? 0.0)).toList() ?? const [],
+      total: (json["total_amount"] as num?)?.toDouble() ?? 0.0,
+    );
+  }
+
+  @override
   String toString() =>
-      'Proposal(id: $id, code: $code, clientName: $clientName, serviceName: $serviceName, status: ${status.name}, total: $total)';
+      "Proposal(id: $id, code: $code, clientName: $clientName, serviceName: $serviceName, status: ${status.name}, total: $total)";
 }
 
 String _formatCurrency(double amount) {
