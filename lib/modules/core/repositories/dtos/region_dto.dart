@@ -4,10 +4,7 @@ class RegionItemDto {
   final int id;
   final String name;
 
-  const RegionItemDto({
-    required this.id,
-    required this.name,
-  });
+  const RegionItemDto({required this.id, required this.name});
 
   factory RegionItemDto.fromJson(Map<String, dynamic> json) {
     final rawId = json['id'];
@@ -20,17 +17,11 @@ class RegionItemDto {
       parsedId = 0;
     }
 
-    return RegionItemDto(
-      id: parsedId,
-      name: json['name']?.toString() ?? '',
-    );
+    return RegionItemDto(id: parsedId, name: json['name']?.toString() ?? '');
   }
 
   Map<String, dynamic> toJson() {
-    return {
-      'id': id,
-      'name': name,
-    };
+    return {'id': id, 'name': name};
   }
 
   Province toProvince() => Province(id: id, name: name);
@@ -42,9 +33,7 @@ class RegionItemDto {
 class RegionListResponseDto {
   final List<RegionItemDto> data;
 
-  const RegionListResponseDto({
-    required this.data,
-  });
+  const RegionListResponseDto({required this.data});
 
   factory RegionListResponseDto.fromJson(Map<String, dynamic> json) {
     final dynamic rawData = json['data'];
@@ -64,9 +53,10 @@ class RegionListResponseDto {
 
     return RegionListResponseDto(
       data: list
-          .map((item) => RegionItemDto.fromJson(
-                (item as Map).cast<String, dynamic>(),
-              ))
+          .map(
+            (item) =>
+                RegionItemDto.fromJson((item as Map).cast<String, dynamic>()),
+          )
           .toList(),
     );
   }
@@ -74,9 +64,10 @@ class RegionListResponseDto {
   factory RegionListResponseDto.fromList(List<dynamic> list) {
     return RegionListResponseDto(
       data: list
-          .map((item) => RegionItemDto.fromJson(
-                (item as Map).cast<String, dynamic>(),
-              ))
+          .map(
+            (item) =>
+                RegionItemDto.fromJson((item as Map).cast<String, dynamic>()),
+          )
           .toList(),
     );
   }

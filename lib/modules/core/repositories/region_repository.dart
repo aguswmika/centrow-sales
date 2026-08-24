@@ -57,9 +57,7 @@ class RegionRepositoryImpl implements RegionRepository {
     try {
       final response = await _dio.get<dynamic>(
         '/v1/regencies',
-        queryParameters: <String, dynamic>{
-          'province_id': provinceId,
-        },
+        queryParameters: <String, dynamic>{'province_id': provinceId},
       );
       final responseData = response.data;
       final RegionListResponseDto dtoList;

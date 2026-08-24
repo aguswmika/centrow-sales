@@ -19,88 +19,89 @@ class FakeCustomerRepository implements CustomerRepository {
     List<Customer>? initialCustomers,
     List<Segment>? initialSegments,
     this.failSegments = false,
-  })  : customers = initialCustomers ??
-            [
-              const Customer(
-                id: 'c1',
-                code: 'CRM-0012',
-                name: 'Villa Sari Dewi',
-                initials: 'VS',
-                segmentId: 'seg-villa',
-                segment: 'Villa',
-                status: 'active',
-                regency: 'Kabupaten Badung',
-                npwp: '12.345.678.9-567.000',
-                phone: '+62 812-3456-7890',
-                locations: [
-                  CustomerLocation(
-                    id: 'loc-1',
-                    isPrimary: true,
-                    label: 'Villa Utama',
-                    addressLine: 'Jl. Raya Seminyak No. 88',
-                    regency: 'Kabupaten Badung',
-                  ),
-                ],
-                contacts: [
-                  CustomerContact(
-                    id: 'con-1',
-                    name: 'Budi Santoso',
-                    position: 'General Manager',
-                    role: 'pic',
-                    isPrimary: true,
-                  ),
-                ],
-                proposals: [
-                  CustomerProposalSummary(
-                    id: 'prop-1',
-                    code: 'PRO-2026-0042',
-                    serviceName: 'Termite Protection',
-                    proposalDate: '12 Agt 2026',
-                    totalAmount: 8158500,
-                    status: 'sent',
-                  ),
-                ],
-              ),
-              const Customer(
-                id: 'c2',
-                code: 'CRM-0084',
-                name: 'Grand Hyatt Nusa Dua',
-                initials: 'GH',
-                segmentId: 'seg-hotel',
-                segment: 'Hotel',
-                status: 'active',
-                regency: 'Kabupaten Badung',
-                locations: [
-                  CustomerLocation(
-                    id: 'loc-2',
-                    isPrimary: true,
-                    label: 'Resort Main',
-                    addressLine: 'Kawasan BTDC Nusa Dua',
-                    regency: 'Kabupaten Badung',
-                  ),
-                ],
-                contacts: [
-                  CustomerContact(
-                    id: 'con-2',
-                    name: 'Sari Dewi',
-                    position: 'Operations Manager',
-                    role: 'pic',
-                    isPrimary: true,
-                  ),
-                ],
-              ),
-              const Customer(
-                id: 'c3',
-                code: 'CRM-0099',
-                name: 'Warung Made Sanur',
-                initials: 'WM',
-                segmentId: 'seg-restoran',
-                segment: 'Restoran',
-                status: 'inactive',
-                regency: 'Kota Denpasar',
-              ),
-            ],
-        initialSegments = initialSegments ?? [];
+  }) : customers =
+           initialCustomers ??
+           [
+             const Customer(
+               id: 'c1',
+               code: 'CRM-0012',
+               name: 'Villa Sari Dewi',
+               initials: 'VS',
+               segmentId: 'seg-villa',
+               segment: 'Villa',
+               status: 'active',
+               regency: 'Kabupaten Badung',
+               npwp: '12.345.678.9-567.000',
+               phone: '+62 812-3456-7890',
+               locations: [
+                 CustomerLocation(
+                   id: 'loc-1',
+                   isPrimary: true,
+                   label: 'Villa Utama',
+                   addressLine: 'Jl. Raya Seminyak No. 88',
+                   regency: 'Kabupaten Badung',
+                 ),
+               ],
+               contacts: [
+                 CustomerContact(
+                   id: 'con-1',
+                   name: 'Budi Santoso',
+                   position: 'General Manager',
+                   role: 'pic',
+                   isPrimary: true,
+                 ),
+               ],
+               proposals: [
+                 CustomerProposalSummary(
+                   id: 'prop-1',
+                   code: 'PRO-2026-0042',
+                   serviceName: 'Termite Protection',
+                   proposalDate: '12 Agt 2026',
+                   totalAmount: 8158500,
+                   status: 'sent',
+                 ),
+               ],
+             ),
+             const Customer(
+               id: 'c2',
+               code: 'CRM-0084',
+               name: 'Grand Hyatt Nusa Dua',
+               initials: 'GH',
+               segmentId: 'seg-hotel',
+               segment: 'Hotel',
+               status: 'active',
+               regency: 'Kabupaten Badung',
+               locations: [
+                 CustomerLocation(
+                   id: 'loc-2',
+                   isPrimary: true,
+                   label: 'Resort Main',
+                   addressLine: 'Kawasan BTDC Nusa Dua',
+                   regency: 'Kabupaten Badung',
+                 ),
+               ],
+               contacts: [
+                 CustomerContact(
+                   id: 'con-2',
+                   name: 'Sari Dewi',
+                   position: 'Operations Manager',
+                   role: 'pic',
+                   isPrimary: true,
+                 ),
+               ],
+             ),
+             const Customer(
+               id: 'c3',
+               code: 'CRM-0099',
+               name: 'Warung Made Sanur',
+               initials: 'WM',
+               segmentId: 'seg-restoran',
+               segment: 'Restoran',
+               status: 'inactive',
+               regency: 'Kota Denpasar',
+             ),
+           ],
+       initialSegments = initialSegments ?? [];
 
   @override
   Future<Result<List<Customer>>> getCustomers({
@@ -117,17 +118,21 @@ class FakeCustomerRepository implements CustomerRepository {
     if (query != null && query.isNotEmpty) {
       final q = query.toLowerCase();
       list = list
-          .where((c) =>
-              c.name.toLowerCase().contains(q) ||
-              c.code.toLowerCase().contains(q) ||
-              c.regency.toLowerCase().contains(q))
+          .where(
+            (c) =>
+                c.name.toLowerCase().contains(q) ||
+                c.code.toLowerCase().contains(q) ||
+                c.regency.toLowerCase().contains(q),
+          )
           .toList();
     }
     if (segmentId != null && segmentId != 'all') {
       list = list
-          .where((c) =>
-              c.segmentId == segmentId ||
-              c.segment.toLowerCase() == segmentId.toLowerCase())
+          .where(
+            (c) =>
+                c.segmentId == segmentId ||
+                c.segment.toLowerCase() == segmentId.toLowerCase(),
+          )
           .toList();
     }
     if (status != null && status != 'all') {
@@ -218,17 +223,26 @@ void main() {
       expect(controller.selectedCustomer.value, isNull);
     });
 
-    test('loadCustomers populates list but does not default selection', () async {
-      await controller.loadCustomers();
+    test(
+      'loadCustomers populates list but does not default selection',
+      () async {
+        await controller.loadCustomers();
 
-      expect(controller.customersState.value, isA<UiSuccess<List<Customer>>>());
-      final list = controller.filteredCustomers.value;
-      expect(list.length, 3);
+        expect(
+          controller.customersState.value,
+          isA<UiSuccess<List<Customer>>>(),
+        );
+        final list = controller.filteredCustomers.value;
+        expect(list.length, 3);
 
-      expect(controller.selectedCustomerId.value, '');
-      expect(controller.customerDetailState.value, isA<UiInitial<Customer>>());
-      expect(controller.selectedCustomer.value, isNull);
-    });
+        expect(controller.selectedCustomerId.value, '');
+        expect(
+          controller.customerDetailState.value,
+          isA<UiInitial<Customer>>(),
+        );
+        expect(controller.selectedCustomer.value, isNull);
+      },
+    );
 
     test('loadCustomers sets UiFailure on repository error', () async {
       repository.shouldFailGetCustomers = true;
@@ -238,16 +252,22 @@ void main() {
       expect(controller.filteredCustomers.value, isEmpty);
     });
 
-    test('selectCustomer updates selectedCustomerId and fetches full details', () async {
-      await controller.loadCustomers();
+    test(
+      'selectCustomer updates selectedCustomerId and fetches full details',
+      () async {
+        await controller.loadCustomers();
 
-      await controller.selectCustomer('c2');
-      expect(controller.selectedCustomerId.value, 'c2');
-      expect(controller.customerDetailState.value, isA<UiSuccess<Customer>>());
-      expect(controller.selectedCustomer.value?.id, 'c2');
-      expect(controller.selectedCustomer.value?.name, 'Grand Hyatt Nusa Dua');
-      expect(controller.selectedCustomer.value?.locations.length, 1);
-    });
+        await controller.selectCustomer('c2');
+        expect(controller.selectedCustomerId.value, 'c2');
+        expect(
+          controller.customerDetailState.value,
+          isA<UiSuccess<Customer>>(),
+        );
+        expect(controller.selectedCustomer.value?.id, 'c2');
+        expect(controller.selectedCustomer.value?.name, 'Grand Hyatt Nusa Dua');
+        expect(controller.selectedCustomer.value?.locations.length, 1);
+      },
+    );
 
     test('selectCustomer with empty id resets customerDetailState', () async {
       await controller.loadCustomers();
@@ -257,15 +277,23 @@ void main() {
       expect(controller.customerDetailState.value, isA<UiInitial<Customer>>());
     });
 
-    test('selectCustomer toggles selection off if clicking the same id', () async {
-      await controller.loadCustomers();
-      await controller.selectCustomer('c2');
-      expect(controller.selectedCustomerId.value, 'c2');
-      
-      await controller.selectCustomer(''); // simulate UI passing empty string to unselect
-      expect(controller.selectedCustomerId.value, '');
-      expect(controller.customerDetailState.value, isA<UiInitial<Customer>>());
-    });
+    test(
+      'selectCustomer toggles selection off if clicking the same id',
+      () async {
+        await controller.loadCustomers();
+        await controller.selectCustomer('c2');
+        expect(controller.selectedCustomerId.value, 'c2');
+
+        await controller.selectCustomer(
+          '',
+        ); // simulate UI passing empty string to unselect
+        expect(controller.selectedCustomerId.value, '');
+        expect(
+          controller.customerDetailState.value,
+          isA<UiInitial<Customer>>(),
+        );
+      },
+    );
 
     test('selectCustomer sets UiFailure when customer is not found', () async {
       await controller.loadCustomers();
@@ -316,16 +344,19 @@ void main() {
       expect(active.length, 2);
     });
 
-    test('loadCustomers preserves existing selection if still present in list', () async {
-      await controller.loadCustomers();
-      await controller.selectCustomer('c2');
-      expect(controller.selectedCustomerId.value, 'c2');
+    test(
+      'loadCustomers preserves existing selection if still present in list',
+      () async {
+        await controller.loadCustomers();
+        await controller.selectCustomer('c2');
+        expect(controller.selectedCustomerId.value, 'c2');
 
-      // Reload customers
-      await controller.loadCustomers();
-      expect(controller.selectedCustomerId.value, 'c2');
-      expect(controller.selectedCustomer.value?.id, 'c2');
-    });
+        // Reload customers
+        await controller.loadCustomers();
+        expect(controller.selectedCustomerId.value, 'c2');
+        expect(controller.selectedCustomer.value?.id, 'c2');
+      },
+    );
 
     test('setDetailTab updates activeDetailTab signal', () {
       controller.setDetailTab(2);

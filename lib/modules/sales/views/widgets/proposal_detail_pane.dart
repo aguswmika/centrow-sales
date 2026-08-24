@@ -77,9 +77,7 @@ class ProposalDetailPane extends StatelessWidget {
         ),
       );
     }
-    return Builder(
-      builder: (context) => _buildDetailContent(context, p),
-    );
+    return Builder(builder: (context) => _buildDetailContent(context, p));
   }
 
   Widget _buildDetailContent(BuildContext context, Proposal proposal) {
@@ -90,9 +88,7 @@ class ProposalDetailPane extends StatelessWidget {
         children: [
           _buildHeader(context, proposal),
           _buildMetadataBar(proposal),
-          Expanded(
-            child: _buildPricingSplit(proposal),
-          ),
+          Expanded(child: _buildPricingSplit(proposal)),
         ],
       ),
     );
@@ -173,11 +169,7 @@ class ProposalDetailPane extends StatelessWidget {
           if (isNarrow) {
             return Column(
               crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                identity,
-                const SizedBox(height: 12.0),
-                actions,
-              ],
+              children: [identity, const SizedBox(height: 12.0), actions],
             );
           }
 
@@ -222,7 +214,12 @@ class ProposalDetailPane extends StatelessWidget {
               spacing: 16.0,
               runSpacing: 10.0,
               children: items
-                  .map((e) => SizedBox(width: (constraints.maxWidth - 20) / 2, child: e))
+                  .map(
+                    (e) => SizedBox(
+                      width: (constraints.maxWidth - 20) / 2,
+                      child: e,
+                    ),
+                  )
                   .toList(),
             );
           }
@@ -283,7 +280,11 @@ class ProposalDetailPane extends StatelessWidget {
               children: [
                 _buildPricingTabs(),
                 _buildPricingListContent(proposal),
-                const Divider(height: 1.0, thickness: 1.0, color: AppColors.border),
+                const Divider(
+                  height: 1.0,
+                  thickness: 1.0,
+                  color: AppColors.border,
+                ),
                 _buildSidebarContent(proposal),
               ],
             ),
@@ -433,9 +434,7 @@ class ProposalDetailPane extends StatelessWidget {
       );
     }
 
-    return Column(
-      children: items.map((item) => _buildItemRow(item)).toList(),
-    );
+    return Column(children: items.map((item) => _buildItemRow(item)).toList());
   }
 
   Widget _buildPricingList(Proposal proposal) {
@@ -610,7 +609,10 @@ class ProposalDetailPane extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 10.0),
-          _buildSummaryRow('Biaya Bahan & Alat', proposal.formattedMaterialCost),
+          _buildSummaryRow(
+            'Biaya Bahan & Alat',
+            proposal.formattedMaterialCost,
+          ),
           _buildSummaryRow('Biaya Tenaga Kerja', proposal.formattedLaborCost),
           _buildSummaryRow('Biaya Transport / BBM', proposal.formattedFuelCost),
           const Divider(height: 14.0, thickness: 1.0, color: AppColors.border),
@@ -627,7 +629,10 @@ class ProposalDetailPane extends StatelessWidget {
             valueColor: AppColors.ok,
             isValueBold: true,
           ),
-          _buildSummaryRow('Harga Pokok Layanan', proposal.formattedServicePrice),
+          _buildSummaryRow(
+            'Harga Pokok Layanan',
+            proposal.formattedServicePrice,
+          ),
           _buildSummaryRow('Total Add-on & Ekstra', proposal.formattedAddon),
           const Divider(height: 14.0, thickness: 1.0, color: AppColors.border),
           _buildSummaryRow(

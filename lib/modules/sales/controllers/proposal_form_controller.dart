@@ -14,6 +14,9 @@ class ProposalFormController extends ChangeNotifier {
   final CustomerRepository _customerRepository;
   final ServiceRepository _serviceRepository;
 
+  Customer? selectedCustomer;
+  Service? selectedService;
+
   String? _customerId;
   String? get customerId => _customerId;
   set customerId(String? val) {
@@ -42,6 +45,7 @@ class ProposalFormController extends ChangeNotifier {
     }
     final result = await _customerRepository.getCustomerById(_customerId!);
     if (result.isOk) {
+      selectedCustomer = result.valueOrNull;
       availableLocations = result.valueOrNull!.locations;
       notifyListeners();
     }
@@ -74,16 +78,20 @@ class ProposalFormController extends ChangeNotifier {
   }
 
   void updateFields({
-    String? customerId,
-    String? serviceId,
+    Customer? customer,
+    Service? service,
     String? proposalDate,
     String? validUntil,
     String? addressId,
   }) {
-    if (customerId != null) {
-      this.customerId = customerId; // triggers location load
+    if (customer != null) {
+      selectedCustomer = customer;
+      customerId = customer.id; // triggers location load
     }
-    this.serviceId = serviceId ?? this.serviceId;
+    if (service != null) {
+      selectedService = service;
+      serviceId = service.id;
+    }
     this.proposalDate = proposalDate ?? this.proposalDate;
     this.validUntil = validUntil ?? this.validUntil;
     this.addressId = addressId ?? this.addressId;

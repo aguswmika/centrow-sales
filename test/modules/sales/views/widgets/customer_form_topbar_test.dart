@@ -17,8 +17,7 @@ class FakeCustomerRepository implements CustomerRepository {
     String? query,
     String? segmentId,
     String? status,
-  }) async =>
-      const Ok([]);
+  }) async => const Ok([]);
 
   @override
   Future<Result<Customer>> getCustomerById(String id) async =>
@@ -32,16 +31,14 @@ class FakeCustomerRepository implements CustomerRepository {
   Future<Result<Customer>> updateCustomer(
     String id,
     CreateCustomerInput input,
-  ) async =>
-      const Err(ServerFailure('Not implemented', 500));
+  ) async => const Err(ServerFailure('Not implemented', 500));
 
   @override
   Future<Result<List<Segment>>> getSegments({
     int page = 1,
     int pageSize = 100,
     String? query,
-  }) async =>
-      const Ok([]);
+  }) async => const Ok([]);
 }
 
 void main() {
@@ -102,7 +99,9 @@ void main() {
         expect(nextCalled, isTrue);
       });
 
-      testWidgets('step 2: shows Sebelumnya and Selanjutnya buttons', (tester) async {
+      testWidgets('step 2: shows Sebelumnya and Selanjutnya buttons', (
+        tester,
+      ) async {
         var prevCalled = false;
         var nextCalled = false;
         await tester.pumpWidget(
@@ -126,28 +125,33 @@ void main() {
         expect(nextCalled, isTrue);
       });
 
-      testWidgets('step 3: shows Sebelumnya and Simpan (calling onNext) buttons', (tester) async {
-        var nextCalled = false;
-        await tester.pumpWidget(
-          buildTopbar(
-            tester: tester,
-            currentStep: 3,
-            isEditMode: false,
-            onNext: () => nextCalled = true,
-          ),
-        );
+      testWidgets(
+        'step 3: shows Sebelumnya and Simpan (calling onNext) buttons',
+        (tester) async {
+          var nextCalled = false;
+          await tester.pumpWidget(
+            buildTopbar(
+              tester: tester,
+              currentStep: 3,
+              isEditMode: false,
+              onNext: () => nextCalled = true,
+            ),
+          );
 
-        expect(find.byIcon(Icons.chevron_left), findsOneWidget);
-        expect(find.text('Simpan'), findsOneWidget);
-        expect(find.byIcon(Icons.chevron_right), findsNothing);
+          expect(find.byIcon(Icons.chevron_left), findsOneWidget);
+          expect(find.text('Simpan'), findsOneWidget);
+          expect(find.byIcon(Icons.chevron_right), findsNothing);
 
-        await tester.tap(find.text('Simpan'));
-        expect(nextCalled, isTrue);
-      });
+          await tester.tap(find.text('Simpan'));
+          expect(nextCalled, isTrue);
+        },
+      );
     });
 
     group('Edit mode (isEditMode == true)', () {
-      testWidgets('step 1: shows Selanjutnya and Simpan buttons on far right', (tester) async {
+      testWidgets('step 1: shows Selanjutnya and Simpan buttons on far right', (
+        tester,
+      ) async {
         var nextCalled = false;
         var submitCalled = false;
         await tester.pumpWidget(
@@ -171,7 +175,9 @@ void main() {
         expect(submitCalled, isTrue);
       });
 
-      testWidgets('step 2: shows Sebelumnya, Selanjutnya, and Simpan buttons', (tester) async {
+      testWidgets('step 2: shows Sebelumnya, Selanjutnya, and Simpan buttons', (
+        tester,
+      ) async {
         var prevCalled = false;
         var nextCalled = false;
         var submitCalled = false;
@@ -200,29 +206,32 @@ void main() {
         expect(submitCalled, isTrue);
       });
 
-      testWidgets('step 3: shows Sebelumnya and Simpan buttons (calls onSubmit), no Selanjutnya', (tester) async {
-        var prevCalled = false;
-        var submitCalled = false;
-        await tester.pumpWidget(
-          buildTopbar(
-            tester: tester,
-            currentStep: 3,
-            isEditMode: true,
-            onPrev: () => prevCalled = true,
-            onSubmit: () => submitCalled = true,
-          ),
-        );
+      testWidgets(
+        'step 3: shows Sebelumnya and Simpan buttons (calls onSubmit), no Selanjutnya',
+        (tester) async {
+          var prevCalled = false;
+          var submitCalled = false;
+          await tester.pumpWidget(
+            buildTopbar(
+              tester: tester,
+              currentStep: 3,
+              isEditMode: true,
+              onPrev: () => prevCalled = true,
+              onSubmit: () => submitCalled = true,
+            ),
+          );
 
-        expect(find.byIcon(Icons.chevron_left), findsOneWidget);
-        expect(find.text('Simpan'), findsOneWidget);
-        expect(find.byIcon(Icons.chevron_right), findsNothing);
+          expect(find.byIcon(Icons.chevron_left), findsOneWidget);
+          expect(find.text('Simpan'), findsOneWidget);
+          expect(find.byIcon(Icons.chevron_right), findsNothing);
 
-        await tester.tap(find.byIcon(Icons.chevron_left));
-        expect(prevCalled, isTrue);
+          await tester.tap(find.byIcon(Icons.chevron_left));
+          expect(prevCalled, isTrue);
 
-        await tester.tap(find.text('Simpan'));
-        expect(submitCalled, isTrue);
-      });
+          await tester.tap(find.text('Simpan'));
+          expect(submitCalled, isTrue);
+        },
+      );
     });
   });
 }

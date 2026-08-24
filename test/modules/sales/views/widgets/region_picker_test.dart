@@ -87,10 +87,7 @@ void main() {
     return MaterialApp(
       home: Scaffold(
         body: SingleChildScrollView(
-          child: RegionPicker(
-            item: item,
-            onChanged: onChanged,
-          ),
+          child: RegionPicker(item: item, onChanged: onChanged),
         ),
       ),
     );
@@ -102,10 +99,7 @@ void main() {
     CreateLocationInput location = const CreateLocationInput();
 
     await tester.pumpWidget(
-      createWidget(
-        item: location,
-        onChanged: (val) => location = val,
-      ),
+      createWidget(item: location, onChanged: (val) => location = val),
     );
     await tester.pumpAndSettle();
 
@@ -131,12 +125,7 @@ void main() {
       village: 'Seminyak',
     );
 
-    await tester.pumpWidget(
-      createWidget(
-        item: location,
-        onChanged: (_) {},
-      ),
-    );
+    await tester.pumpWidget(createWidget(item: location, onChanged: (_) {}));
     await tester.pumpAndSettle();
 
     expect(mockRepository.getProvincesCallCount, 1);
@@ -206,58 +195,59 @@ void main() {
     expect(mockRepository.getRegenciesCalls.contains(51), isTrue);
   });
 
-  testWidgets('changing Regency resets district & village and fetches Districts', (
-    tester,
-  ) async {
-    CreateLocationInput location = const CreateLocationInput(
-      provinceId: 51,
-      province: 'Bali',
-    );
+  testWidgets(
+    'changing Regency resets district & village and fetches Districts',
+    (tester) async {
+      CreateLocationInput location = const CreateLocationInput(
+        provinceId: 51,
+        province: 'Bali',
+      );
 
-    CreateLocationInput? updatedLocation;
+      CreateLocationInput? updatedLocation;
 
-    await tester.pumpWidget(
-      StatefulBuilder(
-        builder: (context, setState) {
-          return MaterialApp(
-            home: Scaffold(
-              body: SingleChildScrollView(
-                child: RegionPicker(
-                  item: location,
-                  onChanged: (val) {
-                    updatedLocation = val;
-                    setState(() {
-                      location = val;
-                    });
-                  },
+      await tester.pumpWidget(
+        StatefulBuilder(
+          builder: (context, setState) {
+            return MaterialApp(
+              home: Scaffold(
+                body: SingleChildScrollView(
+                  child: RegionPicker(
+                    item: location,
+                    onChanged: (val) {
+                      updatedLocation = val;
+                      setState(() {
+                        location = val;
+                      });
+                    },
+                  ),
                 ),
               ),
-            ),
-          );
-        },
-      ),
-    );
-    await tester.pumpAndSettle();
+            );
+          },
+        ),
+      );
+      await tester.pumpAndSettle();
 
-    // Tap on Regency dropdown
-    await tester.tap(find.byType(DropdownButtonFormField<int>).at(1));
-    await tester.pumpAndSettle();
+      // Tap on Regency dropdown
+      await tester.tap(find.byType(DropdownButtonFormField<int>).at(1));
+      await tester.pumpAndSettle();
 
-    // Select Badung
-    await tester.tap(find.text('Kab. Badung').last);
-    await tester.pumpAndSettle();
+      // Select Badung
+      await tester.tap(find.text('Kab. Badung').last);
+      await tester.pumpAndSettle();
 
-    expect(updatedLocation, isNotNull);
-    expect(updatedLocation!.provinceId, 51);
-    expect(updatedLocation!.regencyId, 5103);
-    expect(updatedLocation!.regency, 'Kab. Badung');
-    expect(updatedLocation!.districtId, isNull);
-    expect(updatedLocation!.district, '');
-    expect(updatedLocation!.villageId, isNull);
-    expect(updatedLocation!.village, '');
+      expect(updatedLocation, isNotNull);
+      expect(updatedLocation!.provinceId, 51);
+      expect(updatedLocation!.regencyId, 5103);
+      expect(updatedLocation!.regency, 'Kab. Badung');
+      expect(updatedLocation!.districtId, isNull);
+      expect(updatedLocation!.district, '');
+      expect(updatedLocation!.villageId, isNull);
+      expect(updatedLocation!.village, '');
 
-    expect(mockRepository.getDistrictsCalls.contains((51, 5103)), isTrue);
-  });
+      expect(mockRepository.getDistrictsCalls.contains((51, 5103)), isTrue);
+    },
+  );
 
   testWidgets('changing District resets village and fetches Villages', (
     tester,
@@ -310,7 +300,10 @@ void main() {
     expect(updatedLocation!.villageId, isNull);
     expect(updatedLocation!.village, '');
 
-    expect(mockRepository.getVillagesCalls.contains((51, 5103, 5103020)), isTrue);
+    expect(
+      mockRepository.getVillagesCalls.contains((51, 5103, 5103020)),
+      isTrue,
+    );
   });
 
   testWidgets('changing Village updates villageId and village name', (
@@ -366,42 +359,37 @@ void main() {
     expect(updatedLocation!.village, 'Seminyak');
   });
 
-  testWidgets('didUpdateWidget triggers cascading fetch when provinceId changes externally', (
-    tester,
-  ) async {
-    CreateLocationInput location = const CreateLocationInput();
+  testWidgets(
+    'didUpdateWidget triggers cascading fetch when provinceId changes externally',
+    (tester) async {
+      CreateLocationInput location = const CreateLocationInput();
 
-    late void Function(void Function()) parentSetState;
+      late void Function(void Function()) parentSetState;
 
-    await tester.pumpWidget(
-      StatefulBuilder(
-        builder: (context, setState) {
-          parentSetState = setState;
-          return MaterialApp(
-            home: Scaffold(
-              body: SingleChildScrollView(
-                child: RegionPicker(
-                  item: location,
-                  onChanged: (_) {},
+      await tester.pumpWidget(
+        StatefulBuilder(
+          builder: (context, setState) {
+            parentSetState = setState;
+            return MaterialApp(
+              home: Scaffold(
+                body: SingleChildScrollView(
+                  child: RegionPicker(item: location, onChanged: (_) {}),
                 ),
               ),
-            ),
-          );
-        },
-      ),
-    );
-    await tester.pumpAndSettle();
-
-    expect(mockRepository.getRegenciesCalls, isEmpty);
-
-    parentSetState(() {
-      location = const CreateLocationInput(
-        provinceId: 51,
-        province: 'Bali',
+            );
+          },
+        ),
       );
-    });
-    await tester.pumpAndSettle();
+      await tester.pumpAndSettle();
 
-    expect(mockRepository.getRegenciesCalls, [51]);
-  });
+      expect(mockRepository.getRegenciesCalls, isEmpty);
+
+      parentSetState(() {
+        location = const CreateLocationInput(provinceId: 51, province: 'Bali');
+      });
+      await tester.pumpAndSettle();
+
+      expect(mockRepository.getRegenciesCalls, [51]);
+    },
+  );
 }

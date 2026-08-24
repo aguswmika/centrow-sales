@@ -9,15 +9,17 @@ import 'package:centrow_sales/shared/result/result.dart';
 class FakeSalesDashboardRepository implements SalesDashboardRepository {
   @override
   Future<Result<SalesDashboardSummary>> getDashboardSummary() async {
-    return const Ok(SalesDashboardSummary(
-      kpis: [],
-      pipelineStages: [],
-      clientSegments: [],
-      recentProposals: [],
-      expiringContracts: [],
-      userName: 'Agus',
-      branchName: 'Bali',
-    ));
+    return const Ok(
+      SalesDashboardSummary(
+        kpis: [],
+        pipelineStages: [],
+        clientSegments: [],
+        recentProposals: [],
+        expiringContracts: [],
+        userName: 'Agus',
+        branchName: 'Bali',
+      ),
+    );
   }
 }
 

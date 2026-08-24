@@ -6,11 +6,7 @@ class Segment {
   final String name;
   final String createdAt;
 
-  const Segment({
-    required this.id,
-    required this.name,
-    this.createdAt = '',
-  });
+  const Segment({required this.id, required this.name, this.createdAt = ''});
 
   @override
   bool operator ==(Object other) =>

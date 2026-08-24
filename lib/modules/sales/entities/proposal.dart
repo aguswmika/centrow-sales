@@ -127,6 +127,11 @@ class Proposal {
   final double ppv;
   final double ppm;
   final List<ProposalItem> items;
+  final String? notes;
+  final String? sentAt;
+  final String? decidedAt;
+  final String? rejectionReason;
+  final String? createdAt;
   final String? explicitInitials;
   final String? explicitShortAmount;
   final String? explicitShortMarginAmt;
@@ -157,6 +162,11 @@ class Proposal {
     this.ppv = 0.0,
     this.ppm = 0.0,
     this.items = const [],
+    this.notes,
+    this.sentAt,
+    this.decidedAt,
+    this.rejectionReason,
+    this.createdAt,
     String? initials,
     String? shortAmount,
     String? shortMarginAmt,
@@ -247,6 +257,11 @@ class Proposal {
     double? ppv,
     double? ppm,
     List<ProposalItem>? items,
+    String? notes,
+    String? sentAt,
+    String? decidedAt,
+    String? rejectionReason,
+    String? createdAt,
     String? initials,
     String? shortAmount,
     String? shortMarginAmt,
@@ -277,6 +292,11 @@ class Proposal {
       ppv: ppv ?? this.ppv,
       ppm: ppm ?? this.ppm,
       items: items ?? this.items,
+      notes: notes ?? this.notes,
+      sentAt: sentAt ?? this.sentAt,
+      decidedAt: decidedAt ?? this.decidedAt,
+      rejectionReason: rejectionReason ?? this.rejectionReason,
+      createdAt: createdAt ?? this.createdAt,
       initials: initials ?? explicitInitials,
       shortAmount: shortAmount ?? explicitShortAmount,
       shortMarginAmt: shortMarginAmt ?? explicitShortMarginAmt,
@@ -311,7 +331,12 @@ class Proposal {
           marginPct == other.marginPct &&
           marginAmt == other.marginAmt &&
           ppv == other.ppv &&
-          ppm == other.ppm;
+          ppm == other.ppm &&
+          notes == other.notes &&
+          sentAt == other.sentAt &&
+          decidedAt == other.decidedAt &&
+          rejectionReason == other.rejectionReason &&
+          createdAt == other.createdAt;
 
   @override
   int get hashCode => Object.hashAll([
@@ -335,35 +360,16 @@ class Proposal {
     subtotal,
     tax,
     total,
+    marginPct,
+    marginAmt,
+    ppv,
+    ppm,
+    notes,
+    sentAt,
+    decidedAt,
+    rejectionReason,
+    createdAt,
   ]);
-
-  factory Proposal.fromJson(Map<String, dynamic> json) {
-    return Proposal(
-      id: json["id"]?.toString() ?? "",
-      code: json["code"]?.toString() ?? "",
-      clientName: json["customer_name"]?.toString() ?? "",
-      serviceName: json["service_name"]?.toString() ?? "",
-      status: ProposalStatus.fromString(json["status"]?.toString() ?? ""),
-      date: json["proposal_date"]?.toString() ?? "",
-      validUntil: json["valid_until"]?.toString() ?? "N/A",
-      location: json["location"]?.toString() ?? "N/A",
-      cogs: (json["cogs"] as num?)?.toDouble() ?? 0.0,
-      items:
-          (json["items"] as List<dynamic>?)
-              ?.map(
-                (i) => ProposalItem(
-                  title: i["title"]?.toString() ?? "",
-                  category: ProposalItemCategory.fromString(
-                    i["category"]?.toString() ?? "",
-                  ),
-                  price: (i["price"] as num?)?.toDouble() ?? 0.0,
-                ),
-              )
-              .toList() ??
-          const [],
-      total: (json["total_amount"] as num?)?.toDouble() ?? 0.0,
-    );
-  }
 
   @override
   String toString() =>

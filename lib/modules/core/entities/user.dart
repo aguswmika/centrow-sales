@@ -34,8 +34,10 @@ class User {
   String getInitials() {
     final trimmed = name.trim();
     if (trimmed.isEmpty) return '';
-    final parts =
-        trimmed.split(RegExp(r'\s+')).where((e) => e.isNotEmpty).toList();
+    final parts = trimmed
+        .split(RegExp(r'\s+'))
+        .where((e) => e.isNotEmpty)
+        .toList();
     if (parts.isEmpty) return '';
     if (parts.length == 1) {
       return parts[0].substring(0, parts[0].length >= 2 ? 2 : 1).toUpperCase();

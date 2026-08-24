@@ -23,16 +23,47 @@ class FakeCustomerRepository implements CustomerRepository {
   }) async => const Ok([]);
 
   @override
-  Future<Result<Customer>> getCustomerById(String id) async =>
-      const Ok(Customer(id: '1', code: 'CUST-001', name: 'Test', initials: 'T', segmentId: '1', segment: 'Villa', status: 'active'));
+  Future<Result<Customer>> getCustomerById(String id) async => const Ok(
+    Customer(
+      id: '1',
+      code: 'CUST-001',
+      name: 'Test',
+      initials: 'T',
+      segmentId: '1',
+      segment: 'Villa',
+      status: 'active',
+    ),
+  );
 
   @override
   Future<Result<Customer>> createCustomer(CreateCustomerInput input) async =>
-      const Ok(Customer(id: '1', code: 'CUST-001', name: 'Test', initials: 'T', segmentId: '1', segment: 'Villa', status: 'active'));
+      const Ok(
+        Customer(
+          id: '1',
+          code: 'CUST-001',
+          name: 'Test',
+          initials: 'T',
+          segmentId: '1',
+          segment: 'Villa',
+          status: 'active',
+        ),
+      );
 
   @override
-  Future<Result<Customer>> updateCustomer(String id, CreateCustomerInput input) async =>
-      const Ok(Customer(id: '1', code: 'CUST-001', name: 'Test', initials: 'T', segmentId: '1', segment: 'Villa', status: 'active'));
+  Future<Result<Customer>> updateCustomer(
+    String id,
+    CreateCustomerInput input,
+  ) async => const Ok(
+    Customer(
+      id: '1',
+      code: 'CUST-001',
+      name: 'Test',
+      initials: 'T',
+      segmentId: '1',
+      segment: 'Villa',
+      status: 'active',
+    ),
+  );
 
   @override
   Future<Result<List<Segment>>> getSegments({
@@ -44,30 +75,25 @@ class FakeCustomerRepository implements CustomerRepository {
 
 class FakeRegionRepository implements RegionRepository {
   @override
-  Future<Result<List<Province>>> getProvinces() async => const Ok([
-        Province(id: 51, name: 'Bali'),
-      ]);
+  Future<Result<List<Province>>> getProvinces() async =>
+      const Ok([Province(id: 51, name: 'Bali')]);
 
   @override
-  Future<Result<List<Regency>>> getRegencies(int provinceId) async => const Ok([
-        Regency(id: 5103, name: 'Kab. Badung'),
-      ]);
+  Future<Result<List<Regency>>> getRegencies(int provinceId) async =>
+      const Ok([Regency(id: 5103, name: 'Kab. Badung')]);
 
   @override
-  Future<Result<List<District>>> getDistricts(int provinceId, int regencyId) async =>
-      const Ok([
-        District(id: 5103020, name: 'Kuta'),
-      ]);
+  Future<Result<List<District>>> getDistricts(
+    int provinceId,
+    int regencyId,
+  ) async => const Ok([District(id: 5103020, name: 'Kuta')]);
 
   @override
   Future<Result<List<Village>>> getVillages(
     int provinceId,
     int regencyId,
     int districtId,
-  ) async =>
-      const Ok([
-        Village(id: 5103020003, name: 'Seminyak'),
-      ]);
+  ) async => const Ok([Village(id: 5103020003, name: 'Seminyak')]);
 }
 
 void main() {
@@ -98,7 +124,9 @@ void main() {
       );
     }
 
-    testWidgets('renders location card with RegionPicker widget', (tester) async {
+    testWidgets('renders location card with RegionPicker widget', (
+      tester,
+    ) async {
       await tester.pumpWidget(createTestWidget());
       await tester.pumpAndSettle();
 
@@ -112,7 +140,9 @@ void main() {
       expect(find.text('Kelurahan / Desa'), findsOneWidget);
     });
 
-    testWidgets('adding and removing locations updates RegionPicker count', (tester) async {
+    testWidgets('adding and removing locations updates RegionPicker count', (
+      tester,
+    ) async {
       await tester.pumpWidget(createTestWidget());
       await tester.pumpAndSettle();
 
@@ -135,7 +165,9 @@ void main() {
       expect(controller.locations.value.length, 1);
     });
 
-    testWidgets('updating RegionPicker triggers controller.updateLocation', (tester) async {
+    testWidgets('updating RegionPicker triggers controller.updateLocation', (
+      tester,
+    ) async {
       await tester.pumpWidget(createTestWidget());
       await tester.pumpAndSettle();
 

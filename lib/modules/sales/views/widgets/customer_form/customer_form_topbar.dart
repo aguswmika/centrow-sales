@@ -82,7 +82,8 @@ class CustomerFormTopbar extends StatelessWidget {
                 ),
                 onPressed: simpanAction,
               ),
-              if (currentStep > 1 || currentStep < 3) const SizedBox(width: 8.0),
+              if (currentStep > 1 || currentStep < 3)
+                const SizedBox(width: 8.0),
             ],
             if (currentStep > 1) ...[
               InkWell(
@@ -95,7 +96,11 @@ class CustomerFormTopbar extends StatelessWidget {
                     color: AppColors.brand,
                     borderRadius: AppRadius.borderMd,
                   ),
-                  child: const Icon(Icons.chevron_left, size: 22.0, color: Colors.white),
+                  child: const Icon(
+                    Icons.chevron_left,
+                    size: 22.0,
+                    color: Colors.white,
+                  ),
                 ),
               ),
               if (currentStep < 3) const SizedBox(width: 8.0),
@@ -111,7 +116,11 @@ class CustomerFormTopbar extends StatelessWidget {
                     color: AppColors.brand,
                     borderRadius: AppRadius.borderMd,
                   ),
-                  child: const Icon(Icons.chevron_right, size: 22.0, color: Colors.white),
+                  child: const Icon(
+                    Icons.chevron_right,
+                    size: 22.0,
+                    color: Colors.white,
+                  ),
                 ),
               ),
             ],

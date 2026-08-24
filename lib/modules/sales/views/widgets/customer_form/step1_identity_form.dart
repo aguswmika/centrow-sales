@@ -21,7 +21,8 @@ class Step1IdentityForm extends StatelessWidget {
             segmentState.isLoading || segmentState.isInitial;
         final isSegmentDisabled = isSegmentsLoading || segmentList.isEmpty;
 
-        final currentSegmentId = !isSegmentDisabled &&
+        final currentSegmentId =
+            !isSegmentDisabled &&
                 controller.segmentId.value.isNotEmpty &&
                 segmentList.any((s) => s.id == controller.segmentId.value)
             ? controller.segmentId.value
@@ -34,200 +35,200 @@ class Step1IdentityForm extends StatelessWidget {
         return Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-        // Section 1: Identitas Pelanggan
-        _buildSectionCard(
-          icon: Icons.business_rounded,
-          title: 'Identitas Pelanggan',
-          children: [
-            _buildFieldRow(
-              context,
-              left: _buildTextField(
-                label: 'Nama Pelanggan / Entitas Usaha',
-                isRequired: true,
-                hint: 'cth: Villa Bali Resort',
-                value: controller.name.value,
-                onChanged: (v) => controller.name.value = v,
-              ),
-              right: _buildDropdownField<String>(
-                label: 'Segmen Usaha',
-                isRequired: true,
-                hint: segmentHint,
-                value: currentSegmentId,
-                items: segmentList
-                    .map(
-                      (s) => DropdownMenuItem<String>(
-                        value: s.id,
-                        child: Text(
-                          s.name,
-                          style: GoogleFonts.inter(
-                            fontSize: 14.0,
-                            color: AppColors.text,
-                            fontWeight: FontWeight.w500,
+            // Section 1: Identitas Pelanggan
+            _buildSectionCard(
+              icon: Icons.business_rounded,
+              title: 'Identitas Pelanggan',
+              children: [
+                _buildFieldRow(
+                  context,
+                  left: _buildTextField(
+                    label: 'Nama Pelanggan / Entitas Usaha',
+                    isRequired: true,
+                    hint: 'cth: Villa Bali Resort',
+                    value: controller.name.value,
+                    onChanged: (v) => controller.name.value = v,
+                  ),
+                  right: _buildDropdownField<String>(
+                    label: 'Segmen Usaha',
+                    isRequired: true,
+                    hint: segmentHint,
+                    value: currentSegmentId,
+                    items: segmentList
+                        .map(
+                          (s) => DropdownMenuItem<String>(
+                            value: s.id,
+                            child: Text(
+                              s.name,
+                              style: GoogleFonts.inter(
+                                fontSize: 14.0,
+                                color: AppColors.text,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
                           ),
+                        )
+                        .toList(),
+                    onChanged: isSegmentDisabled
+                        ? null
+                        : (v) {
+                            if (v != null) {
+                              controller.segmentId.value = v;
+                              final match = segmentList.firstWhere(
+                                (s) => s.id == v,
+                                orElse: () => segmentList.first,
+                              );
+                              controller.segment.value = match.name;
+                            }
+                          },
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 16.0),
+
+            // Section 2: Legalitas & Kontak Bisnis
+            _buildSectionCard(
+              icon: Icons.receipt_long_rounded,
+              title: 'Legalitas & Kontak Bisnis',
+              children: [
+                _buildTextField(
+                  label: 'Nomor NPWP Badan / Pribadi',
+                  hint: '00.000.000.0-000.000',
+                  value: controller.npwp.value,
+                  onChanged: (v) => controller.npwp.value = v,
+                ),
+                const SizedBox(height: 16.0),
+                _buildFieldRow(
+                  context,
+                  left: _buildTextField(
+                    label: 'Telepon Utama Perusahaan',
+                    isRequired: true,
+                    hint: '+62 812-xxxx-xxxx',
+                    keyboardType: TextInputType.phone,
+                    value: controller.phone.value,
+                    onChanged: (v) => controller.phone.value = v,
+                  ),
+                  right: _buildTextField(
+                    label: 'Telepon Alternatif',
+                    hint: '+62 811-xxxx-xxxx',
+                    keyboardType: TextInputType.phone,
+                    value: controller.phoneAlt.value,
+                    onChanged: (v) => controller.phoneAlt.value = v,
+                  ),
+                ),
+                const SizedBox(height: 16.0),
+                _buildTextField(
+                  label: 'Email Resmi Bisnis',
+                  hint: 'contact@customer.com',
+                  keyboardType: TextInputType.emailAddress,
+                  value: controller.email.value,
+                  onChanged: (v) => controller.email.value = v,
+                ),
+              ],
+            ),
+            const SizedBox(height: 16.0),
+
+            // Section 3: Catatan Internal & Risiko
+            _buildSectionCard(
+              icon: Icons.edit_note_rounded,
+              title: 'Catatan Internal & Risiko',
+              children: [
+                _buildTextField(
+                  label: 'Site Risk Assessment',
+                  hint:
+                      'Catatan kredit, komplain sebelumnya, atau syarat termin khusus…',
+                  maxLines: 3,
+                  value: controller.riskNotes.value,
+                  onChanged: (v) => controller.riskNotes.value = v,
+                ),
+                const SizedBox(height: 16.0),
+                _buildTextField(
+                  label: 'Catatan Operasional & Akses Layanan',
+                  hint:
+                      'Preferensi hari servis, akses gerbang, protokol keamanan lokasi…',
+                  maxLines: 3,
+                  value: controller.notes.value,
+                  onChanged: (v) => controller.notes.value = v,
+                ),
+              ],
+            ),
+            if (controller.customerId.value != null) ...[
+              const SizedBox(height: 16.0),
+              _buildSectionCard(
+                icon: Icons.toggle_on_rounded,
+                title: 'Status Pelanggan',
+                children: [
+                  _buildDropdownField<String>(
+                    label: 'Status Pelanggan',
+                    isRequired: true,
+                    value: controller.status.value.toLowerCase() == 'inactive'
+                        ? 'inactive'
+                        : 'active',
+                    items: [
+                      DropdownMenuItem<String>(
+                        value: 'active',
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Container(
+                              width: 8.0,
+                              height: 8.0,
+                              decoration: const BoxDecoration(
+                                color: AppColors.ok,
+                                shape: BoxShape.circle,
+                              ),
+                            ),
+                            const SizedBox(width: 8.0),
+                            Text(
+                              'Aktif',
+                              style: GoogleFonts.inter(
+                                fontSize: 14.0,
+                                color: AppColors.text,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                          ],
                         ),
                       ),
-                    )
-                    .toList(),
-                onChanged: isSegmentDisabled
-                    ? null
-                    : (v) {
-                        if (v != null) {
-                          controller.segmentId.value = v;
-                          final match = segmentList.firstWhere(
-                            (s) => s.id == v,
-                            orElse: () => segmentList.first,
-                          );
-                          controller.segment.value = match.name;
-                        }
-                      },
-              ),
-            ),
-          ],
-        ),
-        const SizedBox(height: 16.0),
-
-        // Section 2: Legalitas & Kontak Bisnis
-        _buildSectionCard(
-          icon: Icons.receipt_long_rounded,
-          title: 'Legalitas & Kontak Bisnis',
-          children: [
-            _buildTextField(
-              label: 'Nomor NPWP Badan / Pribadi',
-              hint: '00.000.000.0-000.000',
-              value: controller.npwp.value,
-              onChanged: (v) => controller.npwp.value = v,
-            ),
-            const SizedBox(height: 16.0),
-            _buildFieldRow(
-              context,
-              left: _buildTextField(
-                label: 'Telepon Utama Perusahaan',
-                isRequired: true,
-                hint: '+62 812-xxxx-xxxx',
-                keyboardType: TextInputType.phone,
-                value: controller.phone.value,
-                onChanged: (v) => controller.phone.value = v,
-              ),
-              right: _buildTextField(
-                label: 'Telepon Alternatif',
-                hint: '+62 811-xxxx-xxxx',
-                keyboardType: TextInputType.phone,
-                value: controller.phoneAlt.value,
-                onChanged: (v) => controller.phoneAlt.value = v,
-              ),
-            ),
-            const SizedBox(height: 16.0),
-            _buildTextField(
-              label: 'Email Resmi Bisnis',
-              hint: 'contact@customer.com',
-              keyboardType: TextInputType.emailAddress,
-              value: controller.email.value,
-              onChanged: (v) => controller.email.value = v,
-            ),
-          ],
-        ),
-        const SizedBox(height: 16.0),
-
-        // Section 3: Catatan Internal & Risiko
-        _buildSectionCard(
-          icon: Icons.edit_note_rounded,
-          title: 'Catatan Internal & Risiko',
-          children: [
-            _buildTextField(
-              label: 'Site Risk Assessment',
-              hint:
-                  'Catatan kredit, komplain sebelumnya, atau syarat termin khusus…',
-              maxLines: 3,
-              value: controller.riskNotes.value,
-              onChanged: (v) => controller.riskNotes.value = v,
-            ),
-            const SizedBox(height: 16.0),
-            _buildTextField(
-              label: 'Catatan Operasional & Akses Layanan',
-              hint:
-                  'Preferensi hari servis, akses gerbang, protokol keamanan lokasi…',
-              maxLines: 3,
-              value: controller.notes.value,
-              onChanged: (v) => controller.notes.value = v,
-            ),
-          ],
-        ),
-        if (controller.customerId.value != null) ...[
-          const SizedBox(height: 16.0),
-          _buildSectionCard(
-            icon: Icons.toggle_on_rounded,
-            title: 'Status Pelanggan',
-            children: [
-              _buildDropdownField<String>(
-                label: 'Status Pelanggan',
-                isRequired: true,
-                value: controller.status.value.toLowerCase() == 'inactive'
-                    ? 'inactive'
-                    : 'active',
-                items: [
-                  DropdownMenuItem<String>(
-                    value: 'active',
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Container(
-                          width: 8.0,
-                          height: 8.0,
-                          decoration: const BoxDecoration(
-                            color: AppColors.ok,
-                            shape: BoxShape.circle,
-                          ),
+                      DropdownMenuItem<String>(
+                        value: 'inactive',
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Container(
+                              width: 8.0,
+                              height: 8.0,
+                              decoration: const BoxDecoration(
+                                color: AppColors.muted,
+                                shape: BoxShape.circle,
+                              ),
+                            ),
+                            const SizedBox(width: 8.0),
+                            Text(
+                              'Non-Aktif',
+                              style: GoogleFonts.inter(
+                                fontSize: 14.0,
+                                color: AppColors.text,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                          ],
                         ),
-                        const SizedBox(width: 8.0),
-                        Text(
-                          'Aktif',
-                          style: GoogleFonts.inter(
-                            fontSize: 14.0,
-                            color: AppColors.text,
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  DropdownMenuItem<String>(
-                    value: 'inactive',
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Container(
-                          width: 8.0,
-                          height: 8.0,
-                          decoration: const BoxDecoration(
-                            color: AppColors.muted,
-                            shape: BoxShape.circle,
-                          ),
-                        ),
-                        const SizedBox(width: 8.0),
-                        Text(
-                          'Non-Aktif',
-                          style: GoogleFonts.inter(
-                            fontSize: 14.0,
-                            color: AppColors.text,
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                      ],
-                    ),
+                      ),
+                    ],
+                    onChanged: (v) {
+                      if (v != null) {
+                        controller.status.value = v;
+                      }
+                    },
                   ),
                 ],
-                onChanged: (v) {
-                  if (v != null) {
-                    controller.status.value = v;
-                  }
-                },
               ),
             ],
-          ),
-        ],
-        const SizedBox(height: 24.0),
-      ],
-    );
+            const SizedBox(height: 24.0),
+          ],
+        );
       },
     );
   }

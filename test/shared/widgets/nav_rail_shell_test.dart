@@ -19,9 +19,11 @@ import 'package:centrow_sales/modules/sales/repositories/customer_repository.dar
 
 class _MockAuthRepo implements AuthRepository {
   @override
-  Future<Result<TokenDto>> refreshToken(String refreshToken) async => throw UnimplementedError();
+  Future<Result<TokenDto>> refreshToken(String refreshToken) async =>
+      throw UnimplementedError();
   @override
-  Future<Result<void>> logout(String refreshToken) async => throw UnimplementedError();
+  Future<Result<void>> logout(String refreshToken) async =>
+      throw UnimplementedError();
   @override
   Future<Result<List<Tenant>>> getPublicTenants() async {
     return const Ok([Tenant(id: 't1', name: 'Cabang Bali', slug: 'bali')]);
@@ -255,52 +257,56 @@ void main() {
     expect(find.text('Daftar Pelanggan'), findsOneWidget);
   });
 
-  testWidgets('Tapping avatar opens profile menu and confirming logout clears session and navigates to login', (
-    tester,
-  ) async {
-    tester.view.physicalSize = const Size(1200, 900);
-    tester.view.devicePixelRatio = 1.0;
-    addTearDown(tester.view.resetPhysicalSize);
-    addTearDown(tester.view.resetDevicePixelRatio);
+  testWidgets(
+    'Tapping avatar opens profile menu and confirming logout clears session and navigates to login',
+    (tester) async {
+      tester.view.physicalSize = const Size(1200, 900);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
 
-    await AuthTokenHolder.instance.saveToken('valid_token_123');
-    await AuthTokenHolder.instance.saveUser(
-      const User(
-        id: 'u1',
-        name: 'Sales Executive',
-        email: 'sales@centrow.id',
-        role: 'Sales',
-        branch: 'Main Branch',
-        token: 'valid_token_123',
-      ),
-    );
-    final router = createRouter(initialLocation: '/customers');
-    await tester.pumpWidget(CentrowSalesApp(routerConfig: router));
-    await tester.pumpAndSettle();
+      await AuthTokenHolder.instance.saveToken('valid_token_123');
+      await AuthTokenHolder.instance.saveUser(
+        const User(
+          id: 'u1',
+          name: 'Sales Executive',
+          email: 'sales@centrow.id',
+          role: 'Sales',
+          branch: 'Main Branch',
+          token: 'valid_token_123',
+        ),
+      );
+      final router = createRouter(initialLocation: '/customers');
+      await tester.pumpWidget(CentrowSalesApp(routerConfig: router));
+      await tester.pumpAndSettle();
 
-    expect(find.byType(PopupMenuButton<String>), findsOneWidget);
-    await tester.tap(find.byType(PopupMenuButton<String>));
-    await tester.pumpAndSettle();
+      expect(find.byType(PopupMenuButton<String>), findsOneWidget);
+      await tester.tap(find.byType(PopupMenuButton<String>));
+      await tester.pumpAndSettle();
 
-    // Verify popup menu items are rendered
-    expect(find.text('Sales Executive'), findsOneWidget);
-    expect(find.text('sales@centrow.id'), findsOneWidget);
-    expect(find.text('Keluar'), findsOneWidget);
+      // Verify popup menu items are rendered
+      expect(find.text('Sales Executive'), findsOneWidget);
+      expect(find.text('sales@centrow.id'), findsOneWidget);
+      expect(find.text('Keluar'), findsOneWidget);
 
-    // Tap Keluar
-    await tester.tap(find.text('Keluar'));
-    await tester.pumpAndSettle();
+      // Tap Keluar
+      await tester.tap(find.text('Keluar'));
+      await tester.pumpAndSettle();
 
-    // Verify confirmation dialog
-    expect(find.text('Konfirmasi Keluar'), findsOneWidget);
-    expect(find.text('Apakah Anda yakin ingin keluar dari akun ini?'), findsOneWidget);
+      // Verify confirmation dialog
+      expect(find.text('Konfirmasi Keluar'), findsOneWidget);
+      expect(
+        find.text('Apakah Anda yakin ingin keluar dari akun ini?'),
+        findsOneWidget,
+      );
 
-    // Confirm logout
-    await tester.tap(find.text('Ya, Keluar'));
-    await tester.pumpAndSettle();
+      // Confirm logout
+      await tester.tap(find.text('Ya, Keluar'));
+      await tester.pumpAndSettle();
 
-    // Verify token cleared and routed to login page
-    expect(AuthTokenHolder.instance.hasToken, isFalse);
-    expect(find.text('Centrow Sales'), findsOneWidget);
-  });
+      // Verify token cleared and routed to login page
+      expect(AuthTokenHolder.instance.hasToken, isFalse);
+      expect(find.text('Centrow Sales'), findsOneWidget);
+    },
+  );
 }

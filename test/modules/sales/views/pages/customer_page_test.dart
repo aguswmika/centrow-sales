@@ -19,78 +19,79 @@ class FakeCustomerRepository implements CustomerRepository {
   bool shouldFailDetail = false;
 
   FakeCustomerRepository({List<Customer>? initialCustomers})
-      : customers = initialCustomers ??
-            [
-              const Customer(
-                id: 'c1',
-                code: 'CUST-001',
-                name: 'Villa Bali Resort',
-                initials: 'VB',
-                segmentId: '660e8400-e29b-41d4-a716-446655440001',
-                segment: 'Hospitality',
-                status: 'active',
-                regency: 'Badung',
-                npwp: '12.345.678.0-123.456',
-                phone: '+62-361-123-4567',
-                phoneAlt: '+62-361-123-4568',
-                email: 'info@villabali.example.com',
-                scanCode: 'VC-550e8400',
-                riskNotes: 'Monitor payment patterns closely',
-                notes: 'Preferred vendor for group bookings',
-                activeProposalsCount: 2,
-                activeContractsCount: 0,
-                locations: [
-                  CustomerLocation(
-                    id: 'l1',
-                    isPrimary: true,
-                    label: 'Main Resort',
-                    addressLine: 'Jalan Pantai Kuta, Badung',
-                    village: 'Kuta',
-                    district: 'Kuta',
-                    regency: 'Badung',
-                    province: 'Bali',
-                    areaSize: 25000.5,
-                    latitude: -8.6500,
-                    longitude: 115.1700,
-                  ),
-                ],
-                contacts: [
-                  CustomerContact(
-                    id: 'ct1',
-                    name: 'Budi Santoso',
-                    position: 'General Manager',
-                    email: 'budi@villabali.example.com',
-                    phone: '+62-361-123-4567',
-                    role: 'pic',
-                    isPrimary: true,
-                  ),
-                ],
-                proposals: [
-                  CustomerProposalSummary(
-                    id: 'p1',
-                    code: 'PROP-2025-001',
-                    serviceName: 'Pest Control Monthly',
-                    proposalDate: '2025-08-10',
-                    totalAmount: 5000000.0,
-                    status: 'sent',
-                  ),
-                ],
-              ),
-              const Customer(
-                id: 'c2',
-                code: 'CUST-002',
-                name: 'Hotel Surabaya',
-                initials: 'HS',
-                segmentId: '660e8400-e29b-41d4-a716-446655440001',
-                segment: 'Hospitality',
-                status: 'inactive',
-                regency: 'Surabaya',
-                phone: '+62-31-555-1234',
-                email: 'contact@hotelsby.example.com',
-                activeProposalsCount: 0,
-                activeContractsCount: 0,
-              ),
-            ];
+    : customers =
+          initialCustomers ??
+          [
+            const Customer(
+              id: 'c1',
+              code: 'CUST-001',
+              name: 'Villa Bali Resort',
+              initials: 'VB',
+              segmentId: '660e8400-e29b-41d4-a716-446655440001',
+              segment: 'Hospitality',
+              status: 'active',
+              regency: 'Badung',
+              npwp: '12.345.678.0-123.456',
+              phone: '+62-361-123-4567',
+              phoneAlt: '+62-361-123-4568',
+              email: 'info@villabali.example.com',
+              scanCode: 'VC-550e8400',
+              riskNotes: 'Monitor payment patterns closely',
+              notes: 'Preferred vendor for group bookings',
+              activeProposalsCount: 2,
+              activeContractsCount: 0,
+              locations: [
+                CustomerLocation(
+                  id: 'l1',
+                  isPrimary: true,
+                  label: 'Main Resort',
+                  addressLine: 'Jalan Pantai Kuta, Badung',
+                  village: 'Kuta',
+                  district: 'Kuta',
+                  regency: 'Badung',
+                  province: 'Bali',
+                  areaSize: 25000.5,
+                  latitude: -8.6500,
+                  longitude: 115.1700,
+                ),
+              ],
+              contacts: [
+                CustomerContact(
+                  id: 'ct1',
+                  name: 'Budi Santoso',
+                  position: 'General Manager',
+                  email: 'budi@villabali.example.com',
+                  phone: '+62-361-123-4567',
+                  role: 'pic',
+                  isPrimary: true,
+                ),
+              ],
+              proposals: [
+                CustomerProposalSummary(
+                  id: 'p1',
+                  code: 'PROP-2025-001',
+                  serviceName: 'Pest Control Monthly',
+                  proposalDate: '2025-08-10',
+                  totalAmount: 5000000.0,
+                  status: 'sent',
+                ),
+              ],
+            ),
+            const Customer(
+              id: 'c2',
+              code: 'CUST-002',
+              name: 'Hotel Surabaya',
+              initials: 'HS',
+              segmentId: '660e8400-e29b-41d4-a716-446655440001',
+              segment: 'Hospitality',
+              status: 'inactive',
+              regency: 'Surabaya',
+              phone: '+62-31-555-1234',
+              email: 'contact@hotelsby.example.com',
+              activeProposalsCount: 0,
+              activeContractsCount: 0,
+            ),
+          ];
 
   @override
   Future<Result<List<Customer>>> getCustomers({
@@ -107,10 +108,12 @@ class FakeCustomerRepository implements CustomerRepository {
     if (query != null && query.isNotEmpty) {
       final q = query.toLowerCase();
       list = list
-          .where((c) =>
-              c.name.toLowerCase().contains(q) ||
-              c.code.toLowerCase().contains(q) ||
-              c.regency.toLowerCase().contains(q))
+          .where(
+            (c) =>
+                c.name.toLowerCase().contains(q) ||
+                c.code.toLowerCase().contains(q) ||
+                c.regency.toLowerCase().contains(q),
+          )
           .toList();
     }
     if (segmentId != null && segmentId != 'all') {
@@ -182,40 +185,43 @@ void main() {
 
     Widget createTestWidget() {
       return MaterialApp(
-        home: Scaffold(
-          body: CustomerPage(controller: controller),
-        ),
+        home: Scaffold(body: CustomerPage(controller: controller)),
       );
     }
 
-    testWidgets('renders master-detail view on tablet size with detail pane populated', (tester) async {
-      tester.view.physicalSize = const Size(1200, 800);
-      tester.view.devicePixelRatio = 1.0;
-      addTearDown(tester.view.resetPhysicalSize);
+    testWidgets(
+      'renders master-detail view on tablet size with detail pane populated',
+      (tester) async {
+        tester.view.physicalSize = const Size(1200, 800);
+        tester.view.devicePixelRatio = 1.0;
+        addTearDown(tester.view.resetPhysicalSize);
 
-      await tester.pumpWidget(createTestWidget());
-      await tester.pump();
-      await tester.pump(const Duration(milliseconds: 100));
+        await tester.pumpWidget(createTestWidget());
+        await tester.pump();
+        await tester.pump(const Duration(milliseconds: 100));
 
-      expect(find.text('Daftar Pelanggan'), findsOneWidget);
-      expect(find.text('Villa Bali Resort'), findsWidgets);
-      
-      // Tap customer to populate detail pane
-      await tester.tap(find.text('Villa Bali Resort').first);
-      await tester.pump();
-      await tester.pump(const Duration(milliseconds: 100));
+        expect(find.text('Daftar Pelanggan'), findsOneWidget);
+        expect(find.text('Villa Bali Resort'), findsWidgets);
 
-      expect(find.text('Informasi Utama'), findsOneWidget);
-      expect(find.text('Lokasi & Titik Servis'), findsOneWidget);
-      expect(find.text('Kontak Person & PIC'), findsOneWidget);
-      expect(find.text('Riwayat Proposal'), findsOneWidget);
-      expect(find.text('Nomor NPWP'), findsOneWidget);
-      expect(find.text('12.345.678.0-123.456'), findsOneWidget);
-      expect(find.text('Buat Proposal'), findsOneWidget);
-      expect(find.text('Edit Data'), findsOneWidget);
-    });
+        // Tap customer to populate detail pane
+        await tester.tap(find.text('Villa Bali Resort').first);
+        await tester.pump();
+        await tester.pump(const Duration(milliseconds: 100));
 
-    testWidgets('mobile size renders master list without detail pane', (tester) async {
+        expect(find.text('Informasi Utama'), findsOneWidget);
+        expect(find.text('Lokasi & Titik Servis'), findsOneWidget);
+        expect(find.text('Kontak Person & PIC'), findsOneWidget);
+        expect(find.text('Riwayat Proposal'), findsOneWidget);
+        expect(find.text('Nomor NPWP'), findsOneWidget);
+        expect(find.text('12.345.678.0-123.456'), findsOneWidget);
+        expect(find.text('Buat Proposal'), findsOneWidget);
+        expect(find.text('Edit Data'), findsOneWidget);
+      },
+    );
+
+    testWidgets('mobile size renders master list without detail pane', (
+      tester,
+    ) async {
       tester.view.physicalSize = const Size(400, 800);
       tester.view.devicePixelRatio = 1.0;
       addTearDown(tester.view.resetPhysicalSize);
@@ -229,22 +235,25 @@ void main() {
       expect(find.text('Informasi Utama'), findsNothing);
     });
 
-    testWidgets('tapping a customer updates selectedCustomer and loads detail', (tester) async {
-      tester.view.physicalSize = const Size(1200, 800);
-      tester.view.devicePixelRatio = 1.0;
-      addTearDown(tester.view.resetPhysicalSize);
+    testWidgets(
+      'tapping a customer updates selectedCustomer and loads detail',
+      (tester) async {
+        tester.view.physicalSize = const Size(1200, 800);
+        tester.view.devicePixelRatio = 1.0;
+        addTearDown(tester.view.resetPhysicalSize);
 
-      await tester.pumpWidget(createTestWidget());
-      await tester.pump();
-      await tester.pump(const Duration(milliseconds: 100));
+        await tester.pumpWidget(createTestWidget());
+        await tester.pump();
+        await tester.pump(const Duration(milliseconds: 100));
 
-      await tester.tap(find.text('Hotel Surabaya').first);
-      await tester.pump();
-      await tester.pump(const Duration(milliseconds: 100));
+        await tester.tap(find.text('Hotel Surabaya').first);
+        await tester.pump();
+        await tester.pump(const Duration(milliseconds: 100));
 
-      expect(controller.selectedCustomerId.value, 'c2');
-      expect(find.text('Non-Aktif'), findsWidgets);
-    });
+        expect(controller.selectedCustomerId.value, 'c2');
+        expect(find.text('Non-Aktif'), findsWidgets);
+      },
+    );
 
     testWidgets('switching detail tabs updates tab contents', (tester) async {
       tester.view.physicalSize = const Size(1200, 800);
@@ -287,7 +296,9 @@ void main() {
       expect(find.text('Rp 5.000.000'), findsOneWidget);
     });
 
-    testWidgets('CustomerDetailPane renders loading, error, and empty state', (tester) async {
+    testWidgets('CustomerDetailPane renders loading, error, and empty state', (
+      tester,
+    ) async {
       // Test Loading State
       await tester.pumpWidget(
         MaterialApp(
@@ -335,7 +346,10 @@ void main() {
           ),
         ),
       );
-      expect(find.text('Pilih pelanggan dari daftar di sebelah kiri'), findsOneWidget);
+      expect(
+        find.text('Pilih pelanggan dari daftar di sebelah kiri'),
+        findsOneWidget,
+      );
     });
 
     testWidgets('tapping add button triggers callback', (tester) async {
@@ -363,7 +377,9 @@ void main() {
       expect(called, isTrue);
     });
 
-    testWidgets('renders segments dynamically and selects segment', (tester) async {
+    testWidgets('renders segments dynamically and selects segment', (
+      tester,
+    ) async {
       String selected = 'all';
       await tester.pumpWidget(
         MaterialApp(
@@ -394,7 +410,9 @@ void main() {
       expect(selected, 'seg-1');
     });
 
-    testWidgets('pulling down on master list triggers loadCustomers', (tester) async {
+    testWidgets('pulling down on master list triggers loadCustomers', (
+      tester,
+    ) async {
       tester.view.physicalSize = const Size(400, 800); // mobile layout
       tester.view.devicePixelRatio = 1.0;
       addTearDown(() => tester.view.resetPhysicalSize());
@@ -406,18 +424,16 @@ void main() {
       expect(find.text('Villa Bali Resort'), findsOneWidget);
 
       // simulate pull-to-refresh
-      await tester.fling(
-        find.byType(ListView),
-        const Offset(0, 400),
-        1000,
-      );
+      await tester.fling(find.byType(ListView), const Offset(0, 400), 1000);
       await tester.pumpAndSettle();
 
       // list should still be visible after refresh
       expect(find.text('Villa Bali Resort'), findsOneWidget);
     });
 
-    testWidgets('tapping Edit Data in detail pane navigates to edit page', (tester) async {
+    testWidgets('tapping Edit Data in detail pane navigates to edit page', (
+      tester,
+    ) async {
       tester.view.physicalSize = const Size(1200, 800);
       tester.view.devicePixelRatio = 1.0;
       addTearDown(tester.view.resetPhysicalSize);

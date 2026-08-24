@@ -68,17 +68,17 @@ class CreateLocationInput {
   }
 
   Map<String, dynamic> toJson() => {
-        'label': label,
-        'address_line': address,
-        if (provinceId != null) 'province_id': provinceId,
-        if (regencyId != null) 'regency_id': regencyId,
-        if (districtId != null) 'district_id': districtId,
-        if (villageId != null) 'village_id': villageId,
-        'area_size': areaSize,
-        if (latitude != null) 'latitude': latitude,
-        if (longitude != null) 'longitude': longitude,
-        'is_primary': isPrimary,
-      };
+    'label': label,
+    'address_line': address,
+    if (provinceId != null) 'province_id': provinceId,
+    if (regencyId != null) 'regency_id': regencyId,
+    if (districtId != null) 'district_id': districtId,
+    if (villageId != null) 'village_id': villageId,
+    'area_size': areaSize,
+    if (latitude != null) 'latitude': latitude,
+    if (longitude != null) 'longitude': longitude,
+    'is_primary': isPrimary,
+  };
 
   @override
   bool operator ==(Object other) =>
@@ -102,21 +102,21 @@ class CreateLocationInput {
 
   @override
   int get hashCode => Object.hash(
-        label,
-        address,
-        provinceId,
-        regencyId,
-        districtId,
-        villageId,
-        province,
-        regency,
-        district,
-        village,
-        areaSize,
-        latitude,
-        longitude,
-        isPrimary,
-      );
+    label,
+    address,
+    provinceId,
+    regencyId,
+    districtId,
+    villageId,
+    province,
+    regency,
+    district,
+    village,
+    areaSize,
+    latitude,
+    longitude,
+    isPrimary,
+  );
 
   @override
   String toString() =>
@@ -163,13 +163,13 @@ class CreateContactInput {
   }
 
   Map<String, dynamic> toJson() => {
-        'name': name,
-        'position': position,
-        'email': email,
-        'phone': phone,
-        'role': roleCode,
-        'is_primary': isPrimary,
-      };
+    'name': name,
+    'position': position,
+    'email': email,
+    'phone': phone,
+    'role': roleCode,
+    'is_primary': isPrimary,
+  };
 
   @override
   bool operator ==(Object other) =>
@@ -184,17 +184,12 @@ class CreateContactInput {
           isPrimary == other.isPrimary;
 
   @override
-  int get hashCode => Object.hash(
-        name,
-        position,
-        email,
-        phone,
-        role,
-        isPrimary,
-      );
+  int get hashCode =>
+      Object.hash(name, position, email, phone, role, isPrimary);
 
   @override
-  String toString() => 'CreateContactInput(name: $name, email: $email, role: $role)';
+  String toString() =>
+      'CreateContactInput(name: $name, email: $email, role: $role)';
 }
 
 class CreateCustomerInput {
@@ -261,19 +256,19 @@ class CreateCustomerInput {
   }
 
   Map<String, dynamic> toJson() => {
-        'name': name,
-        'code': code,
-        'status': status,
-        'segment_id': segmentId,
-        'npwp_number': npwp,
-        'phone': phone,
-        'phone_alt': phoneAlt,
-        'email': email,
-        'risk_notes': riskNotes,
-        'notes': notes,
-        'locations': locations.map((l) => l.toJson()).toList(),
-        'contacts': contacts.map((c) => c.toJson()).toList(),
-      };
+    'name': name,
+    'code': code,
+    'status': status,
+    'segment_id': segmentId,
+    'npwp_number': npwp,
+    'phone': phone,
+    'phone_alt': phoneAlt,
+    'email': email,
+    'risk_notes': riskNotes,
+    'notes': notes,
+    'locations': locations.map((l) => l.toJson()).toList(),
+    'contacts': contacts.map((c) => c.toJson()).toList(),
+  };
 
   @override
   bool operator ==(Object other) =>
@@ -294,18 +289,18 @@ class CreateCustomerInput {
 
   @override
   int get hashCode => Object.hash(
-        name,
-        code,
-        status,
-        segmentId,
-        segment,
-        npwp,
-        phone,
-        phoneAlt,
-        email,
-        riskNotes,
-        notes,
-      );
+    name,
+    code,
+    status,
+    segmentId,
+    segment,
+    npwp,
+    phone,
+    phoneAlt,
+    email,
+    riskNotes,
+    notes,
+  );
 
   @override
   String toString() =>

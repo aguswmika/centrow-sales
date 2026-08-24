@@ -77,14 +77,16 @@ class _MapPickerDialogState extends State<MapPickerDialog> {
           return;
         }
       }
-      
+
       if (permission == LocationPermission.deniedForever) {
         debugPrint('Location permissions are permanently denied');
         return;
       }
 
       final position = await Geolocator.getCurrentPosition(
-        locationSettings: const LocationSettings(accuracy: LocationAccuracy.high),
+        locationSettings: const LocationSettings(
+          accuracy: LocationAccuracy.high,
+        ),
       );
       setState(() {
         _currentCenter = latlong.LatLng(position.latitude, position.longitude);
@@ -208,7 +210,8 @@ class _MapPickerDialogState extends State<MapPickerDialog> {
                     shrinkWrap: true,
                     itemCount: _searchResults.length,
                     itemBuilder: (context, index) {
-                      final item = _searchResults[index] as Map<String, dynamic>;
+                      final item =
+                          _searchResults[index] as Map<String, dynamic>;
                       return ListTile(
                         title: Text(item['display_name'] as String),
                         onTap: () {

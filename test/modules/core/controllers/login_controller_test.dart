@@ -10,9 +10,11 @@ import 'package:centrow_sales/shared/state/ui_state.dart';
 
 class MockAuthRepository implements AuthRepository {
   @override
-  Future<Result<TokenDto>> refreshToken(String refreshToken) async => throw UnimplementedError();
+  Future<Result<TokenDto>> refreshToken(String refreshToken) async =>
+      throw UnimplementedError();
   @override
-  Future<Result<void>> logout(String refreshToken) async => throw UnimplementedError();
+  Future<Result<void>> logout(String refreshToken) async =>
+      throw UnimplementedError();
   late Result<List<Tenant>> publicTenantsResult;
   late Result<User> loginResult;
 
@@ -58,24 +60,27 @@ void main() {
     expect(controller.selectedTenantId.value, 't-1');
   });
 
-  test('submitLogin calls repository with correct parameters and sets token', () async {
-    controller.setEmail('test@nohama.id');
-    controller.setPassword('password123');
-    controller.selectTenant('tenant_1');
+  test(
+    'submitLogin calls repository with correct parameters and sets token',
+    () async {
+      controller.setEmail('test@nohama.id');
+      controller.setPassword('password123');
+      controller.selectTenant('tenant_1');
 
-    const user = User(
-      id: '1',
-      name: 'Test User',
-      email: 'test@nohama.id',
-      role: 'Admin',
-      branch: 'Bali',
-      token: 'jwt_secret_token_123',
-    );
-    mockAuthRepository.loginResult = const Ok(user);
+      const user = User(
+        id: '1',
+        name: 'Test User',
+        email: 'test@nohama.id',
+        role: 'Admin',
+        branch: 'Bali',
+        token: 'jwt_secret_token_123',
+      );
+      mockAuthRepository.loginResult = const Ok(user);
 
-    await controller.submitLogin();
+      await controller.submitLogin();
 
-    expect(controller.state.value, isA<UiSuccess<User>>());
-    expect(AuthTokenHolder.instance.token, 'jwt_secret_token_123');
-  });
+      expect(controller.state.value, isA<UiSuccess<User>>());
+      expect(AuthTokenHolder.instance.token, 'jwt_secret_token_123');
+    },
+  );
 }

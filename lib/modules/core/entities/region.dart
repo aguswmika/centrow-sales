@@ -2,19 +2,10 @@ class Province {
   final int id;
   final String name;
 
-  const Province({
-    required this.id,
-    required this.name,
-  });
+  const Province({required this.id, required this.name});
 
-  Province copyWith({
-    int? id,
-    String? name,
-  }) {
-    return Province(
-      id: id ?? this.id,
-      name: name ?? this.name,
-    );
+  Province copyWith({int? id, String? name}) {
+    return Province(id: id ?? this.id, name: name ?? this.name);
   }
 
   @override
@@ -34,19 +25,10 @@ class Regency {
   final int id;
   final String name;
 
-  const Regency({
-    required this.id,
-    required this.name,
-  });
+  const Regency({required this.id, required this.name});
 
-  Regency copyWith({
-    int? id,
-    String? name,
-  }) {
-    return Regency(
-      id: id ?? this.id,
-      name: name ?? this.name,
-    );
+  Regency copyWith({int? id, String? name}) {
+    return Regency(id: id ?? this.id, name: name ?? this.name);
   }
 
   @override
@@ -66,19 +48,10 @@ class District {
   final int id;
   final String name;
 
-  const District({
-    required this.id,
-    required this.name,
-  });
+  const District({required this.id, required this.name});
 
-  District copyWith({
-    int? id,
-    String? name,
-  }) {
-    return District(
-      id: id ?? this.id,
-      name: name ?? this.name,
-    );
+  District copyWith({int? id, String? name}) {
+    return District(id: id ?? this.id, name: name ?? this.name);
   }
 
   @override
@@ -98,19 +71,10 @@ class Village {
   final int id;
   final String name;
 
-  const Village({
-    required this.id,
-    required this.name,
-  });
+  const Village({required this.id, required this.name});
 
-  Village copyWith({
-    int? id,
-    String? name,
-  }) {
-    return Village(
-      id: id ?? this.id,
-      name: name ?? this.name,
-    );
+  Village copyWith({int? id, String? name}) {
+    return Village(id: id ?? this.id, name: name ?? this.name);
   }
 
   @override

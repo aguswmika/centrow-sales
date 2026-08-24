@@ -121,7 +121,9 @@ class _ProposalPageState extends State<ProposalPage> {
                   isSuccess: true,
                 );
               },
-              onOpenCalculator: () => context.go('/pricings'),
+              onOpenCalculator: selectedId.isNotEmpty
+                  ? () => context.go('/proposals/$selectedId/pricing')
+                  : null,
               onRetry: () => _controller.loadProposalDetail(selectedId),
             ),
           ),

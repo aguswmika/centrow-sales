@@ -137,12 +137,7 @@ void main() {
           },
         ],
         'contacts': [
-          {
-            'id': 'con-1',
-            'name': 'Budi',
-            'role': 'pic',
-            'is_primary': true,
-          },
+          {'id': 'con-1', 'name': 'Budi', 'role': 'pic', 'is_primary': true},
         ],
         'proposals': [
           {
@@ -181,11 +176,7 @@ void main() {
           ),
         ],
         contacts: [
-          CreateContactInput(
-            name: 'Andi',
-            role: 'pic',
-            isPrimary: true,
-          ),
+          CreateContactInput(name: 'Andi', role: 'pic', isPrimary: true),
         ],
       );
 
@@ -199,53 +190,55 @@ void main() {
       expect(locJson['province_id'], 1);
       expect(locJson['regency_id'], 2);
 
-      final contactJson = (json['contacts'] as List).first as Map<String, dynamic>;
+      final contactJson =
+          (json['contacts'] as List).first as Map<String, dynamic>;
       expect(contactJson['name'], 'Andi');
       expect(contactJson['role'], 1);
     });
 
-    test('UpdateCustomerRequestDto from input creates correct payload without code and with status', () {
-      const input = CreateCustomerInput(
-        name: 'Resto Mewah Updated',
-        code: 'IMMUTABLE-CODE',
-        status: 'inactive',
-        segmentId: 'seg-1',
-        locations: [
-          CreateLocationInput(
-            label: 'Main',
-            address: 'Jl. Sudirman',
-            provinceId: 1,
-            regencyId: 2,
-            districtId: 3,
-            villageId: 4,
-            areaSize: 100,
-          ),
-        ],
-        contacts: [
-          CreateContactInput(
-            name: 'Andi',
-            role: 'pic',
-            isPrimary: true,
-          ),
-        ],
-      );
+    test(
+      'UpdateCustomerRequestDto from input creates correct payload without code and with status',
+      () {
+        const input = CreateCustomerInput(
+          name: 'Resto Mewah Updated',
+          code: 'IMMUTABLE-CODE',
+          status: 'inactive',
+          segmentId: 'seg-1',
+          locations: [
+            CreateLocationInput(
+              label: 'Main',
+              address: 'Jl. Sudirman',
+              provinceId: 1,
+              regencyId: 2,
+              districtId: 3,
+              villageId: 4,
+              areaSize: 100,
+            ),
+          ],
+          contacts: [
+            CreateContactInput(name: 'Andi', role: 'pic', isPrimary: true),
+          ],
+        );
 
-      final requestDto = UpdateCustomerRequestDto.fromInput(input);
-      final json = requestDto.toJson();
+        final requestDto = UpdateCustomerRequestDto.fromInput(input);
+        final json = requestDto.toJson();
 
-      expect(json['name'], 'Resto Mewah Updated');
-      expect(json['segment_id'], 'seg-1');
-      expect(json['status'], 'inactive');
-      expect(json.containsKey('code'), false);
-      expect(json['locations'], isA<List<dynamic>>());
-      final locJson = (json['locations'] as List).first as Map<String, dynamic>;
-      expect(locJson['province_id'], 1);
-      expect(locJson['regency_id'], 2);
+        expect(json['name'], 'Resto Mewah Updated');
+        expect(json['segment_id'], 'seg-1');
+        expect(json['status'], 'inactive');
+        expect(json.containsKey('code'), false);
+        expect(json['locations'], isA<List<dynamic>>());
+        final locJson =
+            (json['locations'] as List).first as Map<String, dynamic>;
+        expect(locJson['province_id'], 1);
+        expect(locJson['regency_id'], 2);
 
-      final contactJson = (json['contacts'] as List).first as Map<String, dynamic>;
-      expect(contactJson['name'], 'Andi');
-      expect(contactJson['role'], 1);
-    });
+        final contactJson =
+            (json['contacts'] as List).first as Map<String, dynamic>;
+        expect(contactJson['name'], 'Andi');
+        expect(contactJson['role'], 1);
+      },
+    );
 
     test('CreateCustomerResponseDto fromJson and toEntity', () {
       final json = {

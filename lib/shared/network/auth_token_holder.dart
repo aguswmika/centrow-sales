@@ -45,7 +45,8 @@ class AuthTokenHolder {
     final userJson = storage.getString(userStorageKey);
     if (userJson != null && userJson.isNotEmpty) {
       try {
-        final Map<String, dynamic> data = jsonDecode(userJson) as Map<String, dynamic>;
+        final Map<String, dynamic> data =
+            jsonDecode(userJson) as Map<String, dynamic>;
         currentUser = AuthDto.fromJson(data).toEntity();
       } catch (_) {
         currentUser = null;

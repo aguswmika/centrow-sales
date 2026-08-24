@@ -57,7 +57,12 @@ void main() {
       const u4 = User(id: '4', name: '', email: 'e@d.com', token: 't');
       expect(u4.getInitials(), '');
 
-      const u5 = User(id: '5', name: 'First Second Third', email: 'f@d.com', token: 't');
+      const u5 = User(
+        id: '5',
+        name: 'First Second Third',
+        email: 'f@d.com',
+        token: 't',
+      );
       expect(u5.getInitials(), 'FS');
     });
 

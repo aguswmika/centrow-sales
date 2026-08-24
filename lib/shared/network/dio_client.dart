@@ -57,20 +57,29 @@ Dio createDio([String? baseUrl]) {
                   data: {'refresh_token': refreshToken},
                 );
 
-                if (refreshResponse.statusCode == 200 && refreshResponse.data != null) {
-                  final data = refreshResponse.data['data'] as Map<String, dynamic>? ?? refreshResponse.data;
+                if (refreshResponse.statusCode == 200 &&
+                    refreshResponse.data != null) {
+                  final data =
+                      refreshResponse.data['data'] as Map<String, dynamic>? ??
+                      refreshResponse.data;
                   final newToken = data['token']?.toString() ?? '';
-                  final newRefreshToken = data['refresh_token']?.toString() ?? '';
+                  final newRefreshToken =
+                      data['refresh_token']?.toString() ?? '';
 
                   if (newToken.isNotEmpty) {
                     await AuthTokenHolder.instance.saveToken(
                       newToken,
-                      newRefreshToken: newRefreshToken.isNotEmpty ? newRefreshToken : null,
+                      newRefreshToken: newRefreshToken.isNotEmpty
+                          ? newRefreshToken
+                          : null,
                     );
 
                     // Retry original request
-                    error.requestOptions.headers['Authorization'] = 'Bearer $newToken';
-                    final retryResponse = await dio.fetch<dynamic>(error.requestOptions);
+                    error.requestOptions.headers['Authorization'] =
+                        'Bearer $newToken';
+                    final retryResponse = await dio.fetch<dynamic>(
+                      error.requestOptions,
+                    );
                     return handler.resolve(retryResponse);
                   }
                 }

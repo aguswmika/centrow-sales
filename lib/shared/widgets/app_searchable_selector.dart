@@ -129,6 +129,28 @@ class _SearchModalState<T> extends State<_SearchModal<T>> {
   bool _loading = false;
   String _lastQuery = '';
 
+  @override
+  void initState() {
+    super.initState();
+    _fetchInitialData();
+  }
+
+  Future<void> _fetchInitialData() async {
+    setState(() => _loading = true);
+    try {
+      final results = await widget.onSearch('');
+      if (mounted) {
+        setState(() {
+          _results = results;
+        });
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _loading = false);
+      }
+    }
+  }
+
   void _onSearchChanged(String query) {
     if (_debounce?.isActive ?? false) _debounce!.cancel();
     _debounce = Timer(const Duration(milliseconds: 500), () async {

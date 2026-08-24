@@ -128,9 +128,7 @@ void main() {
 
     test('returns ServerFailure on 500 error', () async {
       mockAdapter.handler = (options) {
-        final body = jsonEncode({
-          'message': 'Internal Server Error',
-        });
+        final body = jsonEncode({'message': 'Internal Server Error'});
         return ResponseBody.fromString(
           body,
           500,
@@ -180,9 +178,7 @@ void main() {
 
     test('returns ServerFailure on 404 Not Found', () async {
       mockAdapter.handler = (options) {
-        final body = jsonEncode({
-          'message': 'Province not found',
-        });
+        final body = jsonEncode({'message': 'Province not found'});
         return ResponseBody.fromString(
           body,
           404,

@@ -63,36 +63,27 @@ class ProposalController {
   });
 
   late final selectedProposal = computed<Proposal?>(() {
+    final selectedId = _selectedProposalId.value;
+    if (selectedId.isEmpty) return null;
+
     final detail = _proposalDetailState.value.dataOrNull;
     if (detail != null &&
-        (_selectedProposalId.value.isEmpty ||
-            detail.id == _selectedProposalId.value ||
-            detail.code == _selectedProposalId.value)) {
+        (detail.id == selectedId || detail.code == selectedId)) {
       return detail;
     }
     final list = filteredProposals.value;
-    if (list.isEmpty) {
-      final all = _proposalsState.value.dataOrNull ?? [];
-      if (all.isEmpty) return null;
-      if (_selectedProposalId.value.isNotEmpty) {
-        final idx = all.indexWhere(
-          (p) =>
-              p.id == _selectedProposalId.value ||
-              p.code == _selectedProposalId.value,
-        );
-        if (idx != -1) return all[idx];
-      }
-      return all.first;
-    }
-    if (_selectedProposalId.value.isNotEmpty) {
-      final idx = list.indexWhere(
-        (p) =>
-            p.id == _selectedProposalId.value ||
-            p.code == _selectedProposalId.value,
-      );
-      if (idx != -1) return list[idx];
-    }
-    return list.first;
+    final idx = list.indexWhere(
+      (p) => p.id == selectedId || p.code == selectedId,
+    );
+    if (idx != -1) return list[idx];
+
+    final all = _proposalsState.value.dataOrNull ?? [];
+    final allIdx = all.indexWhere(
+      (p) => p.id == selectedId || p.code == selectedId,
+    );
+    if (allIdx != -1) return all[allIdx];
+
+    return null;
   });
 
   late final activePricingCategory = computed<ProposalItemCategory>(() {
@@ -129,9 +120,9 @@ class ProposalController {
     final state = _proposalsState.value;
     if (state is UiSuccess<List<Proposal>> && state.data.isNotEmpty) {
       final targetId = _selectedProposalId.value;
-      if (targetId.isEmpty ||
+      if (targetId.isNotEmpty &&
           !state.data.any((p) => p.id == targetId || p.code == targetId)) {
-        await selectProposal(state.data.first.id);
+        await selectProposal('');
       }
     }
   }

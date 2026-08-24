@@ -195,10 +195,7 @@ class CustomerProposalServiceDto {
   final String id;
   final String name;
 
-  const CustomerProposalServiceDto({
-    required this.id,
-    required this.name,
-  });
+  const CustomerProposalServiceDto({required this.id, required this.name});
 
   factory CustomerProposalServiceDto.fromJson(Map<String, dynamic> json) {
     return CustomerProposalServiceDto(
@@ -332,19 +329,24 @@ class CustomerDetailDto {
       createdAt: json['created_at']?.toString() ?? '',
       updatedAt: json['updated_at']?.toString() ?? '',
       locations: locationsList
-          .map((e) => CustomerLocationDto.fromJson(
-                (e as Map).cast<String, dynamic>(),
-              ))
+          .map(
+            (e) => CustomerLocationDto.fromJson(
+              (e as Map).cast<String, dynamic>(),
+            ),
+          )
           .toList(),
       contacts: contactsList
-          .map((e) => CustomerContactDto.fromJson(
-                (e as Map).cast<String, dynamic>(),
-              ))
+          .map(
+            (e) =>
+                CustomerContactDto.fromJson((e as Map).cast<String, dynamic>()),
+          )
           .toList(),
       proposals: proposalsList
-          .map((e) => CustomerProposalDto.fromJson(
-                (e as Map).cast<String, dynamic>(),
-              ))
+          .map(
+            (e) => CustomerProposalDto.fromJson(
+              (e as Map).cast<String, dynamic>(),
+            ),
+          )
           .toList(),
     );
   }
@@ -412,9 +414,11 @@ class CustomerListResponseDto {
 
     return CustomerListResponseDto(
       items: itemsList
-          .map((e) => CustomerListItemDto.fromJson(
-                (e as Map).cast<String, dynamic>(),
-              ))
+          .map(
+            (e) => CustomerListItemDto.fromJson(
+              (e as Map).cast<String, dynamic>(),
+            ),
+          )
           .toList(),
       pagination: CustomerPaginationDto.fromJson(paginationJson),
     );
@@ -444,7 +448,9 @@ class CreateCustomerLocationRequestDto {
     this.longitude,
   });
 
-  factory CreateCustomerLocationRequestDto.fromInput(CreateLocationInput input) {
+  factory CreateCustomerLocationRequestDto.fromInput(
+    CreateLocationInput input,
+  ) {
     return CreateCustomerLocationRequestDto(
       label: input.label.isNotEmpty ? input.label : null,
       addressLine: input.address.isNotEmpty ? input.address : null,
@@ -563,10 +569,7 @@ class CreateCustomerRequestDto {
   }
 
   Map<String, dynamic> toJson() {
-    final map = <String, dynamic>{
-      'name': name,
-      'segment_id': segmentId,
-    };
+    final map = <String, dynamic>{'name': name, 'segment_id': segmentId};
     if (code != null) map['code'] = code;
     if (npwpNumber != null) map['npwp_number'] = npwpNumber;
     if (email != null) map['email'] = email;
@@ -633,10 +636,7 @@ class UpdateCustomerRequestDto {
   }
 
   Map<String, dynamic> toJson() {
-    final map = <String, dynamic>{
-      'name': name,
-      'segment_id': segmentId,
-    };
+    final map = <String, dynamic>{'name': name, 'segment_id': segmentId};
     if (status.isNotEmpty) map['status'] = status;
     if (npwpNumber != null) map['npwp_number'] = npwpNumber;
     if (email != null) map['email'] = email;

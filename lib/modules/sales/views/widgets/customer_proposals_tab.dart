@@ -110,7 +110,9 @@ class CustomerProposalsTab extends StatelessWidget {
     final s = status.toLowerCase().trim();
     return switch (s) {
       'accepted' || 'disetujui' => const AppBadge.ok(text: 'Disetujui'),
-      'sent' || 'dikirim' || 'terkirim' => const AppBadge.info(text: 'Terkirim'),
+      'sent' ||
+      'dikirim' ||
+      'terkirim' => const AppBadge.info(text: 'Terkirim'),
       'negotiation' || 'negosiasi' => const AppBadge.warn(text: 'Negosiasi'),
       'rejected' || 'ditolak' => const AppBadge.err(text: 'Ditolak'),
       'expired' || 'kadaluarsa' => const AppBadge.err(text: 'Kadaluarsa'),

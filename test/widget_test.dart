@@ -13,9 +13,11 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 class _MockAuthRepo implements AuthRepository {
   @override
-  Future<Result<TokenDto>> refreshToken(String refreshToken) async => throw UnimplementedError();
+  Future<Result<TokenDto>> refreshToken(String refreshToken) async =>
+      throw UnimplementedError();
   @override
-  Future<Result<void>> logout(String refreshToken) async => throw UnimplementedError();
+  Future<Result<void>> logout(String refreshToken) async =>
+      throw UnimplementedError();
   @override
   Future<Result<List<Tenant>>> getPublicTenants() async {
     return const Ok([Tenant(id: 't1', name: 'Cabang Bali', slug: 'bali')]);

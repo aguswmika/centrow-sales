@@ -95,7 +95,9 @@ class CustomerLocationsTab extends StatelessWidget {
                   children: [
                     Flexible(
                       child: Text(
-                        location.label.isNotEmpty ? location.label : 'Titik Servis',
+                        location.label.isNotEmpty
+                            ? location.label
+                            : 'Titik Servis',
                         style: GoogleFonts.plusJakartaSans(
                           fontSize: 14.5,
                           fontWeight: FontWeight.w700,

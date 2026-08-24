@@ -4,6 +4,7 @@ import 'package:centrow_sales/modules/core/views/pages/login_page.dart';
 import 'package:centrow_sales/modules/sales/views/pages/customer_page.dart';
 import 'package:centrow_sales/modules/sales/views/pages/customer_form_page.dart';
 import 'package:centrow_sales/modules/sales/views/pages/proposal_page.dart';
+import 'package:centrow_sales/modules/sales/views/pages/pricing_page.dart';
 import 'package:centrow_sales/shared/network/auth_token_holder.dart';
 import 'package:centrow_sales/shared/widgets/nav_rail_shell.dart';
 
@@ -64,6 +65,14 @@ GoRouter createRouter({String? initialLocation}) => GoRouter(
               path: '/proposals',
               name: 'proposals',
               builder: (context, state) => const ProposalPage(),
+              routes: [
+                GoRoute(
+                  path: ':id/pricing',
+                  name: 'proposal-pricing',
+                  builder: (context, state) =>
+                      PricingPage(proposalId: state.pathParameters['id']!),
+                ),
+              ],
             ),
           ],
         ),
@@ -74,16 +83,6 @@ GoRouter createRouter({String? initialLocation}) => GoRouter(
               name: 'contracts',
               builder: (context, state) =>
                   const Scaffold(body: Center(child: Text('Kontrak'))),
-            ),
-          ],
-        ),
-        StatefulShellBranch(
-          routes: [
-            GoRoute(
-              path: '/pricings',
-              name: 'pricings',
-              builder: (context, state) =>
-                  const Scaffold(body: Center(child: Text('Kalkulator Harga'))),
             ),
           ],
         ),

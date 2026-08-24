@@ -168,13 +168,28 @@ class Step2LocationsForm extends StatelessWidget {
                         ),
                         suffixIcon: IconButton(
                           tooltip: 'Cari di Peta',
-                          icon: const Icon(Icons.map_outlined, color: AppColors.brand),
+                          icon: const Icon(
+                            Icons.map_outlined,
+                            color: AppColors.brand,
+                          ),
                           onPressed: () async {
-                            final result = await Navigator.of(context).push<dynamic>(
-                              MaterialPageRoute(builder: (_) => const MapPickerDialog()),
-                            );
+                            final result = await Navigator.of(context)
+                                .push<dynamic>(
+                                  MaterialPageRoute(
+                                    builder: (_) => const MapPickerDialog(),
+                                  ),
+                                );
                             if (result != null && result is MapLocationResult) {
-                              controller.applyMapLocation(index, result.lat, result.lng, result.address, result.province, result.regency, result.district, result.village);
+                              controller.applyMapLocation(
+                                index,
+                                result.lat,
+                                result.lng,
+                                result.address,
+                                result.province,
+                                result.regency,
+                                result.district,
+                                result.village,
+                              );
                             }
                           },
                         ),

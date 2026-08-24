@@ -12,7 +12,8 @@ class CustomerInfoTab extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isStatusActive = customer.status.toLowerCase() == 'active' ||
+    final isStatusActive =
+        customer.status.toLowerCase() == 'active' ||
         customer.status.toLowerCase() == 'aktif';
 
     final primaryLoc = customer.locations.firstWhere(
@@ -140,7 +141,9 @@ class CustomerInfoTab extends StatelessWidget {
   }
 
   Widget _buildInfoRow(String key, {String? text, Widget? child}) {
-    final displayText = (text == null || text.trim().isEmpty) ? '-' : text.trim();
+    final displayText = (text == null || text.trim().isEmpty)
+        ? '-'
+        : text.trim();
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 18.0, vertical: 13.0),
@@ -162,7 +165,8 @@ class CustomerInfoTab extends StatelessWidget {
           Expanded(
             child: Align(
               alignment: Alignment.centerLeft,
-              child: child ??
+              child:
+                  child ??
                   Text(
                     displayText,
                     style: GoogleFonts.inter(

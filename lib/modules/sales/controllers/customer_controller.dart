@@ -10,7 +10,7 @@ class CustomerController {
   final CustomerRepository _repository;
 
   CustomerController(this._repository);
-  
+
   bool _isDisposed = false;
 
   final _segmentsState = signal<UiState<List<Segment>>>(const UiInitial());
@@ -59,8 +59,7 @@ class CustomerController {
           .where(
             (c) =>
                 c.segmentId == _selectedSegment.value ||
-                c.segment.toLowerCase() ==
-                    _selectedSegment.value.toLowerCase(),
+                c.segment.toLowerCase() == _selectedSegment.value.toLowerCase(),
           )
           .toList();
     }
@@ -68,8 +67,7 @@ class CustomerController {
       list = list
           .where(
             (c) =>
-                c.status.toLowerCase() ==
-                _selectedStatus.value.toLowerCase(),
+                c.status.toLowerCase() == _selectedStatus.value.toLowerCase(),
           )
           .toList();
     }
@@ -109,8 +107,9 @@ class CustomerController {
     }
     final result = await _repository.getCustomers(
       query: _searchQuery.value.isNotEmpty ? _searchQuery.value : null,
-      segmentId:
-          _selectedSegment.value != 'all' ? _selectedSegment.value : null,
+      segmentId: _selectedSegment.value != 'all'
+          ? _selectedSegment.value
+          : null,
       status: _selectedStatus.value != 'all' ? _selectedStatus.value : null,
     );
     if (_isDisposed) return;

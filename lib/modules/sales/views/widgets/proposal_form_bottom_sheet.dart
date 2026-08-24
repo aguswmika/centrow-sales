@@ -111,28 +111,35 @@ class _ProposalFormBottomSheetState extends State<ProposalFormBottomSheet> {
                 const SizedBox(height: 24),
                 AppSearchableSelector<Customer>(
                   label: 'Pelanggan',
-                  value: null,
+                  value: _controller.selectedCustomer,
                   onSearch: _controller.searchCustomers,
-                  itemAsString: (c) => c.name,
-                  onChanged: (c) => _controller.updateFields(customerId: c?.id),
+                  itemAsString: (c) =>
+                      c.code.isNotEmpty ? '[${c.code}] ${c.name}' : c.name,
+                  onChanged: (c) => _controller.updateFields(customer: c),
                 ),
                 const SizedBox(height: 16),
                 AppSearchableSelector<Service>(
                   label: 'Layanan',
-                  value: null,
+                  value: _controller.selectedService,
                   onSearch: _controller.searchServices,
-                  itemAsString: (s) => s.name,
-                  onChanged: (s) => _controller.updateFields(serviceId: s?.id),
+                  itemAsString: (s) =>
+                      s.code.isNotEmpty ? '[${s.code}] ${s.name}' : s.name,
+                  onChanged: (s) => _controller.updateFields(service: s),
                 ),
                 const SizedBox(height: 16),
                 AppDropdown<String>(
                   label: 'Lokasi',
-                  value: null,
+                  value: _controller.addressId,
                   items: _controller.availableLocations
                       .map(
                         (l) => DropdownMenuItem(
                           value: l.id,
-                          child: Text(l.address),
+                          child: Text(
+                            l.label.isNotEmpty
+                                ? '${l.label} - ${l.address}'
+                                : l.address,
+                            overflow: TextOverflow.ellipsis,
+                          ),
                         ),
                       )
                       .toList(),

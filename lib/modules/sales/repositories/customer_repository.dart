@@ -27,10 +27,7 @@ abstract interface class CustomerRepository {
 
   Future<Result<Customer>> createCustomer(CreateCustomerInput input);
 
-  Future<Result<Customer>> updateCustomer(
-    String id,
-    CreateCustomerInput input,
-  );
+  Future<Result<Customer>> updateCustomer(String id, CreateCustomerInput input);
 }
 
 class CustomerRepositoryImpl implements CustomerRepository {

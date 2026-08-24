@@ -11,7 +11,7 @@ class TokenDto {
 
   factory TokenDto.fromJson(Map<String, dynamic> json) {
     final data = json['data'] as Map<String, dynamic>? ?? json;
-    
+
     return TokenDto(
       token: data['token']?.toString() ?? '',
       refreshToken: data['refresh_token']?.toString() ?? '',

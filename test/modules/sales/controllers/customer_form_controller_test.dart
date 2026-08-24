@@ -27,16 +27,14 @@ class FakeRegionRepository implements RegionRepository {
   Future<Result<List<District>>> getDistricts(
     int provinceId,
     int regencyId,
-  ) async =>
-      Ok(districts);
+  ) async => Ok(districts);
 
   @override
   Future<Result<List<Village>>> getVillages(
     int provinceId,
     int regencyId,
     int districtId,
-  ) async =>
-      Ok(villages);
+  ) async => Ok(villages);
 }
 
 class FakeCustomerRepository implements CustomerRepository {
@@ -95,22 +93,26 @@ class FakeCustomerRepository implements CustomerRepository {
       riskNotes: input.riskNotes,
       notes: input.notes,
       locations: input.locations
-          .map((l) => CustomerLocation(
-                label: l.label,
-                addressLine: l.address,
-                isPrimary: l.isPrimary,
-                areaSize: l.areaSize,
-              ))
+          .map(
+            (l) => CustomerLocation(
+              label: l.label,
+              addressLine: l.address,
+              isPrimary: l.isPrimary,
+              areaSize: l.areaSize,
+            ),
+          )
           .toList(),
       contacts: input.contacts
-          .map((c) => CustomerContact(
-                name: c.name,
-                position: c.position,
-                email: c.email,
-                phone: c.phone,
-                role: c.role,
-                isPrimary: c.isPrimary,
-              ))
+          .map(
+            (c) => CustomerContact(
+              name: c.name,
+              position: c.position,
+              email: c.email,
+              phone: c.phone,
+              role: c.role,
+              isPrimary: c.isPrimary,
+            ),
+          )
           .toList(),
     );
     customers.add(created);
@@ -144,22 +146,26 @@ class FakeCustomerRepository implements CustomerRepository {
       riskNotes: input.riskNotes,
       notes: input.notes,
       locations: input.locations
-          .map((l) => CustomerLocation(
-                label: l.label,
-                addressLine: l.address,
-                isPrimary: l.isPrimary,
-                areaSize: l.areaSize,
-              ))
+          .map(
+            (l) => CustomerLocation(
+              label: l.label,
+              addressLine: l.address,
+              isPrimary: l.isPrimary,
+              areaSize: l.areaSize,
+            ),
+          )
           .toList(),
       contacts: input.contacts
-          .map((c) => CustomerContact(
-                name: c.name,
-                position: c.position,
-                email: c.email,
-                phone: c.phone,
-                role: c.role,
-                isPrimary: c.isPrimary,
-              ))
+          .map(
+            (c) => CustomerContact(
+              name: c.name,
+              position: c.position,
+              email: c.email,
+              phone: c.phone,
+              role: c.role,
+              isPrimary: c.isPrimary,
+            ),
+          )
           .toList(),
     );
     if (existingIndex >= 0) {
@@ -315,7 +321,10 @@ void main() {
         ),
       );
       expect(controller.locations.value[1].label, 'Gudang Logistik');
-      expect(controller.primaryLocationSummary.value, 'Gudang Logistik (450 m²)');
+      expect(
+        controller.primaryLocationSummary.value,
+        'Gudang Logistik (450 m²)',
+      );
 
       // Removing location at index 1 (which was primary) makes index 0 primary
       controller.removeLocation(1);
@@ -356,38 +365,41 @@ void main() {
       expect(controller.contacts.value.length, 1);
     });
 
-    test('submit creates customer and updates submissionState on success', () async {
-      controller.name.value = 'Restoran Mewah Jakarta';
-      controller.code.value = 'CUST-003';
-      controller.segmentId.value = '660e8400-e29b-41d4-a716-446655440012';
-      controller.segment.value = 'Food & Beverage';
-      controller.phone.value = '+62-21-555-9999';
-      controller.updateLocation(
-        0,
-        controller.locations.value.first.copyWith(
-          label: 'Main Location',
-          address: 'Jl. Menteng Raya No. 42',
-        ),
-      );
-      controller.updateContact(
-        0,
-        controller.contacts.value.first.copyWith(
-          name: 'Eko Prasetyo',
-          phone: '+62-21-555-9999',
-          role: 'pic',
-        ),
-      );
+    test(
+      'submit creates customer and updates submissionState on success',
+      () async {
+        controller.name.value = 'Restoran Mewah Jakarta';
+        controller.code.value = 'CUST-003';
+        controller.segmentId.value = '660e8400-e29b-41d4-a716-446655440012';
+        controller.segment.value = 'Food & Beverage';
+        controller.phone.value = '+62-21-555-9999';
+        controller.updateLocation(
+          0,
+          controller.locations.value.first.copyWith(
+            label: 'Main Location',
+            address: 'Jl. Menteng Raya No. 42',
+          ),
+        );
+        controller.updateContact(
+          0,
+          controller.contacts.value.first.copyWith(
+            name: 'Eko Prasetyo',
+            phone: '+62-21-555-9999',
+            role: 'pic',
+          ),
+        );
 
-      final created = await controller.submit();
-      expect(created, isNotNull);
-      expect(created?.name, 'Restoran Mewah Jakarta');
-      expect(created?.code, 'CUST-003');
-      expect(controller.submissionState.value, isA<UiSuccess<Customer>>());
-      expect(
-        controller.submissionState.value.dataOrNull?.name,
-        'Restoran Mewah Jakarta',
-      );
-    });
+        final created = await controller.submit();
+        expect(created, isNotNull);
+        expect(created?.name, 'Restoran Mewah Jakarta');
+        expect(created?.code, 'CUST-003');
+        expect(controller.submissionState.value, isA<UiSuccess<Customer>>());
+        expect(
+          controller.submissionState.value.dataOrNull?.name,
+          'Restoran Mewah Jakarta',
+        );
+      },
+    );
 
     test('submit updates submissionState with UiFailure on failure', () async {
       repository.shouldFailCreate = true;
@@ -405,9 +417,11 @@ void main() {
     });
 
     test('loadSegments transitions to UiSuccess', () async {
-      final ctrl = CustomerFormController(FakeCustomerRepository(
-        initialSegments: [const Segment(id: 's1', name: 'Villa')],
-      ));
+      final ctrl = CustomerFormController(
+        FakeCustomerRepository(
+          initialSegments: [const Segment(id: 's1', name: 'Villa')],
+        ),
+      );
       await ctrl.loadSegments();
       expect(ctrl.segmentsState.value, isA<UiSuccess<List<Segment>>>());
       final data = (ctrl.segmentsState.value as UiSuccess<List<Segment>>).data;
@@ -417,182 +431,184 @@ void main() {
     });
 
     test('loadSegments sets UiFailure on error', () async {
-      final ctrl = CustomerFormController(FakeCustomerRepository(
-        failSegments: true,
-      ));
+      final ctrl = CustomerFormController(
+        FakeCustomerRepository(failSegments: true),
+      );
       await ctrl.loadSegments();
       expect(ctrl.segmentsState.value, isA<UiFailure<List<Segment>>>());
       ctrl.dispose();
     });
 
-    test('loadInitialData populates all signals, locations, and contacts', () async {
-      const existingCustomer = Customer(
-        id: 'cust-123',
-        code: 'CRM-1001',
-        name: 'Grand Hotel Bali',
-        initials: 'GH',
-        segmentId: 'seg-hotel',
-        segment: 'Hospitality',
-        status: 'active',
-        npwp: '01.234.567.8-999.000',
-        phone: '+62 811 2233 4455',
-        phoneAlt: '+62 811 2233 4456',
-        email: 'info@grandhotelbali.com',
-        riskNotes: 'VIP client, high volume',
-        notes: 'Annual contract renewal every January',
-        locations: [
-          CustomerLocation(
-            label: 'Main Resort Wing',
-            addressLine: 'Jl. Pantai Kuta No. 99',
-            province: 'Bali',
-            regency: 'Badung',
-            district: 'Kuta',
-            village: 'Kuta',
-            areaSize: 12000.0,
-            latitude: -8.723,
-            longitude: 115.169,
-            isPrimary: true,
-          ),
-          CustomerLocation(
-            label: 'Beach Club',
-            addressLine: 'Jl. Pantai Kuta No. 100',
-            province: 'Bali',
-            regency: 'Badung',
-            district: 'Kuta',
-            village: 'Kuta',
-            areaSize: 3500.0,
-            isPrimary: false,
-          ),
-        ],
-        contacts: [
-          CustomerContact(
-            name: 'Made Wijaya',
-            position: 'General Manager',
-            email: 'made@grandhotelbali.com',
-            phone: '+62 811 2233 4455',
-            role: 'pic',
-            isPrimary: true,
-          ),
-          CustomerContact(
-            name: 'Ketut Suardana',
-            position: 'Chief Engineer',
-            email: 'ketut@grandhotelbali.com',
-            phone: '+62 811 2233 4457',
-            role: 'pic_backup',
-            isPrimary: false,
-          ),
-        ],
-      );
-
-      repository.customers.add(existingCustomer);
-
-      expect(controller.customerId.value, isNull);
-      expect(controller.isLoadingData.value, false);
-
-      final loadFuture = controller.loadInitialData('cust-123');
-      expect(controller.isLoadingData.value, true);
-      expect(controller.customerId.value, 'cust-123');
-
-      await loadFuture;
-      expect(controller.isLoadingData.value, false);
-
-      expect(controller.name.value, 'Grand Hotel Bali');
-      expect(controller.code.value, 'CRM-1001');
-      expect(controller.status.value, 'active');
-      expect(controller.segmentId.value, 'seg-hotel');
-      expect(controller.segment.value, 'Hospitality');
-      expect(controller.npwp.value, '01.234.567.8-999.000');
-      expect(controller.phone.value, '+62 811 2233 4455');
-      expect(controller.phoneAlt.value, '+62 811 2233 4456');
-      expect(controller.email.value, 'info@grandhotelbali.com');
-      expect(controller.riskNotes.value, 'VIP client, high volume');
-      expect(controller.notes.value, 'Annual contract renewal every January');
-
-      // Verify locations mapped correctly
-      expect(controller.locations.value.length, 2);
-      final loc1 = controller.locations.value[0];
-      expect(loc1.label, 'Main Resort Wing');
-      expect(loc1.address, 'Jl. Pantai Kuta No. 99');
-      expect(loc1.province, 'Bali');
-      expect(loc1.regency, 'Badung');
-      expect(loc1.district, 'Kuta');
-      expect(loc1.village, 'Kuta');
-      expect(loc1.areaSize, 12000.0);
-      expect(loc1.latitude, -8.723);
-      expect(loc1.longitude, 115.169);
-      expect(loc1.isPrimary, true);
-
-      final loc2 = controller.locations.value[1];
-      expect(loc2.label, 'Beach Club');
-      expect(loc2.address, 'Jl. Pantai Kuta No. 100');
-      expect(loc2.isPrimary, false);
-
-      // Verify contacts mapped correctly
-      expect(controller.contacts.value.length, 2);
-      final c1 = controller.contacts.value[0];
-      expect(c1.name, 'Made Wijaya');
-      expect(c1.position, 'General Manager');
-      expect(c1.email, 'made@grandhotelbali.com');
-      expect(c1.phone, '+62 811 2233 4455');
-      expect(c1.role, 'pic');
-      expect(c1.isPrimary, true);
-
-      final c2 = controller.contacts.value[1];
-      expect(c2.name, 'Ketut Suardana');
-      expect(c2.position, 'Chief Engineer');
-      expect(c2.email, 'ketut@grandhotelbali.com');
-      expect(c2.phone, '+62 811 2233 4457');
-      expect(c2.role, 'pic_backup');
-      expect(c2.isPrimary, false);
-    });
-
-    test('loadInitialData resolves region IDs using RegionRepository', () async {
-      final regionRepo = FakeRegionRepository()
-        ..provinces = [const Province(id: 10, name: 'Bali')]
-        ..regencies = [const Regency(id: 101, name: 'Badung')]
-        ..districts = [
-          const District(id: 1011, name: 'Kuta'),
-        ]
-        ..villages = [
-          const Village(id: 10111, name: 'Seminyak'),
-        ];
-
-      final ctrl = CustomerFormController(repository, regionRepo);
-
-      repository.customers.add(
-        const Customer(
-          id: 'cust-with-regions',
-          code: 'CRM-1002',
-          name: 'Villa Seminyak',
-          initials: 'VS',
-          segment: 'Villa',
-          status: 'inactive',
+    test(
+      'loadInitialData populates all signals, locations, and contacts',
+      () async {
+        const existingCustomer = Customer(
+          id: 'cust-123',
+          code: 'CRM-1001',
+          name: 'Grand Hotel Bali',
+          initials: 'GH',
+          segmentId: 'seg-hotel',
+          segment: 'Hospitality',
+          status: 'active',
+          npwp: '01.234.567.8-999.000',
+          phone: '+62 811 2233 4455',
+          phoneAlt: '+62 811 2233 4456',
+          email: 'info@grandhotelbali.com',
+          riskNotes: 'VIP client, high volume',
+          notes: 'Annual contract renewal every January',
           locations: [
             CustomerLocation(
-              label: 'Villa 1',
-              addressLine: 'Jl. Kayu Aya',
+              label: 'Main Resort Wing',
+              addressLine: 'Jl. Pantai Kuta No. 99',
               province: 'Bali',
               regency: 'Badung',
               district: 'Kuta',
-              village: 'Seminyak',
+              village: 'Kuta',
+              areaSize: 12000.0,
+              latitude: -8.723,
+              longitude: 115.169,
               isPrimary: true,
             ),
+            CustomerLocation(
+              label: 'Beach Club',
+              addressLine: 'Jl. Pantai Kuta No. 100',
+              province: 'Bali',
+              regency: 'Badung',
+              district: 'Kuta',
+              village: 'Kuta',
+              areaSize: 3500.0,
+              isPrimary: false,
+            ),
           ],
-        ),
-      );
+          contacts: [
+            CustomerContact(
+              name: 'Made Wijaya',
+              position: 'General Manager',
+              email: 'made@grandhotelbali.com',
+              phone: '+62 811 2233 4455',
+              role: 'pic',
+              isPrimary: true,
+            ),
+            CustomerContact(
+              name: 'Ketut Suardana',
+              position: 'Chief Engineer',
+              email: 'ketut@grandhotelbali.com',
+              phone: '+62 811 2233 4457',
+              role: 'pic_backup',
+              isPrimary: false,
+            ),
+          ],
+        );
 
-      await ctrl.loadInitialData('cust-with-regions');
+        repository.customers.add(existingCustomer);
 
-      expect(ctrl.status.value, 'inactive');
-      expect(ctrl.locations.value.length, 1);
-      final loc = ctrl.locations.value.first;
-      expect(loc.provinceId, 10);
-      expect(loc.regencyId, 101);
-      expect(loc.districtId, 1011);
-      expect(loc.villageId, 10111);
+        expect(controller.customerId.value, isNull);
+        expect(controller.isLoadingData.value, false);
 
-      ctrl.dispose();
-    });
+        final loadFuture = controller.loadInitialData('cust-123');
+        expect(controller.isLoadingData.value, true);
+        expect(controller.customerId.value, 'cust-123');
+
+        await loadFuture;
+        expect(controller.isLoadingData.value, false);
+
+        expect(controller.name.value, 'Grand Hotel Bali');
+        expect(controller.code.value, 'CRM-1001');
+        expect(controller.status.value, 'active');
+        expect(controller.segmentId.value, 'seg-hotel');
+        expect(controller.segment.value, 'Hospitality');
+        expect(controller.npwp.value, '01.234.567.8-999.000');
+        expect(controller.phone.value, '+62 811 2233 4455');
+        expect(controller.phoneAlt.value, '+62 811 2233 4456');
+        expect(controller.email.value, 'info@grandhotelbali.com');
+        expect(controller.riskNotes.value, 'VIP client, high volume');
+        expect(controller.notes.value, 'Annual contract renewal every January');
+
+        // Verify locations mapped correctly
+        expect(controller.locations.value.length, 2);
+        final loc1 = controller.locations.value[0];
+        expect(loc1.label, 'Main Resort Wing');
+        expect(loc1.address, 'Jl. Pantai Kuta No. 99');
+        expect(loc1.province, 'Bali');
+        expect(loc1.regency, 'Badung');
+        expect(loc1.district, 'Kuta');
+        expect(loc1.village, 'Kuta');
+        expect(loc1.areaSize, 12000.0);
+        expect(loc1.latitude, -8.723);
+        expect(loc1.longitude, 115.169);
+        expect(loc1.isPrimary, true);
+
+        final loc2 = controller.locations.value[1];
+        expect(loc2.label, 'Beach Club');
+        expect(loc2.address, 'Jl. Pantai Kuta No. 100');
+        expect(loc2.isPrimary, false);
+
+        // Verify contacts mapped correctly
+        expect(controller.contacts.value.length, 2);
+        final c1 = controller.contacts.value[0];
+        expect(c1.name, 'Made Wijaya');
+        expect(c1.position, 'General Manager');
+        expect(c1.email, 'made@grandhotelbali.com');
+        expect(c1.phone, '+62 811 2233 4455');
+        expect(c1.role, 'pic');
+        expect(c1.isPrimary, true);
+
+        final c2 = controller.contacts.value[1];
+        expect(c2.name, 'Ketut Suardana');
+        expect(c2.position, 'Chief Engineer');
+        expect(c2.email, 'ketut@grandhotelbali.com');
+        expect(c2.phone, '+62 811 2233 4457');
+        expect(c2.role, 'pic_backup');
+        expect(c2.isPrimary, false);
+      },
+    );
+
+    test(
+      'loadInitialData resolves region IDs using RegionRepository',
+      () async {
+        final regionRepo = FakeRegionRepository()
+          ..provinces = [const Province(id: 10, name: 'Bali')]
+          ..regencies = [const Regency(id: 101, name: 'Badung')]
+          ..districts = [const District(id: 1011, name: 'Kuta')]
+          ..villages = [const Village(id: 10111, name: 'Seminyak')];
+
+        final ctrl = CustomerFormController(repository, regionRepo);
+
+        repository.customers.add(
+          const Customer(
+            id: 'cust-with-regions',
+            code: 'CRM-1002',
+            name: 'Villa Seminyak',
+            initials: 'VS',
+            segment: 'Villa',
+            status: 'inactive',
+            locations: [
+              CustomerLocation(
+                label: 'Villa 1',
+                addressLine: 'Jl. Kayu Aya',
+                province: 'Bali',
+                regency: 'Badung',
+                district: 'Kuta',
+                village: 'Seminyak',
+                isPrimary: true,
+              ),
+            ],
+          ),
+        );
+
+        await ctrl.loadInitialData('cust-with-regions');
+
+        expect(ctrl.status.value, 'inactive');
+        expect(ctrl.locations.value.length, 1);
+        final loc = ctrl.locations.value.first;
+        expect(loc.provinceId, 10);
+        expect(loc.regencyId, 101);
+        expect(loc.districtId, 1011);
+        expect(loc.villageId, 10111);
+
+        ctrl.dispose();
+      },
+    );
 
     test('loadInitialData handles not found gracefully', () async {
       await controller.loadInitialData('non-existent');

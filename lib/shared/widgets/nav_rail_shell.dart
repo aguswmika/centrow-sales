@@ -38,7 +38,8 @@ class _NavRailShellState extends State<NavRailShell> {
   }
 
   Future<void> _fetchMeIfNeeded() async {
-    if (AuthTokenHolder.instance.hasToken && AuthTokenHolder.instance.currentUser == null) {
+    if (AuthTokenHolder.instance.hasToken &&
+        AuthTokenHolder.instance.currentUser == null) {
       if (getIt.isRegistered<AuthRepository>()) {
         final result = await getIt<AuthRepository>().getMe();
         if (result is Ok && mounted) {
@@ -72,9 +73,6 @@ class _NavRailShellState extends State<NavRailShell> {
         break;
       case 2:
         context.go('/contracts');
-        break;
-      case 3:
-        context.go('/pricings');
         break;
     }
   }
@@ -169,7 +167,8 @@ class _NavRailShellState extends State<NavRailShell> {
 
   Widget _buildNavRail(BuildContext context) {
     return NavigationRail(
-      selectedIndex: widget.navigationShell?.currentIndex ?? widget.selectedIndex,
+      selectedIndex:
+          widget.navigationShell?.currentIndex ?? widget.selectedIndex,
       onDestinationSelected: (idx) => _handleNavigation(context, idx),
       backgroundColor: AppColors.surface,
       minWidth: 72.0,
@@ -235,11 +234,17 @@ class _NavRailShellState extends State<NavRailShell> {
               final user = AuthTokenHolder.instance.currentUser;
               final name = (user?.name.isNotEmpty == true)
                   ? user!.name
-                  : (user?.email.isNotEmpty == true ? user!.email.split('@').first : 'Pengguna');
-              final email = (user?.email.isNotEmpty == true) ? user!.email : '-';
+                  : (user?.email.isNotEmpty == true
+                        ? user!.email.split('@').first
+                        : 'Pengguna');
+              final email = (user?.email.isNotEmpty == true)
+                  ? user!.email
+                  : '-';
               final role = (user?.role.isNotEmpty == true)
                   ? user!.role
-                  : (user?.roles.isNotEmpty == true ? user!.roles.first : 'Sales');
+                  : (user?.roles.isNotEmpty == true
+                        ? user!.roles.first
+                        : 'Sales');
 
               return [
                 PopupMenuItem<String>(
@@ -318,9 +323,13 @@ class _NavRailShellState extends State<NavRailShell> {
                 border: Border.all(color: AppColors.brand, width: 1.5),
               ),
               child: Center(
-                child: (widget.userInitials ?? AuthTokenHolder.instance.userInitials).isNotEmpty
+                child:
+                    (widget.userInitials ??
+                            AuthTokenHolder.instance.userInitials)
+                        .isNotEmpty
                     ? Text(
-                        widget.userInitials ?? AuthTokenHolder.instance.userInitials,
+                        widget.userInitials ??
+                            AuthTokenHolder.instance.userInitials,
                         style: GoogleFonts.plusJakartaSans(
                           fontSize: 13.0,
                           fontWeight: FontWeight.w700,
@@ -353,11 +362,6 @@ class _NavRailShellState extends State<NavRailShell> {
           selectedIcon: Icon(Icons.folder_rounded),
           label: Text('Kontrak'),
         ),
-        NavigationRailDestination(
-          icon: Icon(Icons.calculate_outlined),
-          selectedIcon: Icon(Icons.calculate_rounded),
-          label: Text('Harga'),
-        ),
       ],
     );
   }
@@ -371,7 +375,8 @@ class _NavRailShellState extends State<NavRailShell> {
       child: SafeArea(
         top: false,
         child: BottomNavigationBar(
-          currentIndex: widget.navigationShell?.currentIndex ?? widget.selectedIndex,
+          currentIndex:
+              widget.navigationShell?.currentIndex ?? widget.selectedIndex,
           onTap: (idx) => _handleNavigation(context, idx),
           type: BottomNavigationBarType.fixed,
           backgroundColor: AppColors.surface,
@@ -401,11 +406,6 @@ class _NavRailShellState extends State<NavRailShell> {
               icon: Icon(Icons.folder_outlined),
               activeIcon: Icon(Icons.folder_rounded),
               label: 'Kontrak',
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.calculate_outlined),
-              activeIcon: Icon(Icons.calculate_rounded),
-              label: 'Harga',
             ),
           ],
         ),

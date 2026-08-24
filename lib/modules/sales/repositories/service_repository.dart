@@ -21,8 +21,18 @@ class ServiceRepositoryImpl implements ServiceRepository {
         queryParameters: query != null ? {'q': query} : null,
       );
 
-      final List<dynamic> items =
-          response.data?['items'] as List<dynamic>? ?? [];
+      final responseData = response.data ?? {};
+      final dataField = responseData['data'];
+
+      List<dynamic> items = [];
+      if (dataField is List) {
+        items = dataField;
+      } else if (dataField is Map && dataField['items'] is List) {
+        items = dataField['items'] as List<dynamic>;
+      } else if (responseData['items'] is List) {
+        items = responseData['items'] as List<dynamic>;
+      }
+
       final services = items
           .map((item) => Service.fromJson(item as Map<String, dynamic>))
           .toList();

@@ -196,7 +196,7 @@ class ProposalMasterList extends StatelessWidget {
           final (avatarBg, avatarFg) = _getAvatarColors(p.status);
 
           return InkWell(
-            onTap: () => onSelectProposal(p.id),
+            onTap: () => onSelectProposal(isSelected ? '' : p.id),
             child: Container(
               color: isSelected ? AppColors.brand05 : Colors.transparent,
               child: IntrinsicHeight(

@@ -11,11 +11,7 @@ class RegionPicker extends StatefulWidget {
   final CreateLocationInput item;
   final ValueChanged<CreateLocationInput> onChanged;
 
-  const RegionPicker({
-    super.key,
-    required this.item,
-    required this.onChanged,
-  });
+  const RegionPicker({super.key, required this.item, required this.onChanged});
 
   @override
   State<RegionPicker> createState() => _RegionPickerState();
@@ -279,20 +275,20 @@ class _RegionPickerState extends State<RegionPicker> {
   Widget build(BuildContext context) {
     final selectedProvinceId =
         _provinces.any((p) => p.id == widget.item.provinceId)
-            ? widget.item.provinceId
-            : null;
+        ? widget.item.provinceId
+        : null;
     final selectedRegencyId =
         _regencies.any((r) => r.id == widget.item.regencyId)
-            ? widget.item.regencyId
-            : null;
+        ? widget.item.regencyId
+        : null;
     final selectedDistrictId =
         _districts.any((d) => d.id == widget.item.districtId)
-            ? widget.item.districtId
-            : null;
+        ? widget.item.districtId
+        : null;
     final selectedVillageId =
         _villages.any((v) => v.id == widget.item.villageId)
-            ? widget.item.villageId
-            : null;
+        ? widget.item.villageId
+        : null;
 
     final isProvinceDisabled = _isLoadingProvinces || _provinces.isEmpty;
     final isRegencyDisabled =
@@ -315,26 +311,26 @@ class _RegionPickerState extends State<RegionPicker> {
     final regencyHint = _isLoadingRegencies
         ? 'Memuat kabupaten/kota...'
         : (widget.item.provinceId == null
-            ? 'Pilih provinsi terlebih dahulu'
-            : (_regencies.isEmpty
-                ? 'Tidak ada kabupaten/kota'
-                : 'Pilih Kabupaten / Kota'));
+              ? 'Pilih provinsi terlebih dahulu'
+              : (_regencies.isEmpty
+                    ? 'Tidak ada kabupaten/kota'
+                    : 'Pilih Kabupaten / Kota'));
 
     final districtHint = _isLoadingDistricts
         ? 'Memuat kecamatan...'
         : (widget.item.regencyId == null
-            ? 'Pilih kabupaten/kota terlebih dahulu'
-            : (_districts.isEmpty
-                ? 'Tidak ada kecamatan'
-                : 'Pilih Kecamatan'));
+              ? 'Pilih kabupaten/kota terlebih dahulu'
+              : (_districts.isEmpty
+                    ? 'Tidak ada kecamatan'
+                    : 'Pilih Kecamatan'));
 
     final villageHint = _isLoadingVillages
         ? 'Memuat kelurahan/desa...'
         : (widget.item.districtId == null
-            ? 'Pilih kecamatan terlebih dahulu'
-            : (_villages.isEmpty
-                ? 'Tidak ada kelurahan/desa'
-                : 'Pilih Kelurahan / Desa'));
+              ? 'Pilih kecamatan terlebih dahulu'
+              : (_villages.isEmpty
+                    ? 'Tidak ada kelurahan/desa'
+                    : 'Pilih Kelurahan / Desa'));
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,

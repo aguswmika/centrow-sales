@@ -18,9 +18,11 @@ const List<Tenant> sampleTenants = [
 
 class MockAuthRepository implements AuthRepository {
   @override
-  Future<Result<TokenDto>> refreshToken(String refreshToken) async => throw UnimplementedError();
+  Future<Result<TokenDto>> refreshToken(String refreshToken) async =>
+      throw UnimplementedError();
   @override
-  Future<Result<void>> logout(String refreshToken) async => throw UnimplementedError();
+  Future<Result<void>> logout(String refreshToken) async =>
+      throw UnimplementedError();
   List<Tenant>? tenants;
   User? user;
   Failure? failure;
@@ -86,22 +88,16 @@ void main() {
     final router = GoRouter(
       initialLocation: '/login',
       routes: [
-        GoRoute(
-          path: '/login',
-          builder: (context, state) => child,
-        ),
+        GoRoute(path: '/login', builder: (context, state) => child),
         GoRoute(
           path: '/customers',
-          builder: (context, state) => const Scaffold(
-            body: Text('Customers Screen'),
-          ),
+          builder: (context, state) =>
+              const Scaffold(body: Text('Customers Screen')),
         ),
       ],
     );
 
-    return MaterialApp.router(
-      routerConfig: router,
-    );
+    return MaterialApp.router(routerConfig: router);
   }
 
   testWidgets('LoginPage renders header, inputs, and login button', (
@@ -227,9 +223,11 @@ void main() {
 
 class _FailingTenantsAuthRepository implements AuthRepository {
   @override
-  Future<Result<TokenDto>> refreshToken(String refreshToken) async => throw UnimplementedError();
+  Future<Result<TokenDto>> refreshToken(String refreshToken) async =>
+      throw UnimplementedError();
   @override
-  Future<Result<void>> logout(String refreshToken) async => throw UnimplementedError();
+  Future<Result<void>> logout(String refreshToken) async =>
+      throw UnimplementedError();
   @override
   Future<Result<List<Tenant>>> getPublicTenants() async {
     return const Err(ServerFailure('Server error'));

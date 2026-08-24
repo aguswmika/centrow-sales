@@ -20,11 +20,7 @@ class SegmentItemDto {
   }
 
   Segment toEntity() {
-    return Segment(
-      id: id,
-      name: name,
-      createdAt: createdAt,
-    );
+    return Segment(id: id, name: name, createdAt: createdAt);
   }
 }
 
@@ -52,10 +48,7 @@ class SegmentListResponseDto {
   final List<SegmentItemDto> items;
   final SegmentPaginationDto? pagination;
 
-  const SegmentListResponseDto({
-    required this.items,
-    this.pagination,
-  });
+  const SegmentListResponseDto({required this.items, this.pagination});
 
   factory SegmentListResponseDto.fromJson(Map<String, dynamic> json) {
     final itemsList = (json['items'] as List<dynamic>?) ?? [];
@@ -63,9 +56,9 @@ class SegmentListResponseDto {
 
     return SegmentListResponseDto(
       items: itemsList
-          .map((e) => SegmentItemDto.fromJson(
-                (e as Map).cast<String, dynamic>(),
-              ))
+          .map(
+            (e) => SegmentItemDto.fromJson((e as Map).cast<String, dynamic>()),
+          )
           .toList(),
       pagination: paginationJson != null
           ? SegmentPaginationDto.fromJson(paginationJson)

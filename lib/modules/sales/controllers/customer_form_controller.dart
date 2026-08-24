@@ -57,10 +57,8 @@ class CustomerFormController {
 
   final _submissionState = signal<UiState<Customer>>(const UiInitial());
 
-  CustomerFormController(
-    this._repository, [
-    RegionRepository? regionRepository,
-  ]) : _regionRepository = regionRepository ?? _resolveRegionRepository();
+  CustomerFormController(this._repository, [RegionRepository? regionRepository])
+    : _regionRepository = regionRepository ?? _resolveRegionRepository();
 
   static RegionRepository _resolveRegionRepository() {
     if (getIt.isRegistered<RegionRepository>()) {
@@ -249,11 +247,7 @@ class CustomerFormController {
                   )
                   ?.id;
               if (dId != null && l.village.isNotEmpty) {
-                final vRes = await _regionRepository.getVillages(
-                  pId,
-                  rId,
-                  dId,
-                );
+                final vRes = await _regionRepository.getVillages(pId, rId, dId);
                 vId = vRes.valueOrNull
                     ?.firstWhereOrNull(
                       (e) => e.name.toLowerCase() == l.village.toLowerCase(),
@@ -347,12 +341,23 @@ class CustomerFormController {
     };
   }
 
-  void applyMapLocation(int index, double lat, double lng, String address, String? provinceName, String? regencyName, String? districtName, String? villageName) {
+  void applyMapLocation(
+    int index,
+    double lat,
+    double lng,
+    String address,
+    String? provinceName,
+    String? regencyName,
+    String? districtName,
+    String? villageName,
+  ) {
     final list = locations.value.toList();
     final item = list[index];
 
     String newLabel = item.label;
-    if (newLabel.startsWith('Titik Servis #') || newLabel == 'Main Location' || newLabel.isEmpty) {
+    if (newLabel.startsWith('Titik Servis #') ||
+        newLabel == 'Main Location' ||
+        newLabel.isEmpty) {
       final parts = address.split(',');
       if (parts.isNotEmpty) {
         newLabel = parts.first.trim();
@@ -365,12 +370,11 @@ class CustomerFormController {
       longitude: lng,
       address: address,
     );
-    
+
     locations.value = list;
   }
 
   void dispose() {
-
     _segmentsState.dispose();
     _currentStep.dispose();
     customerId.dispose();
@@ -412,14 +416,12 @@ class _DefaultRegionRepository implements RegionRepository {
   Future<Result<List<District>>> getDistricts(
     int provinceId,
     int regencyId,
-  ) async =>
-      const Ok([]);
+  ) async => const Ok([]);
 
   @override
   Future<Result<List<Village>>> getVillages(
     int provinceId,
     int regencyId,
     int districtId,
-  ) async =>
-      const Ok([]);
+  ) async => const Ok([]);
 }

@@ -90,28 +90,29 @@ void main() {
     expect(createClicked, isTrue);
   });
 
-  testWidgets('ProposalMasterList renders empty placeholder when proposals list is empty', (
-    tester,
-  ) async {
-    await tester.pumpWidget(
-      MaterialApp(
-        home: Scaffold(
-          body: SizedBox(
-            width: 360,
-            child: ProposalMasterList(
-              proposals: const [],
-              selectedProposalId: '',
-              selectedStatus: 'all',
-              searchQuery: '',
-              onSelectProposal: (_) {},
-              onSelectStatus: (_) {},
-              onSearchChanged: (_) {},
+  testWidgets(
+    'ProposalMasterList renders empty placeholder when proposals list is empty',
+    (tester) async {
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: SizedBox(
+              width: 360,
+              child: ProposalMasterList(
+                proposals: const [],
+                selectedProposalId: '',
+                selectedStatus: 'all',
+                searchQuery: '',
+                onSelectProposal: (_) {},
+                onSelectStatus: (_) {},
+                onSearchChanged: (_) {},
+              ),
             ),
           ),
         ),
-      ),
-    );
+      );
 
-    expect(find.text('Tidak ada proposal yang ditemukan'), findsOneWidget);
-  });
+      expect(find.text('Tidak ada proposal yang ditemukan'), findsOneWidget);
+    },
+  );
 }
