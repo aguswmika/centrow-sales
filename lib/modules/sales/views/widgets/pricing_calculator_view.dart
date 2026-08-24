@@ -16,11 +16,12 @@ class PricingCalculatorView extends StatefulWidget {
 
 class _PricingCalculatorViewState extends State<PricingCalculatorView> {
   int _activeTab = 0;
+  final List<int> _tabCounts = [4, 2, 2];
 
   final List<String> _tabTitles = [
-    '1. Persiapan Bahan & Alat',
-    '2. Tenaga Kerja & Teknisi',
-    '3. Transport & Add-on',
+    'Persiapan Bahan & Alat',
+    'Tenaga Kerja & Teknisi',
+    'Transport & Add-on',
   ];
 
   @override
@@ -30,16 +31,19 @@ class _PricingCalculatorViewState extends State<PricingCalculatorView> {
         final isNarrow = constraints.maxWidth < 800;
 
         if (isNarrow) {
-          return SingleChildScrollView(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                _buildTabs(),
-                _buildTabContent(),
-                const Divider(height: 1, color: AppColors.border),
-                _buildSidebar(),
-              ],
-            ),
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              _buildTabs(),
+              Expanded(
+                child: Container(
+                  color: AppColors.surface,
+                  child: SingleChildScrollView(child: _buildTabContent()),
+                ),
+              ),
+              const Divider(height: 1, color: AppColors.border),
+              _buildSidebar(),
+            ],
           );
         }
 
@@ -51,9 +55,11 @@ class _PricingCalculatorViewState extends State<PricingCalculatorView> {
                 children: [
                   _buildTabs(),
                   Expanded(
-                    child: Container(
-                      color: AppColors.surface,
-                      child: SingleChildScrollView(child: _buildTabContent()),
+                    child: SingleChildScrollView(
+                      child: Container(
+                        color: AppColors.surface,
+                        child: _buildTabContent(),
+                      ),
                     ),
                   ),
                 ],
@@ -67,10 +73,8 @@ class _PricingCalculatorViewState extends State<PricingCalculatorView> {
                   left: BorderSide(color: AppColors.border, width: 1.0),
                 ),
               ),
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.all(16.0),
-                child: _buildSidebar(),
-              ),
+              padding: const EdgeInsets.all(16.0),
+              child: SingleChildScrollView(child: _buildSidebar()),
             ),
           ],
         );
@@ -80,11 +84,7 @@ class _PricingCalculatorViewState extends State<PricingCalculatorView> {
 
   Widget _buildTabs() {
     return Container(
-      decoration: const BoxDecoration(
-        color: AppColors.subtle,
-        border: Border(bottom: BorderSide(color: AppColors.border, width: 1.0)),
-      ),
-      padding: const EdgeInsets.symmetric(horizontal: 8.0),
+      color: AppColors.subtle,
       child: SingleChildScrollView(
         scrollDirection: Axis.horizontal,
         child: Row(
@@ -94,13 +94,13 @@ class _PricingCalculatorViewState extends State<PricingCalculatorView> {
               onTap: () => setState(() => _activeTab = index),
               child: Container(
                 height: 44.0,
-                padding: const EdgeInsets.symmetric(horizontal: 14.0),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 14.0,
+                  vertical: 0.0,
+                ),
                 alignment: Alignment.center,
                 decoration: BoxDecoration(
                   color: isSelected ? AppColors.surface : Colors.transparent,
-                  borderRadius: const BorderRadius.vertical(
-                    top: Radius.circular(AppRadius.rSm),
-                  ),
                   border: Border(
                     bottom: BorderSide(
                       color: isSelected ? AppColors.brand : Colors.transparent,
@@ -118,6 +118,7 @@ class _PricingCalculatorViewState extends State<PricingCalculatorView> {
                       : null,
                 ),
                 child: Row(
+                  mainAxisSize: MainAxisSize.min,
                   children: [
                     Text(
                       _tabTitles[index],
@@ -129,10 +130,10 @@ class _PricingCalculatorViewState extends State<PricingCalculatorView> {
                         color: isSelected ? AppColors.brand : AppColors.sec,
                       ),
                     ),
-                    const SizedBox(width: 8.0),
+                    const SizedBox(width: 6.0),
                     Container(
                       padding: const EdgeInsets.symmetric(
-                        horizontal: 7.0,
+                        horizontal: 5.0,
                         vertical: 2.0,
                       ),
                       decoration: BoxDecoration(
@@ -142,7 +143,7 @@ class _PricingCalculatorViewState extends State<PricingCalculatorView> {
                         borderRadius: AppRadius.borderPill,
                       ),
                       child: Text(
-                        '2', // Mock count
+                        _tabCounts[_activeTab].toString(),
                         style: TextStyle(
                           fontSize: 11.0,
                           fontWeight: FontWeight.w700,
@@ -193,34 +194,40 @@ class _PricingCalculatorViewState extends State<PricingCalculatorView> {
           badge: 'Insektisida Rayap Residual',
           col1: _buildInput('2'),
           col2: _buildInput('1'),
-          col3: const Center(
-            child: Text(
-              'kg',
-              style: TextStyle(
-                fontWeight: FontWeight.w600,
-                color: AppColors.sec,
-              ),
-            ),
-          ),
+          col3: const Text('kg', style: TextStyle(fontSize: 13.0)),
           col4: _buildInput('380000'),
-          col5: _buildTextBold('Rp 760.000'),
+          col5: _buildTotalAmount('Rp 760.000'),
+          hasUnitColumn: true,
         ),
         _buildTableRow(
           title: 'Termidor SC (1L)',
           badge: 'Termitisida Fipronil Non-Repellent',
           col1: _buildInput('3'),
           col2: _buildInput('1'),
-          col3: const Center(
-            child: Text(
-              'botol',
-              style: TextStyle(
-                fontWeight: FontWeight.w600,
-                color: AppColors.sec,
-              ),
-            ),
-          ),
+          col3: const Text('botol', style: TextStyle(fontSize: 13.0)),
           col4: _buildInput('650000'),
-          col5: _buildTextBold('Rp 1.950.000'),
+          col5: _buildTotalAmount('Rp 1.950.000'),
+          hasUnitColumn: true,
+        ),
+        _buildTableRow(
+          title: 'Solfac 10WP (1kg)',
+          badge: 'Cyfluthrin Wettable Powder',
+          col1: _buildInput('1'),
+          col2: _buildInput('2'),
+          col3: const Text('kg', style: TextStyle(fontSize: 13.0)),
+          col4: _buildInput('290000'),
+          col5: _buildTotalAmount('Rp 580.000'),
+          hasUnitColumn: true,
+        ),
+        _buildTableRow(
+          title: 'Sprayer Solo 425 & Nozzle',
+          badge: 'Peralatan Teknis Penyemprotan',
+          col1: _buildInput('1'),
+          col2: _buildInput('1'),
+          col3: const Text('unit', style: TextStyle(fontSize: 13.0)),
+          col4: _buildInput('420000'),
+          col5: _buildTotalAmount('Rp 420.000'),
+          hasUnitColumn: true,
         ),
         _buildAddRowBar('Tambah Baris Bahan / Alat'),
       ],
@@ -247,7 +254,16 @@ class _PricingCalculatorViewState extends State<PricingCalculatorView> {
           col2: _buildInput('4.0'),
           col3: _buildInput('3.0'),
           col4: _buildInput('45000'),
-          col5: _buildTextBold('Rp 990.000'),
+          col5: _buildTotalAmount('Rp 990.000'),
+        ),
+        _buildTableRow(
+          title: 'Teknisi Junior (Asisten Lapangan)',
+          badge: 'Asisten Aplikasi & Support',
+          col1: _buildInput('6'),
+          col2: _buildInput('4.0'),
+          col3: _buildInput('3.0'),
+          col4: _buildInput('30000'),
+          col5: _buildTotalAmount('Rp 660.000'),
         ),
         _buildAddRowBar('Tambah Baris Teknisi'),
       ],
@@ -273,10 +289,11 @@ class _PricingCalculatorViewState extends State<PricingCalculatorView> {
           col1: _buildInput('1'),
           col2: _buildInput('6'),
           col3: _buildInput('20000'),
-          col4: const Center(
-            child: Text('-', style: TextStyle(color: AppColors.muted)),
+          col4: const Text(
+            'rpm',
+            style: TextStyle(fontSize: 12.0, color: AppColors.muted),
           ),
-          col5: _buildTextBold('Rp 120.000'),
+          col5: _buildTotalAmount('Rp 120.000'),
         ),
         _buildTableRow(
           title: 'Pest Safety Training Kit',
@@ -285,7 +302,7 @@ class _PricingCalculatorViewState extends State<PricingCalculatorView> {
           col2: _buildInput('1'),
           col3: _buildInput('200000'),
           col4: _buildInput('500000'),
-          col5: _buildTextBold('Rp 500.000'),
+          col5: _buildTotalAmount('Rp 500.000'),
         ),
         Container(
           padding: const EdgeInsets.all(16.0),
@@ -314,10 +331,10 @@ class _PricingCalculatorViewState extends State<PricingCalculatorView> {
           Expanded(flex: 3, child: _th(columns[0])),
           Expanded(child: _th(columns[1], center: true)),
           Expanded(child: _th(columns[2], center: true)),
-          Expanded(child: _th(columns[3], center: true)),
+          Expanded(flex: 1, child: _th(columns[3], center: true)),
           Expanded(flex: 2, child: _th(columns[4], right: true)),
           Expanded(flex: 2, child: _th(columns[5], right: true)),
-          const SizedBox(width: 40.0), // Delete btn space
+          const SizedBox(width: 30.0),
         ],
       ),
     );
@@ -348,6 +365,7 @@ class _PricingCalculatorViewState extends State<PricingCalculatorView> {
     required Widget col3,
     required Widget col4,
     required Widget col5,
+    bool hasUnitColumn = false,
   }) {
     return Container(
       decoration: const BoxDecoration(
@@ -359,60 +377,96 @@ class _PricingCalculatorViewState extends State<PricingCalculatorView> {
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           Expanded(
-            flex: 3,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  title,
-                  style: const TextStyle(
-                    fontSize: 14.0,
-                    fontWeight: FontWeight.w600,
-                    color: AppColors.text,
+            flex: hasUnitColumn ? 2 : 3,
+            child: hasUnitColumn
+                ? Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        title,
+                        style: const TextStyle(
+                          fontSize: 14.0,
+                          fontWeight: FontWeight.w600,
+                          color: AppColors.text,
+                        ),
+                      ),
+                      const SizedBox(height: 4.0),
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 8.0,
+                          vertical: 3.0,
+                        ),
+                        decoration: BoxDecoration(
+                          color: AppColors.brand05,
+                          border: Border.all(color: AppColors.brand10),
+                          borderRadius: AppRadius.borderSm,
+                        ),
+                        child: Text(
+                          badge,
+                          style: const TextStyle(
+                            fontSize: 11.0,
+                            fontWeight: FontWeight.w600,
+                            color: AppColors.brand,
+                          ),
+                        ),
+                      ),
+                    ],
+                  )
+                : Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 8.0,
+                          vertical: 3.0,
+                        ),
+                        decoration: BoxDecoration(
+                          color: AppColors.brand05,
+                          border: Border.all(color: AppColors.brand10),
+                          borderRadius: AppRadius.borderSm,
+                        ),
+                        child: Text(
+                          badge,
+                          style: const TextStyle(
+                            fontSize: 11.0,
+                            fontWeight: FontWeight.w600,
+                            color: AppColors.brand,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 4.0),
+                      Text(
+                        title,
+                        style: const TextStyle(
+                          fontSize: 14.0,
+                          fontWeight: FontWeight.w600,
+                          color: AppColors.text,
+                        ),
+                      ),
+                    ],
                   ),
-                ),
-                const SizedBox(height: 4.0),
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 8.0,
-                    vertical: 3.0,
-                  ),
-                  decoration: BoxDecoration(
-                    color: AppColors.brand05,
-                    border: Border.all(color: AppColors.brand10),
-                    borderRadius: AppRadius.borderSm,
-                  ),
-                  child: Text(
-                    badge,
-                    style: const TextStyle(
-                      fontSize: 11.0,
-                      fontWeight: FontWeight.w600,
-                      color: AppColors.brand,
-                    ),
-                  ),
-                ),
-              ],
-            ),
           ),
           const SizedBox(width: 8.0),
           Expanded(child: col1),
           const SizedBox(width: 8.0),
           Expanded(child: col2),
-          const SizedBox(width: 8.0),
-          Expanded(child: col3),
-          const SizedBox(width: 8.0),
+          if (hasUnitColumn) ...[
+            const SizedBox(width: 8.0),
+            Expanded(flex: 1, child: col3),
+          ],
+          const SizedBox(width: 16.0),
           Expanded(flex: 2, child: col4),
           const SizedBox(width: 16.0),
           Expanded(flex: 2, child: col5),
           const SizedBox(width: 8.0),
           SizedBox(
-            width: 40.0,
-            height: 40.0,
+            width: 30.0,
+            height: 30.0,
             child: IconButton(
               icon: const Icon(
-                Icons.delete_outline,
+                Icons.close_rounded,
                 color: AppColors.muted,
-                size: 20.0,
+                size: 18.0,
               ),
               onPressed: () {},
             ),
@@ -438,19 +492,23 @@ class _PricingCalculatorViewState extends State<PricingCalculatorView> {
           fontWeight: FontWeight.w600,
           color: AppColors.text,
         ),
-        decoration: const InputDecoration(
-          border: InputBorder.none,
-          contentPadding: EdgeInsets.symmetric(
+        decoration: InputDecoration(
+          filled: false,
+          contentPadding: const EdgeInsets.symmetric(
             horizontal: 10.0,
             vertical: 10.0,
           ),
           isDense: true,
+          border: InputBorder.none,
+          enabledBorder: InputBorder.none,
+          focusedBorder: InputBorder.none,
+          disabledBorder: InputBorder.none,
         ),
       ),
     );
   }
 
-  Widget _buildTextBold(String text) {
+  Widget _buildTotalAmount(String text) {
     return Text(
       text,
       textAlign: TextAlign.right,
@@ -475,7 +533,7 @@ class _PricingCalculatorViewState extends State<PricingCalculatorView> {
 
   Widget _buildAddBtn(String text) {
     return InkWell(
-      onTap: () {},
+      onTap: _handleAddRow,
       child: Container(
         height: 40.0,
         padding: const EdgeInsets.symmetric(horizontal: 16.0),
@@ -501,6 +559,13 @@ class _PricingCalculatorViewState extends State<PricingCalculatorView> {
         ),
       ),
     );
+  }
+
+  void _handleAddRow() {
+    final newCount = _tabCounts[_activeTab] + 1;
+    setState(() {
+      _tabCounts[_activeTab] = newCount;
+    });
   }
 
   // ---- SIDEBAR ----
@@ -680,10 +745,12 @@ class _PricingCalculatorViewState extends State<PricingCalculatorView> {
                       fontWeight: FontWeight.w700,
                       color: AppColors.text,
                     ),
-                    decoration: const InputDecoration(
+                    decoration: InputDecoration(
                       filled: true,
                       fillColor: AppColors.subtle,
-                      contentPadding: EdgeInsets.symmetric(horizontal: 8.0),
+                      contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 8.0,
+                      ),
                       border: OutlineInputBorder(
                         borderRadius: AppRadius.borderSm,
                         borderSide: BorderSide(
@@ -745,10 +812,12 @@ class _PricingCalculatorViewState extends State<PricingCalculatorView> {
                       fontWeight: FontWeight.w600,
                       color: AppColors.text,
                     ),
-                    decoration: const InputDecoration(
+                    decoration: InputDecoration(
                       filled: true,
                       fillColor: AppColors.subtle,
-                      contentPadding: EdgeInsets.symmetric(horizontal: 8.0),
+                      contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 8.0,
+                      ),
                       border: OutlineInputBorder(
                         borderRadius: AppRadius.borderSm,
                         borderSide: BorderSide(
@@ -811,10 +880,8 @@ class _PricingCalculatorViewState extends State<PricingCalculatorView> {
                     horizontal: 8.0,
                   ),
                   decoration: BoxDecoration(
-                    color: AppColors.ok.withValues(alpha: 0.1),
-                    border: Border.all(
-                      color: AppColors.ok.withValues(alpha: 0.2),
-                    ),
+                    color: const Color(0x1A10B859),
+                    border: Border.all(color: const Color(0x3328B272)),
                     borderRadius: AppRadius.borderMd,
                   ),
                   child: Column(
@@ -824,7 +891,7 @@ class _PricingCalculatorViewState extends State<PricingCalculatorView> {
                         style: GoogleFonts.plusJakartaSans(
                           fontSize: 16.0,
                           fontWeight: FontWeight.w800,
-                          color: AppColors.ok,
+                          color: const Color(0x106B4D2E),
                         ),
                       ),
                       const SizedBox(height: 3.0),
@@ -833,7 +900,7 @@ class _PricingCalculatorViewState extends State<PricingCalculatorView> {
                         style: TextStyle(
                           fontSize: 10.5,
                           fontWeight: FontWeight.w600,
-                          color: AppColors.sec,
+                          color: const Color(0x4056787E),
                         ),
                       ),
                     ],
