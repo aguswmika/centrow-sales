@@ -20,6 +20,7 @@ import 'package:centrow_sales/modules/pc/controllers/product_mapping_controller.
 import 'package:centrow_sales/modules/pc/controllers/treatment_method_controller.dart';
 import 'package:centrow_sales/modules/pc/repositories/product_mapping_repository.dart';
 import 'package:centrow_sales/modules/pc/repositories/treatment_method_repository.dart';
+import 'package:centrow_sales/modules/core/repositories/uom_repository.dart';
 import 'package:centrow_sales/modules/sales/repositories/pricing_repository.dart';
 import 'package:centrow_sales/shared/network/auth_token_holder.dart';
 import 'package:centrow_sales/shared/network/dio_client.dart';
@@ -79,6 +80,9 @@ Future<void> setupDi({LocalStorage? storage}) async {
   getIt.registerLazySingleton<TreatmentMethodRepository>(
     () => TreatmentMethodRepositoryImpl(getIt<Dio>()),
   );
+  getIt.registerLazySingleton<UomRepository>(
+    () => UomRepositoryImpl(getIt<Dio>()),
+  );
 
   // Controllers
   getIt.registerFactory<LoginController>(
@@ -110,7 +114,10 @@ Future<void> setupDi({LocalStorage? storage}) async {
     () => ProductController(getIt<ProductRepository>()),
   );
   getIt.registerFactory<PricingCalculatorController>(
-    () => PricingCalculatorController(getIt<PricingRepository>()),
+    () => PricingCalculatorController(
+      getIt<PricingRepository>(),
+      getIt<UomRepository>(),
+    ),
   );
   getIt.registerFactory<ProductMappingController>(
     () => ProductMappingController(getIt<ProductMappingRepository>()),

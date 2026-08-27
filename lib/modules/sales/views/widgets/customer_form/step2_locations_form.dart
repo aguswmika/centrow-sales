@@ -16,7 +16,7 @@ class Step2LocationsForm extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Watch.builder(
+    return SignalBuilder(
       builder: (context) {
         final list = controller.locations.value;
 

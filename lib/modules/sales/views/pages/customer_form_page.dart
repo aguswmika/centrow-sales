@@ -102,7 +102,7 @@ class _CustomerFormPageState extends State<CustomerFormPage> {
     return Scaffold(
       backgroundColor: AppColors.bg,
       body: SafeArea(
-        child: Watch.builder(
+        child: SignalBuilder(
           builder: (context) {
             final currentStep = _controller.currentStep.value;
             final isTablet = MediaQuery.sizeOf(context).width >= 900;

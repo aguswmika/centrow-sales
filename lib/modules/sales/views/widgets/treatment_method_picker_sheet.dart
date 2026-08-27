@@ -98,7 +98,7 @@ class _TreatmentMethodPickerSheetState
 
             // Content List
             Expanded(
-              child: Watch.builder(
+              child: SignalBuilder(
                 builder: (context) {
                   final state = _controller.state.value;
                   return switch (state) {

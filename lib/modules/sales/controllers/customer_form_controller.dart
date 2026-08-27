@@ -80,7 +80,14 @@ class CustomerFormController {
   late final isStep2Valid = computed(
     () =>
         locations.value.isNotEmpty &&
-        locations.value.any((l) => l.address.trim().isNotEmpty),
+        locations.value.every(
+          (l) =>
+              l.address.trim().isNotEmpty &&
+              l.provinceId != null &&
+              l.regencyId != null &&
+              l.districtId != null &&
+              l.villageId != null,
+        ),
   );
 
   late final isStep3Valid = computed(

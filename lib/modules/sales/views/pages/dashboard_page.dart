@@ -47,7 +47,7 @@ class _DashboardPageState extends State<DashboardPage> {
     return Scaffold(
       backgroundColor: AppColors.bg,
       body: SafeArea(
-        child: Watch.builder(
+        child: SignalBuilder(
           builder: (context) {
             final state = _controller.state.value;
 

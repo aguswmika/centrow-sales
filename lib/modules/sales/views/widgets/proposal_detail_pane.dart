@@ -30,7 +30,7 @@ class ProposalDetailPane extends StatelessWidget {
 
   static const List<String> tabTitles = [
     '1. Persiapan Bahan & Alat',
-    '2. Tenaga Kerja & Teknisi',
+    '2. Tenaga Kerja',
     '3. Transport & Add-on',
   ];
 

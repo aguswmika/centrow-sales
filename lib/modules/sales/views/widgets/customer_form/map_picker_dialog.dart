@@ -178,9 +178,7 @@ class _MapPickerDialogState extends State<MapPickerDialog> {
                   flags: InteractiveFlag.all,
                 ),
                 onPositionChanged: (position, hasGesture) {
-                  if (position.center != null) {
-                    _currentCenter = position.center!;
-                  }
+                  _currentCenter = position.center;
                   if (_searchResults.isNotEmpty) {
                     setState(() => _searchResults.clear());
                   }

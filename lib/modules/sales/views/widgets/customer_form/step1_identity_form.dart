@@ -13,7 +13,7 @@ class Step1IdentityForm extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Watch.builder(
+    return SignalBuilder(
       builder: (context) {
         final segmentState = controller.segmentsState.value;
         final segmentList = segmentState.dataOrNull ?? <Segment>[];

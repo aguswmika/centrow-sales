@@ -44,7 +44,7 @@ class _ProposalPageState extends State<ProposalPage> {
     return Scaffold(
       backgroundColor: AppColors.bg,
       body: SafeArea(
-        child: Watch.builder(
+        child: SignalBuilder(
           builder: (context) {
             final state = _controller.proposalsState.value;
 

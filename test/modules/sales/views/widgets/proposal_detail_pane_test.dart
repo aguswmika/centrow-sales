@@ -117,7 +117,7 @@ void main() {
       expect(find.text('Rp 1,37jt'), findsOneWidget);
 
       // Test tab change to Teknisi
-      await tester.tap(find.text('2. Tenaga Kerja & Teknisi'));
+      await tester.tap(find.text('2. Tenaga Kerja'));
       await tester.pumpAndSettle();
       expect(find.text('Teknisi Senior (Lead Operator)'), findsOneWidget);
       expect(find.text('Rp 990.000'), findsOneWidget);

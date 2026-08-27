@@ -279,6 +279,120 @@ void main() {
         ),
       );
     });
+
+    test('addMaterialRow prevents duplicate productId', () {
+      const mapping1 = ProductMapping(
+        id: 'pm-1',
+        productId: 'prod-1',
+        productName: 'Chemical A',
+        pestId: 'pest-1',
+        pestName: 'Pest 1',
+        treatmentMethodId: 'tm-1',
+        treatmentMethodCode: 'SPRAY',
+        doseMinLimit: 1.0,
+        doseMaxLimit: 2.0,
+        doseUnitId: 'uom-1',
+        doseUnitCode: 'ML',
+      );
+      const mappingDuplicate = ProductMapping(
+        id: 'pm-2',
+        productId: 'prod-1',
+        productName: 'Chemical A (Alternate)',
+        pestId: 'pest-1',
+        pestName: 'Pest 1',
+        treatmentMethodId: 'tm-1',
+        treatmentMethodCode: 'SPRAY',
+        doseMinLimit: 1.0,
+        doseMaxLimit: 2.0,
+        doseUnitId: 'uom-1',
+        doseUnitCode: 'ML',
+      );
+
+      controller.addMaterialRow(mapping1);
+      expect(controller.materials.length, 1);
+
+      controller.addMaterialRow(mappingDuplicate);
+      expect(controller.materials.length, 1);
+    });
+
+    test('addRow prevents duplicate materials for kind 1 and 2', () {
+      const chemProduct = Product(
+        id: 'p1',
+        code: 'CHM-1',
+        name: 'Chemical 1',
+        uomId: 'u1',
+        uomCode: 'BTL',
+        cogs: 50000.0,
+        isActive: true,
+        kind: 1,
+      );
+      const toolProduct = Product(
+        id: 'p2',
+        code: 'TLS-1',
+        name: 'Tool 1',
+        uomId: 'u2',
+        uomCode: 'UNIT',
+        cogs: 75000.0,
+        isActive: true,
+        kind: 2,
+      );
+
+      controller.addRow(chemProduct, 1);
+      controller.addRow(chemProduct, 1);
+      expect(controller.materials.length, 1);
+
+      controller.addRow(toolProduct, 2);
+      controller.addRow(toolProduct, 2);
+      expect(controller.materials.length, 2);
+    });
+
+    test('addRow prevents duplicate items for kind 3 and 5', () {
+      const transportProduct = Product(
+        id: 'p3',
+        code: 'TR-1',
+        name: 'Transport 1',
+        uomId: 'u3',
+        uomCode: 'KM',
+        cogs: 20000.0,
+        isActive: true,
+        kind: 3,
+      );
+      const addonProduct = Product(
+        id: 'p5',
+        code: 'ADD-1',
+        name: 'Addon 1',
+        uomId: 'u5',
+        uomCode: 'UNIT',
+        cogs: 30000.0,
+        isActive: true,
+        kind: 5,
+      );
+
+      controller.addRow(transportProduct, 3);
+      controller.addRow(transportProduct, 3);
+      expect(controller.items.length, 1);
+
+      controller.addRow(addonProduct, 5);
+      controller.addRow(addonProduct, 5);
+      expect(controller.items.length, 2);
+    });
+
+    test('addRow allows duplicate labors for kind 4', () {
+      const laborProduct = Product(
+        id: 'p4',
+        code: 'LBR-1',
+        name: 'Technician 1',
+        uomId: 'u4',
+        uomCode: 'JAM',
+        cogs: 100000.0,
+        isActive: true,
+        kind: 4,
+      );
+
+      controller.addRow(laborProduct, 4);
+      controller.addRow(laborProduct, 4);
+      expect(controller.labors.length, 2);
+    });
   });
 
   group('PricingCalculatorController - Computed Calculations', () {

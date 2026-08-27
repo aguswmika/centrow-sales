@@ -26,7 +26,7 @@ enum ProposalStatus {
 
 enum ProposalItemCategory {
   persiapan('persiapan', '1. Persiapan Bahan & Alat', 'cp-persiapan'),
-  teknisi('teknisi', '2. Tenaga Kerja & Teknisi', 'cp-teknisi'),
+  teknisi('teknisi', '2. Tenaga Kerja', 'cp-teknisi'),
   transport('transport', '3. Transport & Add-on', 'cp-items');
 
   final String value;

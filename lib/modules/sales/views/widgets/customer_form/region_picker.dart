@@ -340,6 +340,7 @@ class _RegionPickerState extends State<RegionPicker> {
           context,
           left: _buildDropdownField<int>(
             label: 'Provinsi',
+            isRequired: true,
             hint: provinceHint,
             value: selectedProvinceId,
             items: _provinces
@@ -368,6 +369,7 @@ class _RegionPickerState extends State<RegionPicker> {
           ),
           right: _buildDropdownField<int>(
             label: 'Kabupaten / Kota',
+            isRequired: true,
             hint: regencyHint,
             value: selectedRegencyId,
             items: _regencies
@@ -402,6 +404,7 @@ class _RegionPickerState extends State<RegionPicker> {
           context,
           left: _buildDropdownField<int>(
             label: 'Kecamatan',
+            isRequired: true,
             hint: districtHint,
             value: selectedDistrictId,
             items: _districts
@@ -430,6 +433,7 @@ class _RegionPickerState extends State<RegionPicker> {
           ),
           right: _buildDropdownField<int>(
             label: 'Kelurahan / Desa',
+            isRequired: true,
             hint: villageHint,
             value: selectedVillageId,
             items: _villages

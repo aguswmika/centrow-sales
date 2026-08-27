@@ -1,7 +1,10 @@
 import 'dart:math' as math;
 import 'package:signals/signals.dart';
 import 'package:centrow_sales/shared/result/result.dart';
+import 'package:centrow_sales/shared/error/failure.dart';
 import 'package:centrow_sales/shared/state/ui_state.dart';
+import 'package:centrow_sales/modules/core/entities/uom.dart';
+import 'package:centrow_sales/modules/core/repositories/uom_repository.dart';
 import 'package:centrow_sales/modules/pc/entities/product_mapping.dart';
 import 'package:centrow_sales/modules/sales/entities/product.dart';
 import 'package:centrow_sales/modules/sales/repositories/pricing_repository.dart';
@@ -144,8 +147,25 @@ class PricingItemRow {
 
 class PricingCalculatorController {
   final PricingRepository _repository;
+  final UomRepository? _uomRepository;
 
-  PricingCalculatorController(this._repository);
+  PricingCalculatorController(this._repository, [this._uomRepository]);
+
+  final uoms = ListSignal<Uom>([]);
+  final uomState = signal<UiState<List<Uom>>>(const UiInitial());
+
+  Future<void> loadUoms() async {
+    if (_uomRepository == null) return;
+    uomState.value = const UiLoading();
+    final result = await _uomRepository.getActiveUoms();
+    uomState.value = switch (result) {
+      Ok(:final value) => () {
+        uoms.value = value;
+        return UiSuccess(value);
+      }(),
+      Err(:final failure) => UiFailure(failure),
+    };
+  }
 
   final materials = ListSignal<PricingMaterialRow>([]);
   final labors = ListSignal<PricingLaborRow>([]);
@@ -211,6 +231,7 @@ class PricingCalculatorController {
   );
 
   void addMaterialRow(ProductMapping mapping) {
+    if (materials.any((m) => m.id == mapping.productId)) return;
     materials.add(
       PricingMaterialRow(
         id: mapping.productId,
@@ -232,6 +253,7 @@ class PricingCalculatorController {
     }
 
     if (expectedKind == 1 || expectedKind == 2) {
+      if (materials.any((m) => m.id == product.id)) return;
       materials.add(
         PricingMaterialRow(
           id: product.id,
@@ -254,6 +276,7 @@ class PricingCalculatorController {
         ),
       );
     } else if (expectedKind == 3 || expectedKind == 5) {
+      if (items.any((i) => i.id == product.id)) return;
       items.add(
         PricingItemRow(
           id: product.id,
@@ -268,6 +291,15 @@ class PricingCalculatorController {
   }
 
   Future<void> submitPricing(String customerId, String serviceId) async {
+    for (final m in materials) {
+      if (m.doseUsage.value <= 0) {
+        submitState.value = UiFailure(
+          UnknownFailure('Dosis untuk ${m.title} harus lebih dari 0.'),
+        );
+        return;
+      }
+    }
+
     submitState.value = const UiLoading();
 
     final materialDtos = materials
@@ -357,5 +389,7 @@ class PricingCalculatorController {
     markupPercent.dispose();
     discountAmount.dispose();
     submitState.dispose();
+    uomState.dispose();
+    uoms.dispose();
   }
 }

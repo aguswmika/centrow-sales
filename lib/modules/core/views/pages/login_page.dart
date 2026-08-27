@@ -155,7 +155,7 @@ class _LoginPageState extends State<LoginPage> {
           ),
         ],
       ),
-      child: Watch.builder(
+      child: SignalBuilder(
         builder: (BuildContext context) {
           final isObscured = _controller.obscurePassword.value;
           final loginState = _controller.state.value;
@@ -203,7 +203,7 @@ class _LoginPageState extends State<LoginPage> {
                 onSubmitted: (_) => _controller.submitLogin(),
               ),
               const SizedBox(height: 16.0),
-              Watch.builder(
+              SignalBuilder(
                 builder: (BuildContext context) {
                   final tenantsState = _controller.tenantsState.value;
                   final selectedTenantId = _controller.selectedTenantId.value;

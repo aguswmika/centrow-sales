@@ -702,7 +702,7 @@
               </div>
             </div>
 
-            <!-- TAB 2: TENAGA KERJA & TEKNISI -->
+            <!-- TAB 2: Tenaga Kerja -->
             <div id="ck-teknisi" class="tc">
               <table class="calc-table">
                 <thead>
@@ -951,7 +951,7 @@ function recalc() {
     if (pLine) pLine.textContent = fmtRp(lineCost);
   });
 
-  // 2. Labor Cost (Tenaga Kerja & Teknisi)
+  // 2. Labor Cost (Tenaga Kerja)
   let laborCost = 0;
   document.querySelectorAll('#tb-teknisi .row-teknisi').forEach(row => {
     const vf = parseFloat(row.querySelector('.t-vfrq')?.value) || visitFreq;
