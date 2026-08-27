@@ -47,7 +47,9 @@ class ProposalListItemDto {
     return Proposal(
       id: id,
       code: code,
+      customerId: customerId,
       clientName: customerName,
+      serviceId: serviceId,
       serviceName: serviceName,
       status: ProposalStatus.fromString(status),
       date: proposalDate,
@@ -174,7 +176,9 @@ class ProposalDetailDto {
     return Proposal(
       id: id,
       code: code,
+      customerId: customerId,
       clientName: customerName,
+      serviceId: serviceId,
       serviceName: serviceName,
       status: ProposalStatus.fromString(status),
       date: proposalDate,
@@ -229,7 +233,9 @@ class CreateProposalResponseDto {
     return Proposal(
       id: id,
       code: code,
+      customerId: customerId,
       clientName: '',
+      serviceId: serviceId,
       serviceName: '',
       status: ProposalStatus.fromString(status),
       date: proposalDate,
@@ -238,6 +244,63 @@ class CreateProposalResponseDto {
       version: '1',
       total: totalAmount,
       createdAt: createdAt,
+    );
+  }
+}
+
+class ProposalItemDto {
+  final String id;
+  final String title;
+  final String description;
+  final String category;
+  final double price;
+  final double qty;
+  final double frequency;
+  final String unitCode;
+  final double unitCost;
+  final int? kind;
+
+  const ProposalItemDto({
+    required this.id,
+    required this.title,
+    this.description = '',
+    required this.category,
+    required this.price,
+    this.qty = 1.0,
+    this.frequency = 1.0,
+    this.unitCode = '',
+    this.unitCost = 0.0,
+    this.kind,
+  });
+
+  factory ProposalItemDto.fromJson(Map<String, dynamic> json) {
+    return ProposalItemDto(
+      id: json['id']?.toString() ?? '',
+      title: json['title']?.toString() ?? json['name']?.toString() ?? '',
+      description: json['description']?.toString() ?? '',
+      category: json['category']?.toString() ?? '',
+      price: (json['price'] as num?)?.toDouble() ?? 0.0,
+      qty: (json['qty'] as num?)?.toDouble() ?? 1.0,
+      frequency: (json['frequency'] as num?)?.toDouble() ?? 1.0,
+      unitCode: (json['unit_code'] ?? json['unitCode'])?.toString() ?? '',
+      unitCost:
+          ((json['unit_cost'] ?? json['unitCost']) as num?)?.toDouble() ?? 0.0,
+      kind: (json['kind'] as num?)?.toInt(),
+    );
+  }
+
+  ProposalItem toEntity() {
+    return ProposalItem(
+      id: id,
+      title: title,
+      description: description,
+      category: ProposalItemCategory.fromString(category),
+      price: price,
+      qty: qty,
+      frequency: frequency,
+      unitCode: unitCode,
+      unitCost: unitCost,
+      kind: kind,
     );
   }
 }

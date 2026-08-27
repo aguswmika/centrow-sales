@@ -10,9 +10,17 @@ import 'package:centrow_sales/modules/sales/controllers/customer_controller.dart
 import 'package:centrow_sales/modules/sales/controllers/customer_form_controller.dart';
 import 'package:centrow_sales/modules/sales/controllers/proposal_controller.dart';
 import 'package:centrow_sales/modules/sales/controllers/proposal_form_controller.dart';
+import 'package:centrow_sales/modules/sales/controllers/product_controller.dart';
+import 'package:centrow_sales/modules/sales/controllers/pricing_calculator_controller.dart';
 import 'package:centrow_sales/modules/sales/repositories/customer_repository.dart';
 import 'package:centrow_sales/modules/sales/repositories/proposal_repository.dart';
 import 'package:centrow_sales/modules/sales/repositories/service_repository.dart';
+import 'package:centrow_sales/modules/sales/repositories/product_repository.dart';
+import 'package:centrow_sales/modules/pc/controllers/product_mapping_controller.dart';
+import 'package:centrow_sales/modules/pc/controllers/treatment_method_controller.dart';
+import 'package:centrow_sales/modules/pc/repositories/product_mapping_repository.dart';
+import 'package:centrow_sales/modules/pc/repositories/treatment_method_repository.dart';
+import 'package:centrow_sales/modules/sales/repositories/pricing_repository.dart';
 import 'package:centrow_sales/shared/network/auth_token_holder.dart';
 import 'package:centrow_sales/shared/network/dio_client.dart';
 import 'package:centrow_sales/shared/storage/local_storage.dart';
@@ -59,6 +67,18 @@ Future<void> setupDi({LocalStorage? storage}) async {
   getIt.registerLazySingleton<ServiceRepository>(
     () => ServiceRepositoryImpl(getIt<Dio>()),
   );
+  getIt.registerLazySingleton<ProductRepository>(
+    () => ProductRepositoryImpl(getIt<Dio>()),
+  );
+  getIt.registerLazySingleton<PricingRepository>(
+    () => PricingRepositoryImpl(getIt<Dio>()),
+  );
+  getIt.registerLazySingleton<ProductMappingRepository>(
+    () => ProductMappingRepositoryImpl(getIt<Dio>()),
+  );
+  getIt.registerLazySingleton<TreatmentMethodRepository>(
+    () => TreatmentMethodRepositoryImpl(getIt<Dio>()),
+  );
 
   // Controllers
   getIt.registerFactory<LoginController>(
@@ -85,5 +105,17 @@ Future<void> setupDi({LocalStorage? storage}) async {
       getIt<CustomerRepository>(),
       getIt<ServiceRepository>(),
     ),
+  );
+  getIt.registerFactory<ProductController>(
+    () => ProductController(getIt<ProductRepository>()),
+  );
+  getIt.registerFactory<PricingCalculatorController>(
+    () => PricingCalculatorController(getIt<PricingRepository>()),
+  );
+  getIt.registerFactory<ProductMappingController>(
+    () => ProductMappingController(getIt<ProductMappingRepository>()),
+  );
+  getIt.registerFactory<TreatmentMethodController>(
+    () => TreatmentMethodController(getIt<TreatmentMethodRepository>()),
   );
 }

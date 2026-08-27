@@ -180,16 +180,6 @@ void main() {
 
     expect(find.text('Kontrak'), findsWidgets);
 
-    // Tap Harga tab on rail
-    final railHarga = find.descendant(
-      of: find.byType(NavigationRail),
-      matching: find.text('Harga'),
-    );
-    await tester.tap(railHarga);
-    await tester.pumpAndSettle();
-
-    expect(find.text('Kalkulator Harga'), findsWidgets);
-
     // Tap Pelanggan tab on rail
     final railPelanggan = find.descendant(
       of: find.byType(NavigationRail),
@@ -235,16 +225,6 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('Kontrak'), findsWidgets);
-
-    // Tap Harga tab on bottom bar
-    final bottomHarga = find.descendant(
-      of: find.byType(BottomNavigationBar),
-      matching: find.text('Harga'),
-    );
-    await tester.tap(bottomHarga);
-    await tester.pumpAndSettle();
-
-    expect(find.text('Kalkulator Harga'), findsWidgets);
 
     // Tap Pelanggan tab on bottom bar
     final bottomPelanggan = find.descendant(

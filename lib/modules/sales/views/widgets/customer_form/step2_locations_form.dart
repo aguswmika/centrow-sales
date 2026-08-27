@@ -55,7 +55,7 @@ class Step2LocationsForm extends StatelessWidget {
                     ),
                     const SizedBox(width: 8.0),
                     Text(
-                      '+ Tambah Alamat / Titik Servis Lain',
+                      'Tambah Alamat / Titik Servis Lain',
                       style: GoogleFonts.inter(
                         fontSize: 13.5,
                         fontWeight: FontWeight.w600,

@@ -148,7 +148,7 @@ void main() {
 
       expect(find.byType(RegionPicker), findsOneWidget);
 
-      await tester.tap(find.text('+ Tambah Alamat / Titik Servis Lain'));
+      await tester.tap(find.text('Tambah Alamat / Titik Servis Lain'));
       await tester.pumpAndSettle();
 
       expect(find.byType(RegionPicker), findsNWidgets(2));

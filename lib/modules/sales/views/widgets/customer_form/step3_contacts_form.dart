@@ -68,7 +68,7 @@ class Step3ContactsForm extends StatelessWidget {
                     ),
                     const SizedBox(width: 8.0),
                     Text(
-                      '+ Tambah Kontak Person Lain',
+                      'Tambah Kontak Person Lain',
                       style: GoogleFonts.inter(
                         fontSize: 13.5,
                         fontWeight: FontWeight.w600,

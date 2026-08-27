@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:signals_flutter/signals_flutter.dart';
 import 'package:centrow_sales/app/di.dart';
+import 'package:centrow_sales/modules/sales/controllers/pricing_calculator_controller.dart';
 import 'package:centrow_sales/modules/sales/controllers/proposal_controller.dart';
 import 'package:centrow_sales/modules/sales/views/widgets/pricing_calculator_view.dart';
 import 'package:centrow_sales/shared/state/ui_state.dart';
@@ -23,16 +24,19 @@ class PricingPage extends StatefulWidget {
 
 class _PricingPageState extends State<PricingPage> {
   late final ProposalController _controller;
+  late final PricingCalculatorController _calcController;
 
   @override
   void initState() {
     super.initState();
     _controller = getIt<ProposalController>();
+    _calcController = getIt<PricingCalculatorController>();
     _controller.loadProposalDetail(widget.proposalId);
   }
 
   @override
   void dispose() {
+    _calcController.dispose();
     _controller.dispose();
     super.dispose();
   }
@@ -66,7 +70,12 @@ class _PricingPageState extends State<PricingPage> {
                     thickness: 1.5,
                     color: AppColors.border,
                   ),
-                  Expanded(child: PricingCalculatorView(proposal: data)),
+                  Expanded(
+                    child: PricingCalculatorView(
+                      proposal: data,
+                      calculatorController: _calcController,
+                    ),
+                  ),
                 ],
               ),
             };
@@ -194,42 +203,39 @@ class _PricingPageState extends State<PricingPage> {
                     Expanded(
                       child: _buildParamItem(
                         'Luas Area Properti',
-                        '500',
+                        _calcController.areaValue.value?.toString(),
                         icon: Icons.square_foot,
                         suffix: 'm²',
+                        keyboardType: TextInputType.number,
+                        onChanged: (val) => _calcController.areaValue.value =
+                            double.tryParse(val),
                       ),
                     ),
                     const SizedBox(width: 12.0),
                     Expanded(
                       child: _buildParamItem(
                         'Durasi Kontrak',
-                        '12 Bulan',
+                        _calcController.contractMonths.value?.toString(),
                         icon: Icons.calendar_today,
-                        isDropdown: true,
+                        suffix: 'Bulan',
+                        keyboardType: TextInputType.number,
+                        onChanged: (val) =>
+                            _calcController.contractMonths.value = int.tryParse(
+                              val,
+                            ),
                       ),
                     ),
                   ],
                 ),
                 const SizedBox(height: 12.0),
-                Row(
-                  children: [
-                    Expanded(
-                      child: _buildParamItem(
-                        'Frekuensi Kunjungan',
-                        '6 Visit',
-                        icon: Icons.repeat,
-                      ),
-                    ),
-                    const SizedBox(width: 12.0),
-                    Expanded(
-                      child: _buildParamItem(
-                        'Wilayah / Transport',
-                        'Badung',
-                        icon: Icons.location_on,
-                        isDropdown: true,
-                      ),
-                    ),
-                  ],
+                _buildParamItem(
+                  'Frekuensi Kunjungan',
+                  _calcController.visitFrequency.value?.toString(),
+                  icon: Icons.repeat,
+                  suffix: 'Visit',
+                  keyboardType: TextInputType.number,
+                  onChanged: (val) =>
+                      _calcController.visitFrequency.value = int.tryParse(val),
                 ),
               ],
             );
@@ -240,35 +246,36 @@ class _PricingPageState extends State<PricingPage> {
               Expanded(
                 child: _buildParamItem(
                   'Luas Area Properti',
-                  '500',
+                  _calcController.areaValue.value?.toString(),
                   icon: Icons.square_foot,
                   suffix: 'm²',
+                  keyboardType: TextInputType.number,
+                  onChanged: (val) =>
+                      _calcController.areaValue.value = double.tryParse(val),
                 ),
               ),
               const SizedBox(width: 12.0),
               Expanded(
                 child: _buildParamItem(
                   'Durasi Kontrak',
-                  '12 Bulan',
+                  _calcController.contractMonths.value?.toString(),
                   icon: Icons.calendar_today,
-                  isDropdown: true,
+                  suffix: 'Bulan',
+                  keyboardType: TextInputType.number,
+                  onChanged: (val) =>
+                      _calcController.contractMonths.value = int.tryParse(val),
                 ),
               ),
               const SizedBox(width: 12.0),
               Expanded(
                 child: _buildParamItem(
                   'Frekuensi Kunjungan',
-                  '6 Visit',
+                  _calcController.visitFrequency.value?.toString(),
                   icon: Icons.repeat,
-                ),
-              ),
-              const SizedBox(width: 12.0),
-              Expanded(
-                child: _buildParamItem(
-                  'Wilayah / Transport',
-                  'Badung',
-                  icon: Icons.location_on,
-                  isDropdown: true,
+                  suffix: 'Visit',
+                  keyboardType: TextInputType.number,
+                  onChanged: (val) =>
+                      _calcController.visitFrequency.value = int.tryParse(val),
                 ),
               ),
             ],
@@ -280,10 +287,11 @@ class _PricingPageState extends State<PricingPage> {
 
   Widget _buildParamItem(
     String label,
-    String value, {
+    String? initialValue, {
     required IconData icon,
     String? suffix,
-    bool isDropdown = false,
+    TextInputType keyboardType = TextInputType.text,
+    ValueChanged<String>? onChanged,
   }) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -310,46 +318,32 @@ class _PricingPageState extends State<PricingPage> {
               Icon(icon, size: 16.0, color: AppColors.muted),
               const SizedBox(width: 8.0),
               Expanded(
-                child: isDropdown
-                    ? DropdownButtonHideUnderline(
-                        child: DropdownButton<String>(
-                          value: value,
-                          isExpanded: true,
-                          icon: const Icon(
-                            Icons.expand_more,
-                            size: 18.0,
-                            color: AppColors.muted,
-                          ),
-                          style: const TextStyle(
-                            fontSize: 13.0,
-                            fontWeight: FontWeight.w600,
-                            color: AppColors.text,
-                          ),
-                          items: [
-                            DropdownMenuItem(value: value, child: Text(value)),
-                          ],
-                          onChanged: (v) {},
-                        ),
-                      )
-                    : TextFormField(
-                        initialValue: value,
-                        style: const TextStyle(
-                          fontSize: 13.0,
-                          fontWeight: FontWeight.w600,
-                          color: AppColors.text,
-                        ),
-                        decoration: InputDecoration(
-                          border: InputBorder.none,
-                          contentPadding: EdgeInsets.zero,
-                          isDense: true,
-                          suffixText: suffix,
-                          suffixStyle: const TextStyle(
-                            fontSize: 13.0,
-                            fontWeight: FontWeight.w600,
-                            color: AppColors.sec,
-                          ),
-                        ),
-                      ),
+                child: TextFormField(
+                  initialValue: initialValue,
+                  keyboardType: keyboardType,
+                  onChanged: onChanged,
+                  style: const TextStyle(
+                    fontSize: 13.0,
+                    fontWeight: FontWeight.w600,
+                    color: AppColors.text,
+                  ),
+                  decoration: InputDecoration(
+                    border: InputBorder.none,
+                    enabledBorder: InputBorder.none,
+                    focusedBorder: InputBorder.none,
+                    errorBorder: InputBorder.none,
+                    disabledBorder: InputBorder.none,
+                    filled: false,
+                    contentPadding: EdgeInsets.zero,
+                    isDense: true,
+                    suffixText: suffix,
+                    suffixStyle: const TextStyle(
+                      fontSize: 13.0,
+                      fontWeight: FontWeight.w600,
+                      color: AppColors.sec,
+                    ),
+                  ),
+                ),
               ),
             ],
           ),

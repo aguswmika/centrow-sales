@@ -55,6 +55,11 @@ class ProposalItem {
   final String description;
   final ProposalItemCategory category;
   final double price;
+  final double qty;
+  final double frequency;
+  final String unitCode;
+  final double unitCost;
+  final int? kind; // The API kind (1=Kimia, 2=Alat, 4=Teknisi, etc.)
 
   const ProposalItem({
     this.id = '',
@@ -62,6 +67,11 @@ class ProposalItem {
     this.description = '',
     required this.category,
     this.price = 0.0,
+    this.qty = 1.0,
+    this.frequency = 1.0,
+    this.unitCode = '',
+    this.unitCost = 0.0,
+    this.kind,
   });
 
   String get formattedPrice => _formatCurrency(price);
@@ -72,6 +82,11 @@ class ProposalItem {
     String? description,
     ProposalItemCategory? category,
     double? price,
+    double? qty,
+    double? frequency,
+    String? unitCode,
+    double? unitCost,
+    int? kind,
   }) {
     return ProposalItem(
       id: id ?? this.id,
@@ -79,6 +94,11 @@ class ProposalItem {
       description: description ?? this.description,
       category: category ?? this.category,
       price: price ?? this.price,
+      qty: qty ?? this.qty,
+      frequency: frequency ?? this.frequency,
+      unitCode: unitCode ?? this.unitCode,
+      unitCost: unitCost ?? this.unitCost,
+      kind: kind ?? this.kind,
     );
   }
 
@@ -91,20 +111,38 @@ class ProposalItem {
           title == other.title &&
           description == other.description &&
           category == other.category &&
-          price == other.price;
+          price == other.price &&
+          qty == other.qty &&
+          frequency == other.frequency &&
+          unitCode == other.unitCode &&
+          unitCost == other.unitCost &&
+          kind == other.kind;
 
   @override
-  int get hashCode => Object.hash(id, title, description, category, price);
+  int get hashCode => Object.hash(
+    id,
+    title,
+    description,
+    category,
+    price,
+    qty,
+    frequency,
+    unitCode,
+    unitCost,
+    kind,
+  );
 
   @override
   String toString() =>
-      'ProposalItem(id: $id, title: $title, category: ${category.value}, price: $price)';
+      'ProposalItem(id: $id, title: $title, category: ${category.value}, price: $price, qty: $qty, frequency: $frequency, unitCode: $unitCode, unitCost: $unitCost, kind: $kind)';
 }
 
 class Proposal {
   final String id;
   final String code;
+  final String customerId;
   final String clientName;
+  final String serviceId;
   final String serviceName;
   final ProposalStatus status;
   final String date;
@@ -139,7 +177,9 @@ class Proposal {
   const Proposal({
     required this.id,
     required this.code,
+    this.customerId = '',
     required this.clientName,
+    this.serviceId = '',
     required this.serviceName,
     required this.status,
     required this.date,
@@ -234,7 +274,9 @@ class Proposal {
   Proposal copyWith({
     String? id,
     String? code,
+    String? customerId,
     String? clientName,
+    String? serviceId,
     String? serviceName,
     ProposalStatus? status,
     String? date,
@@ -269,7 +311,9 @@ class Proposal {
     return Proposal(
       id: id ?? this.id,
       code: code ?? this.code,
+      customerId: customerId ?? this.customerId,
       clientName: clientName ?? this.clientName,
+      serviceId: serviceId ?? this.serviceId,
       serviceName: serviceName ?? this.serviceName,
       status: status ?? this.status,
       date: date ?? this.date,
@@ -310,7 +354,9 @@ class Proposal {
           runtimeType == other.runtimeType &&
           id == other.id &&
           code == other.code &&
+          customerId == other.customerId &&
           clientName == other.clientName &&
+          serviceId == other.serviceId &&
           serviceName == other.serviceName &&
           status == other.status &&
           date == other.date &&
@@ -342,7 +388,9 @@ class Proposal {
   int get hashCode => Object.hashAll([
     id,
     code,
+    customerId,
     clientName,
+    serviceId,
     serviceName,
     status,
     date,

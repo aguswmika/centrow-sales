@@ -160,6 +160,7 @@ void main() {
         );
         final list = controller.filteredProposals.value;
         expect(list.length, 3);
+        await controller.selectProposal('p1');
         expect(controller.selectedProposalId.value, 'p1');
         expect(
           controller.proposalDetailState.value,
@@ -248,6 +249,7 @@ void main() {
       'activePricingTab and activePricingCategory behave correctly',
       () async {
         await controller.loadProposals();
+        await controller.selectProposal('p1');
 
         expect(controller.activePricingTab.value, 0);
         expect(

@@ -162,10 +162,7 @@ void main() {
         await tester.pump(const Duration(milliseconds: 100));
 
         expect(controller.currentStep.value, 2);
-        expect(
-          find.text('+ Tambah Alamat / Titik Servis Lain'),
-          findsOneWidget,
-        );
+        expect(find.text('Tambah Alamat / Titik Servis Lain'), findsOneWidget);
 
         // Attempting to advance while Step 2 is invalid stays on Step 2
         await tester.tap(find.byIcon(Icons.chevron_right).first);
@@ -189,7 +186,7 @@ void main() {
         await tester.pump(const Duration(milliseconds: 100));
 
         expect(controller.currentStep.value, 3);
-        expect(find.text('+ Tambah Kontak Person Lain'), findsOneWidget);
+        expect(find.text('Tambah Kontak Person Lain'), findsOneWidget);
         expect(find.text('Simpan'), findsWidgets);
 
         // Populate Step 3 contact
@@ -243,7 +240,7 @@ void main() {
       await tester.pump();
 
       expect(controller.locations.value.length, 1);
-      await tester.tap(find.text('+ Tambah Alamat / Titik Servis Lain'));
+      await tester.tap(find.text('Tambah Alamat / Titik Servis Lain'));
       await tester.pump();
       expect(controller.locations.value.length, 2);
 

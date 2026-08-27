@@ -108,6 +108,9 @@ void main() {
 
     expect(find.byType(ProposalMasterList), findsOneWidget);
     expect(find.byType(ProposalDetailPane), findsOneWidget);
+
+    await tester.tap(find.text('Villa Sari Dewi').first);
+    await tester.pumpAndSettle();
     expect(find.text('Villa Sari Dewi'), findsWidgets);
     expect(find.text('PRO-2026-0042 · Villa Sari Dewi'), findsOneWidget);
 
