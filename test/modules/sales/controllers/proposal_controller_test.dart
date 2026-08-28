@@ -16,6 +16,11 @@ class FakeProposalRepository implements ProposalRepository {
     return const Err(ServerFailure('Not implemented'));
   }
 
+  @override
+  Future<Result<Proposal>> updateProposal(String id, dynamic input) async {
+    return const Err(ServerFailure('Not implemented'));
+  }
+
   FakeProposalRepository({List<Proposal>? initialProposals})
     : proposals =
           initialProposals ??

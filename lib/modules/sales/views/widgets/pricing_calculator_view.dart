@@ -112,7 +112,7 @@ class _PricingCalculatorViewState extends State<PricingCalculatorView> {
       case 0:
         return PricingMaterialTab(controller: widget.calculatorController);
       case 1:
-        return PricingWokerTab(controller: widget.calculatorController);
+        return PricingWorkerTab(controller: widget.calculatorController);
       case 2:
         return PricingItemTab(controller: widget.calculatorController);
       default:

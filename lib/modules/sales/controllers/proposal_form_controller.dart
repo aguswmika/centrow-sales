@@ -1,4 +1,5 @@
 import 'package:centrow_sales/modules/sales/entities/create_proposal_input.dart';
+import 'package:centrow_sales/modules/sales/entities/update_proposal_input.dart';
 import 'package:centrow_sales/modules/sales/entities/proposal.dart';
 import 'package:centrow_sales/modules/sales/entities/customer.dart';
 import 'package:centrow_sales/modules/sales/entities/service.dart';
@@ -28,6 +29,9 @@ class ProposalFormController extends ChangeNotifier {
   String? proposalDate;
   String? validUntil;
   String? addressId;
+  String? notes;
+  String? _editId;
+  bool get isEditMode => _editId != null;
 
   List<CustomerLocation> availableLocations = [];
 
@@ -36,6 +40,37 @@ class ProposalFormController extends ChangeNotifier {
     this._customerRepository,
     this._serviceRepository,
   );
+
+  void initForEdit(Proposal proposal) {
+    _editId = proposal.id;
+    // Provide a dummy customer/service to display in the searchable selector
+    selectedCustomer = Customer(
+      id: proposal.customerId,
+      name: proposal.clientName,
+      code: '',
+      initials: '',
+      segment: '',
+      status: '',
+      locations: [],
+    );
+    customerId = proposal.customerId; // this triggers location load
+    selectedService = Service(
+      id: proposal.serviceId,
+      name: proposal.serviceName,
+      code: '',
+      isActive: true,
+    );
+    serviceId = proposal.serviceId;
+
+    // Replace the old comment and assign addressId:
+    addressId = proposal.addressId;
+
+    // Convert readable dates to YYYY-MM-DD for the form input if needed,
+    // but assuming standard format is passed or we just leave it for re-selection
+    // if the formats don't match easily. We will populate notes:
+    notes = proposal.notes;
+    notifyListeners();
+  }
 
   Future<void> _loadCustomerLocations() async {
     if (_customerId == null) {
@@ -66,15 +101,27 @@ class ProposalFormController extends ChangeNotifier {
       return const Err(UnknownFailure('Field wajib harus diisi'));
     }
 
-    final input = CreateProposalInput(
-      customerId: _customerId!,
-      serviceId: serviceId!,
-      proposalDate: proposalDate!,
-      validUntil: validUntil,
-      addressId: addressId,
-    );
-
-    return await _proposalRepository.createProposal(input);
+    if (isEditMode) {
+      final input = UpdateProposalInput(
+        customerId: _customerId!,
+        serviceId: serviceId!,
+        proposalDate: proposalDate!,
+        validUntil: validUntil,
+        addressId: addressId,
+        notes: notes,
+      );
+      return await _proposalRepository.updateProposal(_editId!, input);
+    } else {
+      final input = CreateProposalInput(
+        customerId: _customerId!,
+        serviceId: serviceId!,
+        proposalDate: proposalDate!,
+        validUntil: validUntil,
+        addressId: addressId,
+        notes: notes,
+      );
+      return await _proposalRepository.createProposal(input);
+    }
   }
 
   void updateFields({
@@ -83,6 +130,7 @@ class ProposalFormController extends ChangeNotifier {
     String? proposalDate,
     String? validUntil,
     String? addressId,
+    String? notes,
   }) {
     if (customer != null) {
       selectedCustomer = customer;
@@ -95,6 +143,7 @@ class ProposalFormController extends ChangeNotifier {
     this.proposalDate = proposalDate ?? this.proposalDate;
     this.validUntil = validUntil ?? this.validUntil;
     this.addressId = addressId ?? this.addressId;
+    this.notes = notes ?? this.notes;
     notifyListeners();
   }
 }

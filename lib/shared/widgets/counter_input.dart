@@ -5,11 +5,15 @@ import '../theme/app_radius.dart';
 class CounterInput extends StatefulWidget {
   final double initialValue;
   final ValueChanged<double> onChanged;
+  final double? min;
+  final double? max;
 
   const CounterInput({
     super.key,
     required this.initialValue,
     required this.onChanged,
+    this.min,
+    this.max,
   });
 
   @override
@@ -19,12 +23,40 @@ class CounterInput extends StatefulWidget {
 class _CounterInputState extends State<CounterInput> {
   late double _value;
   late TextEditingController _controller;
+  late FocusNode _focusNode;
 
   @override
   void initState() {
     super.initState();
     _value = widget.initialValue;
     _controller = TextEditingController(text: _formatValue(_value));
+    _focusNode = FocusNode();
+    _focusNode.addListener(_onFocusChange);
+  }
+
+  void _onFocusChange() {
+    if (!_focusNode.hasFocus) {
+      _clampValue();
+    }
+  }
+
+  void _clampValue() {
+    double clamped = _value;
+    final minVal = widget.min ?? 0.0;
+    if (clamped < minVal) clamped = minVal;
+    if (widget.max != null && clamped > widget.max!) clamped = widget.max!;
+
+    if (clamped != _value) {
+      setState(() {
+        _value = clamped;
+        final newText = _formatValue(_value);
+        _controller.value = TextEditingValue(
+          text: newText,
+          selection: TextSelection.collapsed(offset: newText.length),
+        );
+      });
+      widget.onChanged(_value);
+    }
   }
 
   String _formatValue(double value) {
@@ -33,12 +65,21 @@ class _CounterInputState extends State<CounterInput> {
 
   @override
   void dispose() {
+    _focusNode.removeListener(_onFocusChange);
+    _focusNode.dispose();
     _controller.dispose();
     super.dispose();
   }
 
   void _updateValue(double newValue) {
-    if (newValue < 0) return;
+    if (widget.min != null) {
+      if (newValue < widget.min!) return;
+    } else {
+      if (newValue < 0) return;
+    }
+
+    if (widget.max != null && newValue > widget.max!) return;
+
     setState(() {
       _value = newValue;
       final newText = _formatValue(_value);
@@ -72,6 +113,7 @@ class _CounterInputState extends State<CounterInput> {
             ),
             child: TextField(
               controller: _controller,
+              focusNode: _focusNode,
               textAlign: TextAlign.center,
               textAlignVertical: TextAlignVertical.center,
               style: const TextStyle(

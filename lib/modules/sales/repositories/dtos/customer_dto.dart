@@ -268,6 +268,7 @@ class CustomerDetailDto {
   final String phoneAlt;
   final String email;
   final String scanCode;
+  final double taxPercentage;
   final String riskNotes;
   final String notes;
   final int activeProposalsCount;
@@ -291,6 +292,7 @@ class CustomerDetailDto {
     required this.phoneAlt,
     required this.email,
     required this.scanCode,
+    required this.taxPercentage,
     required this.riskNotes,
     required this.notes,
     required this.activeProposalsCount,
@@ -320,6 +322,7 @@ class CustomerDetailDto {
       phoneAlt: json['phone_alt']?.toString() ?? '',
       email: json['email']?.toString() ?? '',
       scanCode: json['scan_code']?.toString() ?? '',
+      taxPercentage: (json['tax_percentage'] as num?)?.toDouble() ?? 0,
       riskNotes: json['risk_notes']?.toString() ?? '',
       notes: json['notes']?.toString() ?? '',
       activeProposalsCount:
@@ -365,6 +368,7 @@ class CustomerDetailDto {
       phoneAlt: phoneAlt,
       email: email,
       scanCode: scanCode,
+      taxPercentage: taxPercentage,
       riskNotes: riskNotes,
       notes: notes,
       activeProposalsCount: activeProposalsCount,
@@ -528,6 +532,7 @@ class CreateCustomerRequestDto {
   final String? email;
   final String? phone;
   final String? phoneAlt;
+  final double? taxPercentage;
   final String? riskNotes;
   final String? notes;
   final List<CreateCustomerLocationRequestDto> locations;
@@ -541,6 +546,7 @@ class CreateCustomerRequestDto {
     this.email,
     this.phone,
     this.phoneAlt,
+    this.taxPercentage,
     this.riskNotes,
     this.notes,
     this.locations = const [],
@@ -556,6 +562,7 @@ class CreateCustomerRequestDto {
       email: input.email.isNotEmpty ? input.email : null,
       phone: input.phone.isNotEmpty ? input.phone : null,
       phoneAlt: input.phoneAlt.isNotEmpty ? input.phoneAlt : null,
+      taxPercentage: input.taxPercentage > 0 ? input.taxPercentage : null,
       riskNotes: input.riskNotes.isNotEmpty ? input.riskNotes : null,
       notes: input.notes.isNotEmpty ? input.notes : null,
       locations: input.locations
@@ -575,6 +582,7 @@ class CreateCustomerRequestDto {
     if (email != null) map['email'] = email;
     if (phone != null) map['phone'] = phone;
     if (phoneAlt != null) map['phone_alt'] = phoneAlt;
+    if (taxPercentage != null) map['tax_percentage'] = taxPercentage;
     if (riskNotes != null) map['risk_notes'] = riskNotes;
     if (notes != null) map['notes'] = notes;
     if (locations.isNotEmpty) {
@@ -595,6 +603,7 @@ class UpdateCustomerRequestDto {
   final String? email;
   final String? phone;
   final String? phoneAlt;
+  final double? taxPercentage;
   final String? riskNotes;
   final String? notes;
   final List<CreateCustomerLocationRequestDto> locations;
@@ -608,6 +617,7 @@ class UpdateCustomerRequestDto {
     this.email,
     this.phone,
     this.phoneAlt,
+    this.taxPercentage,
     this.riskNotes,
     this.notes,
     this.locations = const [],
@@ -623,6 +633,7 @@ class UpdateCustomerRequestDto {
       email: input.email.isNotEmpty ? input.email : null,
       phone: input.phone.isNotEmpty ? input.phone : null,
       phoneAlt: input.phoneAlt.isNotEmpty ? input.phoneAlt : null,
+      taxPercentage: input.taxPercentage > 0 ? input.taxPercentage : null,
       riskNotes: input.riskNotes.isNotEmpty ? input.riskNotes : null,
       notes: input.notes.isNotEmpty ? input.notes : null,
       locations: input.locations
@@ -642,6 +653,7 @@ class UpdateCustomerRequestDto {
     if (email != null) map['email'] = email;
     if (phone != null) map['phone'] = phone;
     if (phoneAlt != null) map['phone_alt'] = phoneAlt;
+    if (taxPercentage != null) map['tax_percentage'] = taxPercentage;
     if (riskNotes != null) map['risk_notes'] = riskNotes;
     if (notes != null) map['notes'] = notes;
     if (locations.isNotEmpty) {

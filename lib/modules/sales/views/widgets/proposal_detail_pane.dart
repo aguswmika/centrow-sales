@@ -11,21 +11,27 @@ import 'package:centrow_sales/modules/sales/entities/proposal.dart';
 class ProposalDetailPane extends StatelessWidget {
   final Proposal? proposal;
   final UiState<Proposal>? detailState;
-  final int activeTab;
-  final ValueChanged<int> onTabChanged;
+  final int activeDetailTab;
+  final ValueChanged<int> onDetailTabChanged;
+  final int activePricingTab;
+  final ValueChanged<int> onPricingTabChanged;
   final VoidCallback? onExportPdf;
   final VoidCallback? onOpenCalculator;
   final VoidCallback? onRetry;
+  final VoidCallback? onEditProposal;
 
   const ProposalDetailPane({
     super.key,
     this.proposal,
     this.detailState,
-    required this.activeTab,
-    required this.onTabChanged,
+    required this.activeDetailTab,
+    required this.onDetailTabChanged,
+    required this.activePricingTab,
+    required this.onPricingTabChanged,
     this.onExportPdf,
     this.onOpenCalculator,
     this.onRetry,
+    this.onEditProposal,
   });
 
   static const List<String> tabTitles = [
@@ -87,8 +93,12 @@ class ProposalDetailPane extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           _buildHeader(context, proposal),
-          _buildMetadataBar(proposal),
-          Expanded(child: _buildPricingSplit(proposal)),
+          _buildTopLevelTabs(),
+          Expanded(
+            child: activeDetailTab == 0
+                ? _buildGeneralInfoTab(proposal)
+                : _buildPricingTabContent(proposal),
+          ),
         ],
       ),
     );
@@ -140,6 +150,18 @@ class ProposalDetailPane extends StatelessWidget {
             runSpacing: 8.0,
             children: [
               AppButton.secondary(
+                text: 'Ubah Data',
+                height: 40.0,
+                isFullWidth: false,
+                borderRadius: AppRadius.borderMd,
+                icon: const Icon(
+                  Icons.edit_note,
+                  size: 16.0,
+                  color: AppColors.text,
+                ),
+                onPressed: onEditProposal,
+              ),
+              AppButton.secondary(
                 text: 'Ekspor PDF',
                 height: 40.0,
                 isFullWidth: false,
@@ -152,7 +174,7 @@ class ProposalDetailPane extends StatelessWidget {
                 onPressed: onExportPdf,
               ),
               AppButton(
-                text: 'Buka di Kalkulator',
+                text: 'Pricing',
                 height: 40.0,
                 isFullWidth: false,
                 borderRadius: AppRadius.borderMd,
@@ -186,58 +208,135 @@ class ProposalDetailPane extends StatelessWidget {
     );
   }
 
-  Widget _buildMetadataBar(Proposal proposal) {
+  Widget _buildTopLevelTabs() {
+    const tabs = ['Informasi Umum', 'Rincian Kalkulasi'];
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 12.0),
       decoration: const BoxDecoration(
-        color: AppColors.subtle,
+        color: AppColors.surface,
         border: Border(bottom: BorderSide(color: AppColors.border, width: 1.0)),
       ),
-      child: LayoutBuilder(
-        builder: (context, constraints) {
-          final isCompact = constraints.maxWidth < 500;
-
-          final items = [
-            _buildMetaBox('TANGGAL PROPOSAL', proposal.date),
-            _buildMetaBox('MASA BERLAKU', proposal.validUntil),
-            _buildMetaBox('LOKASI PROPERTI', proposal.location),
-            _buildMetaBox(
-              'TOTAL NILAI PROPOSAL',
-              proposal.formattedTotal,
-              valueColor: AppColors.brand,
-              valueSize: 13.5,
+      padding: const EdgeInsets.symmetric(horizontal: 20.0),
+      child: Row(
+        children: List.generate(tabs.length, (index) {
+          final isSelected = index == activeDetailTab;
+          return InkWell(
+            onTap: () => onDetailTabChanged(index),
+            child: Container(
+              height: 48.0,
+              padding: const EdgeInsets.symmetric(horizontal: 16.0),
+              alignment: Alignment.center,
+              decoration: BoxDecoration(
+                border: Border(
+                  bottom: BorderSide(
+                    color: isSelected ? AppColors.brand : Colors.transparent,
+                    width: 3.0,
+                  ),
+                ),
+              ),
+              child: Text(
+                tabs[index],
+                style: GoogleFonts.inter(
+                  fontSize: 14.0,
+                  fontWeight: isSelected ? FontWeight.w700 : FontWeight.w600,
+                  color: isSelected ? AppColors.brand : AppColors.sec,
+                ),
+              ),
             ),
-          ];
-
-          if (isCompact) {
-            return Wrap(
-              spacing: 16.0,
-              runSpacing: 10.0,
-              children: items
-                  .map(
-                    (e) => SizedBox(
-                      width: (constraints.maxWidth - 20) / 2,
-                      child: e,
-                    ),
-                  )
-                  .toList(),
-            );
-          }
-
-          return Row(
-            children: items.map((item) => Expanded(child: item)).toList(),
           );
-        },
+        }),
       ),
     );
   }
 
-  Widget _buildMetaBox(
-    String label,
-    String value, {
-    Color? valueColor,
-    double valueSize = 12.5,
-  }) {
+  Widget _buildGeneralInfoTab(Proposal proposal) {
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(20.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Row 1: Basic Info
+          Wrap(
+            spacing: 24.0,
+            runSpacing: 16.0,
+            children: [
+              _buildInfoSection('TANGGAL PROPOSAL', proposal.date),
+              _buildInfoSection(
+                'MASA BERLAKU',
+                proposal.validUntil.isNotEmpty ? proposal.validUntil : '-',
+              ),
+              _buildInfoSection('LOKASI PROPERTI', proposal.location),
+              _buildInfoSection(
+                'NILAI TOTAL',
+                proposal.formattedTotal,
+                valueColor: AppColors.brand,
+              ),
+            ],
+          ),
+          const SizedBox(height: 32.0),
+
+          // Row 2: Notes
+          Text(
+            'Catatan Proposal',
+            style: GoogleFonts.plusJakartaSans(
+              fontSize: 15.0,
+              fontWeight: FontWeight.w700,
+              color: AppColors.text,
+            ),
+          ),
+          const SizedBox(height: 8.0),
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(16.0),
+            decoration: BoxDecoration(
+              color: AppColors.surface,
+              borderRadius: AppRadius.borderMd,
+              border: Border.all(color: AppColors.border),
+            ),
+            child: Text(
+              (proposal.notes != null && proposal.notes!.isNotEmpty)
+                  ? proposal.notes!
+                  : 'Tidak ada catatan.',
+              style: GoogleFonts.inter(fontSize: 14.0, color: AppColors.text),
+            ),
+          ),
+          const SizedBox(height: 32.0),
+
+          // Row 3: Timeline & Status
+          Text(
+            'Timeline & Status',
+            style: GoogleFonts.plusJakartaSans(
+              fontSize: 15.0,
+              fontWeight: FontWeight.w700,
+              color: AppColors.text,
+            ),
+          ),
+          const SizedBox(height: 8.0),
+          Wrap(
+            spacing: 24.0,
+            runSpacing: 16.0,
+            children: [
+              _buildInfoSection('DIBUAT PADA', proposal.createdAt ?? '-'),
+              _buildInfoSection('DIKIRIM PADA', proposal.sentAt ?? '-'),
+              if (proposal.status.value == 'accepted' ||
+                  proposal.status.value == 'rejected')
+                _buildInfoSection('DIPUTUSKAN PADA', proposal.decidedAt ?? '-'),
+            ],
+          ),
+          if (proposal.status.value == 'rejected' &&
+              proposal.rejectionReason != null) ...[
+            const SizedBox(height: 16.0),
+            _buildInfoSection(
+              'ALASAN PENOLAKAN',
+              proposal.rejectionReason!,
+              valueColor: AppColors.err,
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+
+  Widget _buildInfoSection(String label, String value, {Color? valueColor}) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       mainAxisSize: MainAxisSize.min,
@@ -245,27 +344,62 @@ class ProposalDetailPane extends StatelessWidget {
         Text(
           label,
           style: GoogleFonts.inter(
-            fontSize: 10.5,
+            fontSize: 11.0,
             fontWeight: FontWeight.w700,
             color: AppColors.muted,
-            letterSpacing: 0.4,
+            letterSpacing: 0.5,
           ),
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
         ),
-        const SizedBox(height: 2.0),
+        const SizedBox(height: 4.0),
         Text(
           value,
           style: GoogleFonts.inter(
-            fontSize: valueSize,
-            fontWeight: FontWeight.w700,
+            fontSize: 14.0,
+            fontWeight: FontWeight.w600,
             color: valueColor ?? AppColors.text,
           ),
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
         ),
       ],
     );
+  }
+
+  Widget _buildPricingTabContent(Proposal proposal) {
+    if (proposal.cogs == 0 && proposal.items.isEmpty) {
+      return Center(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Icon(
+              Icons.calculate_outlined,
+              size: 64.0,
+              color: AppColors.muted,
+            ),
+            const SizedBox(height: 16.0),
+            Text(
+              'Belum ada kalkulasi harga',
+              style: GoogleFonts.plusJakartaSans(
+                fontSize: 16.0,
+                fontWeight: FontWeight.w700,
+                color: AppColors.text,
+              ),
+            ),
+            const SizedBox(height: 8.0),
+            Text(
+              'Buat rincian bahan, alat, dan tenaga kerja untuk proposal ini.',
+              style: GoogleFonts.inter(fontSize: 14.0, color: AppColors.muted),
+            ),
+            const SizedBox(height: 24.0),
+            AppButton(
+              text: 'Buat Kalkulasi Harga',
+              onPressed: onOpenCalculator,
+              isFullWidth: false,
+            ),
+          ],
+        ),
+      );
+    }
+
+    return _buildPricingSplit(proposal);
   }
 
   Widget _buildPricingSplit(Proposal proposal) {
@@ -351,9 +485,9 @@ class ProposalDetailPane extends StatelessWidget {
         scrollDirection: Axis.horizontal,
         child: Row(
           children: List.generate(tabTitles.length, (index) {
-            final isSelected = index == activeTab;
+            final isSelected = index == activePricingTab;
             return InkWell(
-              onTap: () => onTabChanged(index),
+              onTap: () => onPricingTabChanged(index),
               child: Container(
                 height: 44.0,
                 padding: const EdgeInsets.symmetric(horizontal: 14.0),
@@ -396,7 +530,7 @@ class ProposalDetailPane extends StatelessWidget {
   }
 
   List<ProposalItem> _getActiveItems(Proposal proposal) {
-    return switch (activeTab) {
+    return switch (activePricingTab) {
       0 => proposal.persiapanItems,
       1 => proposal.teknisiItems,
       2 => proposal.transportItems,
@@ -613,7 +747,7 @@ class ProposalDetailPane extends StatelessWidget {
             'Biaya Bahan & Alat',
             proposal.formattedMaterialCost,
           ),
-          _buildSummaryRow('Biaya Tenaga Kerja', proposal.formattedWokerCost),
+          _buildSummaryRow('Biaya Tenaga Kerja', proposal.formattedWorkerCost),
           _buildSummaryRow('Biaya Transport / BBM', proposal.formattedFuelCost),
           const Divider(height: 14.0, thickness: 1.0, color: AppColors.border),
           _buildSummaryRow(

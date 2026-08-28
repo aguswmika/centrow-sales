@@ -29,7 +29,7 @@ class PricingTabs extends StatelessWidget {
       builder: (context) {
         final List<int> tabCounts = [
           controller.materials.length,
-          controller.wokers.length,
+          controller.workers.length,
           controller.items.length,
         ];
         return Container(

@@ -3,6 +3,7 @@ import 'package:centrow_sales/shared/error/failure.dart';
 import 'package:centrow_sales/shared/network/dio_client.dart';
 import 'package:centrow_sales/shared/result/result.dart';
 import 'package:centrow_sales/modules/sales/entities/create_proposal_input.dart';
+import 'package:centrow_sales/modules/sales/entities/update_proposal_input.dart';
 import 'package:centrow_sales/modules/sales/entities/proposal.dart';
 import 'package:centrow_sales/modules/sales/repositories/dtos/proposal_dto.dart';
 
@@ -12,6 +13,8 @@ abstract interface class ProposalRepository {
   Future<Result<Proposal>> getProposalById(String id);
 
   Future<Result<Proposal>> createProposal(CreateProposalInput input);
+
+  Future<Result<Proposal>> updateProposal(String id, UpdateProposalInput input);
 }
 
 class ProposalRepositoryImpl implements ProposalRepository {
@@ -120,6 +123,38 @@ class ProposalRepositoryImpl implements ProposalRepository {
 
       final createdDto = CreateProposalResponseDto.fromJson(dataMap);
       return Ok(createdDto.toEntity());
+    } on DioException catch (e) {
+      return Err(_handleDioError(e));
+    } catch (e) {
+      return Err(UnknownFailure(e.toString()));
+    }
+  }
+
+  @override
+  Future<Result<Proposal>> updateProposal(
+    String id,
+    UpdateProposalInput input,
+  ) async {
+    try {
+      final response = await _dio.put<dynamic>(
+        '/v1/sales/proposals/$id',
+        data: input.toJson(),
+      );
+      final responseData = response.data;
+      final Map<String, dynamic> dataMap;
+      if (responseData is Map) {
+        if (responseData['data'] is Map) {
+          dataMap = (responseData['data'] as Map).cast<String, dynamic>();
+        } else {
+          dataMap = responseData.cast<String, dynamic>();
+        }
+      } else {
+        return const Err(
+          ServerFailure('Format respon dari server tidak valid.'),
+        );
+      }
+      final updatedDto = ProposalDetailDto.fromJson(dataMap);
+      return Ok(updatedDto.toEntity());
     } on DioException catch (e) {
       return Err(_handleDioError(e));
     } catch (e) {

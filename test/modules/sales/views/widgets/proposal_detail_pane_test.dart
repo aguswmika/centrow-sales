@@ -57,14 +57,15 @@ void main() {
   );
 
   testWidgets(
-    'ProposalDetailPane renders header, metadata bar, pricing list, and sidebar',
+    'ProposalDetailPane renders header, tabs, pricing list, and sidebar',
     (tester) async {
       tester.view.physicalSize = const Size(1000, 800);
       tester.view.devicePixelRatio = 1.0;
       addTearDown(tester.view.resetPhysicalSize);
       addTearDown(tester.view.resetDevicePixelRatio);
 
-      int currentTab = 0;
+      int currentDetailTab = 0;
+      int currentPricingTab = 0;
       bool exportPdfClicked = false;
       bool calculatorClicked = false;
 
@@ -75,8 +76,12 @@ void main() {
               builder: (context, setState) {
                 return ProposalDetailPane(
                   proposal: sampleProposal,
-                  activeTab: currentTab,
-                  onTabChanged: (tab) => setState(() => currentTab = tab),
+                  activeDetailTab: currentDetailTab,
+                  onDetailTabChanged: (tab) =>
+                      setState(() => currentDetailTab = tab),
+                  activePricingTab: currentPricingTab,
+                  onPricingTabChanged: (tab) =>
+                      setState(() => currentPricingTab = tab),
                   onExportPdf: () => exportPdfClicked = true,
                   onOpenCalculator: () => calculatorClicked = true,
                 );
@@ -92,15 +97,24 @@ void main() {
       expect(find.text('Versi 1'), findsOneWidget);
       expect(find.text('Status: Dikirim'), findsOneWidget);
       expect(find.text('Ekspor PDF'), findsOneWidget);
-      expect(find.text('Buka di Kalkulator'), findsOneWidget);
+      expect(find.text('Pricing'), findsOneWidget);
 
-      // Verify Metadata Bar
+      // Verify Top Level Tabs
+      expect(find.text('Informasi Umum'), findsOneWidget);
+      expect(find.text('Rincian Kalkulasi'), findsOneWidget);
+
+      // Verify General Info Tab
       expect(find.text('TANGGAL PROPOSAL'), findsOneWidget);
       expect(find.text('12 Agt 2026'), findsOneWidget);
       expect(find.text('MASA BERLAKU'), findsOneWidget);
       expect(find.text('12 Sep 2026'), findsOneWidget);
       expect(find.text('LOKASI PROPERTI'), findsOneWidget);
       expect(find.text('Villa Utama Seminyak'), findsOneWidget);
+      expect(find.text('Catatan Proposal'), findsOneWidget);
+
+      // Change top level tab to Kalkulasi
+      await tester.tap(find.text('Rincian Kalkulasi'));
+      await tester.pumpAndSettle();
 
       // Verify Pricing Breakdown Tab 0 (Persiapan)
       expect(find.text('Ficam W (25kg)'), findsOneWidget);
@@ -126,7 +140,7 @@ void main() {
       await tester.tap(find.text('Ekspor PDF'));
       expect(exportPdfClicked, isTrue);
 
-      await tester.tap(find.text('Buka di Kalkulator'));
+      await tester.tap(find.text('Pricing'));
       expect(calculatorClicked, isTrue);
     },
   );
@@ -139,8 +153,10 @@ void main() {
           home: Scaffold(
             body: ProposalDetailPane(
               proposal: null,
-              activeTab: 0,
-              onTabChanged: _noop,
+              activeDetailTab: 0,
+              onDetailTabChanged: _noop,
+              activePricingTab: 0,
+              onPricingTabChanged: _noop,
             ),
           ),
         ),

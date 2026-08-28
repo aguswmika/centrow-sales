@@ -218,96 +218,32 @@ class _PricingPageState extends State<PricingPage> {
     return Container(
       color: AppColors.surface,
       padding: const EdgeInsets.fromLTRB(16.0, 0, 16.0, 16.0),
-      child: LayoutBuilder(
-        builder: (context, constraints) {
-          final isNarrow = constraints.maxWidth < 800;
-
-          if (isNarrow) {
-            return Column(
-              children: [
-                Row(
-                  children: [
-                    Expanded(
-                      child: _buildParamItem(
-                        'Luas Area Properti',
-                        _calcController.areaValue.value?.toString(),
-                        icon: Icons.square_foot,
-                        suffix: 'm²',
-                        keyboardType: TextInputType.number,
-                        onChanged: (val) => _calcController.areaValue.value =
-                            double.tryParse(val),
-                      ),
-                    ),
-                    const SizedBox(width: 12.0),
-                    Expanded(
-                      child: _buildParamItem(
-                        'Durasi Kontrak',
-                        _calcController.contractMonths.value?.toString(),
-                        icon: Icons.calendar_today,
-                        suffix: 'Bulan',
-                        keyboardType: TextInputType.number,
-                        onChanged: (val) =>
-                            _calcController.contractMonths.value = int.tryParse(
-                              val,
-                            ),
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 12.0),
-                _buildParamItem(
-                  'Frekuensi Kunjungan',
-                  _calcController.visitFrequency.value?.toString(),
-                  icon: Icons.repeat,
-                  suffix: 'Visit',
-                  keyboardType: TextInputType.number,
-                  onChanged: (val) =>
-                      _calcController.visitFrequency.value = int.tryParse(val),
-                ),
-              ],
-            );
-          }
-
-          return Row(
-            children: [
-              Expanded(
-                child: _buildParamItem(
-                  'Luas Area Properti',
-                  _calcController.areaValue.value?.toString(),
-                  icon: Icons.square_foot,
-                  suffix: 'm²',
-                  keyboardType: TextInputType.number,
-                  onChanged: (val) =>
-                      _calcController.areaValue.value = double.tryParse(val),
-                ),
-              ),
-              const SizedBox(width: 12.0),
-              Expanded(
-                child: _buildParamItem(
-                  'Durasi Kontrak',
-                  _calcController.contractMonths.value?.toString(),
-                  icon: Icons.calendar_today,
-                  suffix: 'Bulan',
-                  keyboardType: TextInputType.number,
-                  onChanged: (val) =>
-                      _calcController.contractMonths.value = int.tryParse(val),
-                ),
-              ),
-              const SizedBox(width: 12.0),
-              Expanded(
-                child: _buildParamItem(
-                  'Frekuensi Kunjungan',
-                  _calcController.visitFrequency.value?.toString(),
-                  icon: Icons.repeat,
-                  suffix: 'Visit',
-                  keyboardType: TextInputType.number,
-                  onChanged: (val) =>
-                      _calcController.visitFrequency.value = int.tryParse(val),
-                ),
-              ),
-            ],
-          );
-        },
+      child: Row(
+        children: [
+          Expanded(
+            child: _buildParamItem(
+              'Durasi Kontrak',
+              _calcController.contractMonths.value?.toString(),
+              icon: Icons.calendar_today,
+              suffix: 'Bulan',
+              keyboardType: TextInputType.number,
+              onChanged: (val) =>
+                  _calcController.contractMonths.value = int.tryParse(val),
+            ),
+          ),
+          const SizedBox(width: 12.0),
+          Expanded(
+            child: _buildParamItem(
+              'Frekuensi Kunjungan',
+              _calcController.visitFrequency.value?.toString(),
+              icon: Icons.repeat,
+              suffix: 'Visit',
+              keyboardType: TextInputType.number,
+              onChanged: (val) =>
+                  _calcController.visitFrequency.value = int.tryParse(val),
+            ),
+          ),
+        ],
       ),
     );
   }

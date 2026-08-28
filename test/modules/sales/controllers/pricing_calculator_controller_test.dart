@@ -61,8 +61,8 @@ void main() {
       row.dispose();
     });
 
-    test('PricingWokerRow calculates total correctly with math.max', () {
-      final row = PricingWokerRow(
+    test('PricingWorkerRow calculates total correctly with math.max', () {
+      final row = PricingWorkerRow(
         id: '2',
         title: 'Technician',
         code: 'LBR-1',
@@ -187,7 +187,7 @@ void main() {
         controller.addRow(addonProduct, 5);
 
         expect(controller.materials.length, 2);
-        expect(controller.wokers.length, 1);
+        expect(controller.workers.length, 1);
         expect(controller.items.length, 2);
       },
     );
@@ -377,7 +377,7 @@ void main() {
       expect(controller.items.length, 2);
     });
 
-    test('addRow allows duplicate wokers for kind 4', () {
+    test('addRow allows duplicate workers for kind 4', () {
       const workerProduct = Product(
         id: 'p4',
         code: 'LBR-1',
@@ -391,7 +391,7 @@ void main() {
 
       controller.addRow(workerProduct, 4);
       controller.addRow(workerProduct, 4);
-      expect(controller.wokers.length, 2);
+      expect(controller.workers.length, 2);
     });
   });
 
@@ -411,8 +411,8 @@ void main() {
         ),
       );
 
-      controller.wokers.add(
-        PricingWokerRow(
+      controller.workers.add(
+        PricingWorkerRow(
           id: 'l1',
           title: 'Tech',
           code: 'LBR',
@@ -451,7 +451,7 @@ void main() {
       );
 
       expect(controller.cogsMaterial.value, 100000.0);
-      expect(controller.cogsWoker.value, 100000.0);
+      expect(controller.cogsWorker.value, 100000.0);
       expect(controller.cogsTransport.value, 50000.0);
       expect(controller.addonCost.value, 40000.0);
 
@@ -478,6 +478,22 @@ void main() {
 
       // marginAmount = subtotal - cogsTotal = 330000 - 250000 = 80000
       expect(controller.marginAmount.value, 80000.0);
+
+      // Tax rate defaults to 11% and is customizable
+      expect(
+        controller.taxPercent.value,
+        PricingCalculatorController.defaultTaxPercent,
+      );
+
+      // 5% -> 330000 * 0.05 = 16500
+      controller.taxPercent.value = 5.0;
+      expect(controller.taxAmount.value, 16500.0);
+      expect(controller.grandTotal.value, 346500.0);
+
+      // 0% -> no tax, grandTotal equals subtotal
+      controller.taxPercent.value = 0.0;
+      expect(controller.taxAmount.value, 0.0);
+      expect(controller.grandTotal.value, 330000.0);
     });
   });
 
@@ -500,11 +516,10 @@ void main() {
         ),
       );
 
-      controller.areaValue.value = 500.0;
-      controller.areaUnitId.value = 'uom-m2';
       controller.contractMonths.value = 6;
       controller.visitFrequency.value = 4;
       controller.markupPercent.value = 15.0;
+      controller.taxPercent.value = 5.0;
 
       await controller.submitPricing('cust-1', 'srv-1');
 
@@ -512,13 +527,13 @@ void main() {
       expect(repository.lastRequest, isNotNull);
       expect(repository.lastRequest!.customerId, 'cust-1');
       expect(repository.lastRequest!.serviceId, 'srv-1');
-      expect(repository.lastRequest!.areaValue, 500.0);
-      expect(repository.lastRequest!.areaUnitId, 'uom-m2');
       expect(repository.lastRequest!.contractMonths, 6);
       expect(repository.lastRequest!.visitFrequency, 4);
       expect(repository.lastRequest!.markupType, 1);
       expect(repository.lastRequest!.markupValue, 15.0);
+      expect(repository.lastRequest!.taxPercent, 5.0);
       expect(repository.lastRequest!.materials.length, 1);
+      expect(repository.lastRequest!.materials[0].supplyType, 1);
       expect(repository.lastRequest!.materials[0].productMappingId, 'pm-1');
       expect(repository.lastRequest!.materials[0].doseUsage, 2.0);
       expect(repository.lastRequest!.materials[0].doseUnitId, 'uom-ml');

@@ -232,7 +232,7 @@ class CustomerRepositoryImpl implements CustomerRepository {
         );
       }
 
-      final updatedDto = CreateCustomerResponseDto.fromJson(dataMap);
+      final updatedDto = CustomerDetailDto.fromJson(dataMap);
       return Ok(updatedDto.toEntity());
     } on DioException catch (e) {
       return Err(_handleDioError(e));

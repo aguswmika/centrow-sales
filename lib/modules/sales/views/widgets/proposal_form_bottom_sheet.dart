@@ -6,14 +6,20 @@ import 'package:centrow_sales/shared/widgets/app_searchable_selector.dart';
 import 'package:centrow_sales/shared/widgets/app_dropdown.dart';
 import 'package:centrow_sales/modules/sales/entities/customer.dart';
 import 'package:centrow_sales/modules/sales/entities/service.dart';
+import 'package:centrow_sales/modules/sales/entities/proposal.dart';
 
 import 'package:centrow_sales/shared/theme/app_typography.dart';
 import 'package:centrow_sales/shared/theme/app_colors.dart';
 
 class ProposalFormBottomSheet extends StatefulWidget {
   final String? customerId;
+  final Proposal? initialProposal;
 
-  const ProposalFormBottomSheet({super.key, this.customerId});
+  const ProposalFormBottomSheet({
+    super.key,
+    this.customerId,
+    this.initialProposal,
+  });
 
   @override
   State<ProposalFormBottomSheet> createState() =>
@@ -24,18 +30,25 @@ class _ProposalFormBottomSheetState extends State<ProposalFormBottomSheet> {
   late final ProposalFormController _controller;
   final TextEditingController _dateController = TextEditingController();
   final TextEditingController _validUntilController = TextEditingController();
+  late final TextEditingController _notesController;
 
   @override
   void initState() {
     super.initState();
     _controller = getIt<ProposalFormController>();
-    if (widget.customerId != null) {
+    _notesController = TextEditingController();
+
+    if (widget.initialProposal != null) {
+      _controller.initForEdit(widget.initialProposal!);
+      _notesController.text = widget.initialProposal!.notes ?? '';
+    } else if (widget.customerId != null) {
       _controller.customerId = widget.customerId;
     }
   }
 
   @override
   void dispose() {
+    _notesController.dispose();
     _controller.dispose();
     _dateController.dispose();
     _validUntilController.dispose();
@@ -98,7 +111,12 @@ class _ProposalFormBottomSheetState extends State<ProposalFormBottomSheet> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text('Buat Proposal Baru', style: AppTypography.heading2()),
+                    Text(
+                      _controller.isEditMode
+                          ? 'Ubah Proposal'
+                          : 'Buat Proposal Baru',
+                      style: AppTypography.heading2(),
+                    ),
                     IconButton(
                       icon: const Icon(
                         Icons.close_rounded,
@@ -175,19 +193,33 @@ class _ProposalFormBottomSheetState extends State<ProposalFormBottomSheet> {
                     (val) => _controller.updateFields(validUntil: val),
                   ),
                 ),
+                const SizedBox(height: 16),
+                TextFormField(
+                  controller: _notesController,
+                  maxLines: 3,
+                  decoration: const InputDecoration(
+                    labelText: 'Catatan Proposal',
+                    alignLabelWithHint: true,
+                  ),
+                  onChanged: (val) => _controller.updateFields(notes: val),
+                ),
                 const SizedBox(height: 32),
                 ElevatedButton(
                   onPressed: () async {
                     final result = await _controller.submit();
                     if (result.isOk && context.mounted) {
-                      context.pop(true);
+                      context.pop(result.valueOrNull);
                     } else if (result.isErr && context.mounted) {
                       ScaffoldMessenger.of(context).showSnackBar(
                         SnackBar(content: Text(result.failureOrNull!.message)),
                       );
                     }
                   },
-                  child: const Text('Buat Proposal'),
+                  child: Text(
+                    _controller.isEditMode
+                        ? 'Simpan Perubahan'
+                        : 'Buat Proposal',
+                  ),
                 ),
               ],
             ),

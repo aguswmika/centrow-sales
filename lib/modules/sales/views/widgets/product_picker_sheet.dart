@@ -93,7 +93,7 @@ class _ProductPickerSheetState extends State<ProductPickerSheet> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
-                  'Pilih Produk / Bahan',
+                  'Pilih Produk / Tenaga Kerja / BBM',
                   style: GoogleFonts.plusJakartaSans(
                     fontSize: 16.0,
                     fontWeight: FontWeight.w700,

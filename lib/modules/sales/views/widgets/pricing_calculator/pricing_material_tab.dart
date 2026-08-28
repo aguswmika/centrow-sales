@@ -51,28 +51,42 @@ class PricingMaterialTab extends StatelessWidget {
   Widget build(BuildContext context) {
     return SignalBuilder(
       builder: (context) {
-        final rows = controller.materials;
+        final chemicals = controller.materials
+            .where((m) => m.kind == 1)
+            .toList();
+        final tools = controller.materials.where((m) => m.kind == 2).toList();
         return Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            buildTableHeader(
-              [
-                'Nama',
-                'Dosis (unit)',
-                'Volume Pengaplikasian (unit)',
-                'Frekuensi',
-                'Biaya',
-                'Total Biaya',
-                '',
-              ],
-              flexes: const [3, 3, 3, 1, 2, 2],
-            ),
-            for (final row in rows)
-              PricingMaterialRowWidget(
-                row: row,
-                controller: controller,
-                hasUnitColumn: true,
+            if (chemicals.isNotEmpty || tools.isEmpty) ...[
+              buildTableHeader(
+                [
+                  'Bahan Kimia',
+                  'Dosis (unit)',
+                  'Volume Pengaplikasian (unit)',
+                  'Frekuensi',
+                  'Biaya',
+                  'Total Biaya',
+                  '',
+                ],
+                flexes: const [3, 3, 3, 1, 2, 2],
               ),
+              for (final row in chemicals)
+                PricingMaterialRowWidget(
+                  row: row,
+                  controller: controller,
+                  hasUnitColumn: true,
+                ),
+            ],
+            if (tools.isNotEmpty) ...[
+              if (chemicals.isNotEmpty) const SizedBox(height: 16.0),
+              buildTableHeader(
+                ['Nama Alat', 'Qty', 'Frekuensi', 'Biaya', 'Total Biaya', ''],
+                flexes: const [3, 2, 2, 2, 2],
+              ),
+              for (final row in tools)
+                PricingToolRowWidget(row: row, controller: controller),
+            ],
             Container(
               padding: const EdgeInsets.all(16.0),
               decoration: const BoxDecoration(
@@ -155,6 +169,16 @@ class PricingMaterialRowWidget extends StatelessWidget {
                     ),
                   ),
                 ],
+                if (row.doseMinLimit != null && row.doseMaxLimit != null) ...[
+                  const SizedBox(height: 4.0),
+                  Text(
+                    'Min: ${row.doseMinLimit} - Max: ${row.doseMaxLimit}',
+                    style: const TextStyle(
+                      fontSize: 11.0,
+                      color: AppColors.muted,
+                    ),
+                  ),
+                ],
               ],
             ),
           ),
@@ -166,6 +190,8 @@ class PricingMaterialRowWidget extends StatelessWidget {
                 Expanded(
                   child: CounterInput(
                     initialValue: row.doseUsage.value,
+                    min: row.doseMinLimit,
+                    max: row.doseMaxLimit,
                     onChanged: (val) {
                       row.doseUsage.value = val;
                     },
@@ -240,6 +266,130 @@ class PricingMaterialRowWidget extends StatelessWidget {
           ),
           const SizedBox(width: 8.0),
           Expanded(
+            child: buildInput(row.freq.value.toString(), (val) {
+              row.freq.value = double.tryParse(val) ?? 0.0;
+            }),
+          ),
+          const SizedBox(width: 16.0),
+          Expanded(
+            flex: 2,
+            child: Align(
+              alignment: Alignment.centerRight,
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 10.0),
+                child: Text(
+                  formatRp(row.unitCost.value),
+                  style: const TextStyle(
+                    fontSize: 13.0,
+                    fontWeight: FontWeight.w600,
+                    color: AppColors.muted,
+                  ),
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(width: 16.0),
+          Expanded(
+            flex: 2,
+            child: SignalBuilder(
+              builder: (context) {
+                return buildTotalAmount(formatRp(row.total.value));
+              },
+            ),
+          ),
+          const SizedBox(width: 8.0),
+          SizedBox(
+            width: 30.0,
+            height: 30.0,
+            child: IconButton(
+              icon: const Icon(
+                Icons.close_rounded,
+                color: AppColors.muted,
+                size: 18.0,
+              ),
+              onPressed: () {
+                controller.materials.remove(row);
+              },
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class PricingToolRowWidget extends StatelessWidget {
+  final PricingMaterialRow row;
+  final PricingCalculatorController controller;
+
+  const PricingToolRowWidget({
+    super.key,
+    required this.row,
+    required this.controller,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      decoration: const BoxDecoration(
+        color: AppColors.surface,
+        border: Border(bottom: BorderSide(color: AppColors.border)),
+      ),
+      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 10.0),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          Expanded(
+            flex: 3,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  row.title,
+                  style: const TextStyle(
+                    fontSize: 14.0,
+                    fontWeight: FontWeight.w600,
+                    color: AppColors.text,
+                  ),
+                ),
+                if (row.code.isNotEmpty) ...[
+                  const SizedBox(height: 4.0),
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 6.0,
+                      vertical: 2.0,
+                    ),
+                    decoration: BoxDecoration(
+                      color: AppColors.brand05,
+                      border: Border.all(color: AppColors.brand10),
+                      borderRadius: AppRadius.borderSm,
+                    ),
+                    child: Text(
+                      row.code,
+                      style: const TextStyle(
+                        fontSize: 11.0,
+                        fontWeight: FontWeight.w600,
+                        color: AppColors.brand,
+                      ),
+                    ),
+                  ),
+                ],
+              ],
+            ),
+          ),
+          const SizedBox(width: 8.0),
+          Expanded(
+            flex: 2,
+            child: CounterInput(
+              initialValue: row.doseUsage.value,
+              onChanged: (val) {
+                row.doseUsage.value = val;
+              },
+            ),
+          ),
+          const SizedBox(width: 8.0),
+          Expanded(
+            flex: 2,
             child: buildInput(row.freq.value.toString(), (val) {
               row.freq.value = double.tryParse(val) ?? 0.0;
             }),

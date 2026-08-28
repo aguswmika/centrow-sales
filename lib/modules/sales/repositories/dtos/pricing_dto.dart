@@ -1,89 +1,98 @@
 class CreatePricingRequestDto {
   final String customerId;
   final String serviceId;
-  final double? areaValue;
-  final String? areaUnitId;
   final int contractMonths;
   final int visitFrequency;
   final int markupType;
   final double markupValue;
   final double discountAmount;
+  final double taxPercentage;
   final List<PricingMaterialDto> materials;
-  final List<PricingWokerDto> wokers;
+  final List<PricingWorkerDto> workers;
   final List<PricingItemDto> items;
 
   const CreatePricingRequestDto({
     required this.customerId,
     required this.serviceId,
-    this.areaValue,
-    this.areaUnitId,
     required this.contractMonths,
     required this.visitFrequency,
     required this.markupType,
     required this.markupValue,
     required this.discountAmount,
+    required this.taxPercentage,
     required this.materials,
-    required this.wokers,
+    required this.workers,
     required this.items,
   });
 
   Map<String, dynamic> toJson() => {
     'customer_id': customerId,
     'service_id': serviceId,
-    if (areaValue != null) 'area_value': areaValue,
-    if (areaUnitId != null) 'area_unit_id': areaUnitId,
     'contract_months': contractMonths,
     'visit_frequency': visitFrequency,
     'markup_type': markupType,
     'markup_value': markupValue,
     'discount_amount': discountAmount,
-    'materials': materials.map((e) => e.toJson()).toList(),
-    'wokers': wokers.map((e) => e.toJson()).toList(),
+    'tax_percentage': taxPercentage,
+    'supplies': materials.map((e) => e.toJson()).toList(),
+    'workers': workers.map((e) => e.toJson()).toList(),
     'items': items.map((e) => e.toJson()).toList(),
   };
 }
 
 class PricingMaterialDto {
-  final String productMappingId;
+  final int supplyType;
+  final String? productMappingId;
+  final String? productId;
   final String name;
   final String uomCode;
-  final double doseUsage;
-  final String doseUnitId;
-  final double applicationVolume;
-  final String applicationVolumeUnitId;
+  final double? qty;
+  final double? doseUsage;
+  final String? doseUnitId;
+  final double? applicationVolume;
+  final String? applicationVolumeUnitId;
   final int frequency;
 
   const PricingMaterialDto({
-    required this.productMappingId,
+    required this.supplyType,
+    this.productMappingId,
+    this.productId,
     required this.name,
     required this.uomCode,
-    required this.doseUsage,
-    required this.doseUnitId,
-    required this.applicationVolume,
-    required this.applicationVolumeUnitId,
+    this.qty,
+    this.doseUsage,
+    this.doseUnitId,
+    this.applicationVolume,
+    this.applicationVolumeUnitId,
     required this.frequency,
   });
 
   Map<String, dynamic> toJson() => {
-    'product_mapping_id': productMappingId,
+    'supply_type': supplyType,
     'name': name,
     'uom_code': uomCode,
-    'dose_usage': doseUsage,
-    'dose_unit_id': doseUnitId,
-    'application_volume': applicationVolume,
-    'application_volume_unit_id': applicationVolumeUnitId,
     'frequency': frequency,
+    if (supplyType == 1) ...{
+      'product_mapping_id': productMappingId,
+      'dose_usage': doseUsage,
+      'dose_unit_id': doseUnitId,
+      'application_volume': applicationVolume,
+      'application_volume_unit_id': applicationVolumeUnitId,
+    },
+    if (supplyType == 2) ...{'product_id': productId, 'qty': qty},
   };
 }
 
-class PricingWokerDto {
+class PricingWorkerDto {
   final String positionName;
+  final int? visitFrequency;
   final double firstVisitHours;
   final double routineHours;
   final double hourlyRate;
 
-  const PricingWokerDto({
+  const PricingWorkerDto({
     required this.positionName,
+    this.visitFrequency,
     required this.firstVisitHours,
     required this.routineHours,
     required this.hourlyRate,
@@ -91,6 +100,7 @@ class PricingWokerDto {
 
   Map<String, dynamic> toJson() => {
     'position_name': positionName,
+    'visit_frequency': visitFrequency,
     'first_visit_hours': firstVisitHours,
     'routine_hours': routineHours,
     'hourly_rate': hourlyRate,
@@ -99,7 +109,7 @@ class PricingWokerDto {
 
 class PricingItemDto {
   final int itemType;
-  final String productId;
+  final String? productId;
   final String name;
   final double qty;
   final int frequency;
@@ -107,7 +117,7 @@ class PricingItemDto {
 
   const PricingItemDto({
     required this.itemType,
-    required this.productId,
+    this.productId,
     required this.name,
     required this.qty,
     required this.frequency,
@@ -116,7 +126,7 @@ class PricingItemDto {
 
   Map<String, dynamic> toJson() => {
     'item_type': itemType,
-    'product_id': productId,
+    if (productId != null) 'product_id': productId,
     'name': name,
     'qty': qty,
     'frequency': frequency,

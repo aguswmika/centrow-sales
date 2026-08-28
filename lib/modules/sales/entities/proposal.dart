@@ -148,6 +148,9 @@ class Proposal {
   final String date;
   final String validUntil;
   final String location;
+  final String? addressId;
+  final String? addressLabel;
+  final String? addressLine;
   final String version;
   final double cogs;
   final double materialCost;
@@ -185,6 +188,9 @@ class Proposal {
     required this.date,
     required this.validUntil,
     required this.location,
+    this.addressId,
+    this.addressLabel,
+    this.addressLine,
     this.version = '1',
     this.cogs = 0.0,
     this.materialCost = 0.0,
@@ -234,7 +240,7 @@ class Proposal {
 
   String get formattedCogs => _formatCurrency(cogs);
   String get formattedMaterialCost => _formatCurrency(materialCost);
-  String get formattedWokerCost => _formatCurrency(workerCost);
+  String get formattedWorkerCost => _formatCurrency(workerCost);
   String get formattedFuelCost => _formatCurrency(fuelCost);
   String get formattedMarkup {
     if (markupPercent > 0) {
@@ -282,6 +288,9 @@ class Proposal {
     String? date,
     String? validUntil,
     String? location,
+    String? addressId,
+    String? addressLabel,
+    String? addressLine,
     String? version,
     double? cogs,
     double? materialCost,
@@ -319,6 +328,9 @@ class Proposal {
       date: date ?? this.date,
       validUntil: validUntil ?? this.validUntil,
       location: location ?? this.location,
+      addressId: addressId ?? this.addressId,
+      addressLabel: addressLabel ?? this.addressLabel,
+      addressLine: addressLine ?? this.addressLine,
       version: version ?? this.version,
       cogs: cogs ?? this.cogs,
       materialCost: materialCost ?? this.materialCost,
@@ -362,6 +374,9 @@ class Proposal {
           date == other.date &&
           validUntil == other.validUntil &&
           location == other.location &&
+          addressId == other.addressId &&
+          addressLabel == other.addressLabel &&
+          addressLine == other.addressLine &&
           version == other.version &&
           cogs == other.cogs &&
           materialCost == other.materialCost &&
@@ -396,6 +411,9 @@ class Proposal {
     date,
     validUntil,
     location,
+    addressId,
+    addressLabel,
+    addressLine,
     version,
     cogs,
     materialCost,

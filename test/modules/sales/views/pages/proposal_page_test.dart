@@ -35,6 +35,11 @@ class _FakeProposalRepo implements ProposalRepository {
   Future<Result<Proposal>> createProposal(dynamic input) async {
     return const Err(ServerFailure('Not implemented'));
   }
+
+  @override
+  Future<Result<Proposal>> updateProposal(String id, dynamic input) async {
+    return const Err(ServerFailure('Not implemented'));
+  }
 }
 
 void main() {

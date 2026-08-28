@@ -50,8 +50,10 @@ void main() {
     markupType: 1,
     markupValue: 25.0,
     discountAmount: 0.0,
+    taxPercent: 11.0,
     materials: [
       PricingMaterialDto(
+        supplyType: 1,
         productMappingId: 'pm-1',
         name: 'Material 1',
         uomCode: 'KG',
@@ -62,8 +64,8 @@ void main() {
         frequency: 2,
       ),
     ],
-    wokers: [
-      PricingWokerDto(
+    workers: [
+      PricingWorkerDto(
         positionName: 'Operator',
         firstVisitHours: 3.0,
         routineHours: 2.0,

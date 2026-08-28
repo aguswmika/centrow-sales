@@ -64,7 +64,8 @@ GoRouter createRouter({String? initialLocation}) => GoRouter(
             GoRoute(
               path: '/proposals',
               name: 'proposals',
-              builder: (context, state) => const ProposalPage(),
+              builder: (context, state) =>
+                  ProposalPage(initialProposalId: state.extra as String?),
               routes: [
                 GoRoute(
                   path: ':id/pricing',

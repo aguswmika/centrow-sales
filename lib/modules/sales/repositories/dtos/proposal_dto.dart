@@ -12,6 +12,9 @@ class ProposalListItemDto {
   final double totalAmount;
   final String status;
   final String createdAt;
+  final String? addressId;
+  final String? addressLabel;
+  final String? addressLine;
 
   const ProposalListItemDto({
     required this.id,
@@ -25,6 +28,9 @@ class ProposalListItemDto {
     required this.totalAmount,
     required this.status,
     required this.createdAt,
+    this.addressId,
+    this.addressLabel,
+    this.addressLine,
   });
 
   factory ProposalListItemDto.fromJson(Map<String, dynamic> json) {
@@ -40,10 +46,23 @@ class ProposalListItemDto {
       totalAmount: (json['total_amount'] as num?)?.toDouble() ?? 0.0,
       status: json['status']?.toString() ?? '',
       createdAt: json['created_at']?.toString() ?? '',
+      addressId: json['address_id']?.toString(),
+      addressLabel: json['address_label']?.toString(),
+      addressLine: json['address_line']?.toString(),
     );
   }
 
   Proposal toEntity() {
+    String formattedLocation = '';
+    if (addressLabel != null && addressLabel!.isNotEmpty) {
+      formattedLocation = addressLabel!;
+      if (addressLine != null && addressLine!.isNotEmpty) {
+        formattedLocation += ' - $addressLine';
+      }
+    } else if (addressLine != null && addressLine!.isNotEmpty) {
+      formattedLocation = addressLine!;
+    }
+
     return Proposal(
       id: id,
       code: code,
@@ -54,7 +73,10 @@ class ProposalListItemDto {
       status: ProposalStatus.fromString(status),
       date: proposalDate,
       validUntil: validUntil ?? '',
-      location: '',
+      location: formattedLocation,
+      addressId: addressId,
+      addressLabel: addressLabel,
+      addressLine: addressLine,
       version: '1',
       total: totalAmount,
       createdAt: createdAt,
@@ -129,6 +151,9 @@ class ProposalDetailDto {
   final String? rejectionReason;
   final String? notes;
   final String createdAt;
+  final String? addressId;
+  final String? addressLabel;
+  final String? addressLine;
 
   const ProposalDetailDto({
     required this.id,
@@ -148,6 +173,9 @@ class ProposalDetailDto {
     this.rejectionReason,
     this.notes,
     required this.createdAt,
+    this.addressId,
+    this.addressLabel,
+    this.addressLine,
   });
 
   factory ProposalDetailDto.fromJson(Map<String, dynamic> json) {
@@ -169,10 +197,23 @@ class ProposalDetailDto {
       rejectionReason: json['rejection_reason']?.toString(),
       notes: json['notes']?.toString(),
       createdAt: json['created_at']?.toString() ?? '',
+      addressId: json['address_id']?.toString(),
+      addressLabel: json['address_label']?.toString(),
+      addressLine: json['address_line']?.toString(),
     );
   }
 
   Proposal toEntity() {
+    String formattedLocation = '';
+    if (addressLabel != null && addressLabel!.isNotEmpty) {
+      formattedLocation = addressLabel!;
+      if (addressLine != null && addressLine!.isNotEmpty) {
+        formattedLocation += ' - $addressLine';
+      }
+    } else if (addressLine != null && addressLine!.isNotEmpty) {
+      formattedLocation = addressLine!;
+    }
+
     return Proposal(
       id: id,
       code: code,
@@ -183,7 +224,10 @@ class ProposalDetailDto {
       status: ProposalStatus.fromString(status),
       date: proposalDate,
       validUntil: validUntil ?? '',
-      location: '',
+      location: formattedLocation,
+      addressId: addressId,
+      addressLabel: addressLabel,
+      addressLine: addressLine,
       version: version.toString(),
       total: totalAmount,
       notes: notes,

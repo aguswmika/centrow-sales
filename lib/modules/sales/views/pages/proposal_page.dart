@@ -9,13 +9,15 @@ import 'package:centrow_sales/shared/widgets/toast.dart';
 import 'package:centrow_sales/modules/sales/controllers/proposal_controller.dart';
 import 'package:centrow_sales/modules/sales/views/widgets/proposal_detail_pane.dart';
 import 'package:centrow_sales/modules/sales/views/widgets/proposal_master_list.dart';
+import 'package:centrow_sales/modules/sales/entities/proposal.dart';
 import 'package:centrow_sales/modules/sales/views/widgets/proposal_form_bottom_sheet.dart'
     as centrow_sales_bs;
 
 class ProposalPage extends StatefulWidget {
   final ProposalController? controller;
+  final String? initialProposalId;
 
-  const ProposalPage({super.key, this.controller});
+  const ProposalPage({super.key, this.controller, this.initialProposalId});
 
   @override
   State<ProposalPage> createState() => _ProposalPageState();
@@ -28,7 +30,11 @@ class _ProposalPageState extends State<ProposalPage> {
   void initState() {
     super.initState();
     _controller = widget.controller ?? getIt<ProposalController>();
-    _controller.loadProposals();
+    _controller.loadProposals().then((_) {
+      if (widget.initialProposalId != null) {
+        _controller.selectProposal(widget.initialProposalId!);
+      }
+    });
   }
 
   @override
@@ -73,7 +79,8 @@ class _ProposalPageState extends State<ProposalPage> {
         : (selectedProp?.id ?? '');
     final selectedStatus = _controller.selectedStatus.value;
     final query = _controller.searchQuery.value;
-    final activeTab = _controller.activePricingTab.value;
+    final activePricingTab = _controller.activePricingTab.value;
+    final activeDetailTab = _controller.activeDetailTab.value;
     final detailState = _controller.proposalDetailState.value;
 
     final masterList = ProposalMasterList(
@@ -85,7 +92,7 @@ class _ProposalPageState extends State<ProposalPage> {
       onSelectStatus: _controller.selectStatus,
       onSearchChanged: _controller.setSearchQuery,
       onCreateProposal: () async {
-        final result = await showModalBottomSheet<bool>(
+        final result = await showModalBottomSheet<Proposal>(
           context: context,
           isScrollControlled: true,
           backgroundColor: Colors.transparent,
@@ -93,6 +100,7 @@ class _ProposalPageState extends State<ProposalPage> {
         );
         if (result != null && context.mounted) {
           await _controller.loadProposals(isRefresh: true);
+          await _controller.selectProposal(result.id);
         }
       },
       onRefresh: () => _controller.loadProposals(isRefresh: true),
@@ -112,14 +120,31 @@ class _ProposalPageState extends State<ProposalPage> {
             child: ProposalDetailPane(
               proposal: selectedProp,
               detailState: detailState,
-              activeTab: activeTab,
-              onTabChanged: _controller.setActivePricingTab,
+              activeDetailTab: activeDetailTab,
+              onDetailTabChanged: _controller.setDetailTab,
+              activePricingTab: activePricingTab,
+              onPricingTabChanged: _controller.setActivePricingTab,
               onExportPdf: () {
                 showAppToast(
                   context,
                   'Dokumen proposal PDF siap diunduh.',
                   isSuccess: true,
                 );
+              },
+              onEditProposal: () async {
+                if (selectedProp == null) return;
+                final result = await showModalBottomSheet<Proposal>(
+                  context: context,
+                  isScrollControlled: true,
+                  backgroundColor: Colors.transparent,
+                  builder: (_) => centrow_sales_bs.ProposalFormBottomSheet(
+                    initialProposal: selectedProp,
+                  ),
+                );
+                if (result != null && context.mounted) {
+                  await _controller.loadProposals(isRefresh: true);
+                  await _controller.selectProposal(result.id);
+                }
               },
               onOpenCalculator: selectedId.isNotEmpty
                   ? () => context.go('/proposals/$selectedId/pricing')

@@ -31,6 +31,13 @@ class ProposalController {
   final _activePricingTab = signal<int>(0);
   ReadonlySignal<int> get activePricingTab => _activePricingTab;
 
+  final _activeDetailTab = signal<int>(0);
+  ReadonlySignal<int> get activeDetailTab => _activeDetailTab;
+
+  void setDetailTab(int tabIndex) {
+    _activeDetailTab.value = tabIndex;
+  }
+
   late final filteredProposals = computed<List<Proposal>>(() {
     final state = _proposalsState.value;
     if (state is! UiSuccess<List<Proposal>>) return <Proposal>[];
@@ -184,6 +191,7 @@ class ProposalController {
     _searchQuery.dispose();
     _selectedStatus.dispose();
     _activePricingTab.dispose();
+    _activeDetailTab.dispose();
     filteredProposals.dispose();
     selectedProposal.dispose();
     activePricingCategory.dispose();

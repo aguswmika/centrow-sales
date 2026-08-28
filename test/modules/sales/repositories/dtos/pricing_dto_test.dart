@@ -7,6 +7,7 @@ void main() {
       'CreatePricingRequestDto toJson serializes correctly with snake_case keys',
       () {
         const material = PricingMaterialDto(
+          supplyType: 1,
           productMappingId: 'pm1',
           name: 'Chemical A',
           uomCode: 'BTL',
@@ -17,7 +18,16 @@ void main() {
           frequency: 2,
         );
 
-        const woker = PricingWokerDto(
+        const tool = PricingMaterialDto(
+          supplyType: 2,
+          productId: 'p-tool',
+          name: 'Sprayer',
+          uomCode: 'UNIT',
+          qty: 1.0,
+          frequency: 1,
+        );
+
+        const worker = PricingWorkerDto(
           positionName: 'Technician',
           firstVisitHours: 2.0,
           routineHours: 1.5,
@@ -36,15 +46,14 @@ void main() {
         const request = CreatePricingRequestDto(
           customerId: 'c1',
           serviceId: 's1',
-          areaValue: 500.0,
-          areaUnitId: 'uom-m2',
           contractMonths: 12,
           visitFrequency: 24,
           markupType: 1,
           markupValue: 20.0,
           discountAmount: 10000.0,
-          materials: [material],
-          wokers: [woker],
+          taxPercent: 11.0,
+          materials: [material, tool],
+          workers: [worker],
           items: [item],
         );
 
@@ -52,17 +61,19 @@ void main() {
 
         expect(json['customer_id'], 'c1');
         expect(json['service_id'], 's1');
-        expect(json['area_value'], 500.0);
-        expect(json['area_unit_id'], 'uom-m2');
         expect(json['contract_months'], 12);
         expect(json['visit_frequency'], 24);
         expect(json['markup_type'], 1);
         expect(json['markup_value'], 20.0);
         expect(json['discount_amount'], 10000.0);
+        expect(json['tax_percent'], 11.0);
+        expect(json.containsKey('area_value'), isFalse);
+        expect(json.containsKey('area_unit_id'), isFalse);
 
-        final materialsList = json['materials'] as List<dynamic>;
-        expect(materialsList.length, 1);
-        expect(materialsList[0], {
+        final suppliesList = json['supplies'] as List<dynamic>;
+        expect(suppliesList.length, 2);
+        expect(suppliesList[0], {
+          'supply_type': 1,
           'product_mapping_id': 'pm1',
           'name': 'Chemical A',
           'uom_code': 'BTL',
@@ -72,8 +83,16 @@ void main() {
           'application_volume_unit_id': 'uom-l',
           'frequency': 2,
         });
+        expect(suppliesList[1], {
+          'supply_type': 2,
+          'product_id': 'p-tool',
+          'name': 'Sprayer',
+          'uom_code': 'UNIT',
+          'qty': 1.0,
+          'frequency': 1,
+        });
 
-        final workersList = json['wokers'] as List<dynamic>;
+        final workersList = json['workers'] as List<dynamic>;
         expect(workersList.length, 1);
         expect(workersList[0], {
           'position_name': 'Technician',

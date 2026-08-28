@@ -1,4 +1,4 @@
-class CreateProposalInput {
+class UpdateProposalInput {
   final String customerId;
   final String serviceId;
   final String proposalDate;
@@ -6,7 +6,7 @@ class CreateProposalInput {
   final String? addressId;
   final String? notes;
 
-  const CreateProposalInput({
+  const UpdateProposalInput({
     required this.customerId,
     required this.serviceId,
     required this.proposalDate,
@@ -22,8 +22,6 @@ class CreateProposalInput {
       'proposal_date': proposalDate,
       if (validUntil != null) 'valid_until': validUntil,
       if (addressId != null) 'address_id': addressId,
-      'code': '',
-      'total_amount': 0.0,
       'notes': notes ?? '',
     };
   }

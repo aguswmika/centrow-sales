@@ -340,6 +340,7 @@ class Customer {
   final String phoneAlt;
   final String email;
   final String scanCode;
+  final double taxPercentage;
   final String riskNotes;
   final String notes;
   final int activeProposalsCount;
@@ -365,6 +366,7 @@ class Customer {
     this.phoneAlt = '',
     this.email = '',
     this.scanCode = '',
+    this.taxPercentage = 0,
     this.riskNotes = '',
     this.notes = '',
     this.activeProposalsCount = 0,
@@ -403,6 +405,7 @@ class Customer {
     String? phoneAlt,
     String? email,
     String? scanCode,
+    double? taxPercentage,
     String? riskNotes,
     String? notes,
     int? activeProposalsCount,
@@ -427,6 +430,7 @@ class Customer {
       phoneAlt: phoneAlt ?? this.phoneAlt,
       email: email ?? this.email,
       scanCode: scanCode ?? this.scanCode,
+      taxPercentage: taxPercentage ?? this.taxPercentage,
       riskNotes: riskNotes ?? this.riskNotes,
       notes: notes ?? this.notes,
       activeProposalsCount: activeProposalsCount ?? this.activeProposalsCount,
@@ -456,6 +460,7 @@ class Customer {
           phoneAlt == other.phoneAlt &&
           email == other.email &&
           scanCode == other.scanCode &&
+          taxPercentage == other.taxPercentage &&
           riskNotes == other.riskNotes &&
           notes == other.notes &&
           activeProposalsCount == other.activeProposalsCount &&
@@ -477,6 +482,7 @@ class Customer {
     phoneAlt,
     email,
     scanCode,
+    taxPercentage,
     riskNotes,
     notes,
     activeProposalsCount,

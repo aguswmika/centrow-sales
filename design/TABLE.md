@@ -6,7 +6,7 @@
 
    sales_pricings
      -> sales_pricing_persiapan   chemicals and tools (has uom_id)
-     -> sales_pricing_teknisi     woker, one row per technician
+     -> sales_pricing_teknisi     worker, one row per technician
      -> sales_pricing_items       fuel + addon + other (merged, same shape)
 
    One pricing per proposal. proposal_id is the only link — customer,
@@ -128,7 +128,7 @@ CREATE TABLE sales_pricing_teknisi (
     tenant_id uuid NOT NULL,
     pricing_id uuid NOT NULL,
     technician_no smallint NOT NULL DEFAULT 1,
-    product_id uuid,                -- woker grade, if graded
+    product_id uuid,                -- worker grade, if graded
 
     description varchar,
     volume numeric(18, 2) NOT NULL DEFAULT 0,     -- meaning still open, see below
@@ -220,7 +220,7 @@ CREATE INDEX ix_sales_pricing_items_manual
 
    3. sales_pricing_teknisi.hourly_rate — the old table had no cost column,
       so the rate came from somewhere outside it. Decide the source before
-      building the form; a woker product referenced by product_id is the
+      building the form; a worker product referenced by product_id is the
       version that survives a rate change.
    ===================================================================== */
 

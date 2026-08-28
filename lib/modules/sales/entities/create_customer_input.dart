@@ -202,6 +202,7 @@ class CreateCustomerInput {
   final String phone;
   final String phoneAlt;
   final String email;
+  final double taxPercentage;
   final String riskNotes;
   final String notes;
   final List<CreateLocationInput> locations;
@@ -217,6 +218,7 @@ class CreateCustomerInput {
     this.phone = '',
     this.phoneAlt = '',
     this.email = '',
+    this.taxPercentage = 0,
     this.riskNotes = '',
     this.notes = '',
     this.locations = const [],
@@ -233,6 +235,7 @@ class CreateCustomerInput {
     String? phone,
     String? phoneAlt,
     String? email,
+    double? taxPercentage,
     String? riskNotes,
     String? notes,
     List<CreateLocationInput>? locations,
@@ -248,6 +251,7 @@ class CreateCustomerInput {
       phone: phone ?? this.phone,
       phoneAlt: phoneAlt ?? this.phoneAlt,
       email: email ?? this.email,
+      taxPercentage: taxPercentage ?? this.taxPercentage,
       riskNotes: riskNotes ?? this.riskNotes,
       notes: notes ?? this.notes,
       locations: locations ?? this.locations,
