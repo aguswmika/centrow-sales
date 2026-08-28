@@ -17,7 +17,7 @@ void main() {
           frequency: 2,
         );
 
-        const labor = PricingLaborDto(
+        const woker = PricingWokerDto(
           positionName: 'Technician',
           firstVisitHours: 2.0,
           routineHours: 1.5,
@@ -44,7 +44,7 @@ void main() {
           markupValue: 20.0,
           discountAmount: 10000.0,
           materials: [material],
-          labors: [labor],
+          wokers: [woker],
           items: [item],
         );
 
@@ -73,9 +73,9 @@ void main() {
           'frequency': 2,
         });
 
-        final laborsList = json['labors'] as List<dynamic>;
-        expect(laborsList.length, 1);
-        expect(laborsList[0], {
+        final workersList = json['wokers'] as List<dynamic>;
+        expect(workersList.length, 1);
+        expect(workersList[0], {
           'position_name': 'Technician',
           'first_visit_hours': 2.0,
           'routine_hours': 1.5,

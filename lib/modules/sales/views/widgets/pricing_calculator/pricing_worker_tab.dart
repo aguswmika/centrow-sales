@@ -7,12 +7,12 @@ import 'package:centrow_sales/modules/sales/entities/product.dart';
 import 'package:centrow_sales/modules/sales/views/widgets/product_picker_sheet.dart';
 import 'pricing_utils.dart';
 
-class PricingLaborTab extends StatelessWidget {
+class PricingWokerTab extends StatelessWidget {
   final PricingCalculatorController controller;
 
-  const PricingLaborTab({super.key, required this.controller});
+  const PricingWokerTab({super.key, required this.controller});
 
-  Future<void> _handleAddLabor(BuildContext context) async {
+  Future<void> _handleAddWoker(BuildContext context) async {
     final result = await showModalBottomSheet<Product>(
       context: context,
       isScrollControlled: true,
@@ -27,7 +27,7 @@ class PricingLaborTab extends StatelessWidget {
   Widget build(BuildContext context) {
     return SignalBuilder(
       builder: (context) {
-        final rows = controller.labors;
+        final rows = controller.wokers;
         return Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
@@ -44,7 +44,7 @@ class PricingLaborTab extends StatelessWidget {
               flexes: const [3, 1, 1, 1, 2, 2],
             ),
             for (final row in rows)
-              PricingLaborRowWidget(row: row, controller: controller),
+              PricingWokerRowWidget(row: row, controller: controller),
             Container(
               padding: const EdgeInsets.all(16.0),
               decoration: const BoxDecoration(
@@ -55,7 +55,7 @@ class PricingLaborTab extends StatelessWidget {
                 alignment: Alignment.centerLeft,
                 child: buildAddBtn(
                   'Tambah Teknisi',
-                  () => _handleAddLabor(context),
+                  () => _handleAddWoker(context),
                 ),
               ),
             ),
@@ -66,11 +66,11 @@ class PricingLaborTab extends StatelessWidget {
   }
 }
 
-class PricingLaborRowWidget extends StatelessWidget {
-  final PricingLaborRow row;
+class PricingWokerRowWidget extends StatelessWidget {
+  final PricingWokerRow row;
   final PricingCalculatorController controller;
 
-  const PricingLaborRowWidget({
+  const PricingWokerRowWidget({
     super.key,
     required this.row,
     required this.controller,
@@ -169,7 +169,7 @@ class PricingLaborRowWidget extends StatelessWidget {
                 size: 18.0,
               ),
               onPressed: () {
-                controller.labors.remove(row);
+                controller.wokers.remove(row);
               },
             ),
           ),

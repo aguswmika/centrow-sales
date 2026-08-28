@@ -62,8 +62,8 @@ void main() {
         frequency: 2,
       ),
     ],
-    labors: [
-      PricingLaborDto(
+    wokers: [
+      PricingWokerDto(
         positionName: 'Operator',
         firstVisitHours: 3.0,
         routineHours: 2.0,

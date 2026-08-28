@@ -4,7 +4,7 @@ import 'package:centrow_sales/modules/sales/entities/proposal.dart';
 import 'package:centrow_sales/modules/sales/controllers/pricing_calculator_controller.dart';
 import 'pricing_calculator/pricing_tabs.dart';
 import 'pricing_calculator/pricing_material_tab.dart';
-import 'pricing_calculator/pricing_labor_tab.dart';
+import 'pricing_calculator/pricing_worker_tab.dart';
 import 'pricing_calculator/pricing_item_tab.dart';
 import 'pricing_calculator/pricing_cogs_card.dart';
 import 'pricing_calculator/pricing_margin_card.dart';
@@ -112,7 +112,7 @@ class _PricingCalculatorViewState extends State<PricingCalculatorView> {
       case 0:
         return PricingMaterialTab(controller: widget.calculatorController);
       case 1:
-        return PricingLaborTab(controller: widget.calculatorController);
+        return PricingWokerTab(controller: widget.calculatorController);
       case 2:
         return PricingItemTab(controller: widget.calculatorController);
       default:

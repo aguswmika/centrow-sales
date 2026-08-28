@@ -53,7 +53,7 @@ void main() {
       shortAmount: 'Rp 8,15jt',
       cogs: 5480000.0,
       materialCost: 3710000.0,
-      laborCost: 1650000.0,
+      workerCost: 1650000.0,
       fuelCost: 120000.0,
       markup: 1370000.0,
       markupPercent: 25.0,

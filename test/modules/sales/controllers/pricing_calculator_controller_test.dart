@@ -61,8 +61,8 @@ void main() {
       row.dispose();
     });
 
-    test('PricingLaborRow calculates total correctly with math.max', () {
-      final row = PricingLaborRow(
+    test('PricingWokerRow calculates total correctly with math.max', () {
+      final row = PricingWokerRow(
         id: '2',
         title: 'Technician',
         code: 'LBR-1',
@@ -158,7 +158,7 @@ void main() {
           kind: 3,
         );
 
-        const laborProduct = Product(
+        const workerProduct = Product(
           id: 'p4',
           code: 'LBR-1',
           name: 'Technician 1',
@@ -182,12 +182,12 @@ void main() {
 
         controller.addRow(chemProduct, 1);
         controller.addRow(toolProduct, 2);
-        controller.addRow(laborProduct, 4);
+        controller.addRow(workerProduct, 4);
         controller.addRow(transportProduct, 3);
         controller.addRow(addonProduct, 5);
 
         expect(controller.materials.length, 2);
-        expect(controller.labors.length, 1);
+        expect(controller.wokers.length, 1);
         expect(controller.items.length, 2);
       },
     );
@@ -377,8 +377,8 @@ void main() {
       expect(controller.items.length, 2);
     });
 
-    test('addRow allows duplicate labors for kind 4', () {
-      const laborProduct = Product(
+    test('addRow allows duplicate wokers for kind 4', () {
+      const workerProduct = Product(
         id: 'p4',
         code: 'LBR-1',
         name: 'Technician 1',
@@ -389,9 +389,9 @@ void main() {
         kind: 4,
       );
 
-      controller.addRow(laborProduct, 4);
-      controller.addRow(laborProduct, 4);
-      expect(controller.labors.length, 2);
+      controller.addRow(workerProduct, 4);
+      controller.addRow(workerProduct, 4);
+      expect(controller.wokers.length, 2);
     });
   });
 
@@ -411,8 +411,8 @@ void main() {
         ),
       );
 
-      controller.labors.add(
-        PricingLaborRow(
+      controller.wokers.add(
+        PricingWokerRow(
           id: 'l1',
           title: 'Tech',
           code: 'LBR',
@@ -451,7 +451,7 @@ void main() {
       );
 
       expect(controller.cogsMaterial.value, 100000.0);
-      expect(controller.cogsLabor.value, 100000.0);
+      expect(controller.cogsWoker.value, 100000.0);
       expect(controller.cogsTransport.value, 50000.0);
       expect(controller.addonCost.value, 40000.0);
 

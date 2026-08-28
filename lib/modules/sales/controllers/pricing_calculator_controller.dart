@@ -66,7 +66,7 @@ class PricingMaterialRow {
   }
 }
 
-class PricingLaborRow {
+class PricingWokerRow {
   final String id;
   final String title;
   final String code;
@@ -85,7 +85,7 @@ class PricingLaborRow {
             hourlyRate.value,
   );
 
-  PricingLaborRow({
+  PricingWokerRow({
     required this.id,
     required this.title,
     required this.code,
@@ -168,7 +168,7 @@ class PricingCalculatorController {
   }
 
   final materials = ListSignal<PricingMaterialRow>([]);
-  final labors = ListSignal<PricingLaborRow>([]);
+  final wokers = ListSignal<PricingWokerRow>([]);
   final items = ListSignal<PricingItemRow>([]);
 
   final areaValue = signal<double?>(null);
@@ -186,8 +186,8 @@ class PricingCalculatorController {
     () => materials.fold(0.0, (sum, r) => sum + r.total.value),
   );
 
-  late final ReadonlySignal<double> cogsLabor = computed(
-    () => labors.fold(0.0, (sum, r) => sum + r.total.value),
+  late final ReadonlySignal<double> cogsWoker = computed(
+    () => wokers.fold(0.0, (sum, r) => sum + r.total.value),
   );
 
   late final ReadonlySignal<double> cogsTransport = computed(
@@ -203,7 +203,7 @@ class PricingCalculatorController {
   );
 
   late final ReadonlySignal<double> cogsTotal = computed(
-    () => cogsMaterial.value + cogsLabor.value + cogsTransport.value,
+    () => cogsMaterial.value + cogsWoker.value + cogsTransport.value,
   );
 
   late final ReadonlySignal<double> markupAmount = computed(
@@ -266,8 +266,8 @@ class PricingCalculatorController {
         ),
       );
     } else if (expectedKind == 4) {
-      labors.add(
-        PricingLaborRow(
+      wokers.add(
+        PricingWokerRow(
           id: product.id,
           title: product.name,
           code: product.code,
@@ -319,9 +319,9 @@ class PricingCalculatorController {
         )
         .toList();
 
-    final laborDtos = labors
+    final workerDtos = wokers
         .map(
-          (l) => PricingLaborDto(
+          (l) => PricingWokerDto(
             positionName: l.title,
             firstVisitHours: l.firstVisitHours.value,
             routineHours: l.routineHours.value,
@@ -354,7 +354,7 @@ class PricingCalculatorController {
       markupValue: markupPercent.value,
       discountAmount: discountAmount.value,
       materials: materialDtos,
-      labors: laborDtos,
+      wokers: workerDtos,
       items: itemDtos,
     );
 
@@ -372,10 +372,10 @@ class PricingCalculatorController {
     }
     materials.dispose();
 
-    for (final labor in labors) {
-      labor.dispose();
+    for (final woker in wokers) {
+      woker.dispose();
     }
-    labors.dispose();
+    wokers.dispose();
 
     for (final item in items) {
       item.dispose();

@@ -151,7 +151,7 @@ class Proposal {
   final String version;
   final double cogs;
   final double materialCost;
-  final double laborCost;
+  final double workerCost;
   final double fuelCost;
   final double markup;
   final double markupPercent;
@@ -188,7 +188,7 @@ class Proposal {
     this.version = '1',
     this.cogs = 0.0,
     this.materialCost = 0.0,
-    this.laborCost = 0.0,
+    this.workerCost = 0.0,
     this.fuelCost = 0.0,
     this.markup = 0.0,
     this.markupPercent = 0.0,
@@ -234,7 +234,7 @@ class Proposal {
 
   String get formattedCogs => _formatCurrency(cogs);
   String get formattedMaterialCost => _formatCurrency(materialCost);
-  String get formattedLaborCost => _formatCurrency(laborCost);
+  String get formattedWokerCost => _formatCurrency(workerCost);
   String get formattedFuelCost => _formatCurrency(fuelCost);
   String get formattedMarkup {
     if (markupPercent > 0) {
@@ -285,7 +285,7 @@ class Proposal {
     String? version,
     double? cogs,
     double? materialCost,
-    double? laborCost,
+    double? workerCost,
     double? fuelCost,
     double? markup,
     double? markupPercent,
@@ -322,7 +322,7 @@ class Proposal {
       version: version ?? this.version,
       cogs: cogs ?? this.cogs,
       materialCost: materialCost ?? this.materialCost,
-      laborCost: laborCost ?? this.laborCost,
+      workerCost: workerCost ?? this.workerCost,
       fuelCost: fuelCost ?? this.fuelCost,
       markup: markup ?? this.markup,
       markupPercent: markupPercent ?? this.markupPercent,
@@ -365,7 +365,7 @@ class Proposal {
           version == other.version &&
           cogs == other.cogs &&
           materialCost == other.materialCost &&
-          laborCost == other.laborCost &&
+          workerCost == other.workerCost &&
           fuelCost == other.fuelCost &&
           markup == other.markup &&
           markupPercent == other.markupPercent &&
@@ -399,7 +399,7 @@ class Proposal {
     version,
     cogs,
     materialCost,
-    laborCost,
+    workerCost,
     fuelCost,
     markup,
     markupPercent,

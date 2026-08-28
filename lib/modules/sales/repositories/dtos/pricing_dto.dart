@@ -9,7 +9,7 @@ class CreatePricingRequestDto {
   final double markupValue;
   final double discountAmount;
   final List<PricingMaterialDto> materials;
-  final List<PricingLaborDto> labors;
+  final List<PricingWokerDto> wokers;
   final List<PricingItemDto> items;
 
   const CreatePricingRequestDto({
@@ -23,7 +23,7 @@ class CreatePricingRequestDto {
     required this.markupValue,
     required this.discountAmount,
     required this.materials,
-    required this.labors,
+    required this.wokers,
     required this.items,
   });
 
@@ -38,7 +38,7 @@ class CreatePricingRequestDto {
     'markup_value': markupValue,
     'discount_amount': discountAmount,
     'materials': materials.map((e) => e.toJson()).toList(),
-    'labors': labors.map((e) => e.toJson()).toList(),
+    'wokers': wokers.map((e) => e.toJson()).toList(),
     'items': items.map((e) => e.toJson()).toList(),
   };
 }
@@ -76,13 +76,13 @@ class PricingMaterialDto {
   };
 }
 
-class PricingLaborDto {
+class PricingWokerDto {
   final String positionName;
   final double firstVisitHours;
   final double routineHours;
   final double hourlyRate;
 
-  const PricingLaborDto({
+  const PricingWokerDto({
     required this.positionName,
     required this.firstVisitHours,
     required this.routineHours,

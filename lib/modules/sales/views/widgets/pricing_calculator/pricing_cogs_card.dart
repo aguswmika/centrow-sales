@@ -37,7 +37,7 @@ class PricingCogsCard extends StatelessWidget {
           ),
           buildSumRow(
             'Biaya Tenaga Kerja',
-            formatRp(controller.cogsLabor.value),
+            formatRp(controller.cogsWoker.value),
           ),
           buildSumRow('Biaya BBM', formatRp(controller.cogsTransport.value)),
           const Divider(height: 16.0, color: AppColors.border),

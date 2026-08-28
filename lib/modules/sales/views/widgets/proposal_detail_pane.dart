@@ -613,7 +613,7 @@ class ProposalDetailPane extends StatelessWidget {
             'Biaya Bahan & Alat',
             proposal.formattedMaterialCost,
           ),
-          _buildSummaryRow('Biaya Tenaga Kerja', proposal.formattedLaborCost),
+          _buildSummaryRow('Biaya Tenaga Kerja', proposal.formattedWokerCost),
           _buildSummaryRow('Biaya Transport / BBM', proposal.formattedFuelCost),
           const Divider(height: 14.0, thickness: 1.0, color: AppColors.border),
           _buildSummaryRow(
