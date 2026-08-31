@@ -261,6 +261,10 @@ void main() {
         controller.locations.value.first.copyWith(
           label: 'Villa Utama',
           address: 'Jl. Raya Seminyak No. 88',
+          provinceId: 1,
+          regencyId: 1,
+          districtId: 1,
+          villageId: 1,
         ),
       );
       expect(controller.isStep2Valid.value, true);

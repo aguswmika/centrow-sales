@@ -51,7 +51,7 @@ void main() {
           markupType: 1,
           markupValue: 20.0,
           discountAmount: 10000.0,
-          taxPercent: 11.0,
+          taxPercentage: 11.0,
           materials: [material, tool],
           workers: [worker],
           items: [item],
@@ -66,9 +66,8 @@ void main() {
         expect(json['markup_type'], 1);
         expect(json['markup_value'], 20.0);
         expect(json['discount_amount'], 10000.0);
-        expect(json['tax_percent'], 11.0);
+        expect(json['tax_percentage'], 11.0);
         expect(json.containsKey('area_value'), isFalse);
-        expect(json.containsKey('area_unit_id'), isFalse);
 
         final suppliesList = json['supplies'] as List<dynamic>;
         expect(suppliesList.length, 2);

@@ -38,13 +38,16 @@ class PricingWorkerTab extends StatelessWidget {
                 'Jam Awal',
                 'Jam Rutin',
                 'Tarif per Jam',
-                'Total Biaya',
                 '',
               ],
-              flexes: const [3, 1, 1, 1, 2, 2],
+              flexes: const [4, 1, 1, 1, 3],
             ),
             for (final row in rows)
-              PricingWorkerRowWidget(row: row, controller: controller),
+              PricingWorkerRowWidget(
+                key: ObjectKey(row),
+                row: row,
+                controller: controller,
+              ),
             Container(
               padding: const EdgeInsets.all(16.0),
               decoration: const BoxDecoration(
@@ -88,7 +91,7 @@ class PricingWorkerRowWidget extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           Expanded(
-            flex: 3,
+            flex: 4,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -125,12 +128,14 @@ class PricingWorkerRowWidget extends StatelessWidget {
           ),
           const SizedBox(width: 8.0),
           Expanded(
+            flex: 1,
             child: buildInput(row.visitFreq.value.toString(), (val) {
               row.visitFreq.value = double.tryParse(val) ?? 0.0;
             }),
           ),
           const SizedBox(width: 8.0),
           Expanded(
+            flex: 1,
             child: buildInput(row.firstVisitHours.value.toString(), (val) {
               row.firstVisitHours.value = double.tryParse(val) ?? 0.0;
             }),
@@ -144,19 +149,10 @@ class PricingWorkerRowWidget extends StatelessWidget {
           ),
           const SizedBox(width: 16.0),
           Expanded(
-            flex: 2,
+            flex: 3,
             child: buildInput(row.hourlyRate.value.toString(), (val) {
               row.hourlyRate.value = double.tryParse(val) ?? 0.0;
             }),
-          ),
-          const SizedBox(width: 16.0),
-          Expanded(
-            flex: 2,
-            child: SignalBuilder(
-              builder: (context) {
-                return buildTotalAmount(formatRp(row.total.value));
-              },
-            ),
           ),
           const SizedBox(width: 8.0),
           SizedBox(

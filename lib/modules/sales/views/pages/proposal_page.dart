@@ -149,6 +149,9 @@ class _ProposalPageState extends State<ProposalPage> {
               onOpenCalculator: selectedId.isNotEmpty
                   ? () => context.go('/proposals/$selectedId/pricing')
                   : null,
+              onOpenDocument: selectedId.isNotEmpty
+                  ? () => context.go('/proposals/$selectedId/document')
+                  : null,
               onRetry: () => _controller.loadProposalDetail(selectedId),
             ),
           ),

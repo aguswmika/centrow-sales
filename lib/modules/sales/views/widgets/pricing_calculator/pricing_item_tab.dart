@@ -36,15 +36,17 @@ class PricingItemTab extends StatelessWidget {
                 'Komponen & Jenis Biaya',
                 'Jumlah',
                 'Frekuensi',
-                'Biaya Pokok',
                 'Harga Jual',
-                'Total Nilai',
                 '',
               ],
-              flexes: const [3, 1, 1, 2, 2, 2],
+              flexes: const [4, 2, 2, 3],
             ),
             for (final row in rows)
-              PricingItemRowWidget(row: row, controller: controller),
+              PricingItemRowWidget(
+                key: ObjectKey(row),
+                row: row,
+                controller: controller,
+              ),
             Container(
               padding: const EdgeInsets.all(16.0),
               decoration: const BoxDecoration(
@@ -88,7 +90,7 @@ class PricingItemRowWidget extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           Expanded(
-            flex: 3,
+            flex: 4,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -125,37 +127,21 @@ class PricingItemRowWidget extends StatelessWidget {
           ),
           const SizedBox(width: 8.0),
           Expanded(
+            flex: 2,
             child: buildInput(row.qty.value.toString(), (val) {
               row.qty.value = double.tryParse(val) ?? 0.0;
             }),
           ),
           const SizedBox(width: 8.0),
           Expanded(
+            flex: 2,
             child: buildInput(row.freq.value.toString(), (val) {
               row.freq.value = double.tryParse(val) ?? 0.0;
             }),
           ),
-          const SizedBox(width: 8.0),
-          Expanded(
-            flex: 2,
-            child: Align(
-              alignment: Alignment.centerRight,
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 10.0),
-                child: Text(
-                  formatRp(row.unitCost.value),
-                  style: const TextStyle(
-                    fontSize: 13.0,
-                    fontWeight: FontWeight.w600,
-                    color: AppColors.muted,
-                  ),
-                ),
-              ),
-            ),
-          ),
           const SizedBox(width: 16.0),
           Expanded(
-            flex: 2,
+            flex: 3,
             child: row.kind == 5
                 ? buildInput(row.unitPrice.value.toString(), (val) {
                     row.unitPrice.value = double.tryParse(val) ?? 0.0;
@@ -174,15 +160,6 @@ class PricingItemRowWidget extends StatelessWidget {
                       ),
                     ),
                   ),
-          ),
-          const SizedBox(width: 16.0),
-          Expanded(
-            flex: 2,
-            child: SignalBuilder(
-              builder: (context) {
-                return buildTotalAmount(formatRp(row.total.value));
-              },
-            ),
           ),
           const SizedBox(width: 8.0),
           SizedBox(

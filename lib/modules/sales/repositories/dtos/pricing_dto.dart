@@ -100,7 +100,7 @@ class PricingWorkerDto {
 
   Map<String, dynamic> toJson() => {
     'position_name': positionName,
-    'visit_frequency': visitFrequency,
+    if (visitFrequency != null) 'visit_frequency': visitFrequency,
     'first_visit_hours': firstVisitHours,
     'routine_hours': routineHours,
     'hourly_rate': hourlyRate,

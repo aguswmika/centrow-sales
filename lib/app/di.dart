@@ -9,11 +9,13 @@ import 'package:centrow_sales/modules/sales/repositories/sales_dashboard_reposit
 import 'package:centrow_sales/modules/sales/controllers/customer_controller.dart';
 import 'package:centrow_sales/modules/sales/controllers/customer_form_controller.dart';
 import 'package:centrow_sales/modules/sales/controllers/proposal_controller.dart';
+import 'package:centrow_sales/modules/sales/controllers/proposal_document_controller.dart';
 import 'package:centrow_sales/modules/sales/controllers/proposal_form_controller.dart';
 import 'package:centrow_sales/modules/sales/controllers/product_controller.dart';
 import 'package:centrow_sales/modules/sales/controllers/pricing_calculator_controller.dart';
 import 'package:centrow_sales/modules/sales/repositories/customer_repository.dart';
 import 'package:centrow_sales/modules/sales/repositories/proposal_repository.dart';
+import 'package:centrow_sales/modules/sales/repositories/proposal_document_repository.dart';
 import 'package:centrow_sales/modules/sales/repositories/service_repository.dart';
 import 'package:centrow_sales/modules/sales/repositories/product_repository.dart';
 import 'package:centrow_sales/modules/pc/controllers/product_mapping_controller.dart';
@@ -65,6 +67,9 @@ Future<void> setupDi({LocalStorage? storage}) async {
   getIt.registerLazySingleton<ProposalRepository>(
     () => ProposalRepositoryImpl(getIt<Dio>()),
   );
+  getIt.registerLazySingleton<ProposalDocumentRepository>(
+    () => ProposalDocumentRepositoryImpl(getIt<Dio>()),
+  );
   getIt.registerLazySingleton<ServiceRepository>(
     () => ServiceRepositoryImpl(getIt<Dio>()),
   );
@@ -102,6 +107,9 @@ Future<void> setupDi({LocalStorage? storage}) async {
   );
   getIt.registerFactory<ProposalController>(
     () => ProposalController(getIt<ProposalRepository>()),
+  );
+  getIt.registerFactory<ProposalDocumentController>(
+    () => ProposalDocumentController(getIt<ProposalDocumentRepository>()),
   );
   getIt.registerFactory<ProposalFormController>(
     () => ProposalFormController(

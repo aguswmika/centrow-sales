@@ -1,4 +1,3 @@
-import 'dart:math' as math;
 import 'package:signals/signals.dart';
 import 'package:centrow_sales/shared/result/result.dart';
 import 'package:centrow_sales/shared/error/failure.dart';
@@ -6,6 +5,7 @@ import 'package:centrow_sales/shared/state/ui_state.dart';
 import 'package:centrow_sales/modules/core/entities/uom.dart';
 import 'package:centrow_sales/modules/core/repositories/uom_repository.dart';
 import 'package:centrow_sales/modules/pc/entities/product_mapping.dart';
+import 'package:centrow_sales/modules/sales/entities/pricing_preview.dart';
 import 'package:centrow_sales/modules/sales/entities/product.dart';
 import 'package:centrow_sales/modules/sales/repositories/pricing_repository.dart';
 import 'package:centrow_sales/modules/sales/repositories/dtos/pricing_dto.dart';
@@ -27,22 +27,10 @@ class PricingMaterialRow {
   final Signal<double> applicationVolume;
   final Signal<String> applicationVolumeUnitId;
   final Signal<double> freq;
-  final Signal<double> unitCost;
 
   late final ReadonlySignal<double> qty = computed(() {
     if (kind == 2) return doseUsage.value;
     return doseUsage.value * applicationVolume.value;
-  });
-
-  late final ReadonlySignal<double> total = computed(() {
-    if (kind == 2) {
-      final months = contractMonthsRef?.value ?? 12;
-      return (unitCost.value * doseUsage.value / months) * freq.value;
-    }
-    return doseUsage.value *
-        applicationVolume.value *
-        freq.value *
-        unitCost.value;
   });
 
   PricingMaterialRow({
@@ -60,14 +48,12 @@ class PricingMaterialRow {
     double initialApplicationVolume = 1.0,
     String initialApplicationVolumeUnitId = '',
     double initialFreq = 1.0,
-    double initialUnitCost = 0.0,
   }) : productMappingId = signal(initialProductMappingId ?? id),
        doseUsage = signal(initialDoseUsage),
        doseUnitId = signal(initialDoseUnitId),
        applicationVolume = signal(initialApplicationVolume),
        applicationVolumeUnitId = signal(initialApplicationVolumeUnitId),
-       freq = signal(initialFreq),
-       unitCost = signal(initialUnitCost);
+       freq = signal(initialFreq);
 
   void dispose() {
     productMappingId.dispose();
@@ -76,7 +62,6 @@ class PricingMaterialRow {
     applicationVolume.dispose();
     applicationVolumeUnitId.dispose();
     freq.dispose();
-    unitCost.dispose();
   }
 }
 
@@ -90,14 +75,6 @@ class PricingWorkerRow {
   final Signal<double> firstVisitHours;
   final Signal<double> routineHours;
   final Signal<double> hourlyRate;
-
-  late final ReadonlySignal<double> total = computed(
-    () =>
-        firstVisitHours.value * hourlyRate.value +
-        math.max(0.0, visitFreq.value - 1.0) *
-            routineHours.value *
-            hourlyRate.value,
-  );
 
   PricingWorkerRow({
     required this.id,
@@ -129,13 +106,7 @@ class PricingItemRow {
 
   final Signal<double> qty;
   final Signal<double> freq;
-  final Signal<double> unitCost;
   final Signal<double> unitPrice;
-
-  late final ReadonlySignal<double> total = computed(
-    () =>
-        qty.value * freq.value * (kind == 5 ? unitPrice.value : unitCost.value),
-  );
 
   PricingItemRow({
     required this.id,
@@ -144,17 +115,14 @@ class PricingItemRow {
     required this.kind,
     double initialQty = 1.0,
     double initialFreq = 1.0,
-    double initialUnitCost = 0.0,
     double initialUnitPrice = 0.0,
   }) : qty = signal(initialQty),
        freq = signal(initialFreq),
-       unitCost = signal(initialUnitCost),
        unitPrice = signal(initialUnitPrice);
 
   void dispose() {
     qty.dispose();
     freq.dispose();
-    unitCost.dispose();
     unitPrice.dispose();
   }
 }
@@ -198,62 +166,8 @@ class PricingCalculatorController {
   /// Tax (PPN) rate in percent, editable from the COGS card.
   final taxPercentage = signal<double>(defaultTaxPercentage);
 
+  final previewState = signal<UiState<PricingPreview>>(const UiInitial());
   final submitState = signal<UiState<void>>(const UiInitial());
-
-  // Computed signals
-  late final ReadonlySignal<double> cogsMaterial = computed(
-    () => materials.fold(0.0, (sum, r) => sum + r.total.value),
-  );
-
-  late final ReadonlySignal<double> cogsWorker = computed(
-    () => workers.fold(0.0, (sum, r) => sum + r.total.value),
-  );
-
-  late final ReadonlySignal<double> cogsTransport = computed(
-    () => items
-        .where((r) => r.kind == 3)
-        .fold(0.0, (sum, r) => sum + r.total.value),
-  );
-
-  late final ReadonlySignal<double> addonCost = computed(
-    () => items
-        .where((r) => r.kind == 5)
-        .fold(0.0, (sum, r) => sum + r.total.value),
-  );
-
-  late final ReadonlySignal<double> cogsTotal = computed(
-    () => cogsMaterial.value + cogsWorker.value + cogsTransport.value,
-  );
-
-  late final ReadonlySignal<double> servicePrice = computed(() {
-    final cogs = cogsTotal.value;
-    return switch (markupType.value) {
-      1 => cogs * (1 + markupPercent.value / 100),
-      2 => cogs + markupPercent.value,
-      3 => markupPercent.value,
-      _ => cogs,
-    };
-  });
-
-  late final ReadonlySignal<double> markupAmount = computed(
-    () => servicePrice.value - cogsTotal.value,
-  );
-
-  late final ReadonlySignal<double> subtotal = computed(
-    () => servicePrice.value + addonCost.value - discountAmount.value,
-  );
-
-  late final ReadonlySignal<double> taxAmount = computed(
-    () => subtotal.value * (taxPercentage.value / 100),
-  );
-
-  late final ReadonlySignal<double> grandTotal = computed(
-    () => subtotal.value + taxAmount.value,
-  );
-
-  late final ReadonlySignal<double> marginAmount = computed(
-    () => subtotal.value - cogsTotal.value,
-  );
 
   void addMaterialRow(ProductMapping mapping) {
     if (materials.any((m) => m.id == mapping.productId)) return;
@@ -267,7 +181,6 @@ class PricingCalculatorController {
         initialProductMappingId: mapping.id,
         initialDoseUsage: mapping.defaultDose ?? mapping.doseMinLimit,
         initialDoseUnitId: mapping.doseUnitId,
-        initialUnitCost: mapping.unitPrice,
         doseMinLimit: mapping.doseMinLimit,
         doseMaxLimit: mapping.doseMaxLimit,
         contractMonthsRef: contractMonths,
@@ -290,7 +203,6 @@ class PricingCalculatorController {
           uomCode: product.uomCode,
           kind: expectedKind,
           initialProductMappingId: expectedKind == 1 ? '' : product.id,
-          initialUnitCost: product.cogs,
           contractMonthsRef: contractMonths,
         ),
       );
@@ -312,7 +224,6 @@ class PricingCalculatorController {
           title: product.name,
           code: product.code,
           kind: expectedKind,
-          initialUnitCost: product.cogs,
           initialUnitPrice: product.cogs,
         ),
       );
@@ -326,44 +237,51 @@ class PricingCalculatorController {
     return workerFreq;
   }
 
-  Future<void> submitPricing(String customerId, String serviceId) async {
-    submitState.value = const UiInitial();
-    // Yield a tick so that signals can dispatch the initial state
-    // before potentially updating to UiFailure immediately.
-    await Future<void>.delayed(Duration.zero);
-
+  bool _validateInputs({required bool setOnPreview}) {
     for (final m in materials) {
       if (m.kind == 1) {
         // Chemical
         if (m.doseMinLimit != null && m.doseUsage.value < m.doseMinLimit!) {
-          submitState.value = UiFailure(
-            UnknownFailure(
-              'Dosis untuk ${m.title} tidak boleh kurang dari batas minimum (${m.doseMinLimit}).',
-            ),
+          final failure = UnknownFailure(
+            'Dosis untuk ${m.title} tidak boleh kurang dari batas minimum (${m.doseMinLimit}).',
           );
-          return;
+          if (setOnPreview) {
+            previewState.value = UiFailure(failure);
+          } else {
+            submitState.value = UiFailure(failure);
+          }
+          return false;
         }
         if (m.doseMaxLimit != null && m.doseUsage.value > m.doseMaxLimit!) {
-          submitState.value = UiFailure(
-            UnknownFailure(
-              'Dosis untuk ${m.title} tidak boleh lebih dari batas maksimum (${m.doseMaxLimit}).',
-            ),
+          final failure = UnknownFailure(
+            'Dosis untuk ${m.title} tidak boleh lebih dari batas maksimum (${m.doseMaxLimit}).',
           );
-          return;
+          if (setOnPreview) {
+            previewState.value = UiFailure(failure);
+          } else {
+            submitState.value = UiFailure(failure);
+          }
+          return false;
         }
       } else if (m.kind == 2) {
         // Tool
         if (m.doseUsage.value <= 0) {
-          submitState.value = UiFailure(
-            UnknownFailure('Qty untuk ${m.title} harus lebih dari 0.'),
+          final failure = UnknownFailure(
+            'Qty untuk ${m.title} harus lebih dari 0.',
           );
-          return;
+          if (setOnPreview) {
+            previewState.value = UiFailure(failure);
+          } else {
+            submitState.value = UiFailure(failure);
+          }
+          return false;
         }
       }
     }
+    return true;
+  }
 
-    submitState.value = const UiLoading();
-
+  CreatePricingRequestDto _buildRequest(String customerId, String serviceId) {
     final materialDtos = materials
         .map(
           (m) => PricingMaterialDto(
@@ -413,7 +331,7 @@ class PricingCalculatorController {
         )
         .toList();
 
-    final request = CreatePricingRequestDto(
+    return CreatePricingRequestDto(
       customerId: customerId,
       serviceId: serviceId,
       contractMonths: contractMonths.value ?? 12,
@@ -426,9 +344,27 @@ class PricingCalculatorController {
       workers: workerDtos,
       items: itemDtos,
     );
+  }
 
-    final result = await _repository.savePricing(request);
+  Future<void> previewPricing(String customerId, String serviceId) async {
+    previewState.value = const UiInitial();
+    await Future<void>.delayed(Duration.zero);
+    if (!_validateInputs(setOnPreview: true)) return;
+    previewState.value = const UiLoading();
+    final result = await _repository.previewPricing(
+      _buildRequest(customerId, serviceId),
+    );
+    previewState.value = switch (result) {
+      Ok(:final value) => UiSuccess(value),
+      Err(:final failure) => UiFailure(failure),
+    };
+  }
 
+  Future<void> submitPricing(String customerId, String serviceId) async {
+    submitState.value = const UiLoading();
+    final result = await _repository.savePricing(
+      _buildRequest(customerId, serviceId),
+    );
     submitState.value = switch (result) {
       Ok(:final value) => UiSuccess(value),
       Err(:final failure) => UiFailure(failure),
@@ -457,6 +393,7 @@ class PricingCalculatorController {
     markupType.dispose();
     discountAmount.dispose();
     taxPercentage.dispose();
+    previewState.dispose();
     submitState.dispose();
     uomState.dispose();
     uoms.dispose();

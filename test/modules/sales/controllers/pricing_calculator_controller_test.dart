@@ -1,6 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:centrow_sales/modules/pc/entities/product_mapping.dart';
 import 'package:centrow_sales/modules/sales/controllers/pricing_calculator_controller.dart';
+import 'package:centrow_sales/modules/sales/entities/pricing_preview.dart';
 import 'package:centrow_sales/modules/sales/entities/product.dart';
 import 'package:centrow_sales/modules/sales/repositories/dtos/pricing_dto.dart';
 import 'package:centrow_sales/modules/sales/repositories/pricing_repository.dart';
@@ -16,6 +17,32 @@ class MockPricingRepository implements PricingRepository {
   Future<Result<void>> savePricing(CreatePricingRequestDto data) async {
     lastRequest = data;
     return response;
+  }
+
+  @override
+  Future<Result<PricingPreview>> previewPricing(
+    CreatePricingRequestDto data,
+  ) async {
+    return const Ok(
+      PricingPreview(
+        suppliesCost: 0,
+        workerCost: 0,
+        fuelCost: 0,
+        totalCogs: 0,
+        servicePrice: 0,
+        addonAmount: 0,
+        discountAmount: 0,
+        subtotal: 0,
+        taxPercentage: 0,
+        taxAmount: 0,
+        totalAmount: 0,
+        marginAmount: 0,
+        marginPercent: 0,
+        supplies: [],
+        workers: [],
+        items: [],
+      ),
+    );
   }
 }
 
@@ -33,7 +60,7 @@ void main() {
   });
 
   group('Pricing Rows', () {
-    test('PricingMaterialRow calculates total correctly', () {
+    test('PricingMaterialRow calculates qty correctly', () {
       final row = PricingMaterialRow(
         id: '1',
         title: 'Chemical',
@@ -46,22 +73,18 @@ void main() {
         initialApplicationVolume: 5.0,
         initialApplicationVolumeUnitId: 'uom-l',
         initialFreq: 3.0,
-        initialUnitCost: 50000.0,
       );
 
       // qty = 2.0 * 5.0 = 10.0
       expect(row.qty.value, 10.0);
-      // total = 2.0 * 5.0 * 3.0 * 50000.0 = 1500000.0
-      expect(row.total.value, 1500000.0);
 
       row.doseUsage.value = 4.0;
       expect(row.qty.value, 20.0);
-      expect(row.total.value, 3000000.0);
 
       row.dispose();
     });
 
-    test('PricingWorkerRow calculates total correctly with math.max', () {
+    test('PricingWorkerRow initializes and disposes correctly', () {
       final row = PricingWorkerRow(
         id: '2',
         title: 'Technician',
@@ -73,22 +96,15 @@ void main() {
         initialHourlyRate: 100000.0,
       );
 
-      // total = 3.0 * 100000 + max(0, 4 - 1) * 2.0 * 100000
-      // = 300000 + 3 * 200000 = 300000 + 600000 = 900000
-      expect(row.total.value, 900000.0);
-
-      row.visitFreq.value = 1.0;
-      // total = 3.0 * 100000 + max(0, 1 - 1) * 2.0 * 100000 = 300000 + 0 = 300000
-      expect(row.total.value, 300000.0);
-
-      row.visitFreq.value = 0.0;
-      // max(0, -1) = 0 => 300000
-      expect(row.total.value, 300000.0);
+      expect(row.visitFreq.value, 4.0);
+      expect(row.firstVisitHours.value, 3.0);
+      expect(row.routineHours.value, 2.0);
+      expect(row.hourlyRate.value, 100000.0);
 
       row.dispose();
     });
 
-    test('PricingItemRow calculates total correctly based on kind', () {
+    test('PricingItemRow initializes and disposes correctly', () {
       final transportItem = PricingItemRow(
         id: '3',
         title: 'Transport',
@@ -96,12 +112,12 @@ void main() {
         kind: 3,
         initialQty: 2.0,
         initialFreq: 2.0,
-        initialUnitCost: 25000.0,
         initialUnitPrice: 50000.0,
       );
 
-      // kind == 3 uses unitCost => 2 * 2 * 25000 = 100000
-      expect(transportItem.total.value, 100000.0);
+      expect(transportItem.qty.value, 2.0);
+      expect(transportItem.freq.value, 2.0);
+      expect(transportItem.unitPrice.value, 50000.0);
       transportItem.dispose();
 
       final addonItem = PricingItemRow(
@@ -111,12 +127,12 @@ void main() {
         kind: 5,
         initialQty: 2.0,
         initialFreq: 2.0,
-        initialUnitCost: 25000.0,
         initialUnitPrice: 50000.0,
       );
 
-      // kind == 5 uses unitPrice => 2 * 2 * 50000 = 200000
-      expect(addonItem.total.value, 200000.0);
+      expect(addonItem.qty.value, 2.0);
+      expect(addonItem.freq.value, 2.0);
+      expect(addonItem.unitPrice.value, 50000.0);
       addonItem.dispose();
     });
   });
@@ -395,108 +411,6 @@ void main() {
     });
   });
 
-  group('PricingCalculatorController - Computed Calculations', () {
-    test('calculates COGS, markup, discounts, taxes, and grand totals', () {
-      controller.materials.add(
-        PricingMaterialRow(
-          id: 'm1',
-          title: 'Chemical',
-          code: 'CHM',
-          uomCode: 'BTL',
-          kind: 1,
-          initialDoseUsage: 1.0,
-          initialApplicationVolume: 1.0,
-          initialFreq: 1.0,
-          initialUnitCost: 100000.0,
-        ),
-      );
-
-      controller.workers.add(
-        PricingWorkerRow(
-          id: 'l1',
-          title: 'Tech',
-          code: 'LBR',
-          kind: 4,
-          initialVisitFreq: 1.0,
-          initialFirstVisitHours: 2.0,
-          initialRoutineHours: 0.0,
-          initialHourlyRate: 50000.0,
-        ),
-      );
-
-      controller.items.add(
-        PricingItemRow(
-          id: 'i1',
-          title: 'Transport',
-          code: 'TR',
-          kind: 3,
-          initialQty: 1.0,
-          initialFreq: 1.0,
-          initialUnitCost: 50000.0,
-          initialUnitPrice: 50000.0,
-        ),
-      );
-
-      controller.items.add(
-        PricingItemRow(
-          id: 'i2',
-          title: 'Addon',
-          code: 'ADD',
-          kind: 5,
-          initialQty: 1.0,
-          initialFreq: 1.0,
-          initialUnitCost: 20000.0,
-          initialUnitPrice: 40000.0,
-        ),
-      );
-
-      expect(controller.cogsMaterial.value, 100000.0);
-      expect(controller.cogsWorker.value, 100000.0);
-      expect(controller.cogsTransport.value, 50000.0);
-      expect(controller.addonCost.value, 40000.0);
-
-      // cogsTotal = 100000 + 100000 + 50000 = 250000
-      expect(controller.cogsTotal.value, 250000.0);
-
-      // Markup 20%
-      controller.markupPercent.value = 20.0;
-      // markupAmount = 250000 * 0.20 = 50000
-      expect(controller.markupAmount.value, 50000.0);
-      // servicePrice = 250000 + 50000 = 300000
-      expect(controller.servicePrice.value, 300000.0);
-
-      // Discount 10000
-      controller.discountAmount.value = 10000.0;
-      // subtotal = 300000 + 40000 - 10000 = 330000
-      expect(controller.subtotal.value, 330000.0);
-
-      // taxAmount = 330000 * 0.11 = 36300
-      expect(controller.taxAmount.value, 36300.0);
-
-      // grandTotal = 330000 + 36300 = 366300
-      expect(controller.grandTotal.value, 366300.0);
-
-      // marginAmount = subtotal - cogsTotal = 330000 - 250000 = 80000
-      expect(controller.marginAmount.value, 80000.0);
-
-      // Tax rate defaults to 11% and is customizable
-      expect(
-        controller.taxPercent.value,
-        PricingCalculatorController.defaultTaxPercent,
-      );
-
-      // 5% -> 330000 * 0.05 = 16500
-      controller.taxPercent.value = 5.0;
-      expect(controller.taxAmount.value, 16500.0);
-      expect(controller.grandTotal.value, 346500.0);
-
-      // 0% -> no tax, grandTotal equals subtotal
-      controller.taxPercent.value = 0.0;
-      expect(controller.taxAmount.value, 0.0);
-      expect(controller.grandTotal.value, 330000.0);
-    });
-  });
-
   group('PricingCalculatorController - submitPricing', () {
     test('submits pricing and updates submitState to UiSuccess', () async {
       controller.materials.add(
@@ -512,14 +426,13 @@ void main() {
           initialApplicationVolume: 1.0,
           initialApplicationVolumeUnitId: 'uom-l',
           initialFreq: 1.0,
-          initialUnitCost: 50000.0,
         ),
       );
 
       controller.contractMonths.value = 6;
       controller.visitFrequency.value = 4;
       controller.markupPercent.value = 15.0;
-      controller.taxPercent.value = 5.0;
+      controller.taxPercentage.value = 5.0;
 
       await controller.submitPricing('cust-1', 'srv-1');
 
@@ -531,7 +444,7 @@ void main() {
       expect(repository.lastRequest!.visitFrequency, 4);
       expect(repository.lastRequest!.markupType, 1);
       expect(repository.lastRequest!.markupValue, 15.0);
-      expect(repository.lastRequest!.taxPercent, 5.0);
+      expect(repository.lastRequest!.taxPercentage, 5.0);
       expect(repository.lastRequest!.materials.length, 1);
       expect(repository.lastRequest!.materials[0].supplyType, 1);
       expect(repository.lastRequest!.materials[0].productMappingId, 'pm-1');

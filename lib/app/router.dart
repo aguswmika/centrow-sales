@@ -5,6 +5,11 @@ import 'package:centrow_sales/modules/sales/views/pages/customer_page.dart';
 import 'package:centrow_sales/modules/sales/views/pages/customer_form_page.dart';
 import 'package:centrow_sales/modules/sales/views/pages/proposal_page.dart';
 import 'package:centrow_sales/modules/sales/views/pages/pricing_page.dart';
+import 'package:centrow_sales/modules/sales/entities/pricing_preview.dart';
+import 'package:centrow_sales/modules/sales/controllers/pricing_calculator_controller.dart';
+import 'package:centrow_sales/modules/sales/entities/proposal.dart';
+import 'package:centrow_sales/modules/sales/views/pages/pricing_preview_page.dart';
+import 'package:centrow_sales/modules/sales/views/pages/proposal_document_page.dart';
 import 'package:centrow_sales/shared/network/auth_token_holder.dart';
 import 'package:centrow_sales/shared/widgets/nav_rail_shell.dart';
 
@@ -72,6 +77,31 @@ GoRouter createRouter({String? initialLocation}) => GoRouter(
                   name: 'proposal-pricing',
                   builder: (context, state) =>
                       PricingPage(proposalId: state.pathParameters['id']!),
+                  routes: [
+                    GoRoute(
+                      path: 'preview',
+                      name: 'proposal-pricing-preview',
+                      builder: (context, state) {
+                        final extra = state.extra! as Map<String, dynamic>;
+                        return PricingPreviewPage(
+                          proposal: extra['proposal'] as Proposal,
+                          preview: extra['preview'] as PricingPreview,
+                          controller:
+                              extra['controller']
+                                  as PricingCalculatorController,
+                          visitFrequency: extra['visitFrequency'] as int,
+                          contractMonths: extra['contractMonths'] as int,
+                        );
+                      },
+                    ),
+                  ],
+                ),
+                GoRoute(
+                  path: ':id/document',
+                  name: 'proposal-document',
+                  builder: (context, state) => ProposalDocumentPage(
+                    proposalId: state.pathParameters['id']!,
+                  ),
                 ),
               ],
             ),

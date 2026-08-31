@@ -17,6 +17,7 @@ class ProposalDetailPane extends StatelessWidget {
   final ValueChanged<int> onPricingTabChanged;
   final VoidCallback? onExportPdf;
   final VoidCallback? onOpenCalculator;
+  final VoidCallback? onOpenDocument;
   final VoidCallback? onRetry;
   final VoidCallback? onEditProposal;
 
@@ -30,6 +31,7 @@ class ProposalDetailPane extends StatelessWidget {
     required this.onPricingTabChanged,
     this.onExportPdf,
     this.onOpenCalculator,
+    this.onOpenDocument,
     this.onRetry,
     this.onEditProposal,
   });
@@ -172,6 +174,18 @@ class ProposalDetailPane extends StatelessWidget {
                   color: AppColors.text,
                 ),
                 onPressed: onExportPdf,
+              ),
+              AppButton.secondary(
+                text: 'Dokumen',
+                height: 40.0,
+                isFullWidth: false,
+                borderRadius: AppRadius.borderMd,
+                icon: const Icon(
+                  Icons.edit_document,
+                  size: 16.0,
+                  color: AppColors.text,
+                ),
+                onPressed: onOpenDocument,
               ),
               AppButton(
                 text: 'Pricing',

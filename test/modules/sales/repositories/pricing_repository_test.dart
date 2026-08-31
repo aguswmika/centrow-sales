@@ -50,7 +50,7 @@ void main() {
     markupType: 1,
     markupValue: 25.0,
     discountAmount: 0.0,
-    taxPercent: 11.0,
+    taxPercentage: 11.0,
     materials: [
       PricingMaterialDto(
         supplyType: 1,
@@ -86,7 +86,7 @@ void main() {
 
   test('savePricing returns Ok(null) on 200/201 response', () async {
     mockAdapter.handler = (options) {
-      expect(options.path, '/sales/pricings');
+      expect(options.path, '/v1/sales/pricings');
       expect(options.method, 'POST');
       final body = jsonEncode({'message': 'Success'});
       return ResponseBody.fromString(

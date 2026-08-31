@@ -11,7 +11,6 @@ import 'package:centrow_sales/shared/theme/app_colors.dart';
 import 'package:centrow_sales/shared/theme/app_radius.dart';
 import 'package:centrow_sales/shared/widgets/app_button.dart';
 import 'package:centrow_sales/shared/widgets/error_view.dart';
-import 'package:centrow_sales/shared/widgets/toast.dart';
 import 'package:centrow_sales/modules/sales/entities/proposal.dart';
 
 class PricingPage extends StatefulWidget {
@@ -26,7 +25,6 @@ class PricingPage extends StatefulWidget {
 class _PricingPageState extends State<PricingPage> {
   late final ProposalController _controller;
   late final PricingCalculatorController _calcController;
-  late final void Function() _cleanupEffect;
 
   @override
   void initState() {
@@ -35,30 +33,10 @@ class _PricingPageState extends State<PricingPage> {
     _calcController = getIt<PricingCalculatorController>();
     _controller.loadProposalDetail(widget.proposalId);
     _calcController.loadUoms();
-
-    _cleanupEffect = effect(() {
-      final state = _calcController.submitState.value;
-      if (!mounted) return;
-
-      switch (state) {
-        case UiFailure(:final failure):
-          showAppToast(context, failure.message, isError: true);
-        case UiSuccess():
-          showAppToast(
-            context,
-            'Kalkulasi berhasil disimpan.',
-            isSuccess: true,
-          );
-          context.pop();
-        default:
-          break;
-      }
-    });
   }
 
   @override
   void dispose() {
-    _cleanupEffect();
     _calcController.dispose();
     _controller.dispose();
     super.dispose();
@@ -170,18 +148,6 @@ class _PricingPageState extends State<PricingPage> {
                 isFullWidth: false,
                 height: 40.0,
                 onPressed: () => context.pop(),
-              ),
-              const SizedBox(width: 12.0),
-              AppButton(
-                text: 'Simpan Kalkulasi',
-                icon: const Icon(
-                  Icons.save_outlined,
-                  size: 18,
-                  color: Colors.white,
-                ),
-                isFullWidth: false,
-                height: 40.0,
-                onPressed: () {}, // Mock save
               ),
             ],
           ),

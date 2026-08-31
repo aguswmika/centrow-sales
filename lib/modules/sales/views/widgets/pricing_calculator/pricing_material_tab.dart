@@ -65,14 +65,13 @@ class PricingMaterialTab extends StatelessWidget {
                   'Dosis (unit)',
                   'Volume Pengaplikasian (unit)',
                   'Frekuensi',
-                  'Biaya',
-                  'Total Biaya',
                   '',
                 ],
-                flexes: const [3, 3, 3, 1, 2, 2],
+                flexes: const [4, 3, 3, 2],
               ),
               for (final row in chemicals)
                 PricingMaterialRowWidget(
+                  key: ObjectKey(row),
                   row: row,
                   controller: controller,
                   hasUnitColumn: true,
@@ -81,11 +80,15 @@ class PricingMaterialTab extends StatelessWidget {
             if (tools.isNotEmpty) ...[
               if (chemicals.isNotEmpty) const SizedBox(height: 16.0),
               buildTableHeader(
-                ['Nama Alat', 'Qty', 'Frekuensi', 'Biaya', 'Total Biaya', ''],
-                flexes: const [3, 2, 2, 2, 2],
+                ['Nama Alat', 'Qty', 'Frekuensi', ''],
+                flexes: const [4, 3, 3],
               ),
               for (final row in tools)
-                PricingToolRowWidget(row: row, controller: controller),
+                PricingToolRowWidget(
+                  key: ObjectKey(row),
+                  row: row,
+                  controller: controller,
+                ),
             ],
             Container(
               padding: const EdgeInsets.all(16.0),
@@ -135,7 +138,7 @@ class PricingMaterialRowWidget extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           Expanded(
-            flex: 3,
+            flex: 4,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -266,36 +269,10 @@ class PricingMaterialRowWidget extends StatelessWidget {
           ),
           const SizedBox(width: 8.0),
           Expanded(
+            flex: 2,
             child: buildInput(row.freq.value.toString(), (val) {
               row.freq.value = double.tryParse(val) ?? 0.0;
             }),
-          ),
-          const SizedBox(width: 16.0),
-          Expanded(
-            flex: 2,
-            child: Align(
-              alignment: Alignment.centerRight,
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 10.0),
-                child: Text(
-                  formatRp(row.unitCost.value),
-                  style: const TextStyle(
-                    fontSize: 13.0,
-                    fontWeight: FontWeight.w600,
-                    color: AppColors.muted,
-                  ),
-                ),
-              ),
-            ),
-          ),
-          const SizedBox(width: 16.0),
-          Expanded(
-            flex: 2,
-            child: SignalBuilder(
-              builder: (context) {
-                return buildTotalAmount(formatRp(row.total.value));
-              },
-            ),
           ),
           const SizedBox(width: 8.0),
           SizedBox(
@@ -340,7 +317,7 @@ class PricingToolRowWidget extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           Expanded(
-            flex: 3,
+            flex: 4,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -379,7 +356,7 @@ class PricingToolRowWidget extends StatelessWidget {
           ),
           const SizedBox(width: 8.0),
           Expanded(
-            flex: 2,
+            flex: 3,
             child: CounterInput(
               initialValue: row.doseUsage.value,
               onChanged: (val) {
@@ -389,37 +366,10 @@ class PricingToolRowWidget extends StatelessWidget {
           ),
           const SizedBox(width: 8.0),
           Expanded(
-            flex: 2,
+            flex: 3,
             child: buildInput(row.freq.value.toString(), (val) {
               row.freq.value = double.tryParse(val) ?? 0.0;
             }),
-          ),
-          const SizedBox(width: 16.0),
-          Expanded(
-            flex: 2,
-            child: Align(
-              alignment: Alignment.centerRight,
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 10.0),
-                child: Text(
-                  formatRp(row.unitCost.value),
-                  style: const TextStyle(
-                    fontSize: 13.0,
-                    fontWeight: FontWeight.w600,
-                    color: AppColors.muted,
-                  ),
-                ),
-              ),
-            ),
-          ),
-          const SizedBox(width: 16.0),
-          Expanded(
-            flex: 2,
-            child: SignalBuilder(
-              builder: (context) {
-                return buildTotalAmount(formatRp(row.total.value));
-              },
-            ),
           ),
           const SizedBox(width: 8.0),
           SizedBox(

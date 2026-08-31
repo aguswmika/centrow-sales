@@ -14,24 +14,25 @@ import 'package:centrow_sales/shared/result/result.dart';
 
 class FakeRegionRepository implements RegionRepository {
   @override
-  Future<Result<List<Province>>> getProvinces() async => const Ok([]);
+  Future<Result<List<Province>>> getProvinces() async =>
+      const Ok([Province(id: 1, name: 'Bali')]);
 
   @override
   Future<Result<List<Regency>>> getRegencies(int provinceId) async =>
-      const Ok([]);
+      const Ok([Regency(id: 1, name: 'Badung')]);
 
   @override
   Future<Result<List<District>>> getDistricts(
     int provinceId,
     int regencyId,
-  ) async => const Ok([]);
+  ) async => const Ok([District(id: 1, name: 'Kuta Selatan')]);
 
   @override
   Future<Result<List<Village>>> getVillages(
     int provinceId,
     int regencyId,
     int districtId,
-  ) async => const Ok([]);
+  ) async => const Ok([Village(id: 1, name: 'Benoa')]);
 }
 
 class FakeCustomerRepository implements CustomerRepository {
@@ -176,6 +177,10 @@ void main() {
           controller.locations.value.first.copyWith(
             label: 'Main Resort',
             address: 'Jalan Pantai Kuta',
+            provinceId: 1,
+            regencyId: 1,
+            districtId: 1,
+            villageId: 1,
           ),
         );
         await tester.pump();
@@ -308,6 +313,10 @@ void main() {
                   label: 'Main Building',
                   addressLine: 'Jl. Raya Nusa Dua',
                   isPrimary: true,
+                  province: 'Bali',
+                  regency: 'Badung',
+                  district: 'Kuta Selatan',
+                  village: 'Benoa',
                 ),
               ],
               contacts: [
@@ -384,6 +393,10 @@ void main() {
                   label: 'Main Building',
                   addressLine: 'Jl. Raya Nusa Dua',
                   isPrimary: true,
+                  province: 'Bali',
+                  regency: 'Badung',
+                  district: 'Kuta Selatan',
+                  village: 'Benoa',
                 ),
               ],
               contacts: [
