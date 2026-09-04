@@ -1,9 +1,10 @@
 enum ProposalStatus {
-  draft('Draft', 'neutral', 'draft'),
-  dikirim('Dikirim', 'info', 'sent'),
-  negosiasi('Negosiasi', 'warn', 'negotiation'),
-  disetujui('Disetujui', 'ok', 'accepted'),
-  ditolak('Ditolak', 'err', 'rejected');
+  draft('Draf', 'neutral', 'draft'),
+  sent('Terkirim', 'info', 'sent'),
+  accepted('Diterima', 'ok', 'accepted'),
+  rejected('Ditolak', 'err', 'rejected'),
+  expired('Kedaluwarsa', 'warn', 'expired'),
+  cancelled('Dibatalkan', 'neutral', 'cancelled');
 
   final String displayName;
   final String badgeType;
@@ -11,16 +12,53 @@ enum ProposalStatus {
 
   const ProposalStatus(this.displayName, this.badgeType, this.value);
 
+  // Backward compatibility getters
+  static ProposalStatus get dikirim => sent;
+  static ProposalStatus get disetujui => accepted;
+  static ProposalStatus get ditolak => rejected;
+  static ProposalStatus get negosiasi => sent;
+
+  // State machine helper getters
+  bool get isDraft => this == ProposalStatus.draft;
+  bool get isSent => this == ProposalStatus.sent;
+  bool get isAccepted => this == ProposalStatus.accepted;
+  bool get isRejected => this == ProposalStatus.rejected;
+  bool get isExpired => this == ProposalStatus.expired;
+  bool get isCancelled => this == ProposalStatus.cancelled;
+  bool get isTerminal => isAccepted || isRejected || isExpired || isCancelled;
+
+  bool get canEdit => isDraft;
+  bool get canRevise => isSent || isRejected || isExpired;
+  bool get canSend => isDraft;
+  bool get canAccept => isSent;
+  bool get canReject => isSent;
+  bool get canExpire => isSent;
+  bool get canCancel => isDraft || isSent;
+
   static ProposalStatus fromString(String val) {
     final lower = val.toLowerCase().trim();
-    for (final status in ProposalStatus.values) {
-      if (status.value == lower ||
-          status.name.toLowerCase() == lower ||
-          status.displayName.toLowerCase() == lower) {
-        return status;
-      }
-    }
-    return ProposalStatus.draft;
+    return switch (lower) {
+      'draft' || 'draf' => ProposalStatus.draft,
+      'sent' || 'dikirim' || 'terkirim' => ProposalStatus.sent,
+      'negotiation' || 'negosiasi' => ProposalStatus.sent,
+      'accepted' || 'disetujui' || 'diterima' => ProposalStatus.accepted,
+      'rejected' || 'ditolak' => ProposalStatus.rejected,
+      'expired' || 'kedaluwarsa' || 'kadaluarsa' => ProposalStatus.expired,
+      'cancelled' || 'canceled' || 'dibatalkan' => ProposalStatus.cancelled,
+      _ => ProposalStatus.draft,
+    };
+  }
+
+  static ProposalStatus fromInt(int val) {
+    return switch (val) {
+      1 => ProposalStatus.draft,
+      2 => ProposalStatus.sent,
+      3 => ProposalStatus.accepted,
+      4 => ProposalStatus.rejected,
+      5 => ProposalStatus.expired,
+      6 => ProposalStatus.cancelled,
+      _ => ProposalStatus.draft,
+    };
   }
 }
 
@@ -149,6 +187,7 @@ class Proposal {
   final String validUntil;
   final String location;
   final String? addressId;
+  final bool hasPricing;
   final String? addressLabel;
   final String? addressLine;
   final String version;
@@ -189,6 +228,7 @@ class Proposal {
     required this.validUntil,
     required this.location,
     this.addressId,
+    this.hasPricing = false,
     this.addressLabel,
     this.addressLine,
     this.version = '1',
@@ -289,6 +329,7 @@ class Proposal {
     String? validUntil,
     String? location,
     String? addressId,
+    bool? hasPricing,
     String? addressLabel,
     String? addressLine,
     String? version,
@@ -329,6 +370,7 @@ class Proposal {
       validUntil: validUntil ?? this.validUntil,
       location: location ?? this.location,
       addressId: addressId ?? this.addressId,
+      hasPricing: hasPricing ?? this.hasPricing,
       addressLabel: addressLabel ?? this.addressLabel,
       addressLine: addressLine ?? this.addressLine,
       version: version ?? this.version,

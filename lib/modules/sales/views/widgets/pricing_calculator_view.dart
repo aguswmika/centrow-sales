@@ -135,10 +135,7 @@ class _PreviewActionBar extends StatelessWidget {
             onPressed: isLoading
                 ? null
                 : () async {
-                    await controller.previewPricing(
-                      proposal.customerId,
-                      proposal.serviceId,
-                    );
+                    await controller.previewPricing(proposal.id);
                     if (!context.mounted) return;
                     final state = controller.previewState.value;
                     switch (state) {
@@ -150,8 +147,6 @@ class _PreviewActionBar extends StatelessWidget {
                             'preview': data,
                             'controller': controller,
                             'proposal': proposal,
-                            'visitFrequency':
-                                controller.visitFrequency.value ?? 12,
                             'contractMonths':
                                 controller.contractMonths.value ?? 12,
                           },

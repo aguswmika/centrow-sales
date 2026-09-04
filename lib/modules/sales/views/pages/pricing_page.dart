@@ -31,7 +31,14 @@ class _PricingPageState extends State<PricingPage> {
     super.initState();
     _controller = getIt<ProposalController>();
     _calcController = getIt<PricingCalculatorController>();
-    _controller.loadProposalDetail(widget.proposalId);
+    _controller.loadProposalDetail(widget.proposalId).then((_) {
+      final state = _controller.proposalDetailState.value;
+      if (state is UiSuccess<Proposal>) {
+        if (state.data.hasPricing) {
+          _calcController.loadExistingPricing(widget.proposalId);
+        }
+      }
+    });
     _calcController.loadUoms();
   }
 
@@ -183,7 +190,7 @@ class _PricingPageState extends State<PricingPage> {
   Widget _buildParamBar(BuildContext context) {
     return Container(
       color: AppColors.surface,
-      padding: const EdgeInsets.fromLTRB(16.0, 0, 16.0, 16.0),
+      padding: const EdgeInsets.fromLTRB(16.0, 16.0, 16.0, 16.0),
       child: Row(
         children: [
           Expanded(
@@ -197,13 +204,13 @@ class _PricingPageState extends State<PricingPage> {
                   _calcController.contractMonths.value = int.tryParse(val),
             ),
           ),
-          const SizedBox(width: 12.0),
+          const SizedBox(width: 16.0),
           Expanded(
             child: _buildParamItem(
-              'Frekuensi Kunjungan',
+              'Frek. Kunjungan',
               _calcController.visitFrequency.value?.toString(),
-              icon: Icons.repeat,
-              suffix: 'Visit',
+              icon: Icons.refresh,
+              suffix: 'Kali',
               keyboardType: TextInputType.number,
               onChanged: (val) =>
                   _calcController.visitFrequency.value = int.tryParse(val),

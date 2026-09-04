@@ -14,11 +14,13 @@ import 'package:centrow_sales/shared/theme/app_colors.dart';
 class ProposalFormBottomSheet extends StatefulWidget {
   final String? customerId;
   final Proposal? initialProposal;
+  final bool isReviseMode;
 
   const ProposalFormBottomSheet({
     super.key,
     this.customerId,
     this.initialProposal,
+    this.isReviseMode = false,
   });
 
   @override
@@ -39,7 +41,15 @@ class _ProposalFormBottomSheetState extends State<ProposalFormBottomSheet> {
     _notesController = TextEditingController();
 
     if (widget.initialProposal != null) {
-      _controller.initForEdit(widget.initialProposal!);
+      if (widget.isReviseMode) {
+        _controller.initForRevise(widget.initialProposal!);
+      } else {
+        _controller.initForEdit(widget.initialProposal!);
+      }
+      _dateController.text = widget.initialProposal!.date;
+      if (widget.initialProposal!.validUntil.isNotEmpty) {
+        _validUntilController.text = widget.initialProposal!.validUntil;
+      }
       _notesController.text = widget.initialProposal!.notes ?? '';
     } else if (widget.customerId != null) {
       _controller.customerId = widget.customerId;
@@ -76,155 +86,166 @@ class _ProposalFormBottomSheetState extends State<ProposalFormBottomSheet> {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      constraints: BoxConstraints(
-        maxHeight: MediaQuery.of(context).size.height * 0.9,
-      ),
-      decoration: const BoxDecoration(
-        color: AppColors.surface,
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
-      child: ListenableBuilder(
-        listenable: _controller,
-        builder: (context, child) {
-          return SingleChildScrollView(
-            padding: EdgeInsets.only(
-              bottom: MediaQuery.of(context).viewInsets.bottom + 24.0,
-              left: 24.0,
-              right: 24.0,
-              top: 12.0,
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                Center(
-                  child: Container(
-                    width: 40,
-                    height: 4,
-                    decoration: BoxDecoration(
-                      color: AppColors.borderStrong,
-                      borderRadius: BorderRadius.circular(2),
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 16),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      _controller.isEditMode
-                          ? 'Ubah Proposal'
-                          : 'Buat Proposal Baru',
-                      style: AppTypography.heading2(),
-                    ),
-                    IconButton(
-                      icon: const Icon(
-                        Icons.close_rounded,
-                        color: AppColors.sec,
+    return Material(
+      color: AppColors.surface,
+      borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+      clipBehavior: Clip.antiAlias,
+      child: Container(
+        constraints: BoxConstraints(
+          maxHeight: MediaQuery.of(context).size.height * 0.9,
+        ),
+        child: ListenableBuilder(
+          listenable: _controller,
+          builder: (context, child) {
+            return SingleChildScrollView(
+              padding: EdgeInsets.only(
+                bottom: MediaQuery.of(context).viewInsets.bottom + 24.0,
+                left: 24.0,
+                right: 24.0,
+                top: 12.0,
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Center(
+                    child: Container(
+                      width: 40,
+                      height: 4,
+                      decoration: BoxDecoration(
+                        color: AppColors.borderStrong,
+                        borderRadius: BorderRadius.circular(2),
                       ),
-                      onPressed: () => context.pop(),
                     ),
-                  ],
-                ),
-                const SizedBox(height: 24),
-                AppSearchableSelector<Customer>(
-                  label: 'Pelanggan',
-                  value: _controller.selectedCustomer,
-                  onSearch: _controller.searchCustomers,
-                  itemAsString: (c) =>
-                      c.code.isNotEmpty ? '[${c.code}] ${c.name}' : c.name,
-                  onChanged: (c) => _controller.updateFields(customer: c),
-                ),
-                const SizedBox(height: 16),
-                AppSearchableSelector<Service>(
-                  label: 'Layanan',
-                  value: _controller.selectedService,
-                  onSearch: _controller.searchServices,
-                  itemAsString: (s) =>
-                      s.code.isNotEmpty ? '[${s.code}] ${s.name}' : s.name,
-                  onChanged: (s) => _controller.updateFields(service: s),
-                ),
-                const SizedBox(height: 16),
-                AppDropdown<String>(
-                  label: 'Lokasi',
-                  value: _controller.addressId,
-                  items: _controller.availableLocations
-                      .map(
-                        (l) => DropdownMenuItem(
-                          value: l.id,
-                          child: Text(
-                            l.label.isNotEmpty
-                                ? '${l.label} - ${l.address}'
-                                : l.address,
-                            overflow: TextOverflow.ellipsis,
-                          ),
+                  ),
+                  const SizedBox(height: 16),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        _controller.isReviseMode
+                            ? 'Revisi Proposal'
+                            : (_controller.isEditMode
+                                  ? 'Ubah Proposal'
+                                  : 'Buat Proposal Baru'),
+                        style: AppTypography.heading2(),
+                      ),
+                      IconButton(
+                        icon: const Icon(
+                          Icons.close_rounded,
+                          color: AppColors.sec,
                         ),
-                      )
-                      .toList(),
-                  onChanged: (val) {
-                    _controller.updateFields(addressId: val);
-                  },
-                ),
-                const SizedBox(height: 16),
-                TextFormField(
-                  controller: _dateController,
-                  readOnly: true,
-                  decoration: const InputDecoration(
-                    labelText: 'Tanggal Proposal',
-                    suffixIcon: Icon(Icons.calendar_today),
+                        onPressed: () => context.pop(),
+                      ),
+                    ],
                   ),
-                  onTap: () => _selectDate(
-                    context,
-                    _dateController,
-                    (val) => _controller.updateFields(proposalDate: val),
+                  const SizedBox(height: 24),
+                  AppSearchableSelector<Customer>(
+                    label: 'Pelanggan',
+                    enabled:
+                        !_controller.isEditMode && !_controller.isReviseMode,
+                    value: _controller.selectedCustomer,
+                    onSearch: _controller.searchCustomers,
+                    itemAsString: (c) =>
+                        c.code.isNotEmpty ? '[${c.code}] ${c.name}' : c.name,
+                    onChanged: (c) => _controller.updateFields(customer: c),
                   ),
-                ),
-                const SizedBox(height: 16),
-                TextFormField(
-                  controller: _validUntilController,
-                  readOnly: true,
-                  decoration: const InputDecoration(
-                    labelText: 'Berlaku Hingga',
-                    suffixIcon: Icon(Icons.calendar_today),
+                  const SizedBox(height: 16),
+                  AppSearchableSelector<Service>(
+                    label: 'Layanan',
+                    enabled:
+                        !_controller.isEditMode && !_controller.isReviseMode,
+                    value: _controller.selectedService,
+                    onSearch: _controller.searchServices,
+                    itemAsString: (s) =>
+                        s.code.isNotEmpty ? '[${s.code}] ${s.name}' : s.name,
+                    onChanged: (s) => _controller.updateFields(service: s),
                   ),
-                  onTap: () => _selectDate(
-                    context,
-                    _validUntilController,
-                    (val) => _controller.updateFields(validUntil: val),
+                  const SizedBox(height: 16),
+                  AppDropdown<String>(
+                    label: 'Lokasi',
+                    value: _controller.addressId,
+                    items: _controller.availableLocations
+                        .map(
+                          (l) => DropdownMenuItem(
+                            value: l.id,
+                            child: Text(
+                              l.label.isNotEmpty
+                                  ? '${l.label} - ${l.address}'
+                                  : l.address,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                        )
+                        .toList(),
+                    onChanged: (val) {
+                      _controller.updateFields(addressId: val);
+                    },
                   ),
-                ),
-                const SizedBox(height: 16),
-                TextFormField(
-                  controller: _notesController,
-                  maxLines: 3,
-                  decoration: const InputDecoration(
-                    labelText: 'Catatan Proposal',
-                    alignLabelWithHint: true,
+                  const SizedBox(height: 16),
+                  TextFormField(
+                    controller: _dateController,
+                    readOnly: true,
+                    decoration: const InputDecoration(
+                      labelText: 'Tanggal Proposal',
+                      suffixIcon: Icon(Icons.calendar_today),
+                    ),
+                    onTap: () => _selectDate(
+                      context,
+                      _dateController,
+                      (val) => _controller.updateFields(proposalDate: val),
+                    ),
                   ),
-                  onChanged: (val) => _controller.updateFields(notes: val),
-                ),
-                const SizedBox(height: 32),
-                ElevatedButton(
-                  onPressed: () async {
-                    final result = await _controller.submit();
-                    if (result.isOk && context.mounted) {
-                      context.pop(result.valueOrNull);
-                    } else if (result.isErr && context.mounted) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(content: Text(result.failureOrNull!.message)),
-                      );
-                    }
-                  },
-                  child: Text(
-                    _controller.isEditMode
-                        ? 'Simpan Perubahan'
-                        : 'Buat Proposal',
+                  const SizedBox(height: 16),
+                  TextFormField(
+                    controller: _validUntilController,
+                    readOnly: true,
+                    decoration: const InputDecoration(
+                      labelText: 'Berlaku Hingga',
+                      suffixIcon: Icon(Icons.calendar_today),
+                    ),
+                    onTap: () => _selectDate(
+                      context,
+                      _validUntilController,
+                      (val) => _controller.updateFields(validUntil: val),
+                    ),
                   ),
-                ),
-              ],
-            ),
-          );
-        },
+                  const SizedBox(height: 16),
+                  TextFormField(
+                    controller: _notesController,
+                    maxLines: 3,
+                    decoration: const InputDecoration(
+                      labelText: 'Catatan Proposal',
+                      alignLabelWithHint: true,
+                    ),
+                    onChanged: (val) => _controller.updateFields(notes: val),
+                  ),
+                  const SizedBox(height: 32),
+                  ElevatedButton(
+                    onPressed: () async {
+                      final result = await _controller.submit();
+                      if (result.isOk && context.mounted) {
+                        context.pop(result.valueOrNull);
+                      } else if (result.isErr && context.mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text(result.failureOrNull!.message),
+                          ),
+                        );
+                      }
+                    },
+                    child: Text(
+                      _controller.isReviseMode
+                          ? 'Simpan Revisi'
+                          : (_controller.isEditMode
+                                ? 'Simpan Perubahan'
+                                : 'Buat Proposal'),
+                    ),
+                  ),
+                ],
+              ),
+            );
+          },
+        ),
       ),
     );
   }

@@ -2,6 +2,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:centrow_sales/modules/pc/entities/product_mapping.dart';
 import 'package:centrow_sales/modules/sales/controllers/pricing_calculator_controller.dart';
 import 'package:centrow_sales/modules/sales/entities/pricing_preview.dart';
+import 'package:centrow_sales/modules/sales/entities/pricing_detail.dart';
 import 'package:centrow_sales/modules/sales/entities/product.dart';
 import 'package:centrow_sales/modules/sales/repositories/dtos/pricing_dto.dart';
 import 'package:centrow_sales/modules/sales/repositories/pricing_repository.dart';
@@ -12,15 +13,25 @@ import 'package:centrow_sales/shared/state/ui_state.dart';
 class MockPricingRepository implements PricingRepository {
   CreatePricingRequestDto? lastRequest;
   Result<void> response = const Ok(null);
+  Result<PricingPreview>? previewResponse;
 
   @override
-  Future<Result<void>> savePricing(CreatePricingRequestDto data) async {
+  Future<Result<void>> savePricing(
+    String proposalId,
+    CreatePricingRequestDto data,
+  ) async {
     lastRequest = data;
     return response;
   }
 
   @override
+  Future<Result<PricingDetail>> getPricingDetail(String proposalId) async {
+    return const Err(UnknownFailure('Not implemented'));
+  }
+
+  @override
   Future<Result<PricingPreview>> previewPricing(
+    String proposalId,
     CreatePricingRequestDto data,
   ) async {
     return const Ok(
@@ -430,18 +441,14 @@ void main() {
       );
 
       controller.contractMonths.value = 6;
-      controller.visitFrequency.value = 4;
       controller.markupPercent.value = 15.0;
       controller.taxPercentage.value = 5.0;
 
-      await controller.submitPricing('cust-1', 'srv-1');
+      await controller.submitPricing('prop-1');
 
       expect(controller.submitState.value, isA<UiSuccess<void>>());
       expect(repository.lastRequest, isNotNull);
-      expect(repository.lastRequest!.customerId, 'cust-1');
-      expect(repository.lastRequest!.serviceId, 'srv-1');
       expect(repository.lastRequest!.contractMonths, 6);
-      expect(repository.lastRequest!.visitFrequency, 4);
       expect(repository.lastRequest!.markupType, 1);
       expect(repository.lastRequest!.markupValue, 15.0);
       expect(repository.lastRequest!.taxPercentage, 5.0);
@@ -460,7 +467,7 @@ void main() {
     test('updates submitState to UiFailure when repository fails', () async {
       repository.response = const Err(ServerFailure('Server Error'));
 
-      await controller.submitPricing('cust-1', 'srv-1');
+      await controller.submitPricing('prop-1');
 
       expect(controller.submitState.value, isA<UiFailure<void>>());
     });

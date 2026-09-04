@@ -37,10 +37,9 @@ class PricingWorkerTab extends StatelessWidget {
                 'Kunjungan',
                 'Jam Awal',
                 'Jam Rutin',
-                'Tarif per Jam',
                 '',
               ],
-              flexes: const [4, 1, 1, 1, 3],
+              flexes: const [4, 1, 1, 1],
             ),
             for (final row in rows)
               PricingWorkerRowWidget(
@@ -148,13 +147,6 @@ class PricingWorkerRowWidget extends StatelessWidget {
             }),
           ),
           const SizedBox(width: 16.0),
-          Expanded(
-            flex: 3,
-            child: buildInput(row.hourlyRate.value.toString(), (val) {
-              row.hourlyRate.value = double.tryParse(val) ?? 0.0;
-            }),
-          ),
-          const SizedBox(width: 8.0),
           SizedBox(
             width: 30.0,
             height: 30.0,

@@ -1,6 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:centrow_sales/modules/sales/controllers/proposal_controller.dart';
 import 'package:centrow_sales/modules/sales/entities/proposal.dart';
+import 'package:centrow_sales/modules/sales/entities/proposal_status_result.dart';
 import 'package:centrow_sales/modules/sales/repositories/proposal_repository.dart';
 import 'package:centrow_sales/shared/error/failure.dart';
 import 'package:centrow_sales/shared/result/result.dart';
@@ -10,6 +11,7 @@ class FakeProposalRepository implements ProposalRepository {
   List<Proposal> proposals;
   bool shouldFailGetProposals = false;
   bool shouldFailGetProposalById = false;
+  bool shouldFailStatusTransition = false;
 
   @override
   Future<Result<Proposal>> createProposal(dynamic input) async {
@@ -21,6 +23,117 @@ class FakeProposalRepository implements ProposalRepository {
     return const Err(ServerFailure('Not implemented'));
   }
 
+  @override
+  Future<Result<Proposal>> reviseProposal(String id, dynamic input) async {
+    return const Err(ServerFailure('Not implemented'));
+  }
+
+  @override
+  Future<Result<ProposalStatusResult>> sendProposal(String id) async {
+    if (shouldFailStatusTransition) {
+      return const Err(ServerFailure('Gagal mengirim proposal'));
+    }
+    final idx = proposals.indexWhere((p) => p.id == id || p.code == id);
+    if (idx != -1) {
+      final updated = proposals[idx].copyWith(
+        status: ProposalStatus.sent,
+        sentAt: '2026-09-03 10:00:00',
+      );
+      proposals[idx] = updated;
+    }
+    return Ok(
+      ProposalStatusResult(
+        id: id,
+        status: ProposalStatus.sent,
+        sentAt: '2026-09-03 10:00:00',
+      ),
+    );
+  }
+
+  @override
+  Future<Result<ProposalStatusResult>> acceptProposal(String id) async {
+    if (shouldFailStatusTransition) {
+      return const Err(ServerFailure('Gagal menerima proposal'));
+    }
+    final idx = proposals.indexWhere((p) => p.id == id || p.code == id);
+    if (idx != -1) {
+      final updated = proposals[idx].copyWith(
+        status: ProposalStatus.accepted,
+        decidedAt: '2026-09-03 11:00:00',
+      );
+      proposals[idx] = updated;
+    }
+    return Ok(
+      ProposalStatusResult(
+        id: id,
+        status: ProposalStatus.accepted,
+        decidedAt: '2026-09-03 11:00:00',
+      ),
+    );
+  }
+
+  @override
+  Future<Result<ProposalStatusResult>> rejectProposal(
+    String id,
+    String reason,
+  ) async {
+    if (shouldFailStatusTransition) {
+      return const Err(ServerFailure('Gagal menolak proposal'));
+    }
+    final idx = proposals.indexWhere((p) => p.id == id || p.code == id);
+    if (idx != -1) {
+      final updated = proposals[idx].copyWith(
+        status: ProposalStatus.rejected,
+        decidedAt: '2026-09-03 12:00:00',
+        rejectionReason: reason,
+      );
+      proposals[idx] = updated;
+    }
+    return Ok(
+      ProposalStatusResult(
+        id: id,
+        status: ProposalStatus.rejected,
+        decidedAt: '2026-09-03 12:00:00',
+        rejectionReason: reason,
+      ),
+    );
+  }
+
+  @override
+  Future<Result<ProposalStatusResult>> expireProposal(String id) async {
+    if (shouldFailStatusTransition) {
+      return const Err(ServerFailure('Gagal menandai kedaluwarsa'));
+    }
+    final idx = proposals.indexWhere((p) => p.id == id || p.code == id);
+    if (idx != -1) {
+      final updated = proposals[idx].copyWith(
+        status: ProposalStatus.expired,
+        decidedAt: '2026-09-03 13:00:00',
+      );
+      proposals[idx] = updated;
+    }
+    return Ok(
+      ProposalStatusResult(
+        id: id,
+        status: ProposalStatus.expired,
+        decidedAt: '2026-09-03 13:00:00',
+      ),
+    );
+  }
+
+  @override
+  Future<Result<ProposalStatusResult>> cancelProposal(String id) async {
+    if (shouldFailStatusTransition) {
+      return const Err(ServerFailure('Gagal membatalkan proposal'));
+    }
+    final idx = proposals.indexWhere((p) => p.id == id || p.code == id);
+    if (idx != -1) {
+      final updated = proposals[idx].copyWith(status: ProposalStatus.cancelled);
+      proposals[idx] = updated;
+    }
+    return Ok(ProposalStatusResult(id: id, status: ProposalStatus.cancelled));
+  }
+
   FakeProposalRepository({List<Proposal>? initialProposals})
     : proposals =
           initialProposals ??
@@ -30,7 +143,7 @@ class FakeProposalRepository implements ProposalRepository {
               code: 'PRO-2026-0042',
               clientName: 'Villa Sari Dewi',
               serviceName: 'Termite Protection Plan',
-              status: ProposalStatus.dikirim,
+              status: ProposalStatus.sent,
               date: '12 Agt 2026',
               validUntil: '12 Sep 2026',
               location: 'Villa Utama Seminyak',
@@ -62,7 +175,7 @@ class FakeProposalRepository implements ProposalRepository {
               code: 'PRO-2026-0041',
               clientName: 'Hotel Surya Kuta',
               serviceName: 'Pest Control Full Commercial',
-              status: ProposalStatus.negosiasi,
+              status: ProposalStatus.accepted,
               date: '10 Agt 2026',
               validUntil: '10 Sep 2026',
               location: 'Resort & Resto Kuta',
@@ -100,7 +213,12 @@ class FakeProposalRepository implements ProposalRepository {
       list = list.where((p) {
         return p.status.value.toLowerCase() == st ||
             p.status.displayName.toLowerCase() == st ||
-            p.status.name.toLowerCase() == st;
+            p.status.name.toLowerCase() == st ||
+            (p.status == ProposalStatus.sent &&
+                (st == 'dikirim' || st == 'terkirim')) ||
+            (p.status == ProposalStatus.accepted &&
+                (st == 'disetujui' || st == 'diterima')) ||
+            (p.status == ProposalStatus.rejected && st == 'ditolak');
       }).toList();
     }
     if (query != null && query.trim().isNotEmpty) {
@@ -152,6 +270,10 @@ void main() {
       expect(controller.activePricingTab.value, 0);
       expect(controller.filteredProposals.value, isEmpty);
       expect(controller.selectedProposal.value, isNull);
+      expect(
+        controller.actionState.value,
+        isA<UiInitial<ProposalStatusResult>>(),
+      );
     });
 
     test(
@@ -293,5 +415,146 @@ void main() {
         expect(controller.activePricingTab.value, 1);
       },
     );
+
+    group('Status transitions', () {
+      test(
+        'sendProposal transitions proposal to sent and sets sentAt',
+        () async {
+          await controller.loadProposals();
+          await controller.selectProposal('p3'); // p3 is draft
+          expect(
+            controller.selectedProposal.value?.status,
+            ProposalStatus.draft,
+          );
+
+          final result = await controller.sendProposal('p3');
+
+          expect(result, isA<Ok<ProposalStatusResult>>());
+          expect(
+            controller.actionState.value,
+            isA<UiSuccess<ProposalStatusResult>>(),
+          );
+          final current = controller.proposalDetailState.value.dataOrNull;
+          expect(current?.status, ProposalStatus.sent);
+          expect(current?.sentAt, '2026-09-03 10:00:00');
+        },
+      );
+
+      test(
+        'acceptProposal transitions proposal to accepted and sets decidedAt',
+        () async {
+          await controller.loadProposals();
+          await controller.selectProposal('p1'); // p1 is sent (dikirim)
+          expect(
+            controller.selectedProposal.value?.status,
+            ProposalStatus.sent,
+          );
+
+          final result = await controller.acceptProposal('p1');
+
+          expect(result, isA<Ok<ProposalStatusResult>>());
+          expect(
+            controller.actionState.value,
+            isA<UiSuccess<ProposalStatusResult>>(),
+          );
+          final current = controller.proposalDetailState.value.dataOrNull;
+          expect(current?.status, ProposalStatus.accepted);
+          expect(current?.decidedAt, '2026-09-03 11:00:00');
+        },
+      );
+
+      test(
+        'rejectProposal transitions proposal to rejected with reason and decidedAt',
+        () async {
+          await controller.loadProposals();
+          await controller.selectProposal('p1');
+
+          final result = await controller.rejectProposal(
+            'p1',
+            'Budget tidak mencukupi',
+          );
+
+          expect(result, isA<Ok<ProposalStatusResult>>());
+          expect(
+            controller.actionState.value,
+            isA<UiSuccess<ProposalStatusResult>>(),
+          );
+          final current = controller.proposalDetailState.value.dataOrNull;
+          expect(current?.status, ProposalStatus.rejected);
+          expect(current?.decidedAt, '2026-09-03 12:00:00');
+          expect(current?.rejectionReason, 'Budget tidak mencukupi');
+        },
+      );
+
+      test(
+        'expireProposal transitions proposal to expired and sets decidedAt',
+        () async {
+          await controller.loadProposals();
+          await controller.selectProposal('p1');
+
+          final result = await controller.expireProposal('p1');
+
+          expect(result, isA<Ok<ProposalStatusResult>>());
+          expect(
+            controller.actionState.value,
+            isA<UiSuccess<ProposalStatusResult>>(),
+          );
+          final current = controller.proposalDetailState.value.dataOrNull;
+          expect(current?.status, ProposalStatus.expired);
+          expect(current?.decidedAt, '2026-09-03 13:00:00');
+        },
+      );
+
+      test('cancelProposal transitions proposal to cancelled', () async {
+        await controller.loadProposals();
+        await controller.selectProposal('p3'); // draft can be cancelled
+
+        final result = await controller.cancelProposal('p3');
+
+        expect(result, isA<Ok<ProposalStatusResult>>());
+        expect(
+          controller.actionState.value,
+          isA<UiSuccess<ProposalStatusResult>>(),
+        );
+        final current = controller.proposalDetailState.value.dataOrNull;
+        expect(current?.status, ProposalStatus.cancelled);
+      });
+
+      test(
+        'failure transition sets actionState to UiFailure and preserves detail state',
+        () async {
+          await controller.loadProposals();
+          await controller.selectProposal('p1');
+          repository.shouldFailStatusTransition = true;
+
+          final result = await controller.sendProposal('p1');
+
+          expect(result, isA<Err<ProposalStatusResult>>());
+          expect(
+            controller.actionState.value,
+            isA<UiFailure<ProposalStatusResult>>(),
+          );
+          // Detail state should NOT be mutated on failure
+          final current = controller.proposalDetailState.value.dataOrNull;
+          expect(current?.status, ProposalStatus.sent);
+        },
+      );
+
+      test('resetActionState resets actionState back to UiInitial', () async {
+        await controller.loadProposals();
+        await controller.selectProposal('p3');
+        await controller.sendProposal('p3');
+
+        expect(
+          controller.actionState.value,
+          isA<UiSuccess<ProposalStatusResult>>(),
+        );
+        controller.resetActionState();
+        expect(
+          controller.actionState.value,
+          isA<UiInitial<ProposalStatusResult>>(),
+        );
+      });
+    });
   });
 }

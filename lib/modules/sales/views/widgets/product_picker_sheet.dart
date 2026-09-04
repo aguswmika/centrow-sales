@@ -54,142 +54,143 @@ class _ProductPickerSheetState extends State<ProductPickerSheet> {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      constraints: BoxConstraints(
-        maxHeight: MediaQuery.of(context).size.height * 0.85,
+    return Material(
+      color: AppColors.surface,
+      borderRadius: const BorderRadius.vertical(
+        top: Radius.circular(AppRadius.rLg),
       ),
-      decoration: const BoxDecoration(
-        color: AppColors.surface,
-        borderRadius: BorderRadius.vertical(
-          top: Radius.circular(AppRadius.rLg),
+      clipBehavior: Clip.antiAlias,
+      child: Container(
+        constraints: BoxConstraints(
+          maxHeight: MediaQuery.of(context).size.height * 0.85,
         ),
-      ),
-      padding: EdgeInsets.only(
-        bottom: MediaQuery.of(context).viewInsets.bottom,
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          // Drag handle
-          Center(
-            child: Container(
-              margin: const EdgeInsets.only(top: 12.0, bottom: 8.0),
-              width: 40.0,
-              height: 4.0,
-              decoration: BoxDecoration(
-                color: AppColors.borderStrong,
-                borderRadius: BorderRadius.circular(2.0),
+        padding: EdgeInsets.only(
+          bottom: MediaQuery.of(context).viewInsets.bottom,
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            // Drag handle
+            Center(
+              child: Container(
+                margin: const EdgeInsets.only(top: 12.0, bottom: 8.0),
+                width: 40.0,
+                height: 4.0,
+                decoration: BoxDecoration(
+                  color: AppColors.borderStrong,
+                  borderRadius: BorderRadius.circular(2.0),
+                ),
               ),
             ),
-          ),
 
-          // Header
-          Padding(
-            padding: const EdgeInsets.symmetric(
-              horizontal: 16.0,
-              vertical: 8.0,
-            ),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  'Pilih Produk / Tenaga Kerja / BBM',
-                  style: GoogleFonts.plusJakartaSans(
-                    fontSize: 16.0,
-                    fontWeight: FontWeight.w700,
-                    color: AppColors.text,
+            // Header
+            Padding(
+              padding: const EdgeInsets.symmetric(
+                horizontal: 16.0,
+                vertical: 8.0,
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    'Pilih Produk / Tenaga Kerja / BBM',
+                    style: GoogleFonts.plusJakartaSans(
+                      fontSize: 16.0,
+                      fontWeight: FontWeight.w700,
+                      color: AppColors.text,
+                    ),
                   ),
-                ),
-                IconButton(
-                  icon: const Icon(
-                    Icons.close_rounded,
+                  IconButton(
+                    icon: const Icon(
+                      Icons.close_rounded,
+                      color: AppColors.sec,
+                      size: 20.0,
+                    ),
+                    onPressed: () => Navigator.pop(context),
+                  ),
+                ],
+              ),
+            ),
+
+            // Search Bar
+            Padding(
+              padding: const EdgeInsets.symmetric(
+                horizontal: 16.0,
+                vertical: 8.0,
+              ),
+              child: TextFormField(
+                controller: _searchController,
+                textInputAction: TextInputAction.search,
+                onFieldSubmitted: _onSearch,
+                decoration: InputDecoration(
+                  hintText: 'Cari produk berdasarkan nama atau kode...',
+                  hintStyle: const TextStyle(
+                    fontSize: 13.0,
+                    color: AppColors.muted,
+                  ),
+                  prefixIcon: const Icon(
+                    Icons.search,
                     color: AppColors.sec,
                     size: 20.0,
                   ),
-                  onPressed: () => Navigator.pop(context),
-                ),
-              ],
-            ),
-          ),
-
-          // Search Bar
-          Padding(
-            padding: const EdgeInsets.symmetric(
-              horizontal: 16.0,
-              vertical: 8.0,
-            ),
-            child: TextFormField(
-              controller: _searchController,
-              textInputAction: TextInputAction.search,
-              onFieldSubmitted: _onSearch,
-              decoration: InputDecoration(
-                hintText: 'Cari produk berdasarkan nama atau kode...',
-                hintStyle: const TextStyle(
-                  fontSize: 13.0,
-                  color: AppColors.muted,
-                ),
-                prefixIcon: const Icon(
-                  Icons.search,
-                  color: AppColors.sec,
-                  size: 20.0,
-                ),
-                suffixIcon: IconButton(
-                  icon: const Icon(
-                    Icons.arrow_forward_rounded,
-                    color: AppColors.brand,
-                    size: 20.0,
+                  suffixIcon: IconButton(
+                    icon: const Icon(
+                      Icons.arrow_forward_rounded,
+                      color: AppColors.brand,
+                      size: 20.0,
+                    ),
+                    onPressed: () => _onSearch(_searchController.text),
                   ),
-                  onPressed: () => _onSearch(_searchController.text),
-                ),
-                filled: true,
-                fillColor: AppColors.subtle,
-                contentPadding: const EdgeInsets.symmetric(
-                  horizontal: 14.0,
-                  vertical: 10.0,
-                ),
-                border: const OutlineInputBorder(
-                  borderRadius: AppRadius.borderMd,
-                  borderSide: BorderSide(color: AppColors.border, width: 1.5),
-                ),
-                enabledBorder: const OutlineInputBorder(
-                  borderRadius: AppRadius.borderMd,
-                  borderSide: BorderSide(color: AppColors.border, width: 1.5),
-                ),
-                focusedBorder: const OutlineInputBorder(
-                  borderRadius: AppRadius.borderMd,
-                  borderSide: BorderSide(color: AppColors.brand, width: 1.5),
+                  filled: true,
+                  fillColor: AppColors.subtle,
+                  contentPadding: const EdgeInsets.symmetric(
+                    horizontal: 14.0,
+                    vertical: 10.0,
+                  ),
+                  border: const OutlineInputBorder(
+                    borderRadius: AppRadius.borderMd,
+                    borderSide: BorderSide(color: AppColors.border, width: 1.5),
+                  ),
+                  enabledBorder: const OutlineInputBorder(
+                    borderRadius: AppRadius.borderMd,
+                    borderSide: BorderSide(color: AppColors.border, width: 1.5),
+                  ),
+                  focusedBorder: const OutlineInputBorder(
+                    borderRadius: AppRadius.borderMd,
+                    borderSide: BorderSide(color: AppColors.brand, width: 1.5),
+                  ),
                 ),
               ),
             ),
-          ),
 
-          const SizedBox(height: 8.0),
-          const Divider(height: 1.0, color: AppColors.border),
+            const SizedBox(height: 8.0),
+            const Divider(height: 1.0, color: AppColors.border),
 
-          // Content List
-          Expanded(
-            child: SignalBuilder(
-              builder: (context) {
-                final state = _controller.state.value;
-                return switch (state) {
-                  UiInitial() || UiLoading() => const Center(
-                    child: CircularProgressIndicator(color: AppColors.brand),
-                  ),
-                  UiFailure(:final failure) => ErrorView(
-                    message: failure.message,
-                    onRetry: () => _controller.loadProducts(
-                      q: _searchController.text.trim().isNotEmpty
-                          ? _searchController.text.trim()
-                          : null,
-                      kind: widget.kind,
+            // Content List
+            Expanded(
+              child: SignalBuilder(
+                builder: (context) {
+                  final state = _controller.state.value;
+                  return switch (state) {
+                    UiInitial() || UiLoading() => const Center(
+                      child: CircularProgressIndicator(color: AppColors.brand),
                     ),
-                  ),
-                  UiSuccess(:final data) => _buildProductList(data),
-                };
-              },
+                    UiFailure(:final failure) => ErrorView(
+                      message: failure.message,
+                      onRetry: () => _controller.loadProducts(
+                        q: _searchController.text.trim().isNotEmpty
+                            ? _searchController.text.trim()
+                            : null,
+                        kind: widget.kind,
+                      ),
+                    ),
+                    UiSuccess(:final data) => _buildProductList(data),
+                  };
+                },
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

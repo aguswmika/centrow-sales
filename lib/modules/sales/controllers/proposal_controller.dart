@@ -3,6 +3,8 @@ import 'package:signals/signals.dart';
 import 'package:centrow_sales/shared/result/result.dart';
 import 'package:centrow_sales/shared/state/ui_state.dart';
 import 'package:centrow_sales/modules/sales/entities/proposal.dart';
+import 'package:centrow_sales/modules/sales/entities/proposal_status_result.dart';
+import 'package:centrow_sales/modules/sales/entities/update_proposal_input.dart';
 import 'package:centrow_sales/modules/sales/repositories/proposal_repository.dart';
 
 class ProposalController {
@@ -18,6 +20,11 @@ class ProposalController {
   final _proposalDetailState = signal<UiState<Proposal>>(const UiInitial());
   ReadonlySignal<UiState<Proposal>> get proposalDetailState =>
       _proposalDetailState;
+
+  final _actionState = signal<UiState<ProposalStatusResult>>(const UiInitial());
+  ReadonlySignal<UiState<ProposalStatusResult>> get actionState => _actionState;
+
+  void resetActionState() => _actionState.value = const UiInitial();
 
   final _selectedProposalId = signal<String>('');
   ReadonlySignal<String> get selectedProposalId => _selectedProposalId;
@@ -62,7 +69,12 @@ class ProposalController {
             (p) =>
                 p.status.value.toLowerCase() == status ||
                 p.status.displayName.toLowerCase() == status ||
-                p.status.name.toLowerCase() == status,
+                p.status.name.toLowerCase() == status ||
+                (p.status == ProposalStatus.sent &&
+                    (status == 'dikirim' || status == 'terkirim')) ||
+                (p.status == ProposalStatus.accepted &&
+                    (status == 'disetujui' || status == 'diterima')) ||
+                (p.status == ProposalStatus.rejected && status == 'ditolak'),
           )
           .toList();
     }
@@ -134,6 +146,74 @@ class ProposalController {
     }
   }
 
+  Future<void> reviseProposal(String id, UpdateProposalInput data) async {
+    _proposalDetailState.value = const UiLoading();
+    final result = await _repository.reviseProposal(id, data);
+    _proposalDetailState.value = switch (result) {
+      Ok(:final value) => UiSuccess(value),
+      Err(:final failure) => UiFailure(failure),
+    };
+    if (result is Ok) {
+      await loadProposals(); // refresh master list
+    }
+  }
+
+  Future<Result<ProposalStatusResult>> sendProposal(String id) async {
+    return _handleTransition(() => _repository.sendProposal(id));
+  }
+
+  Future<Result<ProposalStatusResult>> acceptProposal(String id) async {
+    return _handleTransition(() => _repository.acceptProposal(id));
+  }
+
+  Future<Result<ProposalStatusResult>> rejectProposal(
+    String id,
+    String reason,
+  ) async {
+    return _handleTransition(() => _repository.rejectProposal(id, reason));
+  }
+
+  Future<Result<ProposalStatusResult>> expireProposal(String id) async {
+    return _handleTransition(() => _repository.expireProposal(id));
+  }
+
+  Future<Result<ProposalStatusResult>> cancelProposal(String id) async {
+    return _handleTransition(() => _repository.cancelProposal(id));
+  }
+
+  Future<Result<ProposalStatusResult>> _handleTransition(
+    Future<Result<ProposalStatusResult>> Function() action,
+  ) async {
+    _actionState.value = const UiLoading();
+    final result = await action();
+    if (_isDisposed) return result;
+
+    _actionState.value = switch (result) {
+      Ok(:final value) => UiSuccess(value),
+      Err(:final failure) => UiFailure(failure),
+    };
+
+    if (result is Ok<ProposalStatusResult>) {
+      _applyStatusResult(result.value);
+      await loadProposals(isRefresh: true);
+    }
+    return result;
+  }
+
+  void _applyStatusResult(ProposalStatusResult res) {
+    final current = _proposalDetailState.value.dataOrNull;
+    if (current != null && current.id == res.id) {
+      _proposalDetailState.value = UiSuccess(
+        current.copyWith(
+          status: res.status,
+          sentAt: res.sentAt ?? current.sentAt,
+          decidedAt: res.decidedAt ?? current.decidedAt,
+          rejectionReason: res.rejectionReason ?? current.rejectionReason,
+        ),
+      );
+    }
+  }
+
   Future<void> selectProposal(String id) async {
     _selectedProposalId.value = id;
     if (id.isEmpty) {
@@ -187,6 +267,7 @@ class ProposalController {
     _isDisposed = true;
     _proposalsState.dispose();
     _proposalDetailState.dispose();
+    _actionState.dispose();
     _selectedProposalId.dispose();
     _searchQuery.dispose();
     _selectedStatus.dispose();

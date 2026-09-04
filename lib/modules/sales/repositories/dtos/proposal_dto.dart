@@ -1,4 +1,5 @@
 import 'package:centrow_sales/modules/sales/entities/proposal.dart';
+import 'package:centrow_sales/modules/sales/entities/proposal_status_result.dart';
 
 class ProposalListItemDto {
   final String id;
@@ -10,6 +11,7 @@ class ProposalListItemDto {
   final String proposalDate;
   final String? validUntil;
   final double totalAmount;
+  final bool hasPricing;
   final String status;
   final String createdAt;
   final String? addressId;
@@ -26,6 +28,7 @@ class ProposalListItemDto {
     required this.proposalDate,
     this.validUntil,
     required this.totalAmount,
+    required this.hasPricing,
     required this.status,
     required this.createdAt,
     this.addressId,
@@ -44,6 +47,7 @@ class ProposalListItemDto {
       proposalDate: json['proposal_date']?.toString() ?? '',
       validUntil: json['valid_until']?.toString(),
       totalAmount: (json['total_amount'] as num?)?.toDouble() ?? 0.0,
+      hasPricing: json['has_pricing'] as bool? ?? false,
       status: json['status']?.toString() ?? '',
       createdAt: json['created_at']?.toString() ?? '',
       addressId: json['address_id']?.toString(),
@@ -77,6 +81,7 @@ class ProposalListItemDto {
       addressId: addressId,
       addressLabel: addressLabel,
       addressLine: addressLine,
+      hasPricing: hasPricing,
       version: '1',
       total: totalAmount,
       createdAt: createdAt,
@@ -154,6 +159,7 @@ class ProposalDetailDto {
   final String? addressId;
   final String? addressLabel;
   final String? addressLine;
+  final bool hasPricing;
 
   const ProposalDetailDto({
     required this.id,
@@ -176,6 +182,7 @@ class ProposalDetailDto {
     this.addressId,
     this.addressLabel,
     this.addressLine,
+    required this.hasPricing,
   });
 
   factory ProposalDetailDto.fromJson(Map<String, dynamic> json) {
@@ -200,6 +207,7 @@ class ProposalDetailDto {
       addressId: json['address_id']?.toString(),
       addressLabel: json['address_label']?.toString(),
       addressLine: json['address_line']?.toString(),
+      hasPricing: json['has_pricing'] as bool? ?? false,
     );
   }
 
@@ -228,6 +236,7 @@ class ProposalDetailDto {
       addressId: addressId,
       addressLabel: addressLabel,
       addressLine: addressLine,
+      hasPricing: hasPricing,
       version: version.toString(),
       total: totalAmount,
       notes: notes,
@@ -345,6 +354,46 @@ class ProposalItemDto {
       unitCode: unitCode,
       unitCost: unitCost,
       kind: kind,
+    );
+  }
+}
+
+class ProposalStatusResponseDto {
+  final String id;
+  final String status;
+  final String? statusLabel;
+  final String? sentAt;
+  final String? decidedAt;
+  final String? rejectionReason;
+
+  const ProposalStatusResponseDto({
+    required this.id,
+    required this.status,
+    this.statusLabel,
+    this.sentAt,
+    this.decidedAt,
+    this.rejectionReason,
+  });
+
+  factory ProposalStatusResponseDto.fromJson(Map<String, dynamic> json) {
+    return ProposalStatusResponseDto(
+      id: json['id']?.toString() ?? '',
+      status: json['status']?.toString() ?? '',
+      statusLabel: json['status_label']?.toString(),
+      sentAt: json['sent_at']?.toString(),
+      decidedAt: json['decided_at']?.toString(),
+      rejectionReason: json['rejection_reason']?.toString(),
+    );
+  }
+
+  ProposalStatusResult toEntity() {
+    return ProposalStatusResult(
+      id: id,
+      status: ProposalStatus.fromString(status),
+      statusLabel: statusLabel,
+      sentAt: sentAt,
+      decidedAt: decidedAt,
+      rejectionReason: rejectionReason,
     );
   }
 }

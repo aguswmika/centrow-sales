@@ -1,0 +1,150 @@
+--- lib/modules/sales/entities/create_pricing_request.dart
++++ lib/modules/sales/entities/create_pricing_request.dart
+@@ -0,0 +0,0 @@
+--- lib/modules/sales/repositories/dtos/pricing_dto.dart
++++ lib/modules/sales/repositories/dtos/pricing_dto.dart
+@@ -1,6 +1,7 @@
+ class CreatePricingRequestDto {
+   final int contractMonths;
++  final int visitFrequency;
+   final int markupType;
+   final double markupValue;
+   final double discountAmount;
+@@ -9,6 +10,7 @@
+ 
+   const CreatePricingRequestDto({
+     required this.contractMonths,
++    required this.visitFrequency,
+     required this.markupType,
+     required this.markupValue,
+     required this.discountAmount,
+@@ -21,6 +23,7 @@
+ 
+   Map<String, dynamic> toJson() => {
+     'contract_months': contractMonths,
++    'visit_frequency': visitFrequency,
+     'markup_type': markupType,
+     'markup_value': markupValue,
+     'discount_amount': discountAmount,
+--- lib/modules/sales/entities/pricing_detail.dart
++++ lib/modules/sales/entities/pricing_detail.dart
+@@ -88,6 +88,7 @@
+   final double? areaSize;
+   final String? areaUnitId;
+   final int contractMonths;
++  final int visitFrequency;
+   final int markupType;
+   final double markupValue;
+   final double discountAmount;
+@@ -103,6 +104,7 @@
+     this.areaSize,
+     this.areaUnitId,
+     required this.contractMonths,
++    required this.visitFrequency,
+     required this.markupType,
+     required this.markupValue,
+     required this.discountAmount,
+--- lib/modules/sales/repositories/dtos/pricing_detail_dto.dart
++++ lib/modules/sales/repositories/dtos/pricing_detail_dto.dart
+@@ -174,6 +174,7 @@
+   final double? areaSize;
+   final String? areaUnitId;
+   final int contractMonths;
++  final int visitFrequency;
+   final int markupType;
+   final double markupValue;
+   final double discountAmount;
+@@ -189,6 +190,7 @@
+     this.areaSize,
+     this.areaUnitId,
+     required this.contractMonths,
++    required this.visitFrequency,
+     required this.markupType,
+     required this.markupValue,
+     required this.discountAmount,
+@@ -212,6 +214,7 @@
+       areaSize: (json['area_size'] as num?)?.toDouble(),
+       areaUnitId: json['area_unit_id'] as String?,
+       contractMonths: json['contract_months'] as int,
++      visitFrequency: json['visit_frequency'] as int,
+       markupType: json['markup_type'] as int,
+       markupValue: (json['markup_value'] as num).toDouble(),
+       discountAmount: (json['discount_amount'] as num).toDouble(),
+@@ -242,6 +245,7 @@
+       areaSize: areaSize,
+       areaUnitId: areaUnitId,
+       contractMonths: contractMonths,
++      visitFrequency: visitFrequency,
+       markupType: markupType,
+       markupValue: markupValue,
+       discountAmount: discountAmount,
+--- lib/modules/sales/controllers/pricing_calculator_controller.dart
++++ lib/modules/sales/controllers/pricing_calculator_controller.dart
+@@ -144,6 +144,7 @@
+   final items = ListSignal<PricingItemRow>([]);
+ 
+   final contractMonths = signal<int?>(null);
++  final visitFrequency = signal<int?>(null);
+ 
+   final markupPercent = signal<double>(0.0);
+   final markupType = signal<int>(1); // 1=percent, 2=nominal, 3=target price
+@@ -338,6 +339,7 @@
+ 
+     return CreatePricingRequestDto(
+       contractMonths: contractMonths.value ?? 12,
++      visitFrequency: visitFrequency.value ?? 1,
+       markupType: markupType.value,
+       markupValue: markupPercent.value,
+       discountAmount: discountAmount.value,
+@@ -366,6 +368,7 @@
+     if (result.isOk) {
+       final data = result.valueOrNull!;
+       contractMonths.value = data.contractMonths;
++      visitFrequency.value = data.visitFrequency;
+       markupType.value = data.markupType;
+       markupPercent.value = data.markupValue;
+       discountAmount.value = data.discountAmount;
+--- lib/modules/sales/views/pages/pricing_page.dart
++++ lib/modules/sales/views/pages/pricing_page.dart
+@@ -188,14 +188,31 @@
+   Widget _buildParamBar(BuildContext context) {
+     return Container(
+       color: AppColors.surface,
+-      padding: const EdgeInsets.fromLTRB(16.0, 0, 16.0, 16.0),
+-      child: _buildParamItem(
+-        'Durasi Kontrak',
+-        _calcController.contractMonths.value?.toString(),
+-        icon: Icons.calendar_today,
+-        suffix: 'Bulan',
+-        keyboardType: TextInputType.number,
+-        onChanged: (val) =>
+-            _calcController.contractMonths.value = int.tryParse(val),
++      padding: const EdgeInsets.fromLTRB(16.0, 16.0, 16.0, 16.0),
++      child: Row(
++        children: [
++          Expanded(
++            child: _buildParamItem(
++              'Durasi Kontrak',
++              _calcController.contractMonths.value?.toString(),
++              icon: Icons.calendar_today,
++              suffix: 'Bulan',
++              keyboardType: TextInputType.number,
++              onChanged: (val) =>
++                  _calcController.contractMonths.value = int.tryParse(val),
++            ),
++          ),
++          Expanded(
++            child: _buildParamItem(
++              'Frek. Kunjungan',
++              _calcController.visitFrequency.value?.toString(),
++              icon: Icons.refresh,
++              suffix: 'Kali',
++              keyboardType: TextInputType.number,
++              onChanged: (val) =>
++                  _calcController.visitFrequency.value = int.tryParse(val),
++            ),
++          ),
++        ],
+       ),
+     );
+   }

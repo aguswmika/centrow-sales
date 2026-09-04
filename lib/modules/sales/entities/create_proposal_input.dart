@@ -23,7 +23,6 @@ class CreateProposalInput {
       if (validUntil != null) 'valid_until': validUntil,
       if (addressId != null) 'address_id': addressId,
       'code': '',
-      'total_amount': 0.0,
       'notes': notes ?? '',
     };
   }

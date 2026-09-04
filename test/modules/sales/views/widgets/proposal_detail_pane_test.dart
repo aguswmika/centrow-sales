@@ -9,10 +9,11 @@ void main() {
     code: 'PRO-2026-0042',
     clientName: 'Villa Sari Dewi',
     serviceName: 'Termite Protection Plan',
-    status: ProposalStatus.dikirim,
+    status: ProposalStatus.sent,
     date: '12 Agt 2026',
     validUntil: '12 Sep 2026',
     location: 'Villa Utama Seminyak',
+    hasPricing: true,
     version: '1',
     total: 8158500.0,
     shortAmount: 'Rp 8,15jt',
@@ -95,9 +96,11 @@ void main() {
       expect(find.text('PRO-2026-0042 · Villa Sari Dewi'), findsOneWidget);
       expect(find.text('Termite Protection Plan'), findsOneWidget);
       expect(find.text('Versi 1'), findsOneWidget);
-      expect(find.text('Status: Dikirim'), findsOneWidget);
-      expect(find.text('Ekspor PDF'), findsOneWidget);
+      expect(find.text('Status: Terkirim'), findsOneWidget);
       expect(find.text('Pricing'), findsOneWidget);
+      expect(find.text('Dokumen'), findsOneWidget);
+      expect(find.text('Aksi'), findsOneWidget);
+      expect(find.text('Ekspor PDF'), findsNothing);
 
       // Verify Top Level Tabs
       expect(find.text('Informasi Umum'), findsOneWidget);
@@ -137,13 +140,234 @@ void main() {
       expect(find.text('Rp 990.000'), findsOneWidget);
 
       // Test Action Buttons
+      await tester.tap(find.text('Aksi'));
+      await tester.pumpAndSettle();
       await tester.tap(find.text('Ekspor PDF'));
+      await tester.pumpAndSettle();
       expect(exportPdfClicked, isTrue);
 
       await tester.tap(find.text('Pricing'));
       expect(calculatorClicked, isTrue);
     },
   );
+
+  testWidgets(
+    'ProposalDetailPane renders draft action buttons and fires callbacks',
+    (tester) async {
+      tester.view.physicalSize = const Size(1200, 800);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+
+      bool sendClicked = false;
+      bool editClicked = false;
+      bool exportPdfClicked = false;
+      bool cancelClicked = false;
+
+      final draftProposal = sampleProposal.copyWith(
+        status: ProposalStatus.draft,
+      );
+
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: ProposalDetailPane(
+              proposal: draftProposal,
+              activeDetailTab: 0,
+              onDetailTabChanged: _noop,
+              activePricingTab: 0,
+              onPricingTabChanged: _noop,
+              onSendProposal: () => sendClicked = true,
+              onEditProposal: () => editClicked = true,
+              onExportPdf: () => exportPdfClicked = true,
+              onCancelProposal: () => cancelClicked = true,
+            ),
+          ),
+        ),
+      );
+
+      // Verify the 3 buttons on the header
+      expect(find.text('Pricing'), findsOneWidget);
+      expect(find.text('Dokumen'), findsOneWidget);
+      expect(find.text('Aksi'), findsOneWidget);
+
+      // Actions should not be visible directly
+      expect(find.text('Kirim Proposal'), findsNothing);
+      expect(find.text('Ubah Data'), findsNothing);
+      expect(find.text('Ekspor PDF'), findsNothing);
+      expect(find.text('Batalkan Proposal'), findsNothing);
+      expect(find.text('Terima Proposal'), findsNothing);
+      expect(find.text('Tolak Proposal'), findsNothing);
+      expect(find.text('Revisi Proposal'), findsNothing);
+
+      // Open popup menu and test Kirim Proposal
+      await tester.tap(find.text('Aksi'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Kirim Proposal'), findsOneWidget);
+      expect(find.text('Ekspor PDF'), findsOneWidget);
+      expect(find.text('Ubah Data'), findsOneWidget);
+      expect(find.text('Batalkan Proposal'), findsOneWidget);
+
+      await tester.tap(find.text('Kirim Proposal'));
+      await tester.pumpAndSettle();
+      expect(sendClicked, isTrue);
+
+      // Test Ubah Data
+      await tester.tap(find.text('Aksi'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Ubah Data'));
+      await tester.pumpAndSettle();
+      expect(editClicked, isTrue);
+
+      // Test Ekspor PDF
+      await tester.tap(find.text('Aksi'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Ekspor PDF'));
+      await tester.pumpAndSettle();
+      expect(exportPdfClicked, isTrue);
+
+      // Test Batalkan Proposal
+      await tester.tap(find.text('Aksi'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Batalkan Proposal'));
+      await tester.pumpAndSettle();
+      expect(cancelClicked, isTrue);
+    },
+  );
+
+  testWidgets(
+    'ProposalDetailPane renders sent action buttons and fires callbacks',
+    (tester) async {
+      tester.view.physicalSize = const Size(1200, 800);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+
+      bool acceptClicked = false;
+      bool rejectClicked = false;
+      bool reviseClicked = false;
+      bool exportPdfClicked = false;
+      bool expireClicked = false;
+      bool cancelClicked = false;
+
+      final sentProposal = sampleProposal.copyWith(status: ProposalStatus.sent);
+
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: ProposalDetailPane(
+              proposal: sentProposal,
+              activeDetailTab: 0,
+              onDetailTabChanged: _noop,
+              activePricingTab: 0,
+              onPricingTabChanged: _noop,
+              onAcceptProposal: () => acceptClicked = true,
+              onRejectProposal: () => rejectClicked = true,
+              onReviseProposal: () => reviseClicked = true,
+              onExportPdf: () => exportPdfClicked = true,
+              onExpireProposal: () => expireClicked = true,
+              onCancelProposal: () => cancelClicked = true,
+            ),
+          ),
+        ),
+      );
+
+      // Verify the 3 buttons on the header
+      expect(find.text('Pricing'), findsOneWidget);
+      expect(find.text('Dokumen'), findsOneWidget);
+      expect(find.text('Aksi'), findsOneWidget);
+
+      // Actions should not be visible directly
+      expect(find.text('Terima Proposal'), findsNothing);
+      expect(find.text('Tolak Proposal'), findsNothing);
+      expect(find.text('Revisi Proposal'), findsNothing);
+      expect(find.text('Ekspor PDF'), findsNothing);
+      expect(find.text('Tandai Kedaluwarsa'), findsNothing);
+      expect(find.text('Batalkan Proposal'), findsNothing);
+      expect(find.text('Kirim Proposal'), findsNothing);
+      expect(find.text('Ubah Data'), findsNothing);
+
+      // Open popup menu and test Terima Proposal
+      await tester.tap(find.text('Aksi'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Terima Proposal'), findsOneWidget);
+      expect(find.text('Tolak Proposal'), findsOneWidget);
+      expect(find.text('Revisi Proposal'), findsOneWidget);
+      expect(find.text('Ekspor PDF'), findsOneWidget);
+      expect(find.text('Tandai Kedaluwarsa'), findsOneWidget);
+      expect(find.text('Batalkan Proposal'), findsOneWidget);
+
+      await tester.tap(find.text('Terima Proposal'));
+      await tester.pumpAndSettle();
+      expect(acceptClicked, isTrue);
+
+      // Test Tolak Proposal
+      await tester.tap(find.text('Aksi'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Tolak Proposal'));
+      await tester.pumpAndSettle();
+      expect(rejectClicked, isTrue);
+
+      // Test Revisi Proposal
+      await tester.tap(find.text('Aksi'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Revisi Proposal'));
+      await tester.pumpAndSettle();
+      expect(reviseClicked, isTrue);
+
+      // Test Ekspor PDF
+      await tester.tap(find.text('Aksi'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Ekspor PDF'));
+      await tester.pumpAndSettle();
+      expect(exportPdfClicked, isTrue);
+
+      // Test Tandai Kedaluwarsa
+      await tester.tap(find.text('Aksi'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Tandai Kedaluwarsa'));
+      await tester.pumpAndSettle();
+      expect(expireClicked, isTrue);
+
+      // Test Batalkan Proposal
+      await tester.tap(find.text('Aksi'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Batalkan Proposal'));
+      await tester.pumpAndSettle();
+      expect(cancelClicked, isTrue);
+    },
+  );
+
+  testWidgets('ProposalDetailPane displays rejection reason when rejected', (
+    tester,
+  ) async {
+    final rejectedProposal = sampleProposal.copyWith(
+      status: ProposalStatus.rejected,
+      rejectionReason: 'Anggaran klien tidak mencukupi',
+      decidedAt: '15 Agt 2026',
+    );
+
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Scaffold(
+          body: ProposalDetailPane(
+            proposal: rejectedProposal,
+            activeDetailTab: 0,
+            onDetailTabChanged: _noop,
+            activePricingTab: 0,
+            onPricingTabChanged: _noop,
+          ),
+        ),
+      ),
+    );
+
+    expect(find.text('ALASAN PENOLAKAN'), findsOneWidget);
+    expect(find.text('Anggaran klien tidak mencukupi'), findsOneWidget);
+    expect(find.text('DIPUTUSKAN PADA'), findsOneWidget);
+    expect(find.text('15 Agt 2026'), findsOneWidget);
+  });
 
   testWidgets(
     'ProposalDetailPane shows empty placeholder when proposal is null',
@@ -168,6 +392,75 @@ void main() {
       );
     },
   );
+
+  testWidgets(
+    'ProposalDetailPane shows loading indicator on Aksi button when isActionLoading is true',
+    (tester) async {
+      await tester.pumpWidget(
+        const MaterialApp(
+          home: Scaffold(
+            body: ProposalDetailPane(
+              proposal: sampleProposal,
+              activeDetailTab: 0,
+              onDetailTabChanged: _noop,
+              activePricingTab: 0,
+              onPricingTabChanged: _noop,
+              isActionLoading: true,
+            ),
+          ),
+        ),
+      );
+
+      expect(find.text('Aksi'), findsNothing);
+      expect(find.byType(CircularProgressIndicator), findsOneWidget);
+    },
+  );
+
+  testWidgets(
+    'ProposalDetailPane shows loading indicator on Aksi button when isExportingPdf is true',
+    (tester) async {
+      await tester.pumpWidget(
+        const MaterialApp(
+          home: Scaffold(
+            body: ProposalDetailPane(
+              proposal: sampleProposal,
+              activeDetailTab: 0,
+              onDetailTabChanged: _noop,
+              activePricingTab: 0,
+              onPricingTabChanged: _noop,
+              isExportingPdf: true,
+            ),
+          ),
+        ),
+      );
+
+      expect(find.text('Aksi'), findsNothing);
+      expect(find.byType(CircularProgressIndicator), findsOneWidget);
+    },
+  );
+
+  testWidgets('ProposalDetailPane triggers onOpenDocument callback', (
+    tester,
+  ) async {
+    bool docClicked = false;
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Scaffold(
+          body: ProposalDetailPane(
+            proposal: sampleProposal,
+            activeDetailTab: 0,
+            onDetailTabChanged: _noop,
+            activePricingTab: 0,
+            onPricingTabChanged: _noop,
+            onOpenDocument: () => docClicked = true,
+          ),
+        ),
+      ),
+    );
+
+    await tester.tap(find.text('Dokumen'));
+    expect(docClicked, isTrue);
+  });
 }
 
 void _noop(int _) {}

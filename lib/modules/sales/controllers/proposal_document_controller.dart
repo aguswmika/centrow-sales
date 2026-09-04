@@ -12,6 +12,9 @@ class ProposalDocumentController {
   final _state = signal<UiState<ProposalDocument>>(const UiInitial());
   ReadonlySignal<UiState<ProposalDocument>> get state => _state;
 
+  final _pdfState = signal<UiState<List<int>>>(const UiInitial());
+  ReadonlySignal<UiState<List<int>>> get pdfState => _pdfState;
+
   Future<void> loadDocument(
     String proposalId, {
     bool fromTemplate = false,
@@ -38,7 +41,21 @@ class ProposalDocumentController {
     };
   }
 
+  Future<void> downloadPdf(String proposalId) async {
+    _pdfState.value = const UiLoading();
+    final result = await _repository.downloadPdf(proposalId);
+    _pdfState.value = switch (result) {
+      Ok(:final value) => UiSuccess(value),
+      Err(:final failure) => UiFailure(failure),
+    };
+  }
+
+  void resetPdfState() {
+    _pdfState.value = const UiInitial();
+  }
+
   void dispose() {
+    _pdfState.dispose();
     _state.dispose();
   }
 }

@@ -5,6 +5,7 @@ import 'package:centrow_sales/shared/result/result.dart';
 import 'package:centrow_sales/modules/sales/entities/create_proposal_input.dart';
 import 'package:centrow_sales/modules/sales/entities/update_proposal_input.dart';
 import 'package:centrow_sales/modules/sales/entities/proposal.dart';
+import 'package:centrow_sales/modules/sales/entities/proposal_status_result.dart';
 import 'package:centrow_sales/modules/sales/repositories/dtos/proposal_dto.dart';
 
 abstract interface class ProposalRepository {
@@ -14,7 +15,14 @@ abstract interface class ProposalRepository {
 
   Future<Result<Proposal>> createProposal(CreateProposalInput input);
 
-  Future<Result<Proposal>> updateProposal(String id, UpdateProposalInput input);
+  Future<Result<Proposal>> updateProposal(String id, UpdateProposalInput data);
+  Future<Result<Proposal>> reviseProposal(String id, UpdateProposalInput data);
+
+  Future<Result<ProposalStatusResult>> sendProposal(String id);
+  Future<Result<ProposalStatusResult>> acceptProposal(String id);
+  Future<Result<ProposalStatusResult>> rejectProposal(String id, String reason);
+  Future<Result<ProposalStatusResult>> expireProposal(String id);
+  Future<Result<ProposalStatusResult>> cancelProposal(String id);
 }
 
 class ProposalRepositoryImpl implements ProposalRepository {
@@ -155,6 +163,97 @@ class ProposalRepositoryImpl implements ProposalRepository {
       }
       final updatedDto = ProposalDetailDto.fromJson(dataMap);
       return Ok(updatedDto.toEntity());
+    } on DioException catch (e) {
+      return Err(_handleDioError(e));
+    } catch (e) {
+      return Err(UnknownFailure(e.toString()));
+    }
+  }
+
+  @override
+  Future<Result<Proposal>> reviseProposal(
+    String id,
+    UpdateProposalInput data,
+  ) async {
+    try {
+      final response = await _dio.post<dynamic>(
+        '/v1/sales/proposals/$id/revise',
+        data: data.toJson(),
+      );
+      final responseData = response.data;
+      final Map<String, dynamic> dataMap;
+      if (responseData is Map) {
+        if (responseData['data'] is Map) {
+          dataMap = (responseData['data'] as Map).cast<String, dynamic>();
+        } else {
+          dataMap = responseData.cast<String, dynamic>();
+        }
+      } else {
+        return const Err(
+          ServerFailure('Format respon dari server tidak valid.'),
+        );
+      }
+      final detailDto = ProposalDetailDto.fromJson(dataMap);
+      return Ok(detailDto.toEntity());
+    } on DioException catch (e) {
+      return Err(_handleDioError(e));
+    } catch (e) {
+      return Err(UnknownFailure(e.toString()));
+    }
+  }
+
+  @override
+  Future<Result<ProposalStatusResult>> sendProposal(String id) async {
+    return _callStatusTransition('/v1/sales/proposals/$id/send');
+  }
+
+  @override
+  Future<Result<ProposalStatusResult>> acceptProposal(String id) async {
+    return _callStatusTransition('/v1/sales/proposals/$id/accept');
+  }
+
+  @override
+  Future<Result<ProposalStatusResult>> rejectProposal(
+    String id,
+    String reason,
+  ) async {
+    return _callStatusTransition(
+      '/v1/sales/proposals/$id/reject',
+      data: {'reason': reason.trim()},
+    );
+  }
+
+  @override
+  Future<Result<ProposalStatusResult>> expireProposal(String id) async {
+    return _callStatusTransition('/v1/sales/proposals/$id/expire');
+  }
+
+  @override
+  Future<Result<ProposalStatusResult>> cancelProposal(String id) async {
+    return _callStatusTransition('/v1/sales/proposals/$id/cancel');
+  }
+
+  Future<Result<ProposalStatusResult>> _callStatusTransition(
+    String path, {
+    Map<String, dynamic>? data,
+  }) async {
+    try {
+      final response = await _dio.post<dynamic>(path, data: data);
+      final responseData = response.data;
+      final Map<String, dynamic> dataMap;
+      if (responseData is Map) {
+        if (responseData['data'] is Map) {
+          dataMap = (responseData['data'] as Map).cast<String, dynamic>();
+        } else {
+          dataMap = responseData.cast<String, dynamic>();
+        }
+      } else {
+        return const Err(
+          ServerFailure('Format respon dari server tidak valid.'),
+        );
+      }
+      final dto = ProposalStatusResponseDto.fromJson(dataMap);
+      return Ok(dto.toEntity());
     } on DioException catch (e) {
       return Err(_handleDioError(e));
     } catch (e) {

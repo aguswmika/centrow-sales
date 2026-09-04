@@ -16,7 +16,6 @@ class PricingPreviewPage extends StatefulWidget {
   final Proposal proposal;
   final PricingPreview preview;
   final PricingCalculatorController controller;
-  final int visitFrequency;
   final int contractMonths;
 
   const PricingPreviewPage({
@@ -24,7 +23,6 @@ class PricingPreviewPage extends StatefulWidget {
     required this.proposal,
     required this.preview,
     required this.controller,
-    required this.visitFrequency,
     required this.contractMonths,
   });
 
@@ -50,7 +48,10 @@ class _PricingPreviewPageState extends State<PricingPreviewPage> {
             'Kalkulasi berhasil disimpan.',
             isSuccess: true,
           );
-          context.goNamed('proposals');
+          context.goNamed(
+            'proposals',
+            extra: {'id': widget.proposal.id, 'refresh': true},
+          );
         default:
           break;
       }
@@ -66,9 +67,6 @@ class _PricingPreviewPageState extends State<PricingPreviewPage> {
   @override
   Widget build(BuildContext context) {
     final p = widget.preview;
-    final pricePerVisit = widget.visitFrequency > 0
-        ? p.totalAmount / widget.visitFrequency
-        : 0.0;
     final pricePerMonth = widget.contractMonths > 0
         ? p.totalAmount / widget.contractMonths
         : 0.0;
@@ -157,10 +155,6 @@ class _PricingPreviewPageState extends State<PricingPreviewPage> {
                       ),
                       buildSumRow('Nominal Margin', formatRp(p.marginAmount)),
                       const Divider(height: 16.0, color: AppColors.border),
-                      buildSumRow(
-                        'Harga per Kunjungan',
-                        formatRp(pricePerVisit),
-                      ),
                       buildSumRow('Harga per Bulan', formatRp(pricePerMonth)),
                     ]),
                     const SizedBox(height: 32.0),
@@ -261,10 +255,8 @@ class _PricingPreviewPageState extends State<PricingPreviewPage> {
                   isLoading: isLoading,
                   onPressed: isLoading
                       ? null
-                      : () => widget.controller.submitPricing(
-                          widget.proposal.customerId,
-                          widget.proposal.serviceId,
-                        ),
+                      : () =>
+                            widget.controller.submitPricing(widget.proposal.id),
                 );
               },
             ),

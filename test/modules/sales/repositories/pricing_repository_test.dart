@@ -43,10 +43,8 @@ void main() {
   });
 
   const requestDto = CreatePricingRequestDto(
-    customerId: 'cust-123',
-    serviceId: 'srv-456',
     contractMonths: 12,
-    visitFrequency: 12,
+    visitFrequency: 4,
     markupType: 1,
     markupValue: 25.0,
     discountAmount: 0.0,
@@ -66,10 +64,9 @@ void main() {
     ],
     workers: [
       PricingWorkerDto(
-        positionName: 'Operator',
+        productId: 'prod-operator',
         firstVisitHours: 3.0,
         routineHours: 2.0,
-        hourlyRate: 50000.0,
       ),
     ],
     items: [
@@ -98,7 +95,7 @@ void main() {
       );
     };
 
-    final result = await repository.savePricing(requestDto);
+    final result = await repository.savePricing('prop-123', requestDto);
     expect(result, isA<Ok<void>>());
   });
 
@@ -116,7 +113,7 @@ void main() {
       );
     };
 
-    final result = await repository.savePricing(requestDto);
+    final result = await repository.savePricing('prop-123', requestDto);
     expect(result, isA<Err<void>>());
     final failure = (result as Err<void>).failure;
     expect(failure, isA<ServerFailure>());

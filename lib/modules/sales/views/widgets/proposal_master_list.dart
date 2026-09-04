@@ -137,10 +137,10 @@ class ProposalMasterList extends StatelessWidget {
           AppSegmentedControl<String>(
             items: const [
               SegmentItem<String>(label: 'Semua', value: 'all'),
-              SegmentItem<String>(label: 'Draft', value: 'Draft'),
-              SegmentItem<String>(label: 'Dikirim', value: 'Dikirim'),
-              SegmentItem<String>(label: 'Nego', value: 'Negosiasi'),
-              SegmentItem<String>(label: 'Setuju', value: 'Disetujui'),
+              SegmentItem<String>(label: 'Draf', value: 'draft'),
+              SegmentItem<String>(label: 'Terkirim', value: 'sent'),
+              SegmentItem<String>(label: 'Diterima', value: 'accepted'),
+              SegmentItem<String>(label: 'Ditolak', value: 'rejected'),
             ],
             selectedValue: selectedStatus,
             onValueChanged: onSelectStatus,
@@ -314,16 +314,18 @@ class ProposalMasterList extends StatelessWidget {
 
   (Color, Color) _getAvatarColors(ProposalStatus status) {
     switch (status) {
-      case ProposalStatus.dikirim:
+      case ProposalStatus.sent:
         return (AppColors.brand10, AppColors.brand);
-      case ProposalStatus.negosiasi:
-        return (const Color(0x24BC7B43), const Color(0xFF92580F));
       case ProposalStatus.draft:
         return (const Color(0x248C8E8B), AppColors.sec);
-      case ProposalStatus.disetujui:
+      case ProposalStatus.accepted:
         return (const Color(0x1F10B981), const Color(0xFF059669));
-      case ProposalStatus.ditolak:
+      case ProposalStatus.rejected:
         return (const Color(0x1FEF4444), const Color(0xFFDC2626));
+      case ProposalStatus.expired:
+        return (const Color(0x24BC7B43), const Color(0xFF92580F));
+      case ProposalStatus.cancelled:
+        return (const Color(0x248C8E8B), const Color(0xFF6B7280));
     }
   }
 }

@@ -69,8 +69,20 @@ GoRouter createRouter({String? initialLocation}) => GoRouter(
             GoRoute(
               path: '/proposals',
               name: 'proposals',
-              builder: (context, state) =>
-                  ProposalPage(initialProposalId: state.extra as String?),
+              builder: (context, state) {
+                final extra = state.extra;
+                String? id;
+                Key? pageKey;
+                if (extra is String) {
+                  id = extra;
+                } else if (extra is Map<String, dynamic>) {
+                  id = extra['id'] as String?;
+                  if (extra['refresh'] == true) {
+                    pageKey = UniqueKey();
+                  }
+                }
+                return ProposalPage(key: pageKey, initialProposalId: id);
+              },
               routes: [
                 GoRoute(
                   path: ':id/pricing',
@@ -89,7 +101,6 @@ GoRouter createRouter({String? initialLocation}) => GoRouter(
                           controller:
                               extra['controller']
                                   as PricingCalculatorController,
-                          visitFrequency: extra['visitFrequency'] as int,
                           contractMonths: extra['contractMonths'] as int,
                         );
                       },

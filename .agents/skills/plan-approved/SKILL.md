@@ -3,7 +3,7 @@ name: plan-approved
 description: Execute an approved plan via subagents with a mandatory review gate
 ---
 
-Read the plan. Chunk it and orchestrate subagents (default max 3, gemini-flash-3.7-low).
+Read the plan. Chunk it and orchestrate subagents (default max 3, gemini-flash-3.8-low).
 
 You are the REVIEWER only — do not implement yourself unless fixing a review failure.
 

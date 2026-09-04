@@ -5,6 +5,7 @@ import 'package:centrow_sales/shared/state/ui_state.dart';
 import 'package:centrow_sales/modules/core/entities/uom.dart';
 import 'package:centrow_sales/modules/core/repositories/uom_repository.dart';
 import 'package:centrow_sales/modules/pc/entities/product_mapping.dart';
+import 'package:centrow_sales/modules/sales/entities/pricing_detail.dart';
 import 'package:centrow_sales/modules/sales/entities/pricing_preview.dart';
 import 'package:centrow_sales/modules/sales/entities/product.dart';
 import 'package:centrow_sales/modules/sales/repositories/pricing_repository.dart';
@@ -168,6 +169,9 @@ class PricingCalculatorController {
 
   final previewState = signal<UiState<PricingPreview>>(const UiInitial());
   final submitState = signal<UiState<void>>(const UiInitial());
+  final existingPricingState = signal<UiState<PricingDetail>>(
+    const UiInitial(),
+  );
 
   void addMaterialRow(ProductMapping mapping) {
     if (materials.any((m) => m.id == mapping.productId)) return;
@@ -231,9 +235,8 @@ class PricingCalculatorController {
   }
 
   int? _workerVisitFrequencyOverride(PricingWorkerRow w) {
-    final headerFreq = visitFrequency.value ?? 12;
     final workerFreq = w.visitFreq.value.round();
-    if (workerFreq == headerFreq || workerFreq <= 0) return null;
+    if (workerFreq <= 0) return null;
     return workerFreq;
   }
 
@@ -281,7 +284,7 @@ class PricingCalculatorController {
     return true;
   }
 
-  CreatePricingRequestDto _buildRequest(String customerId, String serviceId) {
+  CreatePricingRequestDto _buildRequest() {
     final materialDtos = materials
         .map(
           (m) => PricingMaterialDto(
@@ -309,11 +312,10 @@ class PricingCalculatorController {
     final workerDtos = workers
         .map(
           (l) => PricingWorkerDto(
-            positionName: l.title,
+            productId: l.id,
             visitFrequency: _workerVisitFrequencyOverride(l),
             firstVisitHours: l.firstVisitHours.value,
             routineHours: l.routineHours.value,
-            hourlyRate: l.hourlyRate.value,
           ),
         )
         .toList();
@@ -332,10 +334,8 @@ class PricingCalculatorController {
         .toList();
 
     return CreatePricingRequestDto(
-      customerId: customerId,
-      serviceId: serviceId,
       contractMonths: contractMonths.value ?? 12,
-      visitFrequency: visitFrequency.value ?? 12,
+      visitFrequency: visitFrequency.value ?? 1,
       markupType: markupType.value,
       markupValue: markupPercent.value,
       discountAmount: discountAmount.value,
@@ -346,13 +346,14 @@ class PricingCalculatorController {
     );
   }
 
-  Future<void> previewPricing(String customerId, String serviceId) async {
+  Future<void> previewPricing(String proposalId) async {
     previewState.value = const UiInitial();
     await Future<void>.delayed(Duration.zero);
     if (!_validateInputs(setOnPreview: true)) return;
     previewState.value = const UiLoading();
     final result = await _repository.previewPricing(
-      _buildRequest(customerId, serviceId),
+      proposalId,
+      _buildRequest(),
     );
     previewState.value = switch (result) {
       Ok(:final value) => UiSuccess(value),
@@ -360,11 +361,80 @@ class PricingCalculatorController {
     };
   }
 
-  Future<void> submitPricing(String customerId, String serviceId) async {
+  Future<void> loadExistingPricing(String proposalId) async {
+    existingPricingState.value = const UiLoading();
+    final result = await _repository.getPricingDetail(proposalId);
+
+    if (result.isOk) {
+      final data = result.valueOrNull!;
+      contractMonths.value = data.contractMonths;
+      visitFrequency.value = data.visitFrequency;
+      markupType.value = data.markupType;
+      markupPercent.value = data.markupValue;
+      discountAmount.value = data.discountAmount;
+      taxPercentage.value = data.taxPercentage;
+
+      materials.clear();
+      for (final s in data.supplies) {
+        materials.add(
+          PricingMaterialRow(
+            id: s.productId ?? s.id,
+            title: s.name,
+            code: '',
+            uomCode: s.uomCode,
+            kind: s.supplyType,
+            initialProductMappingId: s.productMappingId,
+            initialDoseUsage: s.doseUsage ?? s.qty,
+            initialDoseUnitId: s.doseUnitId,
+            initialApplicationVolume: s.applicationVolume ?? 1.0,
+            initialApplicationVolumeUnitId: s.applicationVolumeUnitId,
+            initialFreq: s.frequency.toDouble(),
+            contractMonthsRef: contractMonths,
+          ),
+        );
+      }
+
+      workers.clear();
+      for (final w in data.workers) {
+        workers.add(
+          PricingWorkerRow(
+            id: w.productId,
+            title: w.positionName,
+            code: '',
+            kind: 4,
+            initialVisitFreq: (w.visitFrequency ?? 1).toDouble(),
+            initialFirstVisitHours: w.firstVisitHours,
+            initialRoutineHours: w.routineHours,
+            initialHourlyRate: w.hourlyRate,
+          ),
+        );
+      }
+
+      items.clear();
+      for (final i in data.items) {
+        items.add(
+          PricingItemRow(
+            id: i.productId ?? i.id,
+            title: i.name,
+            code: '',
+            kind: i.itemType == 2 ? 5 : 3,
+            initialQty: i.qty,
+            initialFreq: i.frequency.toDouble(),
+            initialUnitPrice: i.unitPrice ?? 0.0,
+          ),
+        );
+      }
+    }
+
+    existingPricingState.value = switch (result) {
+      Ok(:final value) => UiSuccess(value),
+      Err(:final failure) => UiFailure(failure),
+    };
+  }
+
+  Future<void> submitPricing(String proposalId) async {
     submitState.value = const UiLoading();
-    final result = await _repository.savePricing(
-      _buildRequest(customerId, serviceId),
-    );
+    final result = await _repository.savePricing(proposalId, _buildRequest());
     submitState.value = switch (result) {
       Ok(:final value) => UiSuccess(value),
       Err(:final failure) => UiFailure(failure),
@@ -388,13 +458,13 @@ class PricingCalculatorController {
     items.dispose();
 
     contractMonths.dispose();
-    visitFrequency.dispose();
     markupPercent.dispose();
     markupType.dispose();
     discountAmount.dispose();
     taxPercentage.dispose();
     previewState.dispose();
     submitState.dispose();
+    existingPricingState.dispose();
     uomState.dispose();
     uoms.dispose();
   }

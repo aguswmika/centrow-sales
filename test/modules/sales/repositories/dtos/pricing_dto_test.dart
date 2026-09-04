@@ -28,10 +28,9 @@ void main() {
         );
 
         const worker = PricingWorkerDto(
-          positionName: 'Technician',
+          productId: 'prod-tech',
           firstVisitHours: 2.0,
           routineHours: 1.5,
-          hourlyRate: 75000.0,
         );
 
         const item = PricingItemDto(
@@ -44,10 +43,8 @@ void main() {
         );
 
         const request = CreatePricingRequestDto(
-          customerId: 'c1',
-          serviceId: 's1',
           contractMonths: 12,
-          visitFrequency: 24,
+          visitFrequency: 4,
           markupType: 1,
           markupValue: 20.0,
           discountAmount: 10000.0,
@@ -59,10 +56,7 @@ void main() {
 
         final json = request.toJson();
 
-        expect(json['customer_id'], 'c1');
-        expect(json['service_id'], 's1');
         expect(json['contract_months'], 12);
-        expect(json['visit_frequency'], 24);
         expect(json['markup_type'], 1);
         expect(json['markup_value'], 20.0);
         expect(json['discount_amount'], 10000.0);

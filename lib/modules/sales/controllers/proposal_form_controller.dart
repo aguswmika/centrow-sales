@@ -32,6 +32,8 @@ class ProposalFormController extends ChangeNotifier {
   String? notes;
   String? _editId;
   bool get isEditMode => _editId != null;
+  bool _isReviseMode = false;
+  bool get isReviseMode => _isReviseMode;
 
   List<CustomerLocation> availableLocations = [];
 
@@ -62,14 +64,18 @@ class ProposalFormController extends ChangeNotifier {
     );
     serviceId = proposal.serviceId;
 
-    // Replace the old comment and assign addressId:
     addressId = proposal.addressId;
-
-    // Convert readable dates to YYYY-MM-DD for the form input if needed,
-    // but assuming standard format is passed or we just leave it for re-selection
-    // if the formats don't match easily. We will populate notes:
+    proposalDate = proposal.date;
+    if (proposal.validUntil.isNotEmpty) {
+      validUntil = proposal.validUntil;
+    }
     notes = proposal.notes;
     notifyListeners();
+  }
+
+  void initForRevise(Proposal proposal) {
+    _isReviseMode = true;
+    initForEdit(proposal);
   }
 
   Future<void> _loadCustomerLocations() async {
@@ -101,15 +107,16 @@ class ProposalFormController extends ChangeNotifier {
       return const Err(UnknownFailure('Field wajib harus diisi'));
     }
 
-    if (isEditMode) {
+    if (isEditMode || isReviseMode) {
       final input = UpdateProposalInput(
-        customerId: _customerId!,
-        serviceId: serviceId!,
         proposalDate: proposalDate!,
         validUntil: validUntil,
         addressId: addressId,
         notes: notes,
       );
+      if (isReviseMode) {
+        return await _proposalRepository.reviseProposal(_editId!, input);
+      }
       return await _proposalRepository.updateProposal(_editId!, input);
     } else {
       final input = CreateProposalInput(

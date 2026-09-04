@@ -1,6 +1,4 @@
 class CreatePricingRequestDto {
-  final String customerId;
-  final String serviceId;
   final int contractMonths;
   final int visitFrequency;
   final int markupType;
@@ -12,8 +10,6 @@ class CreatePricingRequestDto {
   final List<PricingItemDto> items;
 
   const CreatePricingRequestDto({
-    required this.customerId,
-    required this.serviceId,
     required this.contractMonths,
     required this.visitFrequency,
     required this.markupType,
@@ -26,8 +22,6 @@ class CreatePricingRequestDto {
   });
 
   Map<String, dynamic> toJson() => {
-    'customer_id': customerId,
-    'service_id': serviceId,
     'contract_months': contractMonths,
     'visit_frequency': visitFrequency,
     'markup_type': markupType,
@@ -84,26 +78,23 @@ class PricingMaterialDto {
 }
 
 class PricingWorkerDto {
-  final String positionName;
+  final String productId;
   final int? visitFrequency;
   final double firstVisitHours;
   final double routineHours;
-  final double hourlyRate;
 
   const PricingWorkerDto({
-    required this.positionName,
+    required this.productId,
     this.visitFrequency,
     required this.firstVisitHours,
     required this.routineHours,
-    required this.hourlyRate,
   });
 
   Map<String, dynamic> toJson() => {
-    'position_name': positionName,
+    'product_id': productId,
     if (visitFrequency != null) 'visit_frequency': visitFrequency,
     'first_visit_hours': firstVisitHours,
     'routine_hours': routineHours,
-    'hourly_rate': hourlyRate,
   };
 }
 

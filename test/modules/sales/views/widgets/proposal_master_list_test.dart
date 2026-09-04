@@ -1,5 +1,6 @@
 import 'package:centrow_sales/modules/sales/entities/proposal.dart';
 import 'package:centrow_sales/modules/sales/views/widgets/proposal_master_list.dart';
+import 'package:centrow_sales/shared/widgets/app_segmented_control.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -11,7 +12,7 @@ void main() {
       clientName: 'Villa Sari Dewi',
       initials: 'VS',
       serviceName: 'Termite Protection',
-      status: ProposalStatus.dikirim,
+      status: ProposalStatus.sent,
       date: '12 Agt 2026',
       validUntil: '12 Sep 2026',
       location: 'Villa Utama Seminyak',
@@ -24,7 +25,7 @@ void main() {
       clientName: 'Hotel Surya Kuta',
       initials: 'SK',
       serviceName: 'Pest Control Full',
-      status: ProposalStatus.negosiasi,
+      status: ProposalStatus.accepted,
       date: '10 Agt 2026',
       validUntil: '10 Sep 2026',
       location: 'Resort & Resto Kuta',
@@ -68,8 +69,8 @@ void main() {
     );
     expect(find.text('Villa Sari Dewi'), findsOneWidget);
     expect(find.text('Hotel Surya Kuta'), findsOneWidget);
-    expect(find.text('Dikirim'), findsWidgets);
-    expect(find.text('Negosiasi'), findsOneWidget);
+    expect(find.text('Terkirim'), findsWidgets);
+    expect(find.text('Diterima'), findsWidgets);
     expect(find.text('Rp 8,15jt'), findsOneWidget);
     expect(find.text('Rp 12,5jt'), findsOneWidget);
 
@@ -78,8 +79,16 @@ void main() {
     expect(selectedId, 'p2');
 
     // Test tap segment
-    await tester.tap(find.text('Draft'));
-    expect(selectedStatus, 'Draft');
+    await tester.tap(find.text('Draf'));
+    expect(selectedStatus, 'draft');
+
+    await tester.tap(
+      find.descendant(
+        of: find.byType(AppSegmentedControl<String>),
+        matching: find.text('Terkirim'),
+      ),
+    );
+    expect(selectedStatus, 'sent');
 
     // Test typing search
     await tester.enterText(find.byType(TextField), 'Villa');

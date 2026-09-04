@@ -3,6 +3,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:centrow_sales/shared/state/ui_state.dart';
 import 'package:centrow_sales/shared/theme/app_colors.dart';
 import 'package:centrow_sales/shared/theme/app_radius.dart';
+import 'package:centrow_sales/shared/theme/app_typography.dart';
 import 'package:centrow_sales/shared/widgets/app_badge.dart';
 import 'package:centrow_sales/shared/widgets/app_button.dart';
 import 'package:centrow_sales/shared/widgets/error_view.dart';
@@ -16,10 +17,18 @@ class ProposalDetailPane extends StatelessWidget {
   final int activePricingTab;
   final ValueChanged<int> onPricingTabChanged;
   final VoidCallback? onExportPdf;
+  final bool isExportingPdf;
   final VoidCallback? onOpenCalculator;
   final VoidCallback? onOpenDocument;
   final VoidCallback? onRetry;
   final VoidCallback? onEditProposal;
+  final VoidCallback? onReviseProposal;
+  final VoidCallback? onSendProposal;
+  final VoidCallback? onAcceptProposal;
+  final VoidCallback? onRejectProposal;
+  final VoidCallback? onExpireProposal;
+  final VoidCallback? onCancelProposal;
+  final bool isActionLoading;
 
   const ProposalDetailPane({
     super.key,
@@ -30,10 +39,18 @@ class ProposalDetailPane extends StatelessWidget {
     required this.activePricingTab,
     required this.onPricingTabChanged,
     this.onExportPdf,
+    this.isExportingPdf = false,
     this.onOpenCalculator,
     this.onOpenDocument,
     this.onRetry,
     this.onEditProposal,
+    this.onReviseProposal,
+    this.onSendProposal,
+    this.onAcceptProposal,
+    this.onRejectProposal,
+    this.onExpireProposal,
+    this.onCancelProposal,
+    this.isActionLoading = false,
   });
 
   static const List<String> tabTitles = [
@@ -115,7 +132,7 @@ class ProposalDetailPane extends StatelessWidget {
       ),
       child: LayoutBuilder(
         builder: (context, constraints) {
-          final isNarrow = constraints.maxWidth < 600;
+          final isNarrow = constraints.maxWidth < 620;
 
           final identity = Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -147,33 +164,23 @@ class ProposalDetailPane extends StatelessWidget {
             ],
           );
 
+          final isLoading = isActionLoading || isExportingPdf;
           final actions = Wrap(
             spacing: 10.0,
             runSpacing: 8.0,
+            crossAxisAlignment: WrapCrossAlignment.center,
             children: [
               AppButton.secondary(
-                text: 'Ubah Data',
+                text: 'Pricing',
                 height: 40.0,
                 isFullWidth: false,
                 borderRadius: AppRadius.borderMd,
                 icon: const Icon(
-                  Icons.edit_note,
+                  Icons.calculate_outlined,
                   size: 16.0,
                   color: AppColors.text,
                 ),
-                onPressed: onEditProposal,
-              ),
-              AppButton.secondary(
-                text: 'Ekspor PDF',
-                height: 40.0,
-                isFullWidth: false,
-                borderRadius: AppRadius.borderMd,
-                icon: const Icon(
-                  Icons.download_rounded,
-                  size: 16.0,
-                  color: AppColors.text,
-                ),
-                onPressed: onExportPdf,
+                onPressed: onOpenCalculator,
               ),
               AppButton.secondary(
                 text: 'Dokumen',
@@ -187,17 +194,225 @@ class ProposalDetailPane extends StatelessWidget {
                 ),
                 onPressed: onOpenDocument,
               ),
-              AppButton(
-                text: 'Pricing',
-                height: 40.0,
-                isFullWidth: false,
-                borderRadius: AppRadius.borderMd,
-                icon: const Icon(
-                  Icons.edit_outlined,
-                  size: 16.0,
-                  color: Colors.white,
+              PopupMenuButton<String>(
+                tooltip: 'Aksi',
+                enabled: !isLoading,
+                onSelected: (val) {
+                  switch (val) {
+                    case 'send':
+                      onSendProposal?.call();
+                    case 'accept':
+                      onAcceptProposal?.call();
+                    case 'reject':
+                      onRejectProposal?.call();
+                    case 'revise':
+                      onReviseProposal?.call();
+                    case 'pdf':
+                      onExportPdf?.call();
+                    case 'edit':
+                      onEditProposal?.call();
+                    case 'expire':
+                      onExpireProposal?.call();
+                    case 'cancel':
+                      onCancelProposal?.call();
+                  }
+                },
+                itemBuilder: (context) => [
+                  if (proposal.status.canSend)
+                    const PopupMenuItem<String>(
+                      value: 'send',
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(
+                            Icons.send_rounded,
+                            size: 18,
+                            color: AppColors.brand,
+                          ),
+                          SizedBox(width: 8),
+                          Flexible(
+                            child: Text(
+                              'Kirim Proposal',
+                              style: TextStyle(
+                                color: AppColors.brand,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  if (proposal.status.canAccept)
+                    const PopupMenuItem<String>(
+                      value: 'accept',
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(
+                            Icons.check_circle_outline,
+                            size: 18,
+                            color: AppColors.ok,
+                          ),
+                          SizedBox(width: 8),
+                          Flexible(
+                            child: Text(
+                              'Terima Proposal',
+                              style: TextStyle(
+                                color: AppColors.ok,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  if (proposal.status.canReject)
+                    const PopupMenuItem<String>(
+                      value: 'reject',
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(
+                            Icons.cancel_outlined,
+                            size: 18,
+                            color: AppColors.err,
+                          ),
+                          SizedBox(width: 8),
+                          Flexible(
+                            child: Text(
+                              'Tolak Proposal',
+                              style: TextStyle(
+                                color: AppColors.err,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  if (proposal.status.canRevise)
+                    const PopupMenuItem<String>(
+                      value: 'revise',
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(Icons.file_copy, size: 18, color: AppColors.sec),
+                          SizedBox(width: 8),
+                          Flexible(child: Text('Revisi Proposal')),
+                        ],
+                      ),
+                    ),
+                  const PopupMenuItem<String>(
+                    value: 'pdf',
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          Icons.download_rounded,
+                          size: 18,
+                          color: AppColors.sec,
+                        ),
+                        SizedBox(width: 8),
+                        Flexible(child: Text('Ekspor PDF')),
+                      ],
+                    ),
+                  ),
+                  if (proposal.status.canEdit)
+                    const PopupMenuItem<String>(
+                      value: 'edit',
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(Icons.edit_note, size: 18, color: AppColors.sec),
+                          SizedBox(width: 8),
+                          Flexible(child: Text('Ubah Data')),
+                        ],
+                      ),
+                    ),
+                  if (proposal.status.canExpire)
+                    const PopupMenuItem<String>(
+                      value: 'expire',
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(
+                            Icons.hourglass_bottom,
+                            size: 18,
+                            color: AppColors.sec,
+                          ),
+                          SizedBox(width: 8),
+                          Flexible(child: Text('Tandai Kedaluwarsa')),
+                        ],
+                      ),
+                    ),
+                  if (proposal.status.canCancel)
+                    const PopupMenuItem<String>(
+                      value: 'cancel',
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(
+                            Icons.close_rounded,
+                            size: 18,
+                            color: AppColors.err,
+                          ),
+                          SizedBox(width: 8),
+                          Flexible(
+                            child: Text(
+                              'Batalkan Proposal',
+                              style: TextStyle(color: AppColors.err),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                ],
+                child: Container(
+                  height: 40.0,
+                  padding: const EdgeInsets.symmetric(horizontal: 12.0),
+                  decoration: BoxDecoration(
+                    color: AppColors.surface,
+                    borderRadius: AppRadius.borderMd,
+                    border: Border.all(color: AppColors.border, width: 1.5),
+                  ),
+                  child: isLoading
+                      ? const Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            SizedBox(
+                              width: 16.0,
+                              height: 16.0,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2.0,
+                                color: AppColors.text,
+                              ),
+                            ),
+                          ],
+                        )
+                      : Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Icon(
+                              Icons.tune,
+                              size: 16.0,
+                              color: AppColors.text,
+                            ),
+                            const SizedBox(width: 6),
+                            Text(
+                              'Aksi',
+                              style: AppTypography.buttonMd(
+                                color: AppColors.text,
+                              ),
+                            ),
+                            const SizedBox(width: 4),
+                            const Icon(
+                              Icons.keyboard_arrow_down_rounded,
+                              size: 18.0,
+                              color: AppColors.sec,
+                            ),
+                          ],
+                        ),
                 ),
-                onPressed: onOpenCalculator,
               ),
             ],
           );
@@ -211,10 +426,11 @@ class ProposalDetailPane extends StatelessWidget {
 
           return Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Expanded(child: identity),
               const SizedBox(width: 16.0),
-              actions,
+              Flexible(child: actions),
             ],
           );
         },
@@ -330,14 +546,17 @@ class ProposalDetailPane extends StatelessWidget {
             runSpacing: 16.0,
             children: [
               _buildInfoSection('DIBUAT PADA', proposal.createdAt ?? '-'),
-              _buildInfoSection('DIKIRIM PADA', proposal.sentAt ?? '-'),
-              if (proposal.status.value == 'accepted' ||
-                  proposal.status.value == 'rejected')
+              if (proposal.sentAt != null && proposal.sentAt!.isNotEmpty)
+                _buildInfoSection('DIKIRIM PADA', proposal.sentAt!),
+              if (proposal.status.isAccepted ||
+                  proposal.status.isRejected ||
+                  proposal.status.isExpired)
                 _buildInfoSection('DIPUTUSKAN PADA', proposal.decidedAt ?? '-'),
             ],
           ),
-          if (proposal.status.value == 'rejected' &&
-              proposal.rejectionReason != null) ...[
+          if (proposal.status.isRejected &&
+              proposal.rejectionReason != null &&
+              proposal.rejectionReason!.isNotEmpty) ...[
             const SizedBox(height: 16.0),
             _buildInfoSection(
               'ALASAN PENOLAKAN',
@@ -378,7 +597,7 @@ class ProposalDetailPane extends StatelessWidget {
   }
 
   Widget _buildPricingTabContent(Proposal proposal) {
-    if (proposal.cogs == 0 && proposal.items.isEmpty) {
+    if (!proposal.hasPricing) {
       return Center(
         child: Column(
           mainAxisSize: MainAxisSize.min,
