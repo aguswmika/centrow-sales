@@ -28,6 +28,10 @@ import 'package:centrow_sales/shared/network/auth_token_holder.dart';
 import 'package:centrow_sales/shared/network/dio_client.dart';
 import 'package:centrow_sales/shared/storage/local_storage.dart';
 import 'package:centrow_sales/app/router.dart';
+import 'package:centrow_sales/modules/sales/controllers/contract_controller.dart';
+import 'package:centrow_sales/modules/sales/controllers/contract_form_controller.dart';
+import 'package:centrow_sales/modules/sales/repositories/contract_repository.dart';
+import 'package:centrow_sales/modules/sales/repositories/contract_category_repository.dart';
 
 final GetIt getIt = GetIt.instance;
 
@@ -132,5 +136,20 @@ Future<void> setupDi({LocalStorage? storage}) async {
   );
   getIt.registerFactory<TreatmentMethodController>(
     () => TreatmentMethodController(getIt<TreatmentMethodRepository>()),
+  );
+  getIt.registerLazySingleton<ContractCategoryRepository>(
+    () => ContractCategoryRepositoryImpl(getIt<Dio>()),
+  );
+  getIt.registerLazySingleton<ContractRepository>(
+    () => ContractRepositoryImpl(getIt<Dio>()),
+  );
+  getIt.registerFactory<ContractController>(
+    () => ContractController(getIt<ContractRepository>()),
+  );
+  getIt.registerFactory<ContractFormController>(
+    () => ContractFormController(
+      getIt<ContractRepository>(),
+      getIt<ContractCategoryRepository>(),
+    ),
   );
 }

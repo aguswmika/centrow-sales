@@ -15,8 +15,13 @@ import 'package:centrow_sales/modules/sales/entities/proposal.dart';
 
 class PricingPage extends StatefulWidget {
   final String proposalId;
+  final Proposal? initialProposal;
 
-  const PricingPage({super.key, required this.proposalId});
+  const PricingPage({
+    super.key,
+    required this.proposalId,
+    this.initialProposal,
+  });
 
   @override
   State<PricingPage> createState() => _PricingPageState();
@@ -72,7 +77,8 @@ class _PricingPageState extends State<PricingPage> {
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   _buildPageHeader(context, data),
-                  _buildParamBar(context),
+                  if (!data.status.canEditPricing) _buildReadOnlyBanner(data),
+                  _buildParamBar(context, enabled: data.status.canEditPricing),
                   const Divider(
                     height: 1.5,
                     thickness: 1.5,
@@ -82,6 +88,7 @@ class _PricingPageState extends State<PricingPage> {
                     child: PricingCalculatorView(
                       proposal: data,
                       calculatorController: _calcController,
+                      isReadOnly: !data.status.canEditPricing,
                     ),
                   ),
                 ],
@@ -89,6 +96,35 @@ class _PricingPageState extends State<PricingPage> {
             };
           },
         ),
+      ),
+    );
+  }
+
+  Widget _buildReadOnlyBanner(Proposal proposal) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 10.0),
+      decoration: const BoxDecoration(
+        color: Color(0x24BC7B43),
+        border: Border(
+          bottom: BorderSide(color: Color(0x4DBC7B43), width: 1.0),
+        ),
+      ),
+      child: Row(
+        children: [
+          const Icon(Icons.lock_outline, size: 20.0, color: Color(0xFF92580F)),
+          const SizedBox(width: 10.0),
+          Expanded(
+            child: Text(
+              'Proposal ini berstatus ${proposal.status.displayName}. Kalkulasi harga terkunci dan tidak dapat diubah.',
+              style: GoogleFonts.inter(
+                fontSize: 13.0,
+                color: const Color(0xFF92580F),
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -187,7 +223,7 @@ class _PricingPageState extends State<PricingPage> {
     );
   }
 
-  Widget _buildParamBar(BuildContext context) {
+  Widget _buildParamBar(BuildContext context, {bool enabled = true}) {
     return Container(
       color: AppColors.surface,
       padding: const EdgeInsets.fromLTRB(16.0, 16.0, 16.0, 16.0),
@@ -200,6 +236,7 @@ class _PricingPageState extends State<PricingPage> {
               icon: Icons.calendar_today,
               suffix: 'Bulan',
               keyboardType: TextInputType.number,
+              enabled: enabled,
               onChanged: (val) =>
                   _calcController.contractMonths.value = int.tryParse(val),
             ),
@@ -212,6 +249,7 @@ class _PricingPageState extends State<PricingPage> {
               icon: Icons.refresh,
               suffix: 'Kali',
               keyboardType: TextInputType.number,
+              enabled: enabled,
               onChanged: (val) =>
                   _calcController.visitFrequency.value = int.tryParse(val),
             ),
@@ -228,6 +266,7 @@ class _PricingPageState extends State<PricingPage> {
     String? suffix,
     TextInputType keyboardType = TextInputType.text,
     ValueChanged<String>? onChanged,
+    bool enabled = true,
   }) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -245,7 +284,9 @@ class _PricingPageState extends State<PricingPage> {
           height: 44.0,
           padding: const EdgeInsets.symmetric(horizontal: 12.0),
           decoration: BoxDecoration(
-            color: AppColors.subtle,
+            color: enabled
+                ? AppColors.subtle
+                : AppColors.border.withValues(alpha: 0.3),
             border: Border.all(color: AppColors.border, width: 1.5),
             borderRadius: AppRadius.borderSm,
           ),
@@ -257,11 +298,12 @@ class _PricingPageState extends State<PricingPage> {
                 child: TextFormField(
                   initialValue: initialValue,
                   keyboardType: keyboardType,
+                  enabled: enabled,
                   onChanged: onChanged,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 13.0,
                     fontWeight: FontWeight.w600,
-                    color: AppColors.text,
+                    color: enabled ? AppColors.text : AppColors.muted,
                   ),
                   decoration: InputDecoration(
                     border: InputBorder.none,

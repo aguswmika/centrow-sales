@@ -28,6 +28,8 @@ enum ProposalStatus {
   bool get isTerminal => isAccepted || isRejected || isExpired || isCancelled;
 
   bool get canEdit => isDraft;
+  bool get canEditPricing => isDraft;
+  bool get canEditDocument => !isExpired && !isCancelled;
   bool get canRevise => isSent || isRejected || isExpired;
   bool get canSend => isDraft;
   bool get canAccept => isSent;
@@ -259,6 +261,11 @@ class Proposal {
   }) : explicitInitials = initials,
        explicitShortAmount = shortAmount,
        explicitShortMarginAmt = shortMarginAmt;
+
+  bool get canEdit => status.canEdit;
+  bool get canEditPricing => status.canEditPricing;
+  bool get canEditDocument => status.canEditDocument;
+  bool get canRevise => status.canRevise;
 
   String get initials {
     final exp = explicitInitials;

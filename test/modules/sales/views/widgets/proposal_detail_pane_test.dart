@@ -147,7 +147,8 @@ void main() {
       expect(exportPdfClicked, isTrue);
 
       await tester.tap(find.text('Pricing'));
-      expect(calculatorClicked, isTrue);
+      // Pricing is disabled for sent proposals (only draft can edit pricing)
+      expect(calculatorClicked, isFalse);
     },
   );
 
@@ -163,6 +164,7 @@ void main() {
       bool editClicked = false;
       bool exportPdfClicked = false;
       bool cancelClicked = false;
+      bool calculatorClicked = false;
 
       final draftProposal = sampleProposal.copyWith(
         status: ProposalStatus.draft,
@@ -181,6 +183,7 @@ void main() {
               onEditProposal: () => editClicked = true,
               onExportPdf: () => exportPdfClicked = true,
               onCancelProposal: () => cancelClicked = true,
+              onOpenCalculator: () => calculatorClicked = true,
             ),
           ),
         ),
@@ -190,6 +193,10 @@ void main() {
       expect(find.text('Pricing'), findsOneWidget);
       expect(find.text('Dokumen'), findsOneWidget);
       expect(find.text('Aksi'), findsOneWidget);
+
+      // In draft status, Pricing button is enabled
+      await tester.tap(find.text('Pricing'));
+      expect(calculatorClicked, isTrue);
 
       // Actions should not be visible directly
       expect(find.text('Kirim Proposal'), findsNothing);
@@ -250,6 +257,7 @@ void main() {
       bool exportPdfClicked = false;
       bool expireClicked = false;
       bool cancelClicked = false;
+      bool calculatorClicked = false;
 
       final sentProposal = sampleProposal.copyWith(status: ProposalStatus.sent);
 
@@ -268,6 +276,7 @@ void main() {
               onExportPdf: () => exportPdfClicked = true,
               onExpireProposal: () => expireClicked = true,
               onCancelProposal: () => cancelClicked = true,
+              onOpenCalculator: () => calculatorClicked = true,
             ),
           ),
         ),
@@ -277,6 +286,10 @@ void main() {
       expect(find.text('Pricing'), findsOneWidget);
       expect(find.text('Dokumen'), findsOneWidget);
       expect(find.text('Aksi'), findsOneWidget);
+
+      // In sent status, Pricing button is disabled
+      await tester.tap(find.text('Pricing'));
+      expect(calculatorClicked, isFalse);
 
       // Actions should not be visible directly
       expect(find.text('Terima Proposal'), findsNothing);

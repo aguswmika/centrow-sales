@@ -60,7 +60,7 @@ class ProposalMasterList extends StatelessWidget {
           ),
           const SizedBox(height: 2.0),
           Text(
-            '${proposals.length} proposal aktif dalam pipeline penawaran',
+            '${proposals.length} proposal',
             style: GoogleFonts.inter(
               fontSize: 12.0,
               fontWeight: FontWeight.w500,

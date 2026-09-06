@@ -21,12 +21,14 @@ class WebviewTiptapEditor extends StatefulWidget {
   final Map<String, dynamic> initialJson;
   final ValueChanged<TiptapState>? onStateChange;
   final void Function(WebViewController)? onControllerCreated;
+  final bool isEditable;
 
   const WebviewTiptapEditor({
     super.key,
     required this.initialJson,
     this.onStateChange,
     this.onControllerCreated,
+    this.isEditable = true,
   });
 
   @override
@@ -60,7 +62,7 @@ class _WebviewTiptapEditorState extends State<WebviewTiptapEditor> {
           onPageFinished: (String url) {
             final initialJsonStr = jsonEncode(widget.initialJson);
             _controller.runJavaScript(
-              "window.setupContent(String.raw`$initialJsonStr`);",
+              "window.setupContent(String.raw`$initialJsonStr`); window.setEditable(${widget.isEditable});",
             );
             setState(() {
               _isLoading = false;
@@ -71,6 +73,14 @@ class _WebviewTiptapEditorState extends State<WebviewTiptapEditor> {
       );
 
     _loadHtml();
+  }
+
+  @override
+  void didUpdateWidget(covariant WebviewTiptapEditor oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.isEditable != widget.isEditable && !_isLoading) {
+      _controller.runJavaScript("window.setEditable(${widget.isEditable});");
+    }
   }
 
   Future<void> _loadHtml() async {
@@ -95,7 +105,7 @@ class _WebviewTiptapEditorState extends State<WebviewTiptapEditor> {
     pre code { background-color: transparent; padding: 0; font-size: inherit; color: inherit; }
     a { color: #2563eb; text-decoration: none; cursor: pointer; }
     a:hover { text-decoration: underline; }
-    
+
     table {
       border-collapse: collapse;
       table-layout: fixed;
@@ -117,7 +127,7 @@ class _WebviewTiptapEditorState extends State<WebviewTiptapEditor> {
 </head>
 <body>
   <div id="editor"></div>
-  
+
   <script>
     const { Editor, StarterKit, Table, TableRow, TableCell, TableHeader, TextAlign, Underline, Link } = window.Tiptap;
 
@@ -154,6 +164,7 @@ class _WebviewTiptapEditorState extends State<WebviewTiptapEditor> {
 
     window.editor = new Editor({
       element: document.querySelector('#editor'),
+      editable: ${widget.isEditable},
       extensions: [
         StarterKit,
         Table.configure({ resizable: true }),
@@ -184,7 +195,13 @@ class _WebviewTiptapEditorState extends State<WebviewTiptapEditor> {
       }
       sendStateToFlutter(window.editor);
     };
-    
+
+    window.setEditable = function(editable) {
+      if (window.editor) {
+        window.editor.setEditable(editable);
+      }
+    };
+
     window.execCmd = function(cmd, argsStr) {
       const args = argsStr ? JSON.parse(argsStr) : undefined;
       if (args !== undefined) {

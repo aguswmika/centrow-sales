@@ -12,6 +12,7 @@ import 'package:centrow_sales/modules/sales/views/pages/pricing_preview_page.dar
 import 'package:centrow_sales/modules/sales/views/pages/proposal_document_page.dart';
 import 'package:centrow_sales/shared/network/auth_token_holder.dart';
 import 'package:centrow_sales/shared/widgets/nav_rail_shell.dart';
+import 'package:centrow_sales/modules/sales/views/pages/contract_page.dart';
 
 GoRouter createRouter({String? initialLocation}) => GoRouter(
   initialLocation:
@@ -87,8 +88,12 @@ GoRouter createRouter({String? initialLocation}) => GoRouter(
                 GoRoute(
                   path: ':id/pricing',
                   name: 'proposal-pricing',
-                  builder: (context, state) =>
-                      PricingPage(proposalId: state.pathParameters['id']!),
+                  builder: (context, state) => PricingPage(
+                    proposalId: state.pathParameters['id']!,
+                    initialProposal: state.extra is Proposal
+                        ? state.extra as Proposal
+                        : null,
+                  ),
                   routes: [
                     GoRoute(
                       path: 'preview',
@@ -112,6 +117,9 @@ GoRouter createRouter({String? initialLocation}) => GoRouter(
                   name: 'proposal-document',
                   builder: (context, state) => ProposalDocumentPage(
                     proposalId: state.pathParameters['id']!,
+                    initialProposal: state.extra is Proposal
+                        ? state.extra as Proposal
+                        : null,
                   ),
                 ),
               ],
@@ -123,8 +131,16 @@ GoRouter createRouter({String? initialLocation}) => GoRouter(
             GoRoute(
               path: '/contracts',
               name: 'contracts',
-              builder: (context, state) =>
-                  const Scaffold(body: Center(child: Text('Kontrak'))),
+              builder: (context, state) {
+                final extra = state.extra;
+                String? id;
+                if (extra is String) {
+                  id = extra;
+                } else if (extra is Map<String, dynamic>) {
+                  id = extra['id'] as String?;
+                }
+                return ContractPage(initialContractId: id);
+              },
             ),
           ],
         ),

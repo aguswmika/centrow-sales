@@ -1,16 +1,9 @@
+import 'package:centrow_sales/shared/widgets/app_segmented_control.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:centrow_sales/shared/widgets/app_segmented_control.dart';
 
 void main() {
-  const items = [
-    SegmentItem(label: 'Semua', value: 'all'),
-    SegmentItem(label: 'Villa', value: 'villa'),
-    SegmentItem(label: 'Hotel', value: 'hotel'),
-    SegmentItem(label: 'Resto', value: 'resto'),
-  ];
-
-  testWidgets('AppSegmentedControl renders items and triggers onValueChanged', (
+  testWidgets('AppSegmentedControl renders fixed-width items and handles tap', (
     tester,
   ) async {
     String selected = 'all';
@@ -18,40 +11,91 @@ void main() {
     await tester.pumpWidget(
       MaterialApp(
         home: Scaffold(
-          body: StatefulBuilder(
-            builder: (context, setState) {
-              return SizedBox(
-                width: 400,
-                child: AppSegmentedControl<String>(
-                  items: items,
+          body: SizedBox(
+            width: 360,
+            child: StatefulBuilder(
+              builder: (context, setState) {
+                return AppSegmentedControl<String>(
+                  items: const [
+                    SegmentItem<String>(label: 'Semua', value: 'all'),
+                    SegmentItem<String>(label: 'Draf', value: 'draft'),
+                    SegmentItem<String>(label: 'Aktif', value: 'active'),
+                  ],
                   selectedValue: selected,
                   onValueChanged: (val) {
-                    setState(() => selected = val);
+                    setState(() {
+                      selected = val;
+                    });
                   },
-                ),
-              );
-            },
+                );
+              },
+            ),
           ),
         ),
       ),
     );
 
     expect(find.text('Semua'), findsOneWidget);
-    expect(find.text('Villa'), findsOneWidget);
-    expect(find.text('Hotel'), findsOneWidget);
-    expect(find.text('Resto'), findsOneWidget);
-    expect(find.byType(AnimatedPositioned), findsOneWidget);
+    expect(find.text('Draf'), findsOneWidget);
+    expect(find.text('Aktif'), findsOneWidget);
 
-    // Tap Villa
-    await tester.tap(find.text('Villa'));
+    await tester.tap(find.text('Draf'));
     await tester.pumpAndSettle();
+    expect(selected, 'draft');
 
-    expect(selected, 'villa');
-
-    // Tap Hotel
-    await tester.tap(find.text('Hotel'));
+    await tester.tap(find.text('Aktif'));
     await tester.pumpAndSettle();
-
-    expect(selected, 'hotel');
+    expect(selected, 'active');
   });
+
+  testWidgets(
+    'AppSegmentedControl scrollable mode renders items in SingleChildScrollView and handles tap',
+    (tester) async {
+      int? selected;
+
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: SizedBox(
+              width: 360,
+              child: StatefulBuilder(
+                builder: (context, setState) {
+                  return AppSegmentedControl<int?>(
+                    isScrollable: true,
+                    items: const [
+                      SegmentItem<int?>(label: 'Semua', value: null),
+                      SegmentItem<int?>(label: 'Draf', value: 1),
+                      SegmentItem<int?>(label: 'Aktif', value: 2),
+                      SegmentItem<int?>(label: 'Ditangguhkan', value: 3),
+                      SegmentItem<int?>(label: 'Diterminasi', value: 5),
+                      SegmentItem<int?>(label: 'Dibatalkan', value: 6),
+                    ],
+                    selectedValue: selected,
+                    onValueChanged: (val) {
+                      setState(() {
+                        selected = val;
+                      });
+                    },
+                  );
+                },
+              ),
+            ),
+          ),
+        ),
+      );
+
+      expect(find.byType(SingleChildScrollView), findsOneWidget);
+      expect(find.text('Semua'), findsOneWidget);
+      expect(find.text('Draf'), findsOneWidget);
+      expect(find.text('Ditangguhkan'), findsOneWidget);
+
+      await tester.tap(find.text('Draf'));
+      await tester.pumpAndSettle();
+      expect(selected, 1);
+
+      await tester.tap(find.text('Ditangguhkan'));
+      await tester.pumpAndSettle();
+      expect(selected, 3);
+    },
+  );
 }

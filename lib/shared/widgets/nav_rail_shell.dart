@@ -166,203 +166,209 @@ class _NavRailShellState extends State<NavRailShell> {
   }
 
   Widget _buildNavRail(BuildContext context) {
-    return NavigationRail(
-      selectedIndex:
-          widget.navigationShell?.currentIndex ?? widget.selectedIndex,
-      onDestinationSelected: (idx) => _handleNavigation(context, idx),
-      backgroundColor: AppColors.surface,
-      minWidth: 72.0,
-      labelType: NavigationRailLabelType.all,
-      selectedLabelTextStyle: GoogleFonts.inter(
-        fontSize: 10.5,
-        fontWeight: FontWeight.w700,
-        color: AppColors.brand,
-      ),
-      unselectedLabelTextStyle: GoogleFonts.inter(
-        fontSize: 10.5,
-        fontWeight: FontWeight.w500,
-        color: AppColors.muted,
-      ),
-      selectedIconTheme: const IconThemeData(
-        color: AppColors.brand,
-        size: 22.0,
-      ),
-      unselectedIconTheme: const IconThemeData(
-        color: AppColors.muted,
-        size: 22.0,
-      ),
-      useIndicator: true,
-      indicatorColor: AppColors.brand10,
-      leading: Padding(
-        padding: const EdgeInsets.only(bottom: 12.0, top: 8.0),
-        child: SizedBox(
-          width: 44.0,
-          height: 44.0,
-          child: ClipRRect(
-            borderRadius: AppRadius.borderSm,
-            child: SvgPicture.asset(
-              AppAssets.logoFilled,
+    return Container(
+      color: AppColors.surface,
+      child: SafeArea(
+        right: false,
+        child: NavigationRail(
+          selectedIndex:
+              widget.navigationShell?.currentIndex ?? widget.selectedIndex,
+          onDestinationSelected: (idx) => _handleNavigation(context, idx),
+          backgroundColor: AppColors.surface,
+          minWidth: 72.0,
+          labelType: NavigationRailLabelType.all,
+          selectedLabelTextStyle: GoogleFonts.inter(
+            fontSize: 10.5,
+            fontWeight: FontWeight.w700,
+            color: AppColors.brand,
+          ),
+          unselectedLabelTextStyle: GoogleFonts.inter(
+            fontSize: 10.5,
+            fontWeight: FontWeight.w500,
+            color: AppColors.muted,
+          ),
+          selectedIconTheme: const IconThemeData(
+            color: AppColors.brand,
+            size: 22.0,
+          ),
+          unselectedIconTheme: const IconThemeData(
+            color: AppColors.muted,
+            size: 22.0,
+          ),
+          useIndicator: true,
+          indicatorColor: AppColors.brand10,
+          leading: Padding(
+            padding: const EdgeInsets.only(bottom: 12.0, top: 8.0),
+            child: SizedBox(
               width: 44.0,
               height: 44.0,
+              child: ClipRRect(
+                borderRadius: AppRadius.borderSm,
+                child: SvgPicture.asset(
+                  AppAssets.logoFilled,
+                  width: 44.0,
+                  height: 44.0,
+                ),
+              ),
             ),
           ),
-        ),
-      ),
-      trailing: Padding(
-        padding: const EdgeInsets.only(top: 24.0, bottom: 16.0),
-        child: Theme(
-          data: Theme.of(context).copyWith(
-            hoverColor: Colors.transparent,
-            splashColor: Colors.transparent,
-            highlightColor: Colors.transparent,
-          ),
-          child: PopupMenuButton<String>(
-            tooltip: 'Profil Pengguna',
-            offset: const Offset(48.0, 0.0),
-            shape: const RoundedRectangleBorder(
-              borderRadius: AppRadius.borderMd,
-              side: BorderSide(color: AppColors.border, width: 1.5),
-            ),
-            elevation: 4.0,
-            color: AppColors.surface,
-            onSelected: (value) {
-              if (value == 'logout') {
-                _showLogoutConfirmation(context);
-              }
-            },
-            itemBuilder: (context) {
-              final user = AuthTokenHolder.instance.currentUser;
-              final name = (user?.name.isNotEmpty == true)
-                  ? user!.name
-                  : (user?.email.isNotEmpty == true
-                        ? user!.email.split('@').first
-                        : 'Pengguna');
-              final email = (user?.email.isNotEmpty == true)
-                  ? user!.email
-                  : '-';
-              final role = (user?.role.isNotEmpty == true)
-                  ? user!.role
-                  : (user?.roles.isNotEmpty == true
-                        ? user!.roles.first
-                        : 'Sales');
+          trailing: Padding(
+            padding: const EdgeInsets.only(top: 24.0, bottom: 16.0),
+            child: Theme(
+              data: Theme.of(context).copyWith(
+                hoverColor: Colors.transparent,
+                splashColor: Colors.transparent,
+                highlightColor: Colors.transparent,
+              ),
+              child: PopupMenuButton<String>(
+                tooltip: 'Profil Pengguna',
+                offset: const Offset(48.0, 0.0),
+                shape: const RoundedRectangleBorder(
+                  borderRadius: AppRadius.borderMd,
+                  side: BorderSide(color: AppColors.border, width: 1.5),
+                ),
+                elevation: 4.0,
+                color: AppColors.surface,
+                onSelected: (value) {
+                  if (value == 'logout') {
+                    _showLogoutConfirmation(context);
+                  }
+                },
+                itemBuilder: (context) {
+                  final user = AuthTokenHolder.instance.currentUser;
+                  final name = (user?.name.isNotEmpty == true)
+                      ? user!.name
+                      : (user?.email.isNotEmpty == true
+                            ? user!.email.split('@').first
+                            : 'Pengguna');
+                  final email = (user?.email.isNotEmpty == true)
+                      ? user!.email
+                      : '-';
+                  final role = (user?.role.isNotEmpty == true)
+                      ? user!.role
+                      : (user?.roles.isNotEmpty == true
+                            ? user!.roles.first
+                            : 'Sales');
 
-              return [
-                PopupMenuItem<String>(
-                  enabled: false,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        name,
-                        style: GoogleFonts.plusJakartaSans(
-                          fontSize: 13.5,
-                          fontWeight: FontWeight.w700,
-                          color: AppColors.text,
-                        ),
+                  return [
+                    PopupMenuItem<String>(
+                      enabled: false,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            name,
+                            style: GoogleFonts.plusJakartaSans(
+                              fontSize: 13.5,
+                              fontWeight: FontWeight.w700,
+                              color: AppColors.text,
+                            ),
+                          ),
+                          const SizedBox(height: 2.0),
+                          Text(
+                            email,
+                            style: GoogleFonts.inter(
+                              fontSize: 11.5,
+                              color: AppColors.muted,
+                            ),
+                          ),
+                          const SizedBox(height: 6.0),
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 6.0,
+                              vertical: 2.0,
+                            ),
+                            decoration: const BoxDecoration(
+                              color: AppColors.brand10,
+                              borderRadius: AppRadius.borderSm,
+                            ),
+                            child: Text(
+                              role.toUpperCase(),
+                              style: GoogleFonts.inter(
+                                fontSize: 10.0,
+                                fontWeight: FontWeight.w700,
+                                color: AppColors.brand,
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
-                      const SizedBox(height: 2.0),
-                      Text(
-                        email,
-                        style: GoogleFonts.inter(
-                          fontSize: 11.5,
-                          color: AppColors.muted,
-                        ),
+                    ),
+                    const PopupMenuDivider(),
+                    PopupMenuItem<String>(
+                      value: 'logout',
+                      child: Row(
+                        children: [
+                          const Icon(
+                            Icons.logout_rounded,
+                            size: 18.0,
+                            color: AppColors.err,
+                          ),
+                          const SizedBox(width: 10.0),
+                          Text(
+                            'Keluar',
+                            style: GoogleFonts.inter(
+                              fontSize: 13.0,
+                              fontWeight: FontWeight.w600,
+                              color: AppColors.err,
+                            ),
+                          ),
+                        ],
                       ),
-                      const SizedBox(height: 6.0),
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 6.0,
-                          vertical: 2.0,
-                        ),
-                        decoration: const BoxDecoration(
-                          color: AppColors.brand10,
-                          borderRadius: AppRadius.borderSm,
-                        ),
-                        child: Text(
-                          role.toUpperCase(),
-                          style: GoogleFonts.inter(
-                            fontSize: 10.0,
-                            fontWeight: FontWeight.w700,
+                    ),
+                  ];
+                },
+                child: Container(
+                  width: 40.0,
+                  height: 40.0,
+                  decoration: BoxDecoration(
+                    color: AppColors.brand10,
+                    shape: BoxShape.circle,
+                    border: Border.all(color: AppColors.brand, width: 1.5),
+                  ),
+                  child: Center(
+                    child:
+                        (widget.userInitials ??
+                                AuthTokenHolder.instance.userInitials)
+                            .isNotEmpty
+                        ? Text(
+                            widget.userInitials ??
+                                AuthTokenHolder.instance.userInitials,
+                            style: GoogleFonts.plusJakartaSans(
+                              fontSize: 13.0,
+                              fontWeight: FontWeight.w700,
+                              color: AppColors.brand,
+                            ),
+                          )
+                        : const Icon(
+                            Icons.person_rounded,
+                            size: 20.0,
                             color: AppColors.brand,
                           ),
-                        ),
-                      ),
-                    ],
                   ),
                 ),
-                const PopupMenuDivider(),
-                PopupMenuItem<String>(
-                  value: 'logout',
-                  child: Row(
-                    children: [
-                      const Icon(
-                        Icons.logout_rounded,
-                        size: 18.0,
-                        color: AppColors.err,
-                      ),
-                      const SizedBox(width: 10.0),
-                      Text(
-                        'Keluar',
-                        style: GoogleFonts.inter(
-                          fontSize: 13.0,
-                          fontWeight: FontWeight.w600,
-                          color: AppColors.err,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ];
-            },
-            child: Container(
-              width: 40.0,
-              height: 40.0,
-              decoration: BoxDecoration(
-                color: AppColors.brand10,
-                shape: BoxShape.circle,
-                border: Border.all(color: AppColors.brand, width: 1.5),
-              ),
-              child: Center(
-                child:
-                    (widget.userInitials ??
-                            AuthTokenHolder.instance.userInitials)
-                        .isNotEmpty
-                    ? Text(
-                        widget.userInitials ??
-                            AuthTokenHolder.instance.userInitials,
-                        style: GoogleFonts.plusJakartaSans(
-                          fontSize: 13.0,
-                          fontWeight: FontWeight.w700,
-                          color: AppColors.brand,
-                        ),
-                      )
-                    : const Icon(
-                        Icons.person_rounded,
-                        size: 20.0,
-                        color: AppColors.brand,
-                      ),
               ),
             ),
           ),
+          destinations: const [
+            NavigationRailDestination(
+              icon: Icon(Icons.people_outline_rounded),
+              selectedIcon: Icon(Icons.people_rounded),
+              label: Text('Pelanggan'),
+            ),
+            NavigationRailDestination(
+              icon: Icon(Icons.description_outlined),
+              selectedIcon: Icon(Icons.description_rounded),
+              label: Text('Proposal'),
+            ),
+            NavigationRailDestination(
+              icon: Icon(Icons.folder_outlined),
+              selectedIcon: Icon(Icons.folder_rounded),
+              label: Text('Kontrak'),
+            ),
+          ],
         ),
       ),
-      destinations: const [
-        NavigationRailDestination(
-          icon: Icon(Icons.people_outline_rounded),
-          selectedIcon: Icon(Icons.people_rounded),
-          label: Text('Pelanggan'),
-        ),
-        NavigationRailDestination(
-          icon: Icon(Icons.description_outlined),
-          selectedIcon: Icon(Icons.description_rounded),
-          label: Text('Proposal'),
-        ),
-        NavigationRailDestination(
-          icon: Icon(Icons.folder_outlined),
-          selectedIcon: Icon(Icons.folder_rounded),
-          label: Text('Kontrak'),
-        ),
-      ],
     );
   }
 

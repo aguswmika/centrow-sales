@@ -1,5 +1,6 @@
 import 'package:centrow_sales/modules/core/repositories/dtos/token_dto.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:centrow_sales/app/app.dart';
@@ -287,6 +288,28 @@ void main() {
       // Verify token cleared and routed to login page
       expect(AuthTokenHolder.instance.hasToken, isFalse);
       expect(find.text('Centrow Sales'), findsOneWidget);
+    },
+  );
+
+  testWidgets(
+    'NavRailShell respects top safe area padding to prevent status bar overlap',
+    (tester) async {
+      tester.view.physicalSize = const Size(1200, 900);
+      tester.view.devicePixelRatio = 1.0;
+      tester.view.padding = const FakeViewPadding(top: 40.0, bottom: 20.0);
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+      addTearDown(tester.view.resetPadding);
+
+      final router = createRouter(initialLocation: '/customers');
+      await tester.pumpWidget(CentrowSalesApp(routerConfig: router));
+      await tester.pumpAndSettle();
+
+      expect(find.byType(NavigationRail), findsOneWidget);
+      final logoFinder = find.byWidgetPredicate((w) => w is SvgPicture);
+      expect(logoFinder, findsOneWidget);
+      final logoTopLeft = tester.getTopLeft(logoFinder);
+      expect(logoTopLeft.dy, greaterThanOrEqualTo(40.0));
     },
   );
 }

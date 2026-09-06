@@ -17,12 +17,14 @@ class AppSegmentedControl<T> extends StatelessWidget {
   final double height;
   final Duration animationDuration;
   final Curve animationCurve;
+  final bool isScrollable;
 
   const AppSegmentedControl({
     super.key,
     required this.items,
     required this.selectedValue,
     required this.onValueChanged,
+    this.isScrollable = false,
     this.height = 36.0,
     this.animationDuration = const Duration(milliseconds: 220),
     this.animationCurve = Curves.easeInOutCubic,
@@ -34,6 +36,10 @@ class AppSegmentedControl<T> extends StatelessWidget {
       (item) => item.value == selectedValue,
     );
     final validIndex = selectedIndex >= 0 ? selectedIndex : 0;
+
+    if (isScrollable) {
+      return _buildScrollable(context);
+    }
 
     return Container(
       height: height,
@@ -113,6 +119,68 @@ class AppSegmentedControl<T> extends StatelessWidget {
             ],
           );
         },
+      ),
+    );
+  }
+
+  Widget _buildScrollable(BuildContext context) {
+    return Container(
+      height: height,
+      padding: const EdgeInsets.all(3.0),
+      decoration: BoxDecoration(
+        color: AppColors.subtle,
+        borderRadius: AppRadius.borderMd,
+        border: Border.all(color: AppColors.border, width: 1.5),
+      ),
+      child: SingleChildScrollView(
+        scrollDirection: Axis.horizontal,
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: items.map((item) {
+            final isSelected = item.value == selectedValue;
+            return Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 2.0),
+              child: Material(
+                color: Colors.transparent,
+                child: InkWell(
+                  onTap: () => onValueChanged(item.value),
+                  borderRadius: AppRadius.borderSm,
+                  child: AnimatedContainer(
+                    duration: animationDuration,
+                    curve: animationCurve,
+                    padding: const EdgeInsets.symmetric(horizontal: 12.0),
+                    alignment: Alignment.center,
+                    decoration: BoxDecoration(
+                      color: isSelected
+                          ? AppColors.surface
+                          : Colors.transparent,
+                      borderRadius: AppRadius.borderSm,
+                      boxShadow: isSelected
+                          ? const [
+                              BoxShadow(
+                                color: Color(0x14000000),
+                                offset: Offset(0, 1.5),
+                                blurRadius: 4.0,
+                              ),
+                            ]
+                          : null,
+                    ),
+                    child: Text(
+                      item.label,
+                      style: GoogleFonts.inter(
+                        fontSize: 12.0,
+                        fontWeight: isSelected
+                            ? FontWeight.w700
+                            : FontWeight.w600,
+                        color: isSelected ? AppColors.brand : AppColors.sec,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            );
+          }).toList(),
+        ),
       ),
     );
   }

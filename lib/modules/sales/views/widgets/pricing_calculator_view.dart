@@ -17,11 +17,13 @@ import 'pricing_calculator/pricing_settings_card.dart';
 class PricingCalculatorView extends StatefulWidget {
   final Proposal proposal;
   final PricingCalculatorController calculatorController;
+  final bool? isReadOnly;
 
   const PricingCalculatorView({
     super.key,
     required this.proposal,
     required this.calculatorController,
+    this.isReadOnly,
   });
 
   @override
@@ -30,6 +32,9 @@ class PricingCalculatorView extends StatefulWidget {
 
 class _PricingCalculatorViewState extends State<PricingCalculatorView> {
   int _activeTab = 0;
+
+  bool get _isReadOnly =>
+      widget.isReadOnly ?? !widget.proposal.status.canEditPricing;
 
   @override
   Widget build(BuildContext context) {
@@ -88,6 +93,7 @@ class _PricingCalculatorViewState extends State<PricingCalculatorView> {
         _PreviewActionBar(
           proposal: widget.proposal,
           controller: widget.calculatorController,
+          isReadOnly: _isReadOnly,
         ),
       ],
     );
@@ -110,8 +116,13 @@ class _PricingCalculatorViewState extends State<PricingCalculatorView> {
 class _PreviewActionBar extends StatelessWidget {
   final Proposal proposal;
   final PricingCalculatorController controller;
+  final bool isReadOnly;
 
-  const _PreviewActionBar({required this.proposal, required this.controller});
+  const _PreviewActionBar({
+    required this.proposal,
+    required this.controller,
+    this.isReadOnly = false,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -125,14 +136,14 @@ class _PreviewActionBar extends StatelessWidget {
         builder: (context) {
           final isLoading = controller.previewState.value is UiLoading;
           return AppButton(
-            text: 'Lihat Ringkasan',
+            text: isReadOnly ? 'Kalkulasi Terkunci' : 'Lihat Ringkasan',
             isLoading: isLoading,
-            icon: const Icon(
-              Icons.arrow_forward,
+            icon: Icon(
+              isReadOnly ? Icons.lock_outline : Icons.arrow_forward,
               size: 18,
               color: Colors.white,
             ),
-            onPressed: isLoading
+            onPressed: (isLoading || isReadOnly)
                 ? null
                 : () async {
                     await controller.previewPricing(proposal.id);

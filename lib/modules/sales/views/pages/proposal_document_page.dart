@@ -1,11 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:signals/signals_flutter.dart';
 import 'package:centrow_sales/app/di.dart';
 import 'package:centrow_sales/modules/sales/controllers/proposal_document_controller.dart';
+import 'package:centrow_sales/modules/sales/entities/proposal.dart';
 import 'package:centrow_sales/modules/sales/entities/proposal_document.dart';
+import 'package:centrow_sales/modules/sales/repositories/proposal_repository.dart';
 import 'package:centrow_sales/modules/sales/views/widgets/custom_tiptap_toolbar.dart';
 import 'package:centrow_sales/modules/sales/views/widgets/webview_tiptap_editor.dart';
+import 'package:centrow_sales/shared/result/result.dart';
 import 'package:centrow_sales/shared/state/ui_state.dart';
 import 'package:centrow_sales/shared/theme/app_colors.dart';
 import 'package:centrow_sales/shared/widgets/app_button.dart';
@@ -14,8 +18,13 @@ import 'package:webview_flutter/webview_flutter.dart';
 
 class ProposalDocumentPage extends StatefulWidget {
   final String proposalId;
+  final Proposal? initialProposal;
 
-  const ProposalDocumentPage({super.key, required this.proposalId});
+  const ProposalDocumentPage({
+    super.key,
+    required this.proposalId,
+    this.initialProposal,
+  });
 
   @override
   State<ProposalDocumentPage> createState() => _ProposalDocumentPageState();
@@ -25,11 +34,28 @@ class _ProposalDocumentPageState extends State<ProposalDocumentPage> {
   late final _controller = getIt<ProposalDocumentController>();
   WebViewController? _webViewController;
   TiptapState? _tiptapState;
+  Proposal? _proposal;
+
+  bool get canEditDocument => _proposal?.status.canEditDocument ?? true;
 
   @override
   void initState() {
     super.initState();
+    _proposal = widget.initialProposal;
     _controller.loadDocument(widget.proposalId);
+    if (_proposal == null) {
+      _loadProposal();
+    }
+  }
+
+  Future<void> _loadProposal() async {
+    final repo = getIt<ProposalRepository>();
+    final result = await repo.getProposalById(widget.proposalId);
+    if (mounted && result is Ok<Proposal>) {
+      setState(() {
+        _proposal = result.value;
+      });
+    }
   }
 
   @override
@@ -76,29 +102,68 @@ class _ProposalDocumentPageState extends State<ProposalDocumentPage> {
                     ),
                   ),
                   const Spacer(),
-                  AppButton(
-                    text: 'Simpan',
-                    isFullWidth: false,
-                    onPressed: () async {
-                      if (_tiptapState != null) {
-                        final success = await _controller.saveDocument(
-                          widget.proposalId,
-                          _tiptapState!.json,
-                        );
-                        if (success && context.mounted) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content: Text('Dokumen berhasil disimpan'),
-                            ),
+                  if (canEditDocument) ...[
+                    AppButton(
+                      text: 'Simpan',
+                      isFullWidth: false,
+                      onPressed: () async {
+                        if (_tiptapState != null) {
+                          final success = await _controller.saveDocument(
+                            widget.proposalId,
+                            _tiptapState!.json,
                           );
+                          if (success && context.mounted) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content: Text('Dokumen berhasil disimpan'),
+                              ),
+                            );
+                          }
                         }
-                      }
-                    },
-                  ),
-                  const SizedBox(width: 8),
+                      },
+                    ),
+                    const SizedBox(width: 8),
+                  ],
                 ],
               ),
             ),
+            if (!canEditDocument && _proposal != null)
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16.0,
+                  vertical: 10.0,
+                ),
+                decoration: const BoxDecoration(
+                  color: Color(0x24BC7B43),
+                  border: Border(
+                    bottom: BorderSide(
+                      color: Color(0x4DBC7B43),
+                      width: 1.0,
+                    ),
+                  ),
+                ),
+                child: Row(
+                  children: [
+                    const Icon(
+                      Icons.lock_outline,
+                      size: 20.0,
+                      color: Color(0xFF92580F),
+                    ),
+                    const SizedBox(width: 10.0),
+                    Expanded(
+                      child: Text(
+                        'Proposal ini berstatus ${_proposal!.status.displayName}. Dokumen hanya dapat dibaca dan tidak dapat diubah.',
+                        style: GoogleFonts.inter(
+                          fontSize: 13.0,
+                          color: const Color(0xFF92580F),
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
             // Content
             Expanded(
               child: SignalBuilder(
@@ -143,25 +208,32 @@ class _ProposalDocumentPageState extends State<ProposalDocumentPage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            if (_webViewController != null && _tiptapState != null)
+            if (canEditDocument &&
+                _webViewController != null &&
+                _tiptapState != null) ...[
               CustomTiptapToolbar(
                 controller: _webViewController!,
                 state: _tiptapState!,
                 placeholders: doc.placeholders,
               ),
-            const Divider(
-              height: 1,
-              color: AppColors.border,
-              indent: 0,
-              endIndent: 0,
-            ),
+              const Divider(
+                height: 1,
+                color: AppColors.border,
+                indent: 0,
+                endIndent: 0,
+              ),
+            ],
             Expanded(
               child: ClipRRect(
-                borderRadius: const BorderRadius.vertical(
-                  bottom: Radius.circular(12),
+                borderRadius: BorderRadius.vertical(
+                  top: canEditDocument
+                      ? Radius.zero
+                      : const Radius.circular(12),
+                  bottom: const Radius.circular(12),
                 ),
                 child: WebviewTiptapEditor(
                   initialJson: doc.content,
+                  isEditable: canEditDocument,
                   onStateChange: (state) {
                     if (mounted) {
                       setState(() {

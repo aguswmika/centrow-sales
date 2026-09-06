@@ -175,20 +175,26 @@ class ProposalDetailPane extends StatelessWidget {
                 height: 40.0,
                 isFullWidth: false,
                 borderRadius: AppRadius.borderMd,
-                icon: const Icon(
+                icon: Icon(
                   Icons.calculate_outlined,
                   size: 16.0,
-                  color: AppColors.text,
+                  color: proposal.status.canEditPricing
+                      ? AppColors.text
+                      : AppColors.muted,
                 ),
-                onPressed: onOpenCalculator,
+                onPressed: proposal.status.canEditPricing
+                    ? onOpenCalculator
+                    : null,
               ),
               AppButton.secondary(
                 text: 'Dokumen',
                 height: 40.0,
                 isFullWidth: false,
                 borderRadius: AppRadius.borderMd,
-                icon: const Icon(
-                  Icons.edit_document,
+                icon: Icon(
+                  proposal.status.canEditDocument
+                      ? Icons.edit_document
+                      : Icons.description_outlined,
                   size: 16.0,
                   color: AppColors.text,
                 ),
@@ -622,11 +628,24 @@ class ProposalDetailPane extends StatelessWidget {
               style: GoogleFonts.inter(fontSize: 14.0, color: AppColors.muted),
             ),
             const SizedBox(height: 24.0),
-            AppButton(
-              text: 'Buat Kalkulasi Harga',
-              onPressed: onOpenCalculator,
-              isFullWidth: false,
-            ),
+            if (proposal.status.canEditPricing)
+              AppButton(
+                text: 'Buat Kalkulasi Harga',
+                onPressed: onOpenCalculator,
+                isFullWidth: false,
+              )
+            else
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 24.0),
+                child: Text(
+                  'Kalkulasi harga tidak dapat dibuat karena proposal telah ${proposal.status.displayName.toLowerCase()}.',
+                  style: GoogleFonts.inter(
+                    fontSize: 13.0,
+                    color: AppColors.muted,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+              ),
           ],
         ),
       );

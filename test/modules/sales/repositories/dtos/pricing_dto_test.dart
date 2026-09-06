@@ -88,10 +88,9 @@ void main() {
         final workersList = json['workers'] as List<dynamic>;
         expect(workersList.length, 1);
         expect(workersList[0], {
-          'position_name': 'Technician',
+          'product_id': 'prod-tech',
           'first_visit_hours': 2.0,
           'routine_hours': 1.5,
-          'hourly_rate': 75000.0,
         });
 
         final itemsList = json['items'] as List<dynamic>;

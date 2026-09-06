@@ -83,7 +83,7 @@ void main() {
 
   test('savePricing returns Ok(null) on 200/201 response', () async {
     mockAdapter.handler = (options) {
-      expect(options.path, '/v1/sales/pricings');
+      expect(options.path, '/v1/sales/proposals/prop-123/pricing');
       expect(options.method, 'POST');
       final body = jsonEncode({'message': 'Success'});
       return ResponseBody.fromString(

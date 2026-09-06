@@ -438,11 +438,18 @@ class _ProposalPageState extends State<ProposalPage> {
                   ? () => _handleCancelProposal(selectedProp)
                   : null,
               isActionLoading: _controller.actionState.value is UiLoading,
-              onOpenCalculator: selectedId.isNotEmpty
-                  ? () => context.go('/proposals/$selectedId/pricing')
+              onOpenCalculator: (selectedId.isNotEmpty &&
+                      (selectedProp?.status.canEditPricing ?? true))
+                  ? () => context.go(
+                        '/proposals/$selectedId/pricing',
+                        extra: selectedProp,
+                      )
                   : null,
               onOpenDocument: selectedId.isNotEmpty
-                  ? () => context.go('/proposals/$selectedId/document')
+                  ? () => context.go(
+                        '/proposals/$selectedId/document',
+                        extra: selectedProp,
+                      )
                   : null,
               onRetry: () => _controller.loadProposalDetail(selectedId),
             ),

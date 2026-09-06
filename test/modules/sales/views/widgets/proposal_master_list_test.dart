@@ -63,10 +63,7 @@ void main() {
     );
 
     expect(find.text('Daftar Proposal'), findsOneWidget);
-    expect(
-      find.text('2 proposal aktif dalam pipeline penawaran'),
-      findsOneWidget,
-    );
+    expect(find.text('2 proposal'), findsOneWidget);
     expect(find.text('Villa Sari Dewi'), findsOneWidget);
     expect(find.text('Hotel Surya Kuta'), findsOneWidget);
     expect(find.text('Terkirim'), findsWidgets);

@@ -85,6 +85,22 @@ void main() {
       expect(ProposalStatus.sent.canEdit, isFalse);
       expect(ProposalStatus.accepted.canEdit, isFalse);
 
+      // canEditPricing (only draft can edit pricing directly)
+      expect(ProposalStatus.draft.canEditPricing, isTrue);
+      expect(ProposalStatus.sent.canEditPricing, isFalse);
+      expect(ProposalStatus.accepted.canEditPricing, isFalse);
+      expect(ProposalStatus.rejected.canEditPricing, isFalse);
+      expect(ProposalStatus.expired.canEditPricing, isFalse);
+      expect(ProposalStatus.cancelled.canEditPricing, isFalse);
+
+      // canEditDocument (blocked only when expired or cancelled)
+      expect(ProposalStatus.draft.canEditDocument, isTrue);
+      expect(ProposalStatus.sent.canEditDocument, isTrue);
+      expect(ProposalStatus.accepted.canEditDocument, isTrue);
+      expect(ProposalStatus.rejected.canEditDocument, isTrue);
+      expect(ProposalStatus.expired.canEditDocument, isFalse);
+      expect(ProposalStatus.cancelled.canEditDocument, isFalse);
+
       // canRevise
       expect(ProposalStatus.draft.canRevise, isFalse);
       expect(ProposalStatus.sent.canRevise, isTrue);
