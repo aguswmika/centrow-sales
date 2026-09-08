@@ -42,6 +42,10 @@ class CustomerLocation {
   final bool isPrimary;
   final String label;
   final String addressLine;
+  final int? provinceId;
+  final int? regencyId;
+  final int? districtId;
+  final int? villageId;
   final String village;
   final String district;
   final String regency;
@@ -56,6 +60,10 @@ class CustomerLocation {
     this.isPrimary = false,
     this.label = '',
     this.addressLine = '',
+    this.provinceId,
+    this.regencyId,
+    this.districtId,
+    this.villageId,
     this.village = '',
     this.district = '',
     this.regency = '',
@@ -90,6 +98,10 @@ class CustomerLocation {
     bool? isPrimary,
     String? label,
     String? addressLine,
+    int? provinceId,
+    int? regencyId,
+    int? districtId,
+    int? villageId,
     String? village,
     String? district,
     String? regency,
@@ -104,6 +116,10 @@ class CustomerLocation {
       isPrimary: isPrimary ?? this.isPrimary,
       label: label ?? this.label,
       addressLine: addressLine ?? this.addressLine,
+      provinceId: provinceId ?? this.provinceId,
+      regencyId: regencyId ?? this.regencyId,
+      districtId: districtId ?? this.districtId,
+      villageId: villageId ?? this.villageId,
       village: village ?? this.village,
       district: district ?? this.district,
       regency: regency ?? this.regency,
@@ -124,6 +140,10 @@ class CustomerLocation {
           isPrimary == other.isPrimary &&
           label == other.label &&
           addressLine == other.addressLine &&
+          provinceId == other.provinceId &&
+          regencyId == other.regencyId &&
+          districtId == other.districtId &&
+          villageId == other.villageId &&
           village == other.village &&
           district == other.district &&
           regency == other.regency &&
@@ -139,6 +159,10 @@ class CustomerLocation {
     isPrimary,
     label,
     addressLine,
+    provinceId,
+    regencyId,
+    districtId,
+    villageId,
     village,
     district,
     regency,

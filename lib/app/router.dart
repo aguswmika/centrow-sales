@@ -12,7 +12,9 @@ import 'package:centrow_sales/modules/sales/views/pages/pricing_preview_page.dar
 import 'package:centrow_sales/modules/sales/views/pages/proposal_document_page.dart';
 import 'package:centrow_sales/shared/network/auth_token_holder.dart';
 import 'package:centrow_sales/shared/widgets/nav_rail_shell.dart';
+import 'package:centrow_sales/modules/sales/entities/contract.dart';
 import 'package:centrow_sales/modules/sales/views/pages/contract_page.dart';
+import 'package:centrow_sales/modules/sales/views/pages/contract_document_page.dart';
 
 GoRouter createRouter({String? initialLocation}) => GoRouter(
   initialLocation:
@@ -134,13 +136,29 @@ GoRouter createRouter({String? initialLocation}) => GoRouter(
               builder: (context, state) {
                 final extra = state.extra;
                 String? id;
+                Key? pageKey;
                 if (extra is String) {
                   id = extra;
                 } else if (extra is Map<String, dynamic>) {
                   id = extra['id'] as String?;
+                  if (extra['refresh'] == true) {
+                    pageKey = UniqueKey();
+                  }
                 }
-                return ContractPage(initialContractId: id);
+                return ContractPage(key: pageKey, initialContractId: id);
               },
+              routes: [
+                GoRoute(
+                  path: ':id/document',
+                  name: 'contract-document',
+                  builder: (context, state) => ContractDocumentPage(
+                    contractId: state.pathParameters['id']!,
+                    initialContract: state.extra is Contract
+                        ? state.extra as Contract
+                        : null,
+                  ),
+                ),
+              ],
             ),
           ],
         ),

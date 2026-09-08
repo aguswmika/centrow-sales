@@ -57,100 +57,63 @@ void main() {
     ],
   );
 
-  testWidgets(
-    'ProposalDetailPane renders header, tabs, pricing list, and sidebar',
-    (tester) async {
-      tester.view.physicalSize = const Size(1000, 800);
-      tester.view.devicePixelRatio = 1.0;
-      addTearDown(tester.view.resetPhysicalSize);
-      addTearDown(tester.view.resetDevicePixelRatio);
+  testWidgets('ProposalDetailPane renders header, general info, and actions', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(1000, 800);
+    tester.view.devicePixelRatio = 1.0;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
 
-      int currentDetailTab = 0;
-      int currentPricingTab = 0;
-      bool exportPdfClicked = false;
-      bool calculatorClicked = false;
+    bool exportPdfClicked = false;
+    bool calculatorClicked = false;
 
-      await tester.pumpWidget(
-        MaterialApp(
-          home: Scaffold(
-            body: StatefulBuilder(
-              builder: (context, setState) {
-                return ProposalDetailPane(
-                  proposal: sampleProposal,
-                  activeDetailTab: currentDetailTab,
-                  onDetailTabChanged: (tab) =>
-                      setState(() => currentDetailTab = tab),
-                  activePricingTab: currentPricingTab,
-                  onPricingTabChanged: (tab) =>
-                      setState(() => currentPricingTab = tab),
-                  onExportPdf: () => exportPdfClicked = true,
-                  onOpenCalculator: () => calculatorClicked = true,
-                );
-              },
-            ),
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Scaffold(
+          body: ProposalDetailPane(
+            proposal: sampleProposal,
+            onExportPdf: () => exportPdfClicked = true,
+            onOpenCalculator: () => calculatorClicked = true,
           ),
         ),
-      );
+      ),
+    );
 
-      // Verify Header
-      expect(find.text('PRO-2026-0042 · Villa Sari Dewi'), findsOneWidget);
-      expect(find.text('Termite Protection Plan'), findsOneWidget);
-      expect(find.text('Versi 1'), findsOneWidget);
-      expect(find.text('Status: Terkirim'), findsOneWidget);
-      expect(find.text('Pricing'), findsOneWidget);
-      expect(find.text('Dokumen'), findsOneWidget);
-      expect(find.text('Aksi'), findsOneWidget);
-      expect(find.text('Ekspor PDF'), findsNothing);
+    // Verify Header
+    expect(find.text('PRO-2026-0042 · Villa Sari Dewi'), findsOneWidget);
+    expect(find.text('Termite Protection Plan'), findsOneWidget);
+    expect(find.text('Versi 1'), findsOneWidget);
+    expect(find.text('Status: Terkirim'), findsOneWidget);
+    expect(find.text('Pricing'), findsOneWidget);
+    expect(find.text('Dokumen'), findsOneWidget);
+    expect(find.text('Aksi'), findsOneWidget);
+    expect(find.text('Ekspor PDF'), findsNothing);
 
-      // Verify Top Level Tabs
-      expect(find.text('Informasi Umum'), findsOneWidget);
-      expect(find.text('Rincian Kalkulasi'), findsOneWidget);
+    // For sent proposal, Dokumen button icon is Icons.description_outlined
+    expect(find.byIcon(Icons.description_outlined), findsOneWidget);
+    expect(find.byIcon(Icons.edit_document), findsNothing);
 
-      // Verify General Info Tab
-      expect(find.text('TANGGAL PROPOSAL'), findsOneWidget);
-      expect(find.text('12 Agt 2026'), findsOneWidget);
-      expect(find.text('MASA BERLAKU'), findsOneWidget);
-      expect(find.text('12 Sep 2026'), findsOneWidget);
-      expect(find.text('LOKASI PROPERTI'), findsOneWidget);
-      expect(find.text('Villa Utama Seminyak'), findsOneWidget);
-      expect(find.text('Catatan Proposal'), findsOneWidget);
+    // Verify General Info Tab
+    expect(find.text('TANGGAL PROPOSAL'), findsOneWidget);
+    expect(find.text('12 Agt 2026'), findsOneWidget);
+    expect(find.text('MASA BERLAKU'), findsOneWidget);
+    expect(find.text('12 Sep 2026'), findsOneWidget);
+    expect(find.text('LOKASI PROPERTI'), findsOneWidget);
+    expect(find.text('Villa Utama Seminyak'), findsOneWidget);
+    expect(find.text('Catatan Proposal'), findsOneWidget);
 
-      // Change top level tab to Kalkulasi
-      await tester.tap(find.text('Rincian Kalkulasi'));
-      await tester.pumpAndSettle();
+    // Test Action Buttons
+    await tester.tap(find.text('Aksi'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Ekspor PDF'));
+    await tester.pumpAndSettle();
+    expect(exportPdfClicked, isTrue);
 
-      // Verify Pricing Breakdown Tab 0 (Persiapan)
-      expect(find.text('Ficam W (25kg)'), findsOneWidget);
-      expect(find.text('Rp 760.000'), findsOneWidget);
-
-      // Verify Financial Summary Sidebar
-      expect(find.text('TOTAL NILAI PROPOSAL'), findsWidgets);
-      expect(find.text('Rp 8.158.500'), findsWidgets);
-      expect(find.text('Rincian Finansial Proposal'), findsOneWidget);
-      expect(find.text('Total Biaya Modal (COGS)'), findsOneWidget);
-      expect(find.text('Rp 5.480.000'), findsOneWidget);
-      expect(find.text('Metrik Profitabilitas'), findsOneWidget);
-      expect(find.text('20.0%'), findsOneWidget);
-      expect(find.text('Rp 1,37jt'), findsOneWidget);
-
-      // Test tab change to Teknisi
-      await tester.tap(find.text('2. Tenaga Kerja'));
-      await tester.pumpAndSettle();
-      expect(find.text('Teknisi Senior (Lead Operator)'), findsOneWidget);
-      expect(find.text('Rp 990.000'), findsOneWidget);
-
-      // Test Action Buttons
-      await tester.tap(find.text('Aksi'));
-      await tester.pumpAndSettle();
-      await tester.tap(find.text('Ekspor PDF'));
-      await tester.pumpAndSettle();
-      expect(exportPdfClicked, isTrue);
-
-      await tester.tap(find.text('Pricing'));
-      // Pricing is disabled for sent proposals (only draft can edit pricing)
-      expect(calculatorClicked, isFalse);
-    },
-  );
+    await tester.tap(find.text('Pricing'));
+    // With view-only pricing enabled for non-drafts with hasPricing == true, this button is now enabled
+    expect(calculatorClicked, isTrue);
+  });
 
   testWidgets(
     'ProposalDetailPane renders draft action buttons and fires callbacks',
@@ -175,10 +138,6 @@ void main() {
           home: Scaffold(
             body: ProposalDetailPane(
               proposal: draftProposal,
-              activeDetailTab: 0,
-              onDetailTabChanged: _noop,
-              activePricingTab: 0,
-              onPricingTabChanged: _noop,
               onSendProposal: () => sendClicked = true,
               onEditProposal: () => editClicked = true,
               onExportPdf: () => exportPdfClicked = true,
@@ -193,6 +152,10 @@ void main() {
       expect(find.text('Pricing'), findsOneWidget);
       expect(find.text('Dokumen'), findsOneWidget);
       expect(find.text('Aksi'), findsOneWidget);
+
+      // In draft status, Dokumen button shows Icons.edit_document
+      expect(find.byIcon(Icons.edit_document), findsOneWidget);
+      expect(find.byIcon(Icons.description_outlined), findsNothing);
 
       // In draft status, Pricing button is enabled
       await tester.tap(find.text('Pricing'));
@@ -266,10 +229,6 @@ void main() {
           home: Scaffold(
             body: ProposalDetailPane(
               proposal: sentProposal,
-              activeDetailTab: 0,
-              onDetailTabChanged: _noop,
-              activePricingTab: 0,
-              onPricingTabChanged: _noop,
               onAcceptProposal: () => acceptClicked = true,
               onRejectProposal: () => rejectClicked = true,
               onReviseProposal: () => reviseClicked = true,
@@ -287,9 +246,13 @@ void main() {
       expect(find.text('Dokumen'), findsOneWidget);
       expect(find.text('Aksi'), findsOneWidget);
 
-      // In sent status, Pricing button is disabled
+      // In sent status, Dokumen button shows Icons.description_outlined (read-only)
+      expect(find.byIcon(Icons.description_outlined), findsOneWidget);
+      expect(find.byIcon(Icons.edit_document), findsNothing);
+
+      // In sent status with hasPricing == true, Pricing button is enabled (view-only)
       await tester.tap(find.text('Pricing'));
-      expect(calculatorClicked, isFalse);
+      expect(calculatorClicked, isTrue);
 
       // Actions should not be visible directly
       expect(find.text('Terima Proposal'), findsNothing);
@@ -364,15 +327,7 @@ void main() {
 
     await tester.pumpWidget(
       MaterialApp(
-        home: Scaffold(
-          body: ProposalDetailPane(
-            proposal: rejectedProposal,
-            activeDetailTab: 0,
-            onDetailTabChanged: _noop,
-            activePricingTab: 0,
-            onPricingTabChanged: _noop,
-          ),
-        ),
+        home: Scaffold(body: ProposalDetailPane(proposal: rejectedProposal)),
       ),
     );
 
@@ -387,15 +342,7 @@ void main() {
     (tester) async {
       await tester.pumpWidget(
         const MaterialApp(
-          home: Scaffold(
-            body: ProposalDetailPane(
-              proposal: null,
-              activeDetailTab: 0,
-              onDetailTabChanged: _noop,
-              activePricingTab: 0,
-              onPricingTabChanged: _noop,
-            ),
-          ),
+          home: Scaffold(body: ProposalDetailPane(proposal: null)),
         ),
       );
 
@@ -414,10 +361,6 @@ void main() {
           home: Scaffold(
             body: ProposalDetailPane(
               proposal: sampleProposal,
-              activeDetailTab: 0,
-              onDetailTabChanged: _noop,
-              activePricingTab: 0,
-              onPricingTabChanged: _noop,
               isActionLoading: true,
             ),
           ),
@@ -437,10 +380,6 @@ void main() {
           home: Scaffold(
             body: ProposalDetailPane(
               proposal: sampleProposal,
-              activeDetailTab: 0,
-              onDetailTabChanged: _noop,
-              activePricingTab: 0,
-              onPricingTabChanged: _noop,
               isExportingPdf: true,
             ),
           ),
@@ -461,10 +400,6 @@ void main() {
         home: Scaffold(
           body: ProposalDetailPane(
             proposal: sampleProposal,
-            activeDetailTab: 0,
-            onDetailTabChanged: _noop,
-            activePricingTab: 0,
-            onPricingTabChanged: _noop,
             onOpenDocument: () => docClicked = true,
           ),
         ),
@@ -474,6 +409,97 @@ void main() {
     await tester.tap(find.text('Dokumen'));
     expect(docClicked, isTrue);
   });
-}
 
-void _noop(int _) {}
+  testWidgets(
+    'ProposalDetailPane renders Buat Kontrak button for accepted proposal and triggers callback',
+    (tester) async {
+      tester.view.physicalSize = const Size(1200, 800);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+
+      bool contractClicked = false;
+      final acceptedProposal = sampleProposal.copyWith(
+        status: ProposalStatus.accepted,
+      );
+
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: ProposalDetailPane(
+              proposal: acceptedProposal,
+              onCreateContract: () => contractClicked = true,
+            ),
+          ),
+        ),
+      );
+
+      // "Buat Kontrak" button is visible in header actions
+      expect(find.text('Buat Kontrak'), findsOneWidget);
+
+      // Tap "Buat Kontrak" button
+      await tester.tap(find.text('Buat Kontrak'));
+      expect(contractClicked, isTrue);
+    },
+  );
+
+  testWidgets(
+    'ProposalDetailPane disables Pricing button for non-draft proposal with hasPricing: false',
+    (tester) async {
+      tester.view.physicalSize = const Size(1200, 800);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+
+      bool calculatorClicked = false;
+      final proposal = sampleProposal.copyWith(
+        status: ProposalStatus.sent,
+        hasPricing: false,
+      );
+
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: ProposalDetailPane(
+              proposal: proposal,
+              onOpenCalculator: () => calculatorClicked = true,
+            ),
+          ),
+        ),
+      );
+
+      await tester.tap(find.text('Pricing'));
+      expect(calculatorClicked, isFalse);
+    },
+  );
+
+  testWidgets(
+    'ProposalDetailPane enables Pricing button for draft proposal with hasPricing: false',
+    (tester) async {
+      tester.view.physicalSize = const Size(1200, 800);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+
+      bool calculatorClicked = false;
+      final proposal = sampleProposal.copyWith(
+        status: ProposalStatus.draft,
+        hasPricing: false,
+      );
+
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: ProposalDetailPane(
+              proposal: proposal,
+              onOpenCalculator: () => calculatorClicked = true,
+            ),
+          ),
+        ),
+      );
+
+      await tester.tap(find.text('Pricing'));
+      expect(calculatorClicked, isTrue);
+    },
+  );
+}

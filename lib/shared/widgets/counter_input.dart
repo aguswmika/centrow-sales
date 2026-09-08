@@ -7,6 +7,7 @@ class CounterInput extends StatefulWidget {
   final ValueChanged<double> onChanged;
   final double? min;
   final double? max;
+  final bool enabled;
 
   const CounterInput({
     super.key,
@@ -14,6 +15,7 @@ class CounterInput extends StatefulWidget {
     required this.onChanged,
     this.min,
     this.max,
+    this.enabled = true,
   });
 
   @override
@@ -99,8 +101,8 @@ class _CounterInputState extends State<CounterInput> {
       children: [
         _CounterButton(
           icon: Icons.remove_rounded,
-          color: AppColors.err,
-          onPressed: () => _updateValue(_value - 1),
+          color: widget.enabled ? AppColors.err : AppColors.muted,
+          onPressed: widget.enabled ? () => _updateValue(_value - 1) : () {},
         ),
         Expanded(
           child: Container(
@@ -114,12 +116,13 @@ class _CounterInputState extends State<CounterInput> {
             child: TextField(
               controller: _controller,
               focusNode: _focusNode,
+              enabled: widget.enabled,
               textAlign: TextAlign.center,
               textAlignVertical: TextAlignVertical.center,
-              style: const TextStyle(
+              style: TextStyle(
                 fontWeight: FontWeight.w700,
                 fontSize: 13.0,
-                color: AppColors.text,
+                color: widget.enabled ? AppColors.text : AppColors.muted,
               ),
               keyboardType: const TextInputType.numberWithOptions(
                 decimal: true,
@@ -141,8 +144,8 @@ class _CounterInputState extends State<CounterInput> {
         ),
         _CounterButton(
           icon: Icons.add_rounded,
-          color: AppColors.success,
-          onPressed: () => _updateValue(_value + 1),
+          color: widget.enabled ? AppColors.success : AppColors.muted,
+          onPressed: widget.enabled ? () => _updateValue(_value + 1) : () {},
         ),
       ],
     );

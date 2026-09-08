@@ -7,8 +7,13 @@ import 'package:centrow_sales/modules/sales/controllers/pricing_calculator_contr
 
 class PricingSettingsCard extends StatelessWidget {
   final PricingCalculatorController controller;
+  final bool isReadOnly;
 
-  const PricingSettingsCard({super.key, required this.controller});
+  const PricingSettingsCard({
+    super.key,
+    required this.controller,
+    this.isReadOnly = false,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -60,7 +65,9 @@ class PricingSettingsCard extends StatelessWidget {
                               horizontal: 10.0,
                             ),
                             decoration: BoxDecoration(
-                              color: AppColors.subtle,
+                              color: isReadOnly
+                                  ? AppColors.border.withValues(alpha: 0.3)
+                                  : AppColors.subtle,
                               border: Border.all(
                                 color: AppColors.border,
                                 width: 1.5,
@@ -89,12 +96,14 @@ class PricingSettingsCard extends StatelessWidget {
                                         child: Text('Nominal (Rp)'),
                                       ),
                                     ],
-                                    onChanged: (v) {
-                                      if (v != null) {
-                                        controller.markupType.value =
-                                            int.tryParse(v) ?? 1;
-                                      }
-                                    },
+                                    onChanged: isReadOnly
+                                        ? null
+                                        : (v) {
+                                            if (v != null) {
+                                              controller.markupType.value =
+                                                  int.tryParse(v) ?? 1;
+                                            }
+                                          },
                                   ),
                                 );
                               },
@@ -109,31 +118,43 @@ class PricingSettingsCard extends StatelessWidget {
                             child: TextFormField(
                               initialValue: controller.markupPercent.value
                                   .toString(),
+                              enabled: !isReadOnly,
                               textAlign: TextAlign.right,
                               keyboardType: TextInputType.number,
                               onChanged: (val) {
                                 controller.markupPercent.value =
                                     double.tryParse(val) ?? 0.0;
                               },
-                              style: const TextStyle(
+                              style: TextStyle(
                                 fontSize: 13.0,
                                 fontWeight: FontWeight.w700,
-                                color: AppColors.text,
+                                color: isReadOnly
+                                    ? AppColors.muted
+                                    : AppColors.text,
                               ),
-                              decoration: const InputDecoration(
+                              decoration: InputDecoration(
                                 filled: true,
-                                fillColor: AppColors.subtle,
-                                contentPadding: EdgeInsets.symmetric(
+                                fillColor: isReadOnly
+                                    ? AppColors.border.withValues(alpha: 0.3)
+                                    : AppColors.subtle,
+                                contentPadding: const EdgeInsets.symmetric(
                                   horizontal: 8.0,
                                 ),
-                                border: OutlineInputBorder(
+                                border: const OutlineInputBorder(
                                   borderRadius: AppRadius.borderSm,
                                   borderSide: BorderSide(
                                     color: AppColors.border,
                                     width: 1.5,
                                   ),
                                 ),
-                                enabledBorder: OutlineInputBorder(
+                                enabledBorder: const OutlineInputBorder(
+                                  borderRadius: AppRadius.borderSm,
+                                  borderSide: BorderSide(
+                                    color: AppColors.border,
+                                    width: 1.5,
+                                  ),
+                                ),
+                                disabledBorder: const OutlineInputBorder(
                                   borderRadius: AppRadius.borderSm,
                                   borderSide: BorderSide(
                                     color: AppColors.border,
@@ -170,29 +191,41 @@ class PricingSettingsCard extends StatelessWidget {
                       child: TextFormField(
                         initialValue: controller.discountAmount.value
                             .toString(),
+                        enabled: !isReadOnly,
                         textAlign: TextAlign.right,
                         keyboardType: TextInputType.number,
                         onChanged: (val) {
                           controller.discountAmount.value =
                               double.tryParse(val) ?? 0.0;
                         },
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 13.0,
                           fontWeight: FontWeight.w700,
-                          color: AppColors.text,
+                          color: isReadOnly ? AppColors.muted : AppColors.text,
                         ),
-                        decoration: const InputDecoration(
+                        decoration: InputDecoration(
                           filled: true,
-                          fillColor: AppColors.subtle,
-                          contentPadding: EdgeInsets.symmetric(horizontal: 8.0),
-                          border: OutlineInputBorder(
+                          fillColor: isReadOnly
+                              ? AppColors.border.withValues(alpha: 0.3)
+                              : AppColors.subtle,
+                          contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 8.0,
+                          ),
+                          border: const OutlineInputBorder(
                             borderRadius: AppRadius.borderSm,
                             borderSide: BorderSide(
                               color: AppColors.border,
                               width: 1.5,
                             ),
                           ),
-                          enabledBorder: OutlineInputBorder(
+                          enabledBorder: const OutlineInputBorder(
+                            borderRadius: AppRadius.borderSm,
+                            borderSide: BorderSide(
+                              color: AppColors.border,
+                              width: 1.5,
+                            ),
+                          ),
+                          disabledBorder: const OutlineInputBorder(
                             borderRadius: AppRadius.borderSm,
                             borderSide: BorderSide(
                               color: AppColors.border,
@@ -225,29 +258,41 @@ class PricingSettingsCard extends StatelessWidget {
                       height: 40.0,
                       child: TextFormField(
                         initialValue: controller.taxPercentage.value.toString(),
+                        enabled: !isReadOnly,
                         textAlign: TextAlign.right,
                         keyboardType: TextInputType.number,
                         onChanged: (val) {
                           controller.taxPercentage.value =
                               double.tryParse(val) ?? 0.0;
                         },
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 13.0,
                           fontWeight: FontWeight.w700,
-                          color: AppColors.text,
+                          color: isReadOnly ? AppColors.muted : AppColors.text,
                         ),
-                        decoration: const InputDecoration(
+                        decoration: InputDecoration(
                           filled: true,
-                          fillColor: AppColors.subtle,
-                          contentPadding: EdgeInsets.symmetric(horizontal: 8.0),
-                          border: OutlineInputBorder(
+                          fillColor: isReadOnly
+                              ? AppColors.border.withValues(alpha: 0.3)
+                              : AppColors.subtle,
+                          contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 8.0,
+                          ),
+                          border: const OutlineInputBorder(
                             borderRadius: AppRadius.borderSm,
                             borderSide: BorderSide(
                               color: AppColors.border,
                               width: 1.5,
                             ),
                           ),
-                          enabledBorder: OutlineInputBorder(
+                          enabledBorder: const OutlineInputBorder(
+                            borderRadius: AppRadius.borderSm,
+                            borderSide: BorderSide(
+                              color: AppColors.border,
+                              width: 1.5,
+                            ),
+                          ),
+                          disabledBorder: const OutlineInputBorder(
                             borderRadius: AppRadius.borderSm,
                             borderSide: BorderSide(
                               color: AppColors.border,

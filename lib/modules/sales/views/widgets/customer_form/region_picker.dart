@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:collection/collection.dart';
 import 'package:centrow_sales/app/di.dart';
 import 'package:centrow_sales/modules/core/entities/region.dart';
 import 'package:centrow_sales/modules/core/repositories/region_repository.dart';
+import 'package:centrow_sales/modules/sales/controllers/customer_form_controller.dart'
+    show isRegionMatch;
 import 'package:centrow_sales/modules/sales/entities/create_customer_input.dart';
 import 'package:centrow_sales/shared/theme/app_colors.dart';
 import 'package:centrow_sales/shared/theme/app_radius.dart';
@@ -20,6 +23,8 @@ class RegionPicker extends StatefulWidget {
 class _RegionPickerState extends State<RegionPicker> {
   final RegionRepository _regionRepository = getIt<RegionRepository>();
 
+  late CreateLocationInput _currentLocation;
+
   List<Province> _provinces = [];
   List<Regency> _regencies = [];
   List<District> _districts = [];
@@ -33,18 +38,24 @@ class _RegionPickerState extends State<RegionPicker> {
   @override
   void initState() {
     super.initState();
+    _currentLocation = widget.item;
     _fetchProvinces();
     _initCascadingData();
   }
 
+  void _updateLocation(CreateLocationInput updated) {
+    _currentLocation = updated;
+    widget.onChanged(updated);
+  }
+
   void _initCascadingData() {
-    final provinceId = widget.item.provinceId;
+    final provinceId = _currentLocation.provinceId;
     if (provinceId != null) {
       _fetchRegencies(provinceId);
-      final regencyId = widget.item.regencyId;
+      final regencyId = _currentLocation.regencyId;
       if (regencyId != null) {
         _fetchDistricts(provinceId, regencyId);
-        final districtId = widget.item.districtId;
+        final districtId = _currentLocation.districtId;
         if (districtId != null) {
           _fetchVillages(provinceId, regencyId, districtId);
         }
@@ -55,6 +66,7 @@ class _RegionPickerState extends State<RegionPicker> {
   @override
   void didUpdateWidget(covariant RegionPicker oldWidget) {
     super.didUpdateWidget(oldWidget);
+    _currentLocation = widget.item;
     if (widget.item.provinceId != oldWidget.item.provinceId) {
       final provinceId = widget.item.provinceId;
       if (provinceId != null) {
@@ -105,6 +117,21 @@ class _RegionPickerState extends State<RegionPicker> {
       _isLoadingProvinces = false;
       if (result.isOk) {
         _provinces = result.valueOrNull ?? [];
+        if (_currentLocation.provinceId == null &&
+            _currentLocation.province.isNotEmpty) {
+          final matched = _provinces.firstWhereOrNull(
+            (p) => isRegionMatch(p.name, _currentLocation.province),
+          );
+          if (matched != null) {
+            _updateLocation(
+              _currentLocation.copyWith(
+                provinceId: matched.id,
+                province: matched.name,
+              ),
+            );
+            _fetchRegencies(matched.id);
+          }
+        }
       }
     });
   }
@@ -119,6 +146,21 @@ class _RegionPickerState extends State<RegionPicker> {
       _isLoadingRegencies = false;
       if (result.isOk) {
         _regencies = result.valueOrNull ?? [];
+        if (_currentLocation.regencyId == null &&
+            _currentLocation.regency.isNotEmpty) {
+          final matched = _regencies.firstWhereOrNull(
+            (r) => isRegionMatch(r.name, _currentLocation.regency),
+          );
+          if (matched != null) {
+            _updateLocation(
+              _currentLocation.copyWith(
+                regencyId: matched.id,
+                regency: matched.name,
+              ),
+            );
+            _fetchDistricts(provinceId, matched.id);
+          }
+        }
       }
     });
   }
@@ -133,6 +175,21 @@ class _RegionPickerState extends State<RegionPicker> {
       _isLoadingDistricts = false;
       if (result.isOk) {
         _districts = result.valueOrNull ?? [];
+        if (_currentLocation.districtId == null &&
+            _currentLocation.district.isNotEmpty) {
+          final matched = _districts.firstWhereOrNull(
+            (d) => isRegionMatch(d.name, _currentLocation.district),
+          );
+          if (matched != null) {
+            _updateLocation(
+              _currentLocation.copyWith(
+                districtId: matched.id,
+                district: matched.name,
+              ),
+            );
+            _fetchVillages(provinceId, regencyId, matched.id);
+          }
+        }
       }
     });
   }
@@ -155,6 +212,20 @@ class _RegionPickerState extends State<RegionPicker> {
       _isLoadingVillages = false;
       if (result.isOk) {
         _villages = result.valueOrNull ?? [];
+        if (_currentLocation.villageId == null &&
+            _currentLocation.village.isNotEmpty) {
+          final matched = _villages.firstWhereOrNull(
+            (v) => isRegionMatch(v.name, _currentLocation.village),
+          );
+          if (matched != null) {
+            _updateLocation(
+              _currentLocation.copyWith(
+                villageId: matched.id,
+                village: matched.name,
+              ),
+            );
+          }
+        }
       }
     });
   }
@@ -169,10 +240,10 @@ class _RegionPickerState extends State<RegionPicker> {
       _districts = [];
       _villages = [];
     });
-    widget.onChanged(
+    _updateLocation(
       CreateLocationInput(
-        label: widget.item.label,
-        address: widget.item.address,
+        label: _currentLocation.label,
+        address: _currentLocation.address,
         provinceId: provinceId,
         regencyId: null,
         districtId: null,
@@ -181,10 +252,10 @@ class _RegionPickerState extends State<RegionPicker> {
         regency: '',
         district: '',
         village: '',
-        areaSize: widget.item.areaSize,
-        latitude: widget.item.latitude,
-        longitude: widget.item.longitude,
-        isPrimary: widget.item.isPrimary,
+        areaSize: _currentLocation.areaSize,
+        latitude: _currentLocation.latitude,
+        longitude: _currentLocation.longitude,
+        isPrimary: _currentLocation.isPrimary,
       ),
     );
   }
@@ -198,22 +269,22 @@ class _RegionPickerState extends State<RegionPicker> {
       _districts = [];
       _villages = [];
     });
-    widget.onChanged(
+    _updateLocation(
       CreateLocationInput(
-        label: widget.item.label,
-        address: widget.item.address,
-        provinceId: widget.item.provinceId,
+        label: _currentLocation.label,
+        address: _currentLocation.address,
+        provinceId: _currentLocation.provinceId,
         regencyId: regencyId,
         districtId: null,
         villageId: null,
-        province: widget.item.province,
+        province: _currentLocation.province,
         regency: regency.name,
         district: '',
         village: '',
-        areaSize: widget.item.areaSize,
-        latitude: widget.item.latitude,
-        longitude: widget.item.longitude,
-        isPrimary: widget.item.isPrimary,
+        areaSize: _currentLocation.areaSize,
+        latitude: _currentLocation.latitude,
+        longitude: _currentLocation.longitude,
+        isPrimary: _currentLocation.isPrimary,
       ),
     );
   }
@@ -226,22 +297,22 @@ class _RegionPickerState extends State<RegionPicker> {
     setState(() {
       _villages = [];
     });
-    widget.onChanged(
+    _updateLocation(
       CreateLocationInput(
-        label: widget.item.label,
-        address: widget.item.address,
-        provinceId: widget.item.provinceId,
-        regencyId: widget.item.regencyId,
+        label: _currentLocation.label,
+        address: _currentLocation.address,
+        provinceId: _currentLocation.provinceId,
+        regencyId: _currentLocation.regencyId,
         districtId: districtId,
         villageId: null,
-        province: widget.item.province,
-        regency: widget.item.regency,
+        province: _currentLocation.province,
+        regency: _currentLocation.regency,
         district: district.name,
         village: '',
-        areaSize: widget.item.areaSize,
-        latitude: widget.item.latitude,
-        longitude: widget.item.longitude,
-        isPrimary: widget.item.isPrimary,
+        areaSize: _currentLocation.areaSize,
+        latitude: _currentLocation.latitude,
+        longitude: _currentLocation.longitude,
+        isPrimary: _currentLocation.isPrimary,
       ),
     );
   }
@@ -251,57 +322,58 @@ class _RegionPickerState extends State<RegionPicker> {
       (v) => v.id == villageId,
       orElse: () => Village(id: villageId, name: ''),
     );
-    widget.onChanged(
-      CreateLocationInput(
-        label: widget.item.label,
-        address: widget.item.address,
-        provinceId: widget.item.provinceId,
-        regencyId: widget.item.regencyId,
-        districtId: widget.item.districtId,
-        villageId: villageId,
-        province: widget.item.province,
-        regency: widget.item.regency,
-        district: widget.item.district,
-        village: village.name,
-        areaSize: widget.item.areaSize,
-        latitude: widget.item.latitude,
-        longitude: widget.item.longitude,
-        isPrimary: widget.item.isPrimary,
-      ),
+    _updateLocation(
+      _currentLocation.copyWith(villageId: villageId, village: village.name),
     );
   }
 
   @override
   Widget build(BuildContext context) {
     final selectedProvinceId =
-        _provinces.any((p) => p.id == widget.item.provinceId)
-        ? widget.item.provinceId
-        : null;
+        _provinces.any((p) => p.id == _currentLocation.provinceId)
+        ? _currentLocation.provinceId
+        : _provinces
+              .firstWhereOrNull(
+                (p) => isRegionMatch(p.name, _currentLocation.province),
+              )
+              ?.id;
     final selectedRegencyId =
-        _regencies.any((r) => r.id == widget.item.regencyId)
-        ? widget.item.regencyId
-        : null;
+        _regencies.any((r) => r.id == _currentLocation.regencyId)
+        ? _currentLocation.regencyId
+        : _regencies
+              .firstWhereOrNull(
+                (r) => isRegionMatch(r.name, _currentLocation.regency),
+              )
+              ?.id;
     final selectedDistrictId =
-        _districts.any((d) => d.id == widget.item.districtId)
-        ? widget.item.districtId
-        : null;
+        _districts.any((d) => d.id == _currentLocation.districtId)
+        ? _currentLocation.districtId
+        : _districts
+              .firstWhereOrNull(
+                (d) => isRegionMatch(d.name, _currentLocation.district),
+              )
+              ?.id;
     final selectedVillageId =
-        _villages.any((v) => v.id == widget.item.villageId)
-        ? widget.item.villageId
-        : null;
+        _villages.any((v) => v.id == _currentLocation.villageId)
+        ? _currentLocation.villageId
+        : _villages
+              .firstWhereOrNull(
+                (v) => isRegionMatch(v.name, _currentLocation.village),
+              )
+              ?.id;
 
     final isProvinceDisabled = _isLoadingProvinces || _provinces.isEmpty;
     final isRegencyDisabled =
         _isLoadingRegencies ||
-        widget.item.provinceId == null ||
+        _currentLocation.provinceId == null ||
         _regencies.isEmpty;
     final isDistrictDisabled =
         _isLoadingDistricts ||
-        widget.item.regencyId == null ||
+        _currentLocation.regencyId == null ||
         _districts.isEmpty;
     final isVillageDisabled =
         _isLoadingVillages ||
-        widget.item.districtId == null ||
+        _currentLocation.districtId == null ||
         _villages.isEmpty;
 
     final provinceHint = _isLoadingProvinces

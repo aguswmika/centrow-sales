@@ -12,6 +12,7 @@ class ProposalListItemDto {
   final String? validUntil;
   final double totalAmount;
   final bool hasPricing;
+  final bool hasContract;
   final String status;
   final String createdAt;
   final String? addressId;
@@ -29,6 +30,7 @@ class ProposalListItemDto {
     this.validUntil,
     required this.totalAmount,
     required this.hasPricing,
+    this.hasContract = false,
     required this.status,
     required this.createdAt,
     this.addressId,
@@ -48,6 +50,7 @@ class ProposalListItemDto {
       validUntil: json['valid_until']?.toString(),
       totalAmount: (json['total_amount'] as num?)?.toDouble() ?? 0.0,
       hasPricing: json['has_pricing'] as bool? ?? false,
+      hasContract: json['has_contract'] as bool? ?? false,
       status: json['status']?.toString() ?? '',
       createdAt: json['created_at']?.toString() ?? '',
       addressId: json['address_id']?.toString(),
@@ -82,6 +85,7 @@ class ProposalListItemDto {
       addressLabel: addressLabel,
       addressLine: addressLine,
       hasPricing: hasPricing,
+      hasContract: hasContract,
       version: '1',
       total: totalAmount,
       createdAt: createdAt,
@@ -138,6 +142,35 @@ class ProposalListResponseDto {
   List<Proposal> toEntity() => items.map((e) => e.toEntity()).toList();
 }
 
+class ProposalLinkedContractDto {
+  final String id;
+  final String code;
+  final String status;
+  final String? statusLabel;
+
+  const ProposalLinkedContractDto({
+    required this.id,
+    required this.code,
+    required this.status,
+    this.statusLabel,
+  });
+
+  factory ProposalLinkedContractDto.fromJson(Map<String, dynamic> json) =>
+      ProposalLinkedContractDto(
+        id: json['id']?.toString() ?? '',
+        code: json['code']?.toString() ?? '',
+        status: json['status']?.toString() ?? '',
+        statusLabel: json['status_label']?.toString(),
+      );
+
+  ProposalLinkedContract toEntity() => ProposalLinkedContract(
+    id: id,
+    code: code,
+    status: status,
+    statusLabel: statusLabel,
+  );
+}
+
 class ProposalDetailDto {
   final String id;
   final String code;
@@ -160,6 +193,7 @@ class ProposalDetailDto {
   final String? addressLabel;
   final String? addressLine;
   final bool hasPricing;
+  final ProposalLinkedContractDto? linkedContract;
 
   const ProposalDetailDto({
     required this.id,
@@ -183,6 +217,7 @@ class ProposalDetailDto {
     this.addressLabel,
     this.addressLine,
     required this.hasPricing,
+    this.linkedContract,
   });
 
   factory ProposalDetailDto.fromJson(Map<String, dynamic> json) {
@@ -208,6 +243,11 @@ class ProposalDetailDto {
       addressLabel: json['address_label']?.toString(),
       addressLine: json['address_line']?.toString(),
       hasPricing: json['has_pricing'] as bool? ?? false,
+      linkedContract: json['linked_contract'] != null
+          ? ProposalLinkedContractDto.fromJson(
+              (json['linked_contract'] as Map).cast<String, dynamic>(),
+            )
+          : null,
     );
   }
 
@@ -237,6 +277,8 @@ class ProposalDetailDto {
       addressLabel: addressLabel,
       addressLine: addressLine,
       hasPricing: hasPricing,
+      hasContract: linkedContract != null,
+      linkedContract: linkedContract?.toEntity(),
       version: version.toString(),
       total: totalAmount,
       notes: notes,

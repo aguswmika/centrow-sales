@@ -9,12 +9,13 @@ import 'package:centrow_sales/shared/state/ui_state.dart';
 import 'package:centrow_sales/shared/theme/app_colors.dart';
 import 'package:centrow_sales/shared/widgets/error_view.dart';
 import 'package:centrow_sales/shared/widgets/toast.dart';
-
 import 'package:centrow_sales/modules/sales/controllers/proposal_controller.dart';
 import 'package:centrow_sales/modules/sales/controllers/proposal_document_controller.dart';
 import 'package:centrow_sales/modules/sales/views/widgets/proposal_detail_pane.dart';
 import 'package:centrow_sales/modules/sales/views/widgets/proposal_master_list.dart';
+import 'package:centrow_sales/modules/sales/entities/contract.dart';
 import 'package:centrow_sales/modules/sales/entities/proposal.dart';
+import 'package:centrow_sales/modules/sales/views/widgets/contract_form_bottom_sheet.dart';
 import 'package:centrow_sales/modules/sales/views/widgets/proposal_form_bottom_sheet.dart'
     as centrow_sales_bs;
 
@@ -307,6 +308,37 @@ class _ProposalPageState extends State<ProposalPage> {
     }
   }
 
+  Future<void> _handleCreateContract(Proposal proposal) async {
+    if (!proposal.hasPricing) {
+      showAppToast(
+        context,
+        'Harga proposal belum tersedia. Lengkapi kalkulasi harga terlebih dahulu.',
+        isError: true,
+      );
+      return;
+    }
+    final result = await showModalBottomSheet<Contract>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (_) => ContractFormBottomSheet(
+        proposalId: proposal.id,
+        proposalCode: proposal.code,
+        customerName: proposal.clientName,
+        serviceName: proposal.serviceName,
+        prefilledContractValue: proposal.total > 0 ? proposal.total : null,
+      ),
+    );
+    if (result != null && mounted) {
+      showAppToast(
+        context,
+        'Kontrak ${result.code} berhasil dibuat.',
+        isSuccess: true,
+      );
+      context.go('/contracts', extra: {'id': result.id, 'refresh': true});
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -341,8 +373,6 @@ class _ProposalPageState extends State<ProposalPage> {
         : (selectedProp?.id ?? '');
     final selectedStatus = _controller.selectedStatus.value;
     final query = _controller.searchQuery.value;
-    final activePricingTab = _controller.activePricingTab.value;
-    final activeDetailTab = _controller.activeDetailTab.value;
     final detailState = _controller.proposalDetailState.value;
     final isExportingPdf = _documentController.pdfState.value is UiLoading;
 
@@ -383,10 +413,6 @@ class _ProposalPageState extends State<ProposalPage> {
             child: ProposalDetailPane(
               proposal: selectedProp,
               detailState: detailState,
-              activeDetailTab: activeDetailTab,
-              onDetailTabChanged: _controller.setDetailTab,
-              activePricingTab: activePricingTab,
-              onPricingTabChanged: _controller.setActivePricingTab,
               onExportPdf: selectedId.isNotEmpty
                   ? () => _documentController.downloadPdf(selectedId)
                   : null,
@@ -437,19 +463,31 @@ class _ProposalPageState extends State<ProposalPage> {
               onCancelProposal: selectedProp != null
                   ? () => _handleCancelProposal(selectedProp)
                   : null,
+              onCreateContract:
+                  (selectedProp != null && selectedProp.canCreateContract)
+                  ? () => _handleCreateContract(selectedProp)
+                  : null,
+              onViewLinkedContract: (contractId) {
+                context.go(
+                  '/contracts',
+                  extra: {'id': contractId, 'refresh': true},
+                );
+              },
               isActionLoading: _controller.actionState.value is UiLoading,
-              onOpenCalculator: (selectedId.isNotEmpty &&
-                      (selectedProp?.status.canEditPricing ?? true))
+              onOpenCalculator:
+                  (selectedId.isNotEmpty &&
+                      ((selectedProp?.status.canEditPricing ?? true) ||
+                          (selectedProp?.hasPricing ?? false)))
                   ? () => context.go(
-                        '/proposals/$selectedId/pricing',
-                        extra: selectedProp,
-                      )
+                      '/proposals/$selectedId/pricing',
+                      extra: selectedProp,
+                    )
                   : null,
               onOpenDocument: selectedId.isNotEmpty
                   ? () => context.go(
-                        '/proposals/$selectedId/document',
-                        extra: selectedProp,
-                      )
+                      '/proposals/$selectedId/document',
+                      extra: selectedProp,
+                    )
                   : null,
               onRetry: () => _controller.loadProposalDetail(selectedId),
             ),

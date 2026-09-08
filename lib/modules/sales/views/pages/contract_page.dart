@@ -1,4 +1,7 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
+import 'package:open_filex/open_filex.dart';
 import 'package:signals/signals_flutter.dart';
 import 'package:centrow_sales/app/di.dart';
 import 'package:centrow_sales/shared/result/result.dart';
@@ -7,9 +10,11 @@ import 'package:centrow_sales/shared/theme/app_colors.dart';
 import 'package:centrow_sales/shared/widgets/error_view.dart';
 import 'package:centrow_sales/shared/widgets/toast.dart';
 import 'package:centrow_sales/modules/sales/controllers/contract_controller.dart';
+import 'package:centrow_sales/modules/sales/controllers/contract_document_controller.dart';
 import 'package:centrow_sales/modules/sales/entities/contract.dart';
 import 'package:centrow_sales/modules/sales/views/widgets/contract_master_list.dart';
 import 'package:centrow_sales/modules/sales/views/widgets/contract_detail_pane.dart';
+import 'package:centrow_sales/modules/sales/views/widgets/contract_form_bottom_sheet.dart';
 
 class ContractPage extends StatefulWidget {
   final ContractController? controller;
@@ -23,22 +28,75 @@ class ContractPage extends StatefulWidget {
 
 class _ContractPageState extends State<ContractPage> {
   late final ContractController _controller;
+  late final ContractDocumentController _documentController;
+  late final void Function() _pdfEffect;
+
+  @override
+  void didUpdateWidget(ContractPage oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.initialContractId != null &&
+        widget.initialContractId != oldWidget.initialContractId) {
+      _controller.loadContracts(isRefresh: true).then((_) {
+        _controller.selectContract(widget.initialContractId!);
+      });
+    }
+  }
 
   @override
   void initState() {
     super.initState();
     _controller = widget.controller ?? getIt<ContractController>();
+    _documentController = getIt<ContractDocumentController>();
     _controller.loadContracts().then((_) {
       if (widget.initialContractId != null) {
         _controller.selectContract(widget.initialContractId!);
+      }
+    });
+
+    _pdfEffect = effect(() {
+      final state = _documentController.pdfState.value;
+      if (state is UiSuccess<List<int>>) {
+        WidgetsBinding.instance.addPostFrameCallback(
+          (_) => _openPdfBytes(state.data),
+        );
+      } else if (state is UiFailure<List<int>>) {
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (mounted) {
+            ScaffoldMessenger.of(
+              context,
+            ).showSnackBar(SnackBar(content: Text(state.failure.message)));
+            _documentController.resetPdfState();
+          }
+        });
       }
     });
   }
 
   @override
   void dispose() {
+    _pdfEffect();
+    _documentController.dispose();
     _controller.dispose();
     super.dispose();
+  }
+
+  // Saves PDF bytes to a temp file and opens the native PDF viewer.
+  Future<void> _openPdfBytes(List<int> bytes) async {
+    final selectedId = _controller.selectedContractId.value;
+    try {
+      final tempDir = Directory.systemTemp;
+      final file = File('${tempDir.path}/contract_$selectedId.pdf');
+      await file.writeAsBytes(bytes, flush: true);
+      await OpenFilex.open(file.path);
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Gagal membuka PDF: $e')));
+      }
+    } finally {
+      _documentController.resetPdfState();
+    }
   }
 
   @override
@@ -102,6 +160,16 @@ class _ContractPageState extends State<ContractPage> {
             onRetry: selectedId.isNotEmpty
                 ? () => _controller.selectContract(selectedId)
                 : null,
+            onOpenDocument: selectedId.isNotEmpty
+                ? () => context.go(
+                    '/contracts/$selectedId/document',
+                    extra: selectedContract,
+                  )
+                : null,
+            onExportPdf: selectedId.isNotEmpty
+                ? () => _documentController.downloadPdf(selectedId)
+                : null,
+            isExportingPdf: _documentController.pdfState.value is UiLoading,
             onActivate: selectedContract?.status.canActivate == true
                 ? () => _handleActivate(selectedContract!)
                 : null,
@@ -113,6 +181,12 @@ class _ContractPageState extends State<ContractPage> {
                 : null,
             onCancel: selectedContract?.status.canCancel == true
                 ? () => _handleCancel(selectedContract!)
+                : null,
+            onEdit: selectedContract?.status.canEdit == true
+                ? () => _handleEdit(selectedContract!)
+                : null,
+            onDelete: selectedContract?.status.canDelete == true
+                ? () => _handleDelete(selectedContract!)
                 : null,
           ),
         ),
@@ -217,6 +291,40 @@ class _ContractPageState extends State<ContractPage> {
     final res = await _controller.cancelContract(c.id);
     if (mounted) {
       _feedback(res, ok: 'Kontrak telah dibatalkan.');
+    }
+  }
+
+  Future<void> _handleEdit(Contract c) async {
+    final result = await showModalBottomSheet<Contract>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (_) => ContractFormBottomSheet(initialContract: c),
+    );
+    if (result != null && mounted) {
+      showAppToast(context, 'Kontrak berhasil diperbarui.', isSuccess: true);
+      await _controller.loadContracts(isRefresh: true);
+      await _controller.selectContract(c.id);
+    }
+  }
+
+  Future<void> _handleDelete(Contract c) async {
+    if (!await _confirm(
+      title: 'Hapus Draf Kontrak',
+      content:
+          'Yakin ingin menghapus draf kontrak ${c.code}? Tindakan ini tidak dapat diurungkan.',
+      confirmLabel: 'Hapus Kontrak',
+      isDestructive: true,
+    )) {
+      return;
+    }
+    final res = await _controller.deleteContract(c.id);
+    if (mounted) {
+      if (res is Ok) {
+        showAppToast(context, 'Kontrak telah dihapus.', isSuccess: true);
+      } else if (res is Err) {
+        showAppToast(context, res.failure.message, isError: true);
+      }
     }
   }
 

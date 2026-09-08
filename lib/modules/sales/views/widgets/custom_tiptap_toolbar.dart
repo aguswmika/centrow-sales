@@ -3,12 +3,12 @@ import 'package:flutter/material.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 import 'dart:convert';
 import 'webview_tiptap_editor.dart';
-import 'package:centrow_sales/modules/sales/entities/proposal_document.dart';
+import 'package:centrow_sales/modules/sales/entities/document_placeholder.dart';
 
 class CustomTiptapToolbar extends StatefulWidget {
   final WebViewController controller;
   final TiptapState state;
-  final List<ProposalPlaceholder> placeholders;
+  final List<DocumentPlaceholder> placeholders;
 
   const CustomTiptapToolbar({
     super.key,
@@ -146,7 +146,7 @@ class _CustomTiptapToolbarState extends State<CustomTiptapToolbar> {
               // Variables Dropdown
               if (widget.placeholders.isNotEmpty) ...[
                 _ToolbarDivider(),
-                PopupMenuButton<ProposalPlaceholder>(
+                PopupMenuButton<DocumentPlaceholder>(
                   tooltip: 'Variabel',
                   icon: const Icon(Icons.integration_instructions, size: 20),
                   onSelected: (placeholder) {

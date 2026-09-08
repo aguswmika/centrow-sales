@@ -10,8 +10,13 @@ abstract interface class ContractRepository {
   Future<Result<Contract>> getContractById(String id);
   Future<Result<Contract>> createContractFromProposal(
     String proposalId,
-    CreateContractFromProposalInput input,
+    ContractFormInput input,
   );
+  Future<Result<ContractStatusResult>> updateContract(
+    String id,
+    ContractFormInput input,
+  );
+  Future<Result<void>> deleteContract(String id);
   Future<Result<ContractStatusResult>> activateContract(String id);
   Future<Result<ContractStatusResult>> suspendContract(String id);
   Future<Result<ContractStatusResult>> terminateContract(
@@ -76,12 +81,12 @@ class ContractRepositoryImpl implements ContractRepository {
   @override
   Future<Result<Contract>> createContractFromProposal(
     String proposalId,
-    CreateContractFromProposalInput input,
+    ContractFormInput input,
   ) async {
     try {
       final response = await _dio.post<dynamic>(
         '/v1/sales/proposals/$proposalId/contract',
-        data: input.toJson(),
+        data: ContractFormRequestDto.fromInput(input).toJson(),
       );
       final dataMap = _extractData(response.data);
       if (dataMap == null) {
@@ -90,6 +95,42 @@ class ContractRepositoryImpl implements ContractRepository {
         );
       }
       return Ok(CreateContractResponseDto.fromJson(dataMap).toEntity());
+    } on DioException catch (e) {
+      return Err(_handleDioError(e));
+    } catch (e) {
+      return Err(UnknownFailure(e.toString()));
+    }
+  }
+
+  @override
+  Future<Result<ContractStatusResult>> updateContract(
+    String id,
+    ContractFormInput input,
+  ) async {
+    try {
+      final response = await _dio.put<dynamic>(
+        '/v1/sales/contracts/$id',
+        data: ContractFormRequestDto.fromInput(input).toJson(),
+      );
+      final dataMap = _extractData(response.data);
+      if (dataMap == null) {
+        return const Err(
+          ServerFailure('Format respon dari server tidak valid.'),
+        );
+      }
+      return Ok(ContractStatusResponseDto.fromJson(dataMap).toEntity());
+    } on DioException catch (e) {
+      return Err(_handleDioError(e));
+    } catch (e) {
+      return Err(UnknownFailure(e.toString()));
+    }
+  }
+
+  @override
+  Future<Result<void>> deleteContract(String id) async {
+    try {
+      await _dio.delete<dynamic>('/v1/sales/contracts/$id');
+      return const Ok(null);
     } on DioException catch (e) {
       return Err(_handleDioError(e));
     } catch (e) {

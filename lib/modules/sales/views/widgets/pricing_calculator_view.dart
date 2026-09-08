@@ -80,6 +80,7 @@ class _PricingCalculatorViewState extends State<PricingCalculatorView> {
                         padding: const EdgeInsets.all(16.0),
                         child: PricingSettingsCard(
                           controller: widget.calculatorController,
+                          isReadOnly: _isReadOnly,
                         ),
                       ),
                       const SizedBox(height: 32.0),
@@ -102,11 +103,20 @@ class _PricingCalculatorViewState extends State<PricingCalculatorView> {
   Widget _buildTabContent() {
     switch (_activeTab) {
       case 0:
-        return PricingMaterialTab(controller: widget.calculatorController);
+        return PricingMaterialTab(
+          controller: widget.calculatorController,
+          isReadOnly: _isReadOnly,
+        );
       case 1:
-        return PricingWorkerTab(controller: widget.calculatorController);
+        return PricingWorkerTab(
+          controller: widget.calculatorController,
+          isReadOnly: _isReadOnly,
+        );
       case 2:
-        return PricingItemTab(controller: widget.calculatorController);
+        return PricingItemTab(
+          controller: widget.calculatorController,
+          isReadOnly: _isReadOnly,
+        );
       default:
         return const SizedBox.shrink();
     }

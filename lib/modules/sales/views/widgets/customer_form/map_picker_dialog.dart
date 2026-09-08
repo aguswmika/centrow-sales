@@ -188,6 +188,12 @@ class _MapPickerDialogState extends State<MapPickerDialog> {
                 TileLayer(
                   urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
                   userAgentPackageName: 'id.nohama.sales',
+                  tileProvider: NetworkTileProvider(
+                    cachingProvider:
+                        BuiltInMapCachingProvider.getOrCreateInstance(
+                          maxCacheSize: 1_000_000_000,
+                        ),
+                  ),
                 ),
               ],
             ),

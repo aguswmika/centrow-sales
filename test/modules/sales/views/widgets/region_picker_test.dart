@@ -392,4 +392,52 @@ void main() {
       expect(mockRepository.getRegenciesCalls, [51]);
     },
   );
+
+  testWidgets(
+    'auto-resolves missing region IDs by normalized name when option lists load',
+    (tester) async {
+      CreateLocationInput location = const CreateLocationInput(
+        province: 'Bali',
+        regency: 'Badung', // Note: mock repo has 'Kab. Badung' (id: 5103)
+        district: 'Kuta', // id: 5103020
+        village: 'Seminyak', // id: 5103020003
+      );
+
+      CreateLocationInput? lastUpdated;
+
+      await tester.pumpWidget(
+        StatefulBuilder(
+          builder: (context, setState) {
+            return MaterialApp(
+              home: Scaffold(
+                body: SingleChildScrollView(
+                  child: RegionPicker(
+                    item: location,
+                    onChanged: (val) {
+                      lastUpdated = val;
+                      setState(() {
+                        location = val;
+                      });
+                    },
+                  ),
+                ),
+              ),
+            );
+          },
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      expect(find.text('Bali'), findsOneWidget);
+      expect(find.text('Kab. Badung'), findsOneWidget);
+      expect(find.text('Kuta'), findsOneWidget);
+      expect(find.text('Seminyak'), findsOneWidget);
+
+      expect(lastUpdated, isNotNull);
+      expect(lastUpdated!.provinceId, 51);
+      expect(lastUpdated!.regencyId, 5103);
+      expect(lastUpdated!.districtId, 5103020);
+      expect(lastUpdated!.villageId, 5103020003);
+    },
+  );
 }

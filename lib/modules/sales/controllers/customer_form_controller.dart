@@ -10,6 +10,34 @@ import 'package:centrow_sales/modules/sales/entities/customer.dart';
 import 'package:centrow_sales/modules/sales/entities/segment.dart';
 import 'package:centrow_sales/modules/sales/repositories/customer_repository.dart';
 
+/// Normalizes region names by removing common Indonesian administrative prefixes
+/// and punctuation for resilient matching.
+String normalizeRegionName(String name) {
+  return name
+      .toLowerCase()
+      .replaceAll(
+        RegExp(
+          r'^(kabupaten|kab\.|kab|kota|kecamatan|kec\.|kec|kelurahan|kel\.|kel|desa)\s+',
+          caseSensitive: false,
+        ),
+        '',
+      )
+      .replaceAll(RegExp(r'[^\w\s]'), '')
+      .trim();
+}
+
+bool isRegionMatch(String apiName, String targetName) {
+  if (apiName.trim().isEmpty || targetName.trim().isEmpty) {
+    return false;
+  }
+  if (apiName.trim().toLowerCase() == targetName.trim().toLowerCase()) {
+    return true;
+  }
+  final normA = normalizeRegionName(apiName);
+  final normT = normalizeRegionName(targetName);
+  return normA.isNotEmpty && normA == normT;
+}
+
 class CustomerFormController {
   final CustomerRepository _repository;
   final RegionRepository _regionRepository;
@@ -213,90 +241,98 @@ class CustomerFormController {
   Future<void> loadInitialData(String id) async {
     customerId.value = id;
     isLoadingData.value = true;
-    final result = await _repository.getCustomerById(id);
-    isLoadingData.value = false;
+    try {
+      final result = await _repository.getCustomerById(id);
 
-    if (result case Ok(value: final customer)) {
-      name.value = customer.name;
-      code.value = customer.code;
-      segmentId.value = customer.segmentId;
-      segment.value = customer.segment;
-      status.value = customer.status;
-      npwp.value = customer.npwp;
-      phone.value = customer.phone;
-      phoneAlt.value = customer.phoneAlt;
-      email.value = customer.email;
-      riskNotes.value = customer.riskNotes;
-      notes.value = customer.notes;
+      if (result case Ok(value: final customer)) {
+        name.value = customer.name;
+        code.value = customer.code;
+        segmentId.value = customer.segmentId;
+        segment.value = customer.segment;
+        status.value = customer.status;
+        npwp.value = customer.npwp;
+        phone.value = customer.phone;
+        phoneAlt.value = customer.phoneAlt;
+        email.value = customer.email;
+        riskNotes.value = customer.riskNotes;
+        notes.value = customer.notes;
 
-      final resolvedLocations = <CreateLocationInput>[];
-      for (final l in customer.locations) {
-        int? pId, rId, dId, vId;
-        if (l.province.isNotEmpty) {
-          final pRes = await _regionRepository.getProvinces();
-          pId = pRes.valueOrNull
-              ?.firstWhereOrNull(
-                (e) => e.name.toLowerCase() == l.province.toLowerCase(),
-              )
-              ?.id;
-          if (pId != null && l.regency.isNotEmpty) {
+        final resolvedLocations = <CreateLocationInput>[];
+        for (final l in customer.locations) {
+          int? pId = l.provinceId;
+          int? rId = l.regencyId;
+          int? dId = l.districtId;
+          int? vId = l.villageId;
+
+          // If IDs are missing from the customer record (e.g. legacy data), resolve via RegionRepository:
+          if (pId == null && l.province.isNotEmpty) {
+            final pRes = await _regionRepository.getProvinces();
+            pId = pRes.valueOrNull
+                ?.firstWhereOrNull((e) => isRegionMatch(e.name, l.province))
+                ?.id;
+          }
+          if (pId != null && rId == null && l.regency.isNotEmpty) {
             final rRes = await _regionRepository.getRegencies(pId);
             rId = rRes.valueOrNull
-                ?.firstWhereOrNull(
-                  (e) => e.name.toLowerCase() == l.regency.toLowerCase(),
-                )
+                ?.firstWhereOrNull((e) => isRegionMatch(e.name, l.regency))
                 ?.id;
-            if (rId != null && l.district.isNotEmpty) {
-              final dRes = await _regionRepository.getDistricts(pId, rId);
-              dId = dRes.valueOrNull
-                  ?.firstWhereOrNull(
-                    (e) => e.name.toLowerCase() == l.district.toLowerCase(),
-                  )
-                  ?.id;
-              if (dId != null && l.village.isNotEmpty) {
-                final vRes = await _regionRepository.getVillages(pId, rId, dId);
-                vId = vRes.valueOrNull
-                    ?.firstWhereOrNull(
-                      (e) => e.name.toLowerCase() == l.village.toLowerCase(),
-                    )
-                    ?.id;
-              }
-            }
           }
-        }
-        resolvedLocations.add(
-          CreateLocationInput(
-            label: l.label,
-            address: l.addressLine,
-            province: l.province,
-            regency: l.regency,
-            district: l.district,
-            village: l.village,
-            provinceId: pId,
-            regencyId: rId,
-            districtId: dId,
-            villageId: vId,
-            areaSize: l.areaSize,
-            latitude: l.latitude,
-            longitude: l.longitude,
-            isPrimary: l.isPrimary,
-          ),
-        );
-      }
-      locations.value = resolvedLocations;
+          if (pId != null &&
+              rId != null &&
+              dId == null &&
+              l.district.isNotEmpty) {
+            final dRes = await _regionRepository.getDistricts(pId, rId);
+            dId = dRes.valueOrNull
+                ?.firstWhereOrNull((e) => isRegionMatch(e.name, l.district))
+                ?.id;
+          }
+          if (pId != null &&
+              rId != null &&
+              dId != null &&
+              vId == null &&
+              l.village.isNotEmpty) {
+            final vRes = await _regionRepository.getVillages(pId, rId, dId);
+            vId = vRes.valueOrNull
+                ?.firstWhereOrNull((e) => isRegionMatch(e.name, l.village))
+                ?.id;
+          }
 
-      contacts.value = customer.contacts
-          .map(
-            (c) => CreateContactInput(
-              name: c.name,
-              position: c.position,
-              email: c.email,
-              phone: c.phone,
-              role: c.role,
-              isPrimary: c.isPrimary,
+          resolvedLocations.add(
+            CreateLocationInput(
+              label: l.label,
+              address: l.addressLine,
+              province: l.province,
+              regency: l.regency,
+              district: l.district,
+              village: l.village,
+              provinceId: pId,
+              regencyId: rId,
+              districtId: dId,
+              villageId: vId,
+              areaSize: l.areaSize,
+              latitude: l.latitude,
+              longitude: l.longitude,
+              isPrimary: l.isPrimary,
             ),
-          )
-          .toList();
+          );
+        }
+        locations.value = resolvedLocations;
+
+        contacts.value = customer.contacts
+            .map(
+              (c) => CreateContactInput(
+                name: c.name,
+                position: c.position,
+                email: c.email,
+                phone: c.phone,
+                role: c.role,
+                isPrimary: c.isPrimary,
+              ),
+            )
+            .toList();
+      }
+    } finally {
+      isLoadingData.value = false;
     }
   }
 

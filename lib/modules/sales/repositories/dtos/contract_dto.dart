@@ -287,3 +287,45 @@ class CreateContractResponseDto {
     sourceProposalId: proposalId,
   );
 }
+
+class ContractFormRequestDto {
+  final String categoryId;
+  final String startDate;
+  final String? endDate;
+  final String? firstInvoiceDate;
+  final String signedDate;
+  final int paymentTypeId;
+  final String notes;
+
+  const ContractFormRequestDto({
+    required this.categoryId,
+    required this.startDate,
+    this.endDate,
+    this.firstInvoiceDate,
+    required this.signedDate,
+    required this.paymentTypeId,
+    required this.notes,
+  });
+
+  factory ContractFormRequestDto.fromInput(ContractFormInput input) =>
+      ContractFormRequestDto(
+        categoryId: input.categoryId,
+        startDate: input.startDate,
+        endDate: input.endDate,
+        firstInvoiceDate: input.firstInvoiceDate,
+        signedDate: input.signedDate,
+        paymentTypeId: input.paymentTypeId,
+        notes: input.notes,
+      );
+
+  Map<String, dynamic> toJson() => {
+    'category_id': categoryId,
+    'start_date': startDate,
+    if (endDate != null && endDate!.isNotEmpty) 'end_date': endDate,
+    if (firstInvoiceDate != null && firstInvoiceDate!.isNotEmpty)
+      'first_invoice_date': firstInvoiceDate,
+    'signed_date': signedDate,
+    'payment_type_id': paymentTypeId,
+    'notes': notes,
+  };
+}

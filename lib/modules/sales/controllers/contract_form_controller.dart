@@ -12,6 +12,7 @@ class ContractFormController extends ChangeNotifier {
 
   ContractFormController(this._contractRepository, this._categoryRepository);
 
+  String? contractId;
   String? proposalId;
   String? proposalCode;
   String? prefilledCustomerName;
@@ -24,15 +25,12 @@ class ContractFormController extends ChangeNotifier {
   String? endDate;
   String? signedDate;
   String? firstInvoiceDate;
-  int? totalVisits;
-  double? contractValue;
   ContractPaymentType paymentType = ContractPaymentType.full;
-  String? signatoryName;
-  String? signatoryPosition;
   String? notes;
 
   bool _isSubmitting = false;
   bool get isSubmitting => _isSubmitting;
+  bool get isEditMode => contractId != null;
 
   void initFromProposal({
     required String proposalId,
@@ -48,8 +46,25 @@ class ContractFormController extends ChangeNotifier {
     prefilledServiceName = serviceName;
     prefillContractValue = prefilledValue;
     prefillTotalVisits = prefilledVisits;
-    contractValue = prefilledValue;
-    totalVisits = prefilledVisits;
+    contractId = null;
+    notifyListeners();
+  }
+
+  void initFromContract(Contract contract) {
+    contractId = contract.id;
+    proposalCode = contract.sourceProposalCode;
+    prefilledCustomerName = contract.customerName;
+    prefilledServiceName = contract.serviceName;
+    selectedCategory = ContractCategory(
+      id: contract.categoryId,
+      name: contract.categoryName,
+    );
+    startDate = contract.startDate;
+    endDate = contract.endDate;
+    firstInvoiceDate = contract.firstInvoiceDate;
+    signedDate = contract.signedDate;
+    paymentType = contract.paymentType;
+    notes = contract.notes;
     notifyListeners();
   }
 
@@ -66,11 +81,7 @@ class ContractFormController extends ChangeNotifier {
     String? endDate,
     String? signedDate,
     String? firstInvoiceDate,
-    int? totalVisits,
-    double? contractValue,
     ContractPaymentType? paymentType,
-    String? signatoryName,
-    String? signatoryPosition,
     String? notes,
   }) {
     if (category != null) selectedCategory = category;
@@ -78,17 +89,13 @@ class ContractFormController extends ChangeNotifier {
     if (endDate != null) this.endDate = endDate;
     if (signedDate != null) this.signedDate = signedDate;
     if (firstInvoiceDate != null) this.firstInvoiceDate = firstInvoiceDate;
-    if (totalVisits != null) this.totalVisits = totalVisits;
-    if (contractValue != null) this.contractValue = contractValue;
     if (paymentType != null) this.paymentType = paymentType;
-    if (signatoryName != null) this.signatoryName = signatoryName;
-    if (signatoryPosition != null) this.signatoryPosition = signatoryPosition;
     if (notes != null) this.notes = notes;
     notifyListeners();
   }
 
   Future<Result<Contract>> submit() async {
-    if (proposalId == null) {
+    if (!isEditMode && proposalId == null) {
       return const Err(UnknownFailure('ID proposal tidak ada.'));
     }
     if (selectedCategory == null) {
@@ -97,28 +104,55 @@ class ContractFormController extends ChangeNotifier {
     if (startDate == null || startDate!.isEmpty) {
       return const Err(UnknownFailure('Tanggal mulai wajib diisi.'));
     }
+    if (signedDate == null || signedDate!.isEmpty) {
+      return const Err(UnknownFailure('Tanggal penandatanganan wajib diisi.'));
+    }
+    if (notes == null || notes!.trim().isEmpty) {
+      return const Err(UnknownFailure('Catatan wajib diisi.'));
+    }
+    if (endDate != null &&
+        endDate!.isNotEmpty &&
+        startDate!.compareTo(endDate!) > 0) {
+      return const Err(
+        UnknownFailure('Tanggal akhir tidak boleh sebelum tanggal mulai.'),
+      );
+    }
 
     _isSubmitting = true;
     notifyListeners();
 
-    final input = CreateContractFromProposalInput(
+    final input = ContractFormInput(
       categoryId: selectedCategory!.id,
-      signedDate: signedDate,
       startDate: startDate!,
       endDate: endDate,
       firstInvoiceDate: firstInvoiceDate,
-      totalVisits: totalVisits,
-      contractValue: contractValue,
+      signedDate: signedDate!,
       paymentTypeId: paymentType.id,
-      signatoryName: (signatoryName != null && signatoryName!.isNotEmpty)
-          ? signatoryName
-          : null,
-      signatoryPosition:
-          (signatoryPosition != null && signatoryPosition!.isNotEmpty)
-          ? signatoryPosition
-          : null,
-      notes: (notes != null && notes!.isNotEmpty) ? notes : null,
+      notes: notes!.trim(),
     );
+
+    if (isEditMode) {
+      final result = await _contractRepository.updateContract(
+        contractId!,
+        input,
+      );
+      _isSubmitting = false;
+      notifyListeners();
+      return switch (result) {
+        Ok() => Ok(
+          Contract(
+            id: contractId!,
+            code: '',
+            customerId: '',
+            serviceId: '',
+            categoryId: selectedCategory!.id,
+            status: ContractStatus.draft,
+            startDate: startDate!,
+          ),
+        ),
+        Err(:final failure) => Err(failure),
+      };
+    }
 
     final result = await _contractRepository.createContractFromProposal(
       proposalId!,

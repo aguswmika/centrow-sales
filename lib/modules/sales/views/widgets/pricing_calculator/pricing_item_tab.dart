@@ -9,8 +9,13 @@ import 'pricing_utils.dart';
 
 class PricingItemTab extends StatelessWidget {
   final PricingCalculatorController controller;
+  final bool isReadOnly;
 
-  const PricingItemTab({super.key, required this.controller});
+  const PricingItemTab({
+    super.key,
+    required this.controller,
+    this.isReadOnly = false,
+  });
 
   Future<void> _handleAddItem(BuildContext context, int kind) async {
     final result = await showModalBottomSheet<Product>(
@@ -46,21 +51,23 @@ class PricingItemTab extends StatelessWidget {
                 key: ObjectKey(row),
                 row: row,
                 controller: controller,
+                isReadOnly: isReadOnly,
               ),
-            Container(
-              padding: const EdgeInsets.all(16.0),
-              decoration: const BoxDecoration(
-                color: AppColors.subtle,
-                border: Border(bottom: BorderSide(color: AppColors.border)),
+            if (!isReadOnly)
+              Container(
+                padding: const EdgeInsets.all(16.0),
+                decoration: const BoxDecoration(
+                  color: AppColors.subtle,
+                  border: Border(bottom: BorderSide(color: AppColors.border)),
+                ),
+                child: Row(
+                  children: [
+                    buildAddBtn('BBM', () => _handleAddItem(context, 3)),
+                    const SizedBox(width: 12.0),
+                    buildAddBtn('Add-on', () => _handleAddItem(context, 5)),
+                  ],
+                ),
               ),
-              child: Row(
-                children: [
-                  buildAddBtn('BBM', () => _handleAddItem(context, 3)),
-                  const SizedBox(width: 12.0),
-                  buildAddBtn('Add-on', () => _handleAddItem(context, 5)),
-                ],
-              ),
-            ),
           ],
         );
       },
@@ -71,11 +78,13 @@ class PricingItemTab extends StatelessWidget {
 class PricingItemRowWidget extends StatelessWidget {
   final PricingItemRow row;
   final PricingCalculatorController controller;
+  final bool isReadOnly;
 
   const PricingItemRowWidget({
     super.key,
     required this.row,
     required this.controller,
+    this.isReadOnly = false,
   });
 
   @override
@@ -130,14 +139,14 @@ class PricingItemRowWidget extends StatelessWidget {
             flex: 2,
             child: buildInput(row.qty.value.toString(), (val) {
               row.qty.value = double.tryParse(val) ?? 0.0;
-            }),
+            }, enabled: !isReadOnly),
           ),
           const SizedBox(width: 8.0),
           Expanded(
             flex: 2,
             child: buildInput(row.freq.value.toString(), (val) {
               row.freq.value = double.tryParse(val) ?? 0.0;
-            }),
+            }, enabled: !isReadOnly),
           ),
           const SizedBox(width: 16.0),
           Expanded(
@@ -145,7 +154,7 @@ class PricingItemRowWidget extends StatelessWidget {
             child: row.kind == 5
                 ? buildInput(row.unitPrice.value.toString(), (val) {
                     row.unitPrice.value = double.tryParse(val) ?? 0.0;
-                  })
+                  }, enabled: !isReadOnly)
                 : const Align(
                     alignment: Alignment.centerRight,
                     child: Padding(
@@ -162,20 +171,23 @@ class PricingItemRowWidget extends StatelessWidget {
                   ),
           ),
           const SizedBox(width: 8.0),
-          SizedBox(
-            width: 30.0,
-            height: 30.0,
-            child: IconButton(
-              icon: const Icon(
-                Icons.close_rounded,
-                color: AppColors.muted,
-                size: 18.0,
+          if (!isReadOnly)
+            SizedBox(
+              width: 30.0,
+              height: 30.0,
+              child: IconButton(
+                icon: const Icon(
+                  Icons.close_rounded,
+                  color: AppColors.muted,
+                  size: 18.0,
+                ),
+                onPressed: () {
+                  controller.items.remove(row);
+                },
               ),
-              onPressed: () {
-                controller.items.remove(row);
-              },
-            ),
-          ),
+            )
+          else
+            const SizedBox(width: 30.0),
         ],
       ),
     );

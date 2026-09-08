@@ -614,6 +614,107 @@ void main() {
       },
     );
 
+    test(
+      'loadInitialData resolves region IDs when API has prefixes like KAB. BADUNG',
+      () async {
+        final regionRepo = FakeRegionRepository()
+          ..provinces = [const Province(id: 51, name: 'BALI')]
+          ..regencies = [const Regency(id: 5103, name: 'KAB. BADUNG')]
+          ..districts = [const District(id: 5103040, name: 'Kecamatan Kuta')]
+          ..villages = [const Village(id: 5103040001, name: 'Desa Seminyak')];
+
+        final ctrl = CustomerFormController(repository, regionRepo);
+
+        repository.customers.add(
+          const Customer(
+            id: 'cust-prefix-regions',
+            code: 'CRM-1003',
+            name: 'Villa Badung',
+            initials: 'VB',
+            segment: 'Villa',
+            status: 'active',
+            locations: [
+              CustomerLocation(
+                label: 'Villa Main',
+                addressLine: 'Jl. Sunset',
+                province: 'Bali',
+                regency: 'Badung', // Note: without 'KAB.'
+                district: 'Kuta', // Note: without 'Kecamatan'
+                village: 'Seminyak', // Note: without 'Desa'
+                isPrimary: true,
+              ),
+            ],
+          ),
+        );
+
+        await ctrl.loadInitialData('cust-prefix-regions');
+
+        expect(ctrl.locations.value.length, 1);
+        final loc = ctrl.locations.value.first;
+        expect(loc.provinceId, 51);
+        expect(loc.regencyId, 5103);
+        expect(loc.districtId, 5103040);
+        expect(loc.villageId, 5103040001);
+
+        ctrl.dispose();
+      },
+    );
+
+    test(
+      'loadInitialData uses pre-populated IDs directly from CustomerLocation without repo lookups',
+      () async {
+        final regionRepo = FakeRegionRepository();
+        final ctrl = CustomerFormController(repository, regionRepo);
+
+        repository.customers.add(
+          const Customer(
+            id: 'cust-prepopulated-ids',
+            code: 'CRM-1004',
+            name: 'Direct IDs Villa',
+            initials: 'DI',
+            segment: 'Villa',
+            status: 'active',
+            locations: [
+              CustomerLocation(
+                label: 'Villa 1',
+                addressLine: 'Jl. Pantai',
+                provinceId: 51,
+                province: 'Bali',
+                regencyId: 5103,
+                regency: 'Badung',
+                districtId: 5103040,
+                district: 'Kuta',
+                villageId: 5103040001,
+                village: 'Seminyak',
+                isPrimary: true,
+              ),
+            ],
+          ),
+        );
+
+        await ctrl.loadInitialData('cust-prepopulated-ids');
+
+        expect(ctrl.locations.value.length, 1);
+        final loc = ctrl.locations.value.first;
+        expect(loc.provinceId, 51);
+        expect(loc.regencyId, 5103);
+        expect(loc.districtId, 5103040);
+        expect(loc.villageId, 5103040001);
+
+        ctrl.dispose();
+      },
+    );
+
+    test('isRegionMatch correctly normalizes administrative prefixes', () {
+      expect(isRegionMatch('KAB. BADUNG', 'Badung'), isTrue);
+      expect(isRegionMatch('KABUPATEN BADUNG', 'Badung'), isTrue);
+      expect(isRegionMatch('KOTA DENPASAR', 'Denpasar'), isTrue);
+      expect(isRegionMatch('Kecamatan Kuta', 'Kuta'), isTrue);
+      expect(isRegionMatch('Desa Seminyak', 'Seminyak'), isTrue);
+      expect(isRegionMatch('Kelurahan Kerobokan', 'Kerobokan'), isTrue);
+      expect(isRegionMatch('Denpasar', 'Badung'), isFalse);
+    });
+
     test('loadInitialData handles not found gracefully', () async {
       await controller.loadInitialData('non-existent');
       expect(controller.isLoadingData.value, false);

@@ -9,8 +9,13 @@ import 'pricing_utils.dart';
 
 class PricingWorkerTab extends StatelessWidget {
   final PricingCalculatorController controller;
+  final bool isReadOnly;
 
-  const PricingWorkerTab({super.key, required this.controller});
+  const PricingWorkerTab({
+    super.key,
+    required this.controller,
+    this.isReadOnly = false,
+  });
 
   Future<void> _handleAddWorker(BuildContext context) async {
     final result = await showModalBottomSheet<Product>(
@@ -46,21 +51,23 @@ class PricingWorkerTab extends StatelessWidget {
                 key: ObjectKey(row),
                 row: row,
                 controller: controller,
+                isReadOnly: isReadOnly,
               ),
-            Container(
-              padding: const EdgeInsets.all(16.0),
-              decoration: const BoxDecoration(
-                color: AppColors.subtle,
-                border: Border(bottom: BorderSide(color: AppColors.border)),
-              ),
-              child: Align(
-                alignment: Alignment.centerLeft,
-                child: buildAddBtn(
-                  'Tambah Teknisi',
-                  () => _handleAddWorker(context),
+            if (!isReadOnly)
+              Container(
+                padding: const EdgeInsets.all(16.0),
+                decoration: const BoxDecoration(
+                  color: AppColors.subtle,
+                  border: Border(bottom: BorderSide(color: AppColors.border)),
+                ),
+                child: Align(
+                  alignment: Alignment.centerLeft,
+                  child: buildAddBtn(
+                    'Tambah Teknisi',
+                    () => _handleAddWorker(context),
+                  ),
                 ),
               ),
-            ),
           ],
         );
       },
@@ -71,11 +78,13 @@ class PricingWorkerTab extends StatelessWidget {
 class PricingWorkerRowWidget extends StatelessWidget {
   final PricingWorkerRow row;
   final PricingCalculatorController controller;
+  final bool isReadOnly;
 
   const PricingWorkerRowWidget({
     super.key,
     required this.row,
     required this.controller,
+    this.isReadOnly = false,
   });
 
   @override
@@ -130,37 +139,40 @@ class PricingWorkerRowWidget extends StatelessWidget {
             flex: 1,
             child: buildInput(row.visitFreq.value.toString(), (val) {
               row.visitFreq.value = double.tryParse(val) ?? 0.0;
-            }),
+            }, enabled: !isReadOnly),
           ),
           const SizedBox(width: 8.0),
           Expanded(
             flex: 1,
             child: buildInput(row.firstVisitHours.value.toString(), (val) {
               row.firstVisitHours.value = double.tryParse(val) ?? 0.0;
-            }),
+            }, enabled: !isReadOnly),
           ),
           const SizedBox(width: 8.0),
           Expanded(
             flex: 1,
             child: buildInput(row.routineHours.value.toString(), (val) {
               row.routineHours.value = double.tryParse(val) ?? 0.0;
-            }),
+            }, enabled: !isReadOnly),
           ),
           const SizedBox(width: 16.0),
-          SizedBox(
-            width: 30.0,
-            height: 30.0,
-            child: IconButton(
-              icon: const Icon(
-                Icons.close_rounded,
-                color: AppColors.muted,
-                size: 18.0,
+          if (!isReadOnly)
+            SizedBox(
+              width: 30.0,
+              height: 30.0,
+              child: IconButton(
+                icon: const Icon(
+                  Icons.close_rounded,
+                  color: AppColors.muted,
+                  size: 18.0,
+                ),
+                onPressed: () {
+                  controller.workers.remove(row);
+                },
               ),
-              onPressed: () {
-                controller.workers.remove(row);
-              },
-            ),
-          ),
+            )
+          else
+            const SizedBox(width: 30.0),
         ],
       ),
     );

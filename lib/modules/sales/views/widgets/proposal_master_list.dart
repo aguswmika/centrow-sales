@@ -265,6 +265,16 @@ class ProposalMasterList extends StatelessWidget {
                                             fontWeight: FontWeight.w500,
                                           ),
                                         ),
+                                        if (p.hasContract) ...[
+                                          const TextSpan(text: ' · '),
+                                          const TextSpan(
+                                            text: 'Ada Kontrak',
+                                            style: TextStyle(
+                                              color: AppColors.ok,
+                                              fontWeight: FontWeight.w600,
+                                            ),
+                                          ),
+                                        ],
                                       ],
                                     ),
                                   ),

@@ -14,8 +14,13 @@ import 'pricing_utils.dart';
 
 class PricingMaterialTab extends StatelessWidget {
   final PricingCalculatorController controller;
+  final bool isReadOnly;
 
-  const PricingMaterialTab({super.key, required this.controller});
+  const PricingMaterialTab({
+    super.key,
+    required this.controller,
+    this.isReadOnly = false,
+  });
 
   Future<void> _handleAddMaterial(BuildContext context) async {
     final method = await showModalBottomSheet<TreatmentMethod>(
@@ -75,6 +80,7 @@ class PricingMaterialTab extends StatelessWidget {
                   row: row,
                   controller: controller,
                   hasUnitColumn: true,
+                  isReadOnly: isReadOnly,
                 ),
             ],
             if (tools.isNotEmpty) ...[
@@ -88,25 +94,27 @@ class PricingMaterialTab extends StatelessWidget {
                   key: ObjectKey(row),
                   row: row,
                   controller: controller,
+                  isReadOnly: isReadOnly,
                 ),
             ],
-            Container(
-              padding: const EdgeInsets.all(16.0),
-              decoration: const BoxDecoration(
-                color: AppColors.subtle,
-                border: Border(bottom: BorderSide(color: AppColors.border)),
+            if (!isReadOnly)
+              Container(
+                padding: const EdgeInsets.all(16.0),
+                decoration: const BoxDecoration(
+                  color: AppColors.subtle,
+                  border: Border(bottom: BorderSide(color: AppColors.border)),
+                ),
+                child: Row(
+                  children: [
+                    buildAddBtn(
+                      'Tambah Bahan Kimia',
+                      () => _handleAddMaterial(context),
+                    ),
+                    const SizedBox(width: 12.0),
+                    buildAddBtn('Tambah Alat', () => _handleAddTool(context)),
+                  ],
+                ),
               ),
-              child: Row(
-                children: [
-                  buildAddBtn(
-                    'Tambah Bahan Kimia',
-                    () => _handleAddMaterial(context),
-                  ),
-                  const SizedBox(width: 12.0),
-                  buildAddBtn('Tambah Alat', () => _handleAddTool(context)),
-                ],
-              ),
-            ),
           ],
         );
       },
@@ -118,12 +126,14 @@ class PricingMaterialRowWidget extends StatelessWidget {
   final PricingMaterialRow row;
   final PricingCalculatorController controller;
   final bool hasUnitColumn;
+  final bool isReadOnly;
 
   const PricingMaterialRowWidget({
     super.key,
     required this.row,
     required this.controller,
     this.hasUnitColumn = false,
+    this.isReadOnly = false,
   });
 
   @override
@@ -195,6 +205,7 @@ class PricingMaterialRowWidget extends StatelessWidget {
                     initialValue: row.doseUsage.value,
                     min: row.doseMinLimit,
                     max: row.doseMaxLimit,
+                    enabled: !isReadOnly,
                     onChanged: (val) {
                       row.doseUsage.value = val;
                     },
@@ -222,6 +233,7 @@ class PricingMaterialRowWidget extends StatelessWidget {
                 Expanded(
                   child: CounterInput(
                     initialValue: row.applicationVolume.value,
+                    enabled: !isReadOnly,
                     onChanged: (val) {
                       row.applicationVolume.value = val;
                     },
@@ -254,11 +266,13 @@ class PricingMaterialRowWidget extends StatelessWidget {
                               child: Text(uom.code),
                             );
                           }).toList(),
-                          onChanged: (val) {
-                            if (val != null) {
-                              row.applicationVolumeUnitId.value = val;
-                            }
-                          },
+                          onChanged: isReadOnly
+                              ? null
+                              : (val) {
+                                  if (val != null) {
+                                    row.applicationVolumeUnitId.value = val;
+                                  }
+                                },
                         ),
                       );
                     },
@@ -272,23 +286,26 @@ class PricingMaterialRowWidget extends StatelessWidget {
             flex: 2,
             child: buildInput(row.freq.value.toString(), (val) {
               row.freq.value = double.tryParse(val) ?? 0.0;
-            }),
+            }, enabled: !isReadOnly),
           ),
           const SizedBox(width: 8.0),
-          SizedBox(
-            width: 30.0,
-            height: 30.0,
-            child: IconButton(
-              icon: const Icon(
-                Icons.close_rounded,
-                color: AppColors.muted,
-                size: 18.0,
+          if (!isReadOnly)
+            SizedBox(
+              width: 30.0,
+              height: 30.0,
+              child: IconButton(
+                icon: const Icon(
+                  Icons.close_rounded,
+                  color: AppColors.muted,
+                  size: 18.0,
+                ),
+                onPressed: () {
+                  controller.materials.remove(row);
+                },
               ),
-              onPressed: () {
-                controller.materials.remove(row);
-              },
-            ),
-          ),
+            )
+          else
+            const SizedBox(width: 30.0),
         ],
       ),
     );
@@ -298,11 +315,13 @@ class PricingMaterialRowWidget extends StatelessWidget {
 class PricingToolRowWidget extends StatelessWidget {
   final PricingMaterialRow row;
   final PricingCalculatorController controller;
+  final bool isReadOnly;
 
   const PricingToolRowWidget({
     super.key,
     required this.row,
     required this.controller,
+    this.isReadOnly = false,
   });
 
   @override
@@ -359,6 +378,7 @@ class PricingToolRowWidget extends StatelessWidget {
             flex: 3,
             child: CounterInput(
               initialValue: row.doseUsage.value,
+              enabled: !isReadOnly,
               onChanged: (val) {
                 row.doseUsage.value = val;
               },
@@ -369,23 +389,26 @@ class PricingToolRowWidget extends StatelessWidget {
             flex: 3,
             child: buildInput(row.freq.value.toString(), (val) {
               row.freq.value = double.tryParse(val) ?? 0.0;
-            }),
+            }, enabled: !isReadOnly),
           ),
           const SizedBox(width: 8.0),
-          SizedBox(
-            width: 30.0,
-            height: 30.0,
-            child: IconButton(
-              icon: const Icon(
-                Icons.close_rounded,
-                color: AppColors.muted,
-                size: 18.0,
+          if (!isReadOnly)
+            SizedBox(
+              width: 30.0,
+              height: 30.0,
+              child: IconButton(
+                icon: const Icon(
+                  Icons.close_rounded,
+                  color: AppColors.muted,
+                  size: 18.0,
+                ),
+                onPressed: () {
+                  controller.materials.remove(row);
+                },
               ),
-              onPressed: () {
-                controller.materials.remove(row);
-              },
-            ),
-          ),
+            )
+          else
+            const SizedBox(width: 30.0),
         ],
       ),
     );

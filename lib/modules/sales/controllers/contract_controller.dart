@@ -114,7 +114,7 @@ class ContractController {
 
   Future<Result<Contract>> createContractFromProposal(
     String proposalId,
-    CreateContractFromProposalInput input,
+    ContractFormInput input,
   ) async {
     _actionState.value = const UiLoading();
     final result = await _repository.createContractFromProposal(
@@ -124,6 +124,41 @@ class ContractController {
     if (_isDisposed) return result;
     _actionState.value = const UiInitial();
     if (result is Ok<Contract>) {
+      await loadContracts(isRefresh: true);
+    }
+    return result;
+  }
+
+  Future<Result<ContractStatusResult>> updateContract(
+    String id,
+    ContractFormInput input,
+  ) async {
+    _actionState.value = const UiLoading();
+    final result = await _repository.updateContract(id, input);
+    if (_isDisposed) return result;
+    _actionState.value = switch (result) {
+      Ok(:final value) => UiSuccess(value),
+      Err(:final failure) => UiFailure(failure),
+    };
+    if (result is Ok) {
+      await loadContracts(isRefresh: true);
+      if (_selectedContractId.value == id) {
+        await selectContract(id);
+      }
+    }
+    return result;
+  }
+
+  Future<Result<void>> deleteContract(String id) async {
+    _actionState.value = const UiLoading();
+    final result = await _repository.deleteContract(id);
+    if (_isDisposed) return result;
+    _actionState.value = const UiInitial();
+    if (result is Ok) {
+      if (_selectedContractId.value == id) {
+        _selectedContractId.value = '';
+        _contractDetailState.value = const UiInitial();
+      }
       await loadContracts(isRefresh: true);
     }
     return result;

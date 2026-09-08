@@ -85,6 +85,10 @@ class CustomerLocationDto {
   final bool isPrimary;
   final String label;
   final String addressLine;
+  final int? provinceId;
+  final int? regencyId;
+  final int? districtId;
+  final int? villageId;
   final String village;
   final String district;
   final String regency;
@@ -99,6 +103,10 @@ class CustomerLocationDto {
     required this.isPrimary,
     required this.label,
     required this.addressLine,
+    this.provinceId,
+    this.regencyId,
+    this.districtId,
+    this.villageId,
     required this.village,
     required this.district,
     required this.regency,
@@ -108,17 +116,39 @@ class CustomerLocationDto {
     this.longitude,
   });
 
+  static (int?, String) _parseRegionRef(dynamic raw) {
+    if (raw == null) return (null, '');
+    if (raw is Map<String, dynamic>) {
+      final id = (raw['id'] as num?)?.toInt();
+      final name = raw['name']?.toString() ?? '';
+      return (id, name);
+    }
+    if (raw is String) {
+      return (null, raw);
+    }
+    return (null, raw.toString());
+  }
+
   factory CustomerLocationDto.fromJson(Map<String, dynamic> json) {
+    final (pId, pName) = _parseRegionRef(json['province']);
+    final (rId, rName) = _parseRegionRef(json['regency']);
+    final (dId, dName) = _parseRegionRef(json['district']);
+    final (vId, vName) = _parseRegionRef(json['village']);
+
     return CustomerLocationDto(
       id: json['id']?.toString(),
       customerId: json['customer_id']?.toString(),
       isPrimary: json['is_primary'] as bool? ?? false,
       label: json['label']?.toString() ?? '',
       addressLine: json['address_line']?.toString() ?? '',
-      village: json['village']?.toString() ?? '',
-      district: json['district']?.toString() ?? '',
-      regency: json['regency']?.toString() ?? '',
-      province: json['province']?.toString() ?? '',
+      provinceId: pId ?? (json['province_id'] as num?)?.toInt(),
+      province: pName,
+      regencyId: rId ?? (json['regency_id'] as num?)?.toInt(),
+      regency: rName,
+      districtId: dId ?? (json['district_id'] as num?)?.toInt(),
+      district: dName,
+      villageId: vId ?? (json['village_id'] as num?)?.toInt(),
+      village: vName,
       areaSize: (json['area_size'] as num?)?.toDouble(),
       latitude: (json['latitude'] as num?)?.toDouble(),
       longitude: (json['longitude'] as num?)?.toDouble(),
@@ -132,6 +162,10 @@ class CustomerLocationDto {
       isPrimary: isPrimary,
       label: label,
       addressLine: addressLine,
+      provinceId: provinceId,
+      regencyId: regencyId,
+      districtId: districtId,
+      villageId: villageId,
       village: village,
       district: district,
       regency: regency,

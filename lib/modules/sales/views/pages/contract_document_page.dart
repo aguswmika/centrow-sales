@@ -3,10 +3,10 @@ import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:signals/signals_flutter.dart';
 import 'package:centrow_sales/app/di.dart';
-import 'package:centrow_sales/modules/sales/controllers/proposal_document_controller.dart';
-import 'package:centrow_sales/modules/sales/entities/proposal.dart';
-import 'package:centrow_sales/modules/sales/entities/proposal_document.dart';
-import 'package:centrow_sales/modules/sales/repositories/proposal_repository.dart';
+import 'package:centrow_sales/modules/sales/controllers/contract_document_controller.dart';
+import 'package:centrow_sales/modules/sales/entities/contract.dart';
+import 'package:centrow_sales/modules/sales/entities/contract_document.dart';
+import 'package:centrow_sales/modules/sales/repositories/contract_repository.dart';
 import 'package:centrow_sales/modules/sales/views/widgets/custom_tiptap_toolbar.dart';
 import 'package:centrow_sales/modules/sales/views/widgets/webview_tiptap_editor.dart';
 import 'package:centrow_sales/shared/result/result.dart';
@@ -16,44 +16,44 @@ import 'package:centrow_sales/shared/widgets/app_button.dart';
 import 'package:centrow_sales/shared/widgets/error_view.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 
-class ProposalDocumentPage extends StatefulWidget {
-  final String proposalId;
-  final Proposal? initialProposal;
+class ContractDocumentPage extends StatefulWidget {
+  final String contractId;
+  final Contract? initialContract;
 
-  const ProposalDocumentPage({
+  const ContractDocumentPage({
     super.key,
-    required this.proposalId,
-    this.initialProposal,
+    required this.contractId,
+    this.initialContract,
   });
 
   @override
-  State<ProposalDocumentPage> createState() => _ProposalDocumentPageState();
+  State<ContractDocumentPage> createState() => _ContractDocumentPageState();
 }
 
-class _ProposalDocumentPageState extends State<ProposalDocumentPage> {
-  late final _controller = getIt<ProposalDocumentController>();
+class _ContractDocumentPageState extends State<ContractDocumentPage> {
+  late final _controller = getIt<ContractDocumentController>();
   WebViewController? _webViewController;
   TiptapState? _tiptapState;
-  Proposal? _proposal;
+  Contract? _contract;
 
-  bool get canEditDocument => _proposal?.status.canEditDocument ?? false;
+  bool get canEditDocument => _contract?.status.canEditDocument ?? false;
 
   @override
   void initState() {
     super.initState();
-    _proposal = widget.initialProposal;
-    _controller.loadDocument(widget.proposalId);
-    if (_proposal == null) {
-      _loadProposal();
+    _contract = widget.initialContract;
+    _controller.loadDocument(widget.contractId);
+    if (_contract == null) {
+      _loadContract();
     }
   }
 
-  Future<void> _loadProposal() async {
-    final repo = getIt<ProposalRepository>();
-    final result = await repo.getProposalById(widget.proposalId);
-    if (mounted && result is Ok<Proposal>) {
+  Future<void> _loadContract() async {
+    final repo = getIt<ContractRepository>();
+    final result = await repo.getContractById(widget.contractId);
+    if (mounted && result is Ok<Contract>) {
       setState(() {
-        _proposal = result.value;
+        _contract = result.value;
       });
     }
   }
@@ -88,13 +88,13 @@ class _ProposalDocumentPageState extends State<ProposalDocumentPage> {
                       if (context.canPop()) {
                         context.pop();
                       } else {
-                        context.go('/proposals');
+                        context.go('/contracts');
                       }
                     },
                   ),
                   const SizedBox(width: 8),
                   const Text(
-                    'Dokumen Proposal',
+                    'Dokumen Kontrak',
                     style: TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
@@ -109,13 +109,15 @@ class _ProposalDocumentPageState extends State<ProposalDocumentPage> {
                       onPressed: () async {
                         if (_tiptapState != null) {
                           final success = await _controller.saveDocument(
-                            widget.proposalId,
+                            widget.contractId,
                             _tiptapState!.json,
                           );
                           if (success && context.mounted) {
                             ScaffoldMessenger.of(context).showSnackBar(
                               const SnackBar(
-                                content: Text('Dokumen berhasil disimpan'),
+                                content: Text(
+                                  'Dokumen kontrak berhasil disimpan',
+                                ),
                               ),
                             );
                           }
@@ -127,7 +129,7 @@ class _ProposalDocumentPageState extends State<ProposalDocumentPage> {
                 ],
               ),
             ),
-            if (!canEditDocument && _proposal != null)
+            if (!canEditDocument && _contract != null)
               Container(
                 width: double.infinity,
                 padding: const EdgeInsets.symmetric(
@@ -150,7 +152,7 @@ class _ProposalDocumentPageState extends State<ProposalDocumentPage> {
                     const SizedBox(width: 10.0),
                     Expanded(
                       child: Text(
-                        'Proposal ini berstatus ${_proposal!.status.displayName}. Dokumen hanya dapat dibaca dan tidak dapat diubah.',
+                        'Kontrak ini berstatus ${_contract!.status.displayName}. Dokumen hanya dapat dibaca dan tidak dapat diubah.',
                         style: GoogleFonts.inter(
                           fontSize: 13.0,
                           color: const Color(0xFF92580F),
@@ -172,7 +174,7 @@ class _ProposalDocumentPageState extends State<ProposalDocumentPage> {
                     UiFailure(:final failure) => ErrorView(
                       message: failure.message,
                       onRetry: () =>
-                          _controller.loadDocument(widget.proposalId),
+                          _controller.loadDocument(widget.contractId),
                     ),
                     UiSuccess(:final data) => _buildEditorContent(data),
                   };
@@ -185,7 +187,7 @@ class _ProposalDocumentPageState extends State<ProposalDocumentPage> {
     );
   }
 
-  Widget _buildEditorContent(ProposalDocument doc) {
+  Widget _buildEditorContent(ContractDocument doc) {
     return Container(
       color: AppColors.bg,
       padding: const EdgeInsets.all(24.0),

@@ -26,6 +26,7 @@ enum ContractStatus {
   bool get canCancel => isDraft;
   bool get canEdit => isDraft;
   bool get canDelete => isDraft;
+  bool get canEditDocument => isDraft;
 
   static ContractStatus fromString(String val) =>
       switch (val.toLowerCase().trim()) {
@@ -193,50 +194,27 @@ class ContractStatusResult {
   });
 }
 
-class CreateContractFromProposalInput {
+class ContractFormInput {
   final String categoryId;
-  final String? code;
-  final String? signedDate;
   final String startDate;
   final String? endDate;
   final String? firstInvoiceDate;
-  final int? totalVisits;
-  final double? contractValue;
-  final int? paymentTypeId;
-  final String? signatoryName;
-  final String? signatoryPosition;
-  final String? notes;
+  final String signedDate;
+  final int paymentTypeId;
+  final String notes;
 
-  const CreateContractFromProposalInput({
+  const ContractFormInput({
     required this.categoryId,
-    this.code,
-    this.signedDate,
     required this.startDate,
     this.endDate,
     this.firstInvoiceDate,
-    this.totalVisits,
-    this.contractValue,
-    this.paymentTypeId,
-    this.signatoryName,
-    this.signatoryPosition,
-    this.notes,
+    required this.signedDate,
+    required this.paymentTypeId,
+    required this.notes,
   });
-
-  Map<String, dynamic> toJson() => {
-    'category_id': categoryId,
-    if (code != null && code!.isNotEmpty) 'code': code,
-    if (signedDate != null) 'signed_date': signedDate,
-    'start_date': startDate,
-    if (endDate != null) 'end_date': endDate,
-    if (firstInvoiceDate != null) 'first_invoice_date': firstInvoiceDate,
-    if (totalVisits != null) 'total_visits': totalVisits,
-    if (contractValue != null) 'contract_value': contractValue,
-    if (paymentTypeId != null) 'payment_type_id': paymentTypeId,
-    if (signatoryName != null) 'signatory_name': signatoryName,
-    if (signatoryPosition != null) 'signatory_position': signatoryPosition,
-    if (notes != null) 'notes': notes,
-  };
 }
+
+typedef CreateContractFromProposalInput = ContractFormInput;
 
 String _formatCurrency(double amount) {
   if (amount == 0) return 'Rp 0';

@@ -29,13 +29,14 @@ enum ProposalStatus {
 
   bool get canEdit => isDraft;
   bool get canEditPricing => isDraft;
-  bool get canEditDocument => !isExpired && !isCancelled;
+  bool get canEditDocument => isDraft;
   bool get canRevise => isSent || isRejected || isExpired;
   bool get canSend => isDraft;
   bool get canAccept => isSent;
   bool get canReject => isSent;
   bool get canExpire => isSent;
   bool get canCancel => isDraft || isSent;
+  bool get canCreateContract => isAccepted;
 
   static ProposalStatus fromString(String val) {
     final lower = val.toLowerCase().trim();
@@ -177,6 +178,37 @@ class ProposalItem {
       'ProposalItem(id: $id, title: $title, category: ${category.value}, price: $price, qty: $qty, frequency: $frequency, unitCode: $unitCode, unitCost: $unitCost, kind: $kind)';
 }
 
+class ProposalLinkedContract {
+  final String id;
+  final String code;
+  final String status;
+  final String? statusLabel;
+
+  const ProposalLinkedContract({
+    required this.id,
+    required this.code,
+    required this.status,
+    this.statusLabel,
+  });
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is ProposalLinkedContract &&
+          runtimeType == other.runtimeType &&
+          id == other.id &&
+          code == other.code &&
+          status == other.status &&
+          statusLabel == other.statusLabel;
+
+  @override
+  int get hashCode => Object.hash(id, code, status, statusLabel);
+
+  @override
+  String toString() =>
+      'ProposalLinkedContract(id: $id, code: $code, status: $status, statusLabel: $statusLabel)';
+}
+
 class Proposal {
   final String id;
   final String code;
@@ -190,6 +222,8 @@ class Proposal {
   final String location;
   final String? addressId;
   final bool hasPricing;
+  final bool hasContract;
+  final ProposalLinkedContract? linkedContract;
   final String? addressLabel;
   final String? addressLine;
   final String version;
@@ -231,6 +265,8 @@ class Proposal {
     required this.location,
     this.addressId,
     this.hasPricing = false,
+    this.hasContract = false,
+    this.linkedContract,
     this.addressLabel,
     this.addressLine,
     this.version = '1',
@@ -266,6 +302,11 @@ class Proposal {
   bool get canEditPricing => status.canEditPricing;
   bool get canEditDocument => status.canEditDocument;
   bool get canRevise => status.canRevise;
+  bool get canCreateContract =>
+      status.canCreateContract &&
+      !hasContract &&
+      linkedContract == null &&
+      hasPricing;
 
   String get initials {
     final exp = explicitInitials;
@@ -337,6 +378,8 @@ class Proposal {
     String? location,
     String? addressId,
     bool? hasPricing,
+    bool? hasContract,
+    ProposalLinkedContract? linkedContract,
     String? addressLabel,
     String? addressLine,
     String? version,
@@ -378,6 +421,8 @@ class Proposal {
       location: location ?? this.location,
       addressId: addressId ?? this.addressId,
       hasPricing: hasPricing ?? this.hasPricing,
+      hasContract: hasContract ?? this.hasContract,
+      linkedContract: linkedContract ?? this.linkedContract,
       addressLabel: addressLabel ?? this.addressLabel,
       addressLine: addressLine ?? this.addressLine,
       version: version ?? this.version,
@@ -424,6 +469,9 @@ class Proposal {
           validUntil == other.validUntil &&
           location == other.location &&
           addressId == other.addressId &&
+          hasPricing == other.hasPricing &&
+          hasContract == other.hasContract &&
+          linkedContract == other.linkedContract &&
           addressLabel == other.addressLabel &&
           addressLine == other.addressLine &&
           version == other.version &&
@@ -461,6 +509,9 @@ class Proposal {
     validUntil,
     location,
     addressId,
+    hasPricing,
+    hasContract,
+    linkedContract,
     addressLabel,
     addressLine,
     version,
@@ -488,7 +539,7 @@ class Proposal {
 
   @override
   String toString() =>
-      "Proposal(id: $id, code: $code, clientName: $clientName, serviceName: $serviceName, status: ${status.name}, total: $total)";
+      "Proposal(id: $id, code: $code, clientName: $clientName, serviceName: $serviceName, status: ${status.name}, total: $total, hasContract: $hasContract)";
 }
 
 String _formatCurrency(double amount) {

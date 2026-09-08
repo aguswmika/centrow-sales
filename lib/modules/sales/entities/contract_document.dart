@@ -1,25 +1,27 @@
 import 'package:centrow_sales/modules/sales/entities/document_placeholder.dart';
 export 'package:centrow_sales/modules/sales/entities/document_placeholder.dart';
 
-typedef ProposalPlaceholder = DocumentPlaceholder;
+typedef ContractPlaceholder = DocumentPlaceholder;
 
-class ProposalDocument {
+class ContractDocument {
   final String? documentId;
-  final String proposalId;
+  final String contractId;
   final String? templateId;
   final String title;
   final String source;
   final Map<String, dynamic> content;
-  final List<ProposalPlaceholder> placeholders;
+  final int theme;
+  final List<ContractPlaceholder> placeholders;
   final DateTime? updatedAt;
 
-  const ProposalDocument({
+  const ContractDocument({
     this.documentId,
-    required this.proposalId,
+    required this.contractId,
     this.templateId,
     required this.title,
     required this.source,
     required this.content,
+    this.theme = 1,
     required this.placeholders,
     this.updatedAt,
   });

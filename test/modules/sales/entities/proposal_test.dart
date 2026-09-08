@@ -93,11 +93,11 @@ void main() {
       expect(ProposalStatus.expired.canEditPricing, isFalse);
       expect(ProposalStatus.cancelled.canEditPricing, isFalse);
 
-      // canEditDocument (blocked only when expired or cancelled)
+      // canEditDocument (allowed only when draft)
       expect(ProposalStatus.draft.canEditDocument, isTrue);
-      expect(ProposalStatus.sent.canEditDocument, isTrue);
-      expect(ProposalStatus.accepted.canEditDocument, isTrue);
-      expect(ProposalStatus.rejected.canEditDocument, isTrue);
+      expect(ProposalStatus.sent.canEditDocument, isFalse);
+      expect(ProposalStatus.accepted.canEditDocument, isFalse);
+      expect(ProposalStatus.rejected.canEditDocument, isFalse);
       expect(ProposalStatus.expired.canEditDocument, isFalse);
       expect(ProposalStatus.cancelled.canEditDocument, isFalse);
 
@@ -134,6 +134,14 @@ void main() {
       expect(ProposalStatus.rejected.canCancel, isFalse);
       expect(ProposalStatus.expired.canCancel, isFalse);
       expect(ProposalStatus.cancelled.canCancel, isFalse);
+
+      // canCreateContract (only accepted proposals can have a contract created)
+      expect(ProposalStatus.accepted.canCreateContract, isTrue);
+      expect(ProposalStatus.draft.canCreateContract, isFalse);
+      expect(ProposalStatus.sent.canCreateContract, isFalse);
+      expect(ProposalStatus.rejected.canCreateContract, isFalse);
+      expect(ProposalStatus.expired.canCreateContract, isFalse);
+      expect(ProposalStatus.cancelled.canCreateContract, isFalse);
     });
 
     test('fromString parses English and Indonesian names correctly', () {
@@ -264,6 +272,41 @@ void main() {
       expect(updated.clientName, 'Client B');
       expect(updated.code, 'PRO-2026-0001');
     });
+
+    test(
+      'Proposal.canCreateContract delegates to status and requires pricing without existing contract',
+      () {
+        const draftProp = Proposal(
+          id: 'p1',
+          code: 'PRO-1',
+          clientName: 'Client',
+          serviceName: 'Service',
+          status: ProposalStatus.draft,
+          date: '01 Agt 2026',
+          validUntil: '01 Sep 2026',
+          location: 'Loc',
+          hasPricing: true,
+        );
+        expect(draftProp.canCreateContract, isFalse);
+
+        final acceptedNoPricing = draftProp.copyWith(
+          status: ProposalStatus.accepted,
+          hasPricing: false,
+        );
+        expect(acceptedNoPricing.canCreateContract, isFalse);
+
+        final acceptedWithPricing = draftProp.copyWith(
+          status: ProposalStatus.accepted,
+          hasPricing: true,
+        );
+        expect(acceptedWithPricing.canCreateContract, isTrue);
+
+        final acceptedWithContract = acceptedWithPricing.copyWith(
+          hasContract: true,
+        );
+        expect(acceptedWithContract.canCreateContract, isFalse);
+      },
+    );
   });
 
   group('ProposalStatusResult', () {

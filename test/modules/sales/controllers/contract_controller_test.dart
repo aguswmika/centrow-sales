@@ -31,6 +31,20 @@ class FakeContractRepository implements ContractRepository {
   }
 
   @override
+  Future<Result<ContractStatusResult>> updateContract(
+    String id,
+    ContractFormInput input,
+  ) async {
+    return Ok(ContractStatusResult(id: id, status: ContractStatus.draft));
+  }
+
+  @override
+  Future<Result<void>> deleteContract(String id) async {
+    contracts.removeWhere((e) => e.id == id);
+    return const Ok(null);
+  }
+
+  @override
   Future<Result<ContractStatusResult>> activateContract(String id) async {
     return Ok(ContractStatusResult(id: id, status: ContractStatus.active));
   }

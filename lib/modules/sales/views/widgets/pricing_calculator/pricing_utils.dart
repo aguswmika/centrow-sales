@@ -59,23 +59,30 @@ Widget buildTh(String text, {bool center = false, bool right = false}) {
   );
 }
 
-Widget buildInput(String initialValue, void Function(String) onChanged) {
+Widget buildInput(
+  String initialValue,
+  void Function(String) onChanged, {
+  bool enabled = true,
+}) {
   return Container(
     height: 40.0,
     decoration: BoxDecoration(
-      color: AppColors.subtle,
+      color: enabled
+          ? AppColors.subtle
+          : AppColors.border.withValues(alpha: 0.3),
       border: Border.all(color: AppColors.border, width: 1.5),
       borderRadius: AppRadius.borderSm,
     ),
     child: TextFormField(
       initialValue: initialValue,
+      enabled: enabled,
       textAlign: TextAlign.right,
       keyboardType: TextInputType.number,
       onChanged: onChanged,
-      style: const TextStyle(
+      style: TextStyle(
         fontSize: 13.0,
         fontWeight: FontWeight.w600,
-        color: AppColors.text,
+        color: enabled ? AppColors.text : AppColors.muted,
       ),
       decoration: const InputDecoration(
         filled: false,

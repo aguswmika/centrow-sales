@@ -30,8 +30,10 @@ import 'package:centrow_sales/shared/storage/local_storage.dart';
 import 'package:centrow_sales/app/router.dart';
 import 'package:centrow_sales/modules/sales/controllers/contract_controller.dart';
 import 'package:centrow_sales/modules/sales/controllers/contract_form_controller.dart';
+import 'package:centrow_sales/modules/sales/controllers/contract_document_controller.dart';
 import 'package:centrow_sales/modules/sales/repositories/contract_repository.dart';
 import 'package:centrow_sales/modules/sales/repositories/contract_category_repository.dart';
+import 'package:centrow_sales/modules/sales/repositories/contract_document_repository.dart';
 
 final GetIt getIt = GetIt.instance;
 
@@ -143,6 +145,9 @@ Future<void> setupDi({LocalStorage? storage}) async {
   getIt.registerLazySingleton<ContractRepository>(
     () => ContractRepositoryImpl(getIt<Dio>()),
   );
+  getIt.registerLazySingleton<ContractDocumentRepository>(
+    () => ContractDocumentRepositoryImpl(getIt<Dio>()),
+  );
   getIt.registerFactory<ContractController>(
     () => ContractController(getIt<ContractRepository>()),
   );
@@ -151,5 +156,8 @@ Future<void> setupDi({LocalStorage? storage}) async {
       getIt<ContractRepository>(),
       getIt<ContractCategoryRepository>(),
     ),
+  );
+  getIt.registerFactory<ContractDocumentController>(
+    () => ContractDocumentController(getIt<ContractDocumentRepository>()),
   );
 }

@@ -61,6 +61,46 @@ void main() {
       expect(entity.coords, '-8.65, 115.17');
     });
 
+    test(
+      'CustomerLocationDto fromJson and toEntity with region {id, name} objects',
+      () {
+        final json = {
+          'id': '880e8400-e29b-41d4-a716-446655440003',
+          'customer_id': '550e8400-e29b-41d4-a716-446655440000',
+          'is_primary': true,
+          'label': 'Main Resort',
+          'address_line': 'Jalan Pantai Kuta, Kuta, Bali',
+          'village': {'id': 5103040001, 'name': 'Kuta'},
+          'district': {'id': 5103040, 'name': 'Kuta'},
+          'regency': {'id': 5103, 'name': 'Badung'},
+          'province': {'id': 51, 'name': 'Bali'},
+          'area_size': 25000.5,
+          'latitude': -8.6500,
+          'longitude': 115.1700,
+        };
+
+        final dto = CustomerLocationDto.fromJson(json);
+        expect(dto.provinceId, 51);
+        expect(dto.province, 'Bali');
+        expect(dto.regencyId, 5103);
+        expect(dto.regency, 'Badung');
+        expect(dto.districtId, 5103040);
+        expect(dto.district, 'Kuta');
+        expect(dto.villageId, 5103040001);
+        expect(dto.village, 'Kuta');
+
+        final entity = dto.toEntity();
+        expect(entity.provinceId, 51);
+        expect(entity.province, 'Bali');
+        expect(entity.regencyId, 5103);
+        expect(entity.regency, 'Badung');
+        expect(entity.districtId, 5103040);
+        expect(entity.district, 'Kuta');
+        expect(entity.villageId, 5103040001);
+        expect(entity.village, 'Kuta');
+      },
+    );
+
     test('CustomerContactDto fromJson and toEntity', () {
       final json = {
         'id': 'aa0e8400-e29b-41d4-a716-446655440005',

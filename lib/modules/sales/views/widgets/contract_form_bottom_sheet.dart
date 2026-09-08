@@ -11,21 +11,23 @@ import 'package:centrow_sales/shared/widgets/app_searchable_selector.dart';
 import 'package:centrow_sales/shared/widgets/toast.dart';
 
 class ContractFormBottomSheet extends StatefulWidget {
-  final String proposalId;
-  final String proposalCode;
-  final String customerName;
-  final String serviceName;
+  final String? proposalId;
+  final String? proposalCode;
+  final String? customerName;
+  final String? serviceName;
   final double? prefilledContractValue;
   final int? prefilledTotalVisits;
+  final Contract? initialContract;
 
   const ContractFormBottomSheet({
     super.key,
-    required this.proposalId,
-    required this.proposalCode,
-    required this.customerName,
-    required this.serviceName,
+    this.proposalId,
+    this.proposalCode,
+    this.customerName,
+    this.serviceName,
     this.prefilledContractValue,
     this.prefilledTotalVisits,
+    this.initialContract,
   });
 
   @override
@@ -38,26 +40,36 @@ class _ContractFormBottomSheetState extends State<ContractFormBottomSheet> {
   final _startDateCtrl = TextEditingController();
   final _endDateCtrl = TextEditingController();
   final _signedDateCtrl = TextEditingController();
-  final _contractValueCtrl = TextEditingController();
-  final _signatoryNameCtrl = TextEditingController();
-  final _signatoryPosCtrl = TextEditingController();
+  final _firstInvoiceDateCtrl = TextEditingController();
   final _notesCtrl = TextEditingController();
 
   @override
   void initState() {
     super.initState();
     _controller = getIt<ContractFormController>();
-    _controller.initFromProposal(
-      proposalId: widget.proposalId,
-      proposalCode: widget.proposalCode,
-      customerName: widget.customerName,
-      serviceName: widget.serviceName,
-      prefilledValue: widget.prefilledContractValue,
-      prefilledVisits: widget.prefilledTotalVisits,
-    );
-    if (widget.prefilledContractValue != null) {
-      _contractValueCtrl.text = widget.prefilledContractValue!.toStringAsFixed(
-        0,
+    if (widget.initialContract != null) {
+      _controller.initFromContract(widget.initialContract!);
+      _startDateCtrl.text = widget.initialContract!.startDate;
+      if (widget.initialContract!.endDate != null) {
+        _endDateCtrl.text = widget.initialContract!.endDate!;
+      }
+      if (widget.initialContract!.signedDate != null) {
+        _signedDateCtrl.text = widget.initialContract!.signedDate!;
+      }
+      if (widget.initialContract!.firstInvoiceDate != null) {
+        _firstInvoiceDateCtrl.text = widget.initialContract!.firstInvoiceDate!;
+      }
+      if (widget.initialContract!.notes != null) {
+        _notesCtrl.text = widget.initialContract!.notes!;
+      }
+    } else {
+      _controller.initFromProposal(
+        proposalId: widget.proposalId ?? '',
+        proposalCode: widget.proposalCode ?? '',
+        customerName: widget.customerName ?? '',
+        serviceName: widget.serviceName ?? '',
+        prefilledValue: widget.prefilledContractValue,
+        prefilledVisits: widget.prefilledTotalVisits,
       );
     }
   }
@@ -68,9 +80,7 @@ class _ContractFormBottomSheetState extends State<ContractFormBottomSheet> {
     _startDateCtrl.dispose();
     _endDateCtrl.dispose();
     _signedDateCtrl.dispose();
-    _contractValueCtrl.dispose();
-    _signatoryNameCtrl.dispose();
-    _signatoryPosCtrl.dispose();
+    _firstInvoiceDateCtrl.dispose();
     _notesCtrl.dispose();
     super.dispose();
   }
@@ -131,7 +141,12 @@ class _ContractFormBottomSheetState extends State<ContractFormBottomSheet> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Text('Buat Kontrak', style: AppTypography.heading2()),
+                      Text(
+                        _controller.isEditMode
+                            ? 'Ubah Kontrak'
+                            : 'Buat Kontrak',
+                        style: AppTypography.heading2(),
+                      ),
                       IconButton(
                         icon: const Icon(
                           Icons.close_rounded,
@@ -142,20 +157,50 @@ class _ContractFormBottomSheetState extends State<ContractFormBottomSheet> {
                     ],
                   ),
                   const SizedBox(height: 8),
+                  if (_controller.proposalCode != null &&
+                      _controller.proposalCode!.isNotEmpty)
+                    Text(
+                      'Dari Penawaran ${_controller.proposalCode}',
+                      style: AppTypography.bodySm(color: AppColors.muted),
+                    ),
                   Text(
-                    'Dari Penawaran ${widget.proposalCode}',
-                    style: AppTypography.bodySm(color: AppColors.muted),
-                  ),
-                  Text(
-                    '${widget.customerName} · ${widget.serviceName}',
+                    '${_controller.prefilledCustomerName ?? ''} · ${_controller.prefilledServiceName ?? ''}',
                     style: AppTypography.bodySm(
                       color: AppColors.text,
                       fontWeight: FontWeight.w600,
                     ),
                   ),
+                  const SizedBox(height: 16),
+
+                  // Information Banner about Pricing & Signatory
+                  Container(
+                    padding: const EdgeInsets.all(12.0),
+                    decoration: BoxDecoration(
+                      color: AppColors.subtle,
+                      borderRadius: BorderRadius.circular(8.0),
+                      border: Border.all(color: AppColors.border),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Informasi Otomatis:',
+                          style: AppTypography.bodySm(
+                            color: AppColors.text,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          '• Nilai kontrak & frekuensi kunjungan disalin otomatis dari kalkulasi harga proposal.\n• Penandatangan disalin otomatis dari kontak Pelanggan dengan peran Penandatangan.',
+                          style: AppTypography.caption(color: AppColors.sec),
+                        ),
+                      ],
+                    ),
+                  ),
                   const SizedBox(height: 24),
 
-                  // Category picker (required)
+                  // 1. Kategori Kontrak *
                   AppSearchableSelector<ContractCategory>(
                     label: 'Kategori Kontrak *',
                     hint: 'Pilih kategori…',
@@ -167,7 +212,7 @@ class _ContractFormBottomSheetState extends State<ContractFormBottomSheet> {
                   ),
                   const SizedBox(height: 16),
 
-                  // Start date (required)
+                  // 2. Tanggal Mulai *
                   TextFormField(
                     controller: _startDateCtrl,
                     readOnly: true,
@@ -182,7 +227,7 @@ class _ContractFormBottomSheetState extends State<ContractFormBottomSheet> {
                   ),
                   const SizedBox(height: 16),
 
-                  // End date (optional)
+                  // 3. Tanggal Selesai (optional)
                   TextFormField(
                     controller: _endDateCtrl,
                     readOnly: true,
@@ -197,12 +242,12 @@ class _ContractFormBottomSheetState extends State<ContractFormBottomSheet> {
                   ),
                   const SizedBox(height: 16),
 
-                  // Signed date (optional)
+                  // 4. Tanggal Penandatanganan *
                   TextFormField(
                     controller: _signedDateCtrl,
                     readOnly: true,
                     decoration: const InputDecoration(
-                      labelText: 'Tanggal TTD',
+                      labelText: 'Tanggal Penandatanganan *',
                       suffixIcon: Icon(Icons.calendar_today),
                     ),
                     onTap: () => _pickDate(
@@ -212,24 +257,24 @@ class _ContractFormBottomSheetState extends State<ContractFormBottomSheet> {
                   ),
                   const SizedBox(height: 16),
 
-                  // Contract value
+                  // 5. Tanggal Invoice Pertama (optional)
                   TextFormField(
-                    controller: _contractValueCtrl,
-                    keyboardType: TextInputType.number,
+                    controller: _firstInvoiceDateCtrl,
+                    readOnly: true,
                     decoration: const InputDecoration(
-                      labelText: 'Nilai Kontrak (Rp)',
-                      prefixText: 'Rp ',
+                      labelText: 'Tanggal Invoice Pertama',
+                      suffixIcon: Icon(Icons.calendar_today),
                     ),
-                    onChanged: (v) {
-                      final parsed = double.tryParse(v.replaceAll('.', ''));
-                      _controller.updateFields(contractValue: parsed);
-                    },
+                    onTap: () => _pickDate(
+                      _firstInvoiceDateCtrl,
+                      (v) => _controller.updateFields(firstInvoiceDate: v),
+                    ),
                   ),
                   const SizedBox(height: 16),
 
-                  // Payment type dropdown
+                  // 6. Tipe Pembayaran *
                   AppDropdown<ContractPaymentType>(
-                    label: 'Tipe Pembayaran',
+                    label: 'Tipe Pembayaran *',
                     value: _controller.paymentType,
                     items: ContractPaymentType.values
                         .map(
@@ -247,34 +292,12 @@ class _ContractFormBottomSheetState extends State<ContractFormBottomSheet> {
                   ),
                   const SizedBox(height: 16),
 
-                  // Signatory name
-                  TextFormField(
-                    controller: _signatoryNameCtrl,
-                    decoration: const InputDecoration(
-                      labelText: 'Nama Penandatangan',
-                    ),
-                    onChanged: (v) =>
-                        _controller.updateFields(signatoryName: v),
-                  ),
-                  const SizedBox(height: 16),
-
-                  // Signatory position
-                  TextFormField(
-                    controller: _signatoryPosCtrl,
-                    decoration: const InputDecoration(
-                      labelText: 'Jabatan Penandatangan',
-                    ),
-                    onChanged: (v) =>
-                        _controller.updateFields(signatoryPosition: v),
-                  ),
-                  const SizedBox(height: 16),
-
-                  // Notes
+                  // 7. Catatan *
                   TextFormField(
                     controller: _notesCtrl,
                     maxLines: 3,
                     decoration: const InputDecoration(
-                      labelText: 'Catatan',
+                      labelText: 'Catatan *',
                       alignLabelWithHint: true,
                     ),
                     onChanged: (v) => _controller.updateFields(notes: v),
@@ -307,7 +330,11 @@ class _ContractFormBottomSheetState extends State<ContractFormBottomSheet> {
                               color: Colors.white,
                             ),
                           )
-                        : const Text('Buat Kontrak'),
+                        : Text(
+                            _controller.isEditMode
+                                ? 'Simpan Perubahan'
+                                : 'Buat Kontrak',
+                          ),
                   ),
                 ],
               ),
