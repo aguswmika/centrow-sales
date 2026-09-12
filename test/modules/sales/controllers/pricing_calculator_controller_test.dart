@@ -12,8 +12,10 @@ import 'package:centrow_sales/shared/state/ui_state.dart';
 
 class MockPricingRepository implements PricingRepository {
   CreatePricingRequestDto? lastRequest;
+  CreatePricingRequestDto? lastPreviewRequest;
   Result<void> response = const Ok(null);
   Result<PricingPreview>? previewResponse;
+  Result<PricingDetail>? detailResponse;
 
   @override
   Future<Result<void>> savePricing(
@@ -26,7 +28,7 @@ class MockPricingRepository implements PricingRepository {
 
   @override
   Future<Result<PricingDetail>> getPricingDetail(String proposalId) async {
-    return const Err(UnknownFailure('Not implemented'));
+    return detailResponse ?? const Err(UnknownFailure('Not implemented'));
   }
 
   @override
@@ -34,26 +36,28 @@ class MockPricingRepository implements PricingRepository {
     String proposalId,
     CreatePricingRequestDto data,
   ) async {
-    return const Ok(
-      PricingPreview(
-        suppliesCost: 0,
-        workerCost: 0,
-        fuelCost: 0,
-        totalCogs: 0,
-        servicePrice: 0,
-        addonAmount: 0,
-        discountAmount: 0,
-        subtotal: 0,
-        taxPercentage: 0,
-        taxAmount: 0,
-        totalAmount: 0,
-        marginAmount: 0,
-        marginPercent: 0,
-        supplies: [],
-        workers: [],
-        items: [],
-      ),
-    );
+    lastPreviewRequest = data;
+    return previewResponse ??
+        const Ok(
+          PricingPreview(
+            suppliesCost: 0,
+            workerCost: 0,
+            fuelCost: 0,
+            totalCogs: 0,
+            servicePrice: 0,
+            addonAmount: 0,
+            discountAmount: 0,
+            subtotal: 0,
+            taxPercentage: 0,
+            taxAmount: 0,
+            totalAmount: 0,
+            marginAmount: 0,
+            marginPercent: 0,
+            supplies: [],
+            workers: [],
+            items: [],
+          ),
+        );
   }
 }
 
@@ -71,8 +75,8 @@ void main() {
   });
 
   group('Pricing Rows', () {
-    test('PricingMaterialRow calculates qty correctly', () {
-      final row = PricingMaterialRow(
+    test('PricingSupplyRow calculates qty correctly', () {
+      final row = PricingSupplyRow(
         id: '1',
         title: 'Chemical',
         code: 'CHM-1',
@@ -102,14 +106,14 @@ void main() {
         code: 'LBR-1',
         kind: 4,
         initialVisitFreq: 4.0,
-        initialFirstVisitHours: 3.0,
-        initialRoutineHours: 2.0,
+        initialFirstVisitMinutes: 180.0,
+        initialRoutineMinutes: 120.0,
         initialHourlyRate: 100000.0,
       );
 
       expect(row.visitFreq.value, 4.0);
-      expect(row.firstVisitHours.value, 3.0);
-      expect(row.routineHours.value, 2.0);
+      expect(row.firstVisitMinutes.value, 180.0);
+      expect(row.routineMinutes.value, 120.0);
       expect(row.hourlyRate.value, 100000.0);
 
       row.dispose();
@@ -213,14 +217,14 @@ void main() {
         controller.addRow(transportProduct, 3);
         controller.addRow(addonProduct, 5);
 
-        expect(controller.materials.length, 2);
+        expect(controller.supplies.length, 2);
         expect(controller.workers.length, 1);
         expect(controller.items.length, 2);
       },
     );
 
     test(
-      'addMaterialRow creates PricingMaterialRow correctly from ProductMapping',
+      'addSupplyRow creates PricingSupplyRow correctly from ProductMapping',
       () {
         const mappingWithDefaultDose = ProductMapping(
           id: 'pm-101',
@@ -239,10 +243,10 @@ void main() {
           defaultDose: 2.5,
         );
 
-        controller.addMaterialRow(mappingWithDefaultDose);
+        controller.addSupplyRow(mappingWithDefaultDose);
 
-        expect(controller.materials.length, 1);
-        final row1 = controller.materials[0];
+        expect(controller.supplies.length, 1);
+        final row1 = controller.supplies[0];
         expect(row1.id, 'prod-1');
         expect(row1.title, 'Termiticide Alpha');
         expect(row1.code, 'CHM-101');
@@ -268,10 +272,10 @@ void main() {
           defaultDose: null,
         );
 
-        controller.addMaterialRow(mappingWithoutDefaultDose);
+        controller.addSupplyRow(mappingWithoutDefaultDose);
 
-        expect(controller.materials.length, 2);
-        final row2 = controller.materials[1];
+        expect(controller.supplies.length, 2);
+        final row2 = controller.supplies[1];
         expect(row2.id, 'prod-2');
         expect(row2.title, 'Rodenticide Beta');
         expect(row2.code, '');
@@ -307,7 +311,7 @@ void main() {
       );
     });
 
-    test('addMaterialRow prevents duplicate productId', () {
+    test('addSupplyRow prevents duplicate productId', () {
       const mapping1 = ProductMapping(
         id: 'pm-1',
         productId: 'prod-1',
@@ -335,14 +339,14 @@ void main() {
         doseUnitCode: 'ML',
       );
 
-      controller.addMaterialRow(mapping1);
-      expect(controller.materials.length, 1);
+      controller.addSupplyRow(mapping1);
+      expect(controller.supplies.length, 1);
 
-      controller.addMaterialRow(mappingDuplicate);
-      expect(controller.materials.length, 1);
+      controller.addSupplyRow(mappingDuplicate);
+      expect(controller.supplies.length, 1);
     });
 
-    test('addRow prevents duplicate materials for kind 1 and 2', () {
+    test('addRow prevents duplicate supplies for kind 1 and 2', () {
       const chemProduct = Product(
         id: 'p1',
         code: 'CHM-1',
@@ -366,11 +370,11 @@ void main() {
 
       controller.addRow(chemProduct, 1);
       controller.addRow(chemProduct, 1);
-      expect(controller.materials.length, 1);
+      expect(controller.supplies.length, 1);
 
       controller.addRow(toolProduct, 2);
       controller.addRow(toolProduct, 2);
-      expect(controller.materials.length, 2);
+      expect(controller.supplies.length, 2);
     });
 
     test('addRow prevents duplicate items for kind 3 and 5', () {
@@ -424,8 +428,8 @@ void main() {
 
   group('PricingCalculatorController - submitPricing', () {
     test('submits pricing and updates submitState to UiSuccess', () async {
-      controller.materials.add(
-        PricingMaterialRow(
+      controller.supplies.add(
+        PricingSupplyRow(
           id: 'm1',
           title: 'Chemical',
           code: 'CHM',
@@ -452,14 +456,14 @@ void main() {
       expect(repository.lastRequest!.markupType, 1);
       expect(repository.lastRequest!.markupValue, 15.0);
       expect(repository.lastRequest!.taxPercentage, 5.0);
-      expect(repository.lastRequest!.materials.length, 1);
-      expect(repository.lastRequest!.materials[0].supplyType, 1);
-      expect(repository.lastRequest!.materials[0].productMappingId, 'pm-1');
-      expect(repository.lastRequest!.materials[0].doseUsage, 2.0);
-      expect(repository.lastRequest!.materials[0].doseUnitId, 'uom-ml');
-      expect(repository.lastRequest!.materials[0].applicationVolume, 1.0);
+      expect(repository.lastRequest!.supplies.length, 1);
+      expect(repository.lastRequest!.supplies[0].supplyType, 1);
+      expect(repository.lastRequest!.supplies[0].productMappingId, 'pm-1');
+      expect(repository.lastRequest!.supplies[0].doseUsage, 2.0);
+      expect(repository.lastRequest!.supplies[0].doseUnitId, 'uom-ml');
+      expect(repository.lastRequest!.supplies[0].applicationVolume, 1.0);
       expect(
-        repository.lastRequest!.materials[0].applicationVolumeUnitId,
+        repository.lastRequest!.supplies[0].applicationVolumeUnitId,
         'uom-l',
       );
     });
@@ -471,5 +475,116 @@ void main() {
 
       expect(controller.submitState.value, isA<UiFailure<void>>());
     });
+
+    test(
+      'validates worker minutes are non-negative on preview and submit',
+      () async {
+        controller.workers.add(
+          PricingWorkerRow(
+            id: 'w-1',
+            title: 'Teknisi',
+            code: 'LBR-1',
+            kind: 4,
+            initialVisitFreq: 2.0,
+            initialFirstVisitMinutes: -10.0,
+            initialRoutineMinutes: 60.0,
+            initialHourlyRate: 50000.0,
+          ),
+        );
+
+        await controller.previewPricing('prop-1');
+        expect(controller.previewState.value, isA<UiFailure<PricingPreview>>());
+        final previewFailure =
+            (controller.previewState.value as UiFailure<PricingPreview>)
+                .failure;
+        expect(previewFailure.message, 'Menit kerja tidak boleh negatif.');
+
+        await controller.submitPricing('prop-1');
+        expect(controller.submitState.value, isA<UiFailure<void>>());
+        final submitFailure =
+            (controller.submitState.value as UiFailure<void>).failure;
+        expect(submitFailure.message, 'Menit kerja tidak boleh negatif.');
+      },
+    );
+
+    test('builds request with worker minutes on submit and preview', () async {
+      controller.workers.add(
+        PricingWorkerRow(
+          id: 'w-1',
+          title: 'Teknisi',
+          code: 'LBR-1',
+          kind: 4,
+          initialVisitFreq: 4.0,
+          initialFirstVisitMinutes: 180.0,
+          initialRoutineMinutes: 90.0,
+          initialHourlyRate: 50000.0,
+        ),
+      );
+
+      await controller.previewPricing('prop-1');
+      expect(repository.lastPreviewRequest, isNotNull);
+      expect(repository.lastPreviewRequest!.workers.length, 1);
+      expect(
+        repository.lastPreviewRequest!.workers[0].firstVisitMinutes,
+        180.0,
+      );
+      expect(repository.lastPreviewRequest!.workers[0].routineMinutes, 90.0);
+
+      await controller.submitPricing('prop-1');
+      expect(repository.lastRequest, isNotNull);
+      expect(repository.lastRequest!.workers.length, 1);
+      expect(repository.lastRequest!.workers[0].firstVisitMinutes, 180.0);
+      expect(repository.lastRequest!.workers[0].routineMinutes, 90.0);
+    });
+  });
+
+  group('PricingCalculatorController - loadExistingPricing', () {
+    test(
+      'loads existing pricing worker minutes into PricingWorkerRow',
+      () async {
+        repository.detailResponse = const Ok(
+          PricingDetail(
+            id: 'price-1',
+            customerId: 'cust-1',
+            serviceId: 'srv-1',
+            contractMonths: 12,
+            visitFrequency: 4,
+            markupType: 1,
+            markupValue: 20.0,
+            discountAmount: 0.0,
+            taxPercentage: 11.0,
+            supplies: [],
+            workers: [
+              PricingDetailWorker(
+                id: 'pw-1',
+                productId: 'prod-tech',
+                positionName: 'Senior Technician',
+                visitFrequency: 4,
+                firstVisitMinutes: 240.0,
+                routineMinutes: 120.0,
+                hourlyRate: 100000.0,
+                lineTotal: 1200000.0,
+              ),
+            ],
+            items: [],
+          ),
+        );
+
+        await controller.loadExistingPricing('prop-1');
+
+        expect(
+          controller.existingPricingState.value,
+          isA<UiSuccess<PricingDetail>>(),
+        );
+        expect(controller.workers.length, 1);
+        final workerRow = controller.workers[0];
+        expect(workerRow.id, 'prod-tech');
+        expect(workerRow.title, 'Senior Technician');
+        expect(workerRow.visitFreq.value, 4.0);
+        expect(workerRow.firstVisitMinutes.value, 240.0);
+        expect(workerRow.routineMinutes.value, 120.0);
+        expect(workerRow.hourlyRate.value, 100000.0);
+      },
+    );
   });
 }

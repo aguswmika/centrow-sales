@@ -12,17 +12,17 @@ import 'package:centrow_sales/modules/sales/views/widgets/product_mapping_picker
 import 'package:centrow_sales/modules/sales/views/widgets/treatment_method_picker_sheet.dart';
 import 'pricing_utils.dart';
 
-class PricingMaterialTab extends StatelessWidget {
+class PricingSupplyTab extends StatelessWidget {
   final PricingCalculatorController controller;
   final bool isReadOnly;
 
-  const PricingMaterialTab({
+  const PricingSupplyTab({
     super.key,
     required this.controller,
     this.isReadOnly = false,
   });
 
-  Future<void> _handleAddMaterial(BuildContext context) async {
+  Future<void> _handleAddSupply(BuildContext context) async {
     final method = await showModalBottomSheet<TreatmentMethod>(
       context: context,
       isScrollControlled: true,
@@ -37,7 +37,7 @@ class PricingMaterialTab extends StatelessWidget {
       builder: (_) => ProductMappingPickerSheet(treatmentMethodId: method.id),
     );
     if (mapping != null && context.mounted) {
-      controller.addMaterialRow(mapping);
+      controller.addSupplyRow(mapping);
     }
   }
 
@@ -56,10 +56,10 @@ class PricingMaterialTab extends StatelessWidget {
   Widget build(BuildContext context) {
     return SignalBuilder(
       builder: (context) {
-        final chemicals = controller.materials
+        final chemicals = controller.supplies
             .where((m) => m.kind == 1)
             .toList();
-        final tools = controller.materials.where((m) => m.kind == 2).toList();
+        final tools = controller.supplies.where((m) => m.kind == 2).toList();
         return Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
@@ -75,7 +75,7 @@ class PricingMaterialTab extends StatelessWidget {
                 flexes: const [4, 3, 3, 2],
               ),
               for (final row in chemicals)
-                PricingMaterialRowWidget(
+                PricingSupplyRowWidget(
                   key: ObjectKey(row),
                   row: row,
                   controller: controller,
@@ -108,7 +108,7 @@ class PricingMaterialTab extends StatelessWidget {
                   children: [
                     buildAddBtn(
                       'Tambah Bahan Kimia',
-                      () => _handleAddMaterial(context),
+                      () => _handleAddSupply(context),
                     ),
                     const SizedBox(width: 12.0),
                     buildAddBtn('Tambah Alat', () => _handleAddTool(context)),
@@ -122,13 +122,13 @@ class PricingMaterialTab extends StatelessWidget {
   }
 }
 
-class PricingMaterialRowWidget extends StatelessWidget {
-  final PricingMaterialRow row;
+class PricingSupplyRowWidget extends StatelessWidget {
+  final PricingSupplyRow row;
   final PricingCalculatorController controller;
   final bool hasUnitColumn;
   final bool isReadOnly;
 
-  const PricingMaterialRowWidget({
+  const PricingSupplyRowWidget({
     super.key,
     required this.row,
     required this.controller,
@@ -300,7 +300,7 @@ class PricingMaterialRowWidget extends StatelessWidget {
                   size: 18.0,
                 ),
                 onPressed: () {
-                  controller.materials.remove(row);
+                  controller.supplies.remove(row);
                 },
               ),
             )
@@ -313,7 +313,7 @@ class PricingMaterialRowWidget extends StatelessWidget {
 }
 
 class PricingToolRowWidget extends StatelessWidget {
-  final PricingMaterialRow row;
+  final PricingSupplyRow row;
   final PricingCalculatorController controller;
   final bool isReadOnly;
 
@@ -403,7 +403,7 @@ class PricingToolRowWidget extends StatelessWidget {
                   size: 18.0,
                 ),
                 onPressed: () {
-                  controller.materials.remove(row);
+                  controller.supplies.remove(row);
                 },
               ),
             )

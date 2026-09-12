@@ -40,8 +40,8 @@ class PricingDetailWorker {
   final String productId;
   final String positionName;
   final int? visitFrequency;
-  final double firstVisitHours;
-  final double routineHours;
+  final double firstVisitMinutes;
+  final double routineMinutes;
   final double hourlyRate;
   final double lineTotal;
 
@@ -50,8 +50,8 @@ class PricingDetailWorker {
     required this.productId,
     required this.positionName,
     this.visitFrequency,
-    required this.firstVisitHours,
-    required this.routineHours,
+    required this.firstVisitMinutes,
+    required this.routineMinutes,
     required this.hourlyRate,
     required this.lineTotal,
   });

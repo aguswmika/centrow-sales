@@ -6,7 +6,7 @@ void main() {
     test(
       'CreatePricingRequestDto toJson serializes correctly with snake_case keys',
       () {
-        const material = PricingMaterialDto(
+        const supply = PricingSupplyDto(
           supplyType: 1,
           productMappingId: 'pm1',
           name: 'Chemical A',
@@ -18,7 +18,7 @@ void main() {
           frequency: 2,
         );
 
-        const tool = PricingMaterialDto(
+        const tool = PricingSupplyDto(
           supplyType: 2,
           productId: 'p-tool',
           name: 'Sprayer',
@@ -29,8 +29,8 @@ void main() {
 
         const worker = PricingWorkerDto(
           productId: 'prod-tech',
-          firstVisitHours: 2.0,
-          routineHours: 1.5,
+          firstVisitMinutes: 120.0,
+          routineMinutes: 90.0,
         );
 
         const item = PricingItemDto(
@@ -49,7 +49,7 @@ void main() {
           markupValue: 20.0,
           discountAmount: 10000.0,
           taxPercentage: 11.0,
-          materials: [material, tool],
+          supplies: [supply, tool],
           workers: [worker],
           items: [item],
         );
@@ -89,8 +89,8 @@ void main() {
         expect(workersList.length, 1);
         expect(workersList[0], {
           'product_id': 'prod-tech',
-          'first_visit_hours': 2.0,
-          'routine_hours': 1.5,
+          'first_visit_minutes': 120.0,
+          'routine_minutes': 90.0,
         });
 
         final itemsList = json['items'] as List<dynamic>;

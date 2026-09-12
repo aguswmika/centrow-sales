@@ -40,8 +40,8 @@ class PricingWorkerTab extends StatelessWidget {
               [
                 'Posisi & Peran Teknisi',
                 'Kunjungan',
-                'Jam Awal',
-                'Jam Rutin',
+                'Menit Awal',
+                'Menit Rutin',
                 '',
               ],
               flexes: const [4, 1, 1, 1],
@@ -144,15 +144,15 @@ class PricingWorkerRowWidget extends StatelessWidget {
           const SizedBox(width: 8.0),
           Expanded(
             flex: 1,
-            child: buildInput(row.firstVisitHours.value.toString(), (val) {
-              row.firstVisitHours.value = double.tryParse(val) ?? 0.0;
+            child: buildInput(row.firstVisitMinutes.value.toString(), (val) {
+              row.firstVisitMinutes.value = double.tryParse(val) ?? 0.0;
             }, enabled: !isReadOnly),
           ),
           const SizedBox(width: 8.0),
           Expanded(
             flex: 1,
-            child: buildInput(row.routineHours.value.toString(), (val) {
-              row.routineHours.value = double.tryParse(val) ?? 0.0;
+            child: buildInput(row.routineMinutes.value.toString(), (val) {
+              row.routineMinutes.value = double.tryParse(val) ?? 0.0;
             }, enabled: !isReadOnly),
           ),
           const SizedBox(width: 16.0),

@@ -91,8 +91,8 @@ void main() {
   }
 
   void populateSampleRows() {
-    controller.materials.add(
-      PricingMaterialRow(
+    controller.supplies.add(
+      PricingSupplyRow(
         id: 'mat-1',
         title: 'Termidor 25EC',
         code: 'CHM-01',
@@ -114,8 +114,8 @@ void main() {
         code: 'LBR-01',
         kind: 4,
         initialVisitFreq: 4.0,
-        initialFirstVisitHours: 3.0,
-        initialRoutineHours: 2.0,
+        initialFirstVisitMinutes: 180.0,
+        initialRoutineMinutes: 120.0,
         initialHourlyRate: 50000.0,
       ),
     );
@@ -203,6 +203,8 @@ void main() {
       await tester.tap(find.text('Tenaga Kerja'));
       await tester.pumpAndSettle();
 
+      expect(find.text('MENIT AWAL'), findsOneWidget);
+      expect(find.text('MENIT RUTIN'), findsOneWidget);
       expect(find.text('Tambah Teknisi'), findsOneWidget);
       expect(find.byIcon(Icons.close_rounded), findsOneWidget);
 

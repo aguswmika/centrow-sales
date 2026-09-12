@@ -11,7 +11,7 @@ import 'package:centrow_sales/modules/sales/entities/product.dart';
 import 'package:centrow_sales/modules/sales/repositories/pricing_repository.dart';
 import 'package:centrow_sales/modules/sales/repositories/dtos/pricing_dto.dart';
 
-class PricingMaterialRow {
+class PricingSupplyRow {
   final String id;
   final String title;
   final String code;
@@ -34,7 +34,7 @@ class PricingMaterialRow {
     return doseUsage.value * applicationVolume.value;
   });
 
-  PricingMaterialRow({
+  PricingSupplyRow({
     required this.id,
     required this.title,
     required this.code,
@@ -73,8 +73,8 @@ class PricingWorkerRow {
   final int kind;
 
   final Signal<double> visitFreq;
-  final Signal<double> firstVisitHours;
-  final Signal<double> routineHours;
+  final Signal<double> firstVisitMinutes;
+  final Signal<double> routineMinutes;
   final Signal<double> hourlyRate;
 
   PricingWorkerRow({
@@ -83,18 +83,18 @@ class PricingWorkerRow {
     required this.code,
     required this.kind,
     double initialVisitFreq = 1.0,
-    double initialFirstVisitHours = 0.0,
-    double initialRoutineHours = 0.0,
+    double initialFirstVisitMinutes = 0.0,
+    double initialRoutineMinutes = 0.0,
     double initialHourlyRate = 0.0,
   }) : visitFreq = signal(initialVisitFreq),
-       firstVisitHours = signal(initialFirstVisitHours),
-       routineHours = signal(initialRoutineHours),
+       firstVisitMinutes = signal(initialFirstVisitMinutes),
+       routineMinutes = signal(initialRoutineMinutes),
        hourlyRate = signal(initialHourlyRate);
 
   void dispose() {
     visitFreq.dispose();
-    firstVisitHours.dispose();
-    routineHours.dispose();
+    firstVisitMinutes.dispose();
+    routineMinutes.dispose();
     hourlyRate.dispose();
   }
 }
@@ -150,7 +150,7 @@ class PricingCalculatorController {
     };
   }
 
-  final materials = ListSignal<PricingMaterialRow>([]);
+  final supplies = ListSignal<PricingSupplyRow>([]);
   final workers = ListSignal<PricingWorkerRow>([]);
   final items = ListSignal<PricingItemRow>([]);
 
@@ -173,10 +173,10 @@ class PricingCalculatorController {
     const UiInitial(),
   );
 
-  void addMaterialRow(ProductMapping mapping) {
-    if (materials.any((m) => m.id == mapping.productId)) return;
-    materials.add(
-      PricingMaterialRow(
+  void addSupplyRow(ProductMapping mapping) {
+    if (supplies.any((m) => m.id == mapping.productId)) return;
+    supplies.add(
+      PricingSupplyRow(
         id: mapping.productId,
         title: mapping.productName,
         code: mapping.productCode ?? '',
@@ -198,9 +198,9 @@ class PricingCalculatorController {
     }
 
     if (expectedKind == 1 || expectedKind == 2) {
-      if (materials.any((m) => m.id == product.id)) return;
-      materials.add(
-        PricingMaterialRow(
+      if (supplies.any((m) => m.id == product.id)) return;
+      supplies.add(
+        PricingSupplyRow(
           id: product.id,
           title: product.name,
           code: product.code,
@@ -241,7 +241,7 @@ class PricingCalculatorController {
   }
 
   bool _validateInputs({required bool setOnPreview}) {
-    for (final m in materials) {
+    for (final m in supplies) {
       if (m.kind == 1) {
         // Chemical
         if (m.doseMinLimit != null && m.doseUsage.value < m.doseMinLimit!) {
@@ -281,13 +281,24 @@ class PricingCalculatorController {
         }
       }
     }
+    for (final w in workers) {
+      if (w.firstVisitMinutes.value < 0 || w.routineMinutes.value < 0) {
+        const failure = UnknownFailure('Menit kerja tidak boleh negatif.');
+        if (setOnPreview) {
+          previewState.value = const UiFailure<PricingPreview>(failure);
+        } else {
+          submitState.value = const UiFailure<void>(failure);
+        }
+        return false;
+      }
+    }
     return true;
   }
 
   CreatePricingRequestDto _buildRequest() {
-    final materialDtos = materials
+    final supplyDtos = supplies
         .map(
-          (m) => PricingMaterialDto(
+          (m) => PricingSupplyDto(
             supplyType: m.kind,
             productMappingId: m.kind == 1
                 ? (m.productMappingId.value.isNotEmpty
@@ -314,8 +325,8 @@ class PricingCalculatorController {
           (l) => PricingWorkerDto(
             productId: l.id,
             visitFrequency: _workerVisitFrequencyOverride(l),
-            firstVisitHours: l.firstVisitHours.value,
-            routineHours: l.routineHours.value,
+            firstVisitMinutes: l.firstVisitMinutes.value,
+            routineMinutes: l.routineMinutes.value,
           ),
         )
         .toList();
@@ -340,7 +351,7 @@ class PricingCalculatorController {
       markupValue: markupPercent.value,
       discountAmount: discountAmount.value,
       taxPercentage: taxPercentage.value,
-      materials: materialDtos,
+      supplies: supplyDtos,
       workers: workerDtos,
       items: itemDtos,
     );
@@ -374,10 +385,10 @@ class PricingCalculatorController {
       discountAmount.value = data.discountAmount;
       taxPercentage.value = data.taxPercentage;
 
-      materials.clear();
+      supplies.clear();
       for (final s in data.supplies) {
-        materials.add(
-          PricingMaterialRow(
+        supplies.add(
+          PricingSupplyRow(
             id: s.productId ?? s.id,
             title: s.name,
             code: '',
@@ -403,8 +414,8 @@ class PricingCalculatorController {
             code: '',
             kind: 4,
             initialVisitFreq: (w.visitFrequency ?? 1).toDouble(),
-            initialFirstVisitHours: w.firstVisitHours,
-            initialRoutineHours: w.routineHours,
+            initialFirstVisitMinutes: w.firstVisitMinutes,
+            initialRoutineMinutes: w.routineMinutes,
             initialHourlyRate: w.hourlyRate,
           ),
         );
@@ -433,6 +444,9 @@ class PricingCalculatorController {
   }
 
   Future<void> submitPricing(String proposalId) async {
+    submitState.value = const UiInitial();
+    await Future<void>.delayed(Duration.zero);
+    if (!_validateInputs(setOnPreview: false)) return;
     submitState.value = const UiLoading();
     final result = await _repository.savePricing(proposalId, _buildRequest());
     submitState.value = switch (result) {
@@ -442,10 +456,10 @@ class PricingCalculatorController {
   }
 
   void dispose() {
-    for (final material in materials) {
-      material.dispose();
+    for (final supply in supplies) {
+      supply.dispose();
     }
-    materials.dispose();
+    supplies.dispose();
 
     for (final worker in workers) {
       worker.dispose();

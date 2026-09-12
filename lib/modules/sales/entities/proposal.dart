@@ -228,7 +228,7 @@ class Proposal {
   final String? addressLine;
   final String version;
   final double cogs;
-  final double materialCost;
+  final double supplyCost;
   final double workerCost;
   final double fuelCost;
   final double markup;
@@ -271,7 +271,7 @@ class Proposal {
     this.addressLine,
     this.version = '1',
     this.cogs = 0.0,
-    this.materialCost = 0.0,
+    this.supplyCost = 0.0,
     this.workerCost = 0.0,
     this.fuelCost = 0.0,
     this.markup = 0.0,
@@ -327,7 +327,7 @@ class Proposal {
   String get shortAmount => explicitShortAmount ?? _formatShortCurrency(total);
 
   String get formattedCogs => _formatCurrency(cogs);
-  String get formattedMaterialCost => _formatCurrency(materialCost);
+  String get formattedSupplyCost => _formatCurrency(supplyCost);
   String get formattedWorkerCost => _formatCurrency(workerCost);
   String get formattedFuelCost => _formatCurrency(fuelCost);
   String get formattedMarkup {
@@ -384,7 +384,7 @@ class Proposal {
     String? addressLine,
     String? version,
     double? cogs,
-    double? materialCost,
+    double? supplyCost,
     double? workerCost,
     double? fuelCost,
     double? markup,
@@ -427,7 +427,7 @@ class Proposal {
       addressLine: addressLine ?? this.addressLine,
       version: version ?? this.version,
       cogs: cogs ?? this.cogs,
-      materialCost: materialCost ?? this.materialCost,
+      supplyCost: supplyCost ?? this.supplyCost,
       workerCost: workerCost ?? this.workerCost,
       fuelCost: fuelCost ?? this.fuelCost,
       markup: markup ?? this.markup,
@@ -476,7 +476,7 @@ class Proposal {
           addressLine == other.addressLine &&
           version == other.version &&
           cogs == other.cogs &&
-          materialCost == other.materialCost &&
+          supplyCost == other.supplyCost &&
           workerCost == other.workerCost &&
           fuelCost == other.fuelCost &&
           markup == other.markup &&
@@ -516,7 +516,7 @@ class Proposal {
     addressLine,
     version,
     cogs,
-    materialCost,
+    supplyCost,
     workerCost,
     fuelCost,
     markup,

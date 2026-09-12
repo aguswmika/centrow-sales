@@ -76,8 +76,8 @@ class PricingDetailWorkerDto {
   final String productId;
   final String positionName;
   final int? visitFrequency;
-  final double firstVisitHours;
-  final double routineHours;
+  final double firstVisitMinutes;
+  final double routineMinutes;
   final double hourlyRate;
   final double lineTotal;
 
@@ -86,8 +86,8 @@ class PricingDetailWorkerDto {
     this.productId,
     this.positionName,
     this.visitFrequency,
-    this.firstVisitHours,
-    this.routineHours,
+    this.firstVisitMinutes,
+    this.routineMinutes,
     this.hourlyRate,
     this.lineTotal,
   );
@@ -100,8 +100,9 @@ class PricingDetailWorkerDto {
         j['visit_frequency'] == null
             ? null
             : (j['visit_frequency'] as num).toInt(),
-        (j['first_visit_hours'] as num).toDouble(),
-        (j['routine_hours'] as num).toDouble(),
+        ((j['first_visit_minutes'] ?? j['first_visit_hours'] ?? 0) as num)
+            .toDouble(),
+        ((j['routine_minutes'] ?? j['routine_hours'] ?? 0) as num).toDouble(),
         (j['hourly_rate'] as num).toDouble(),
         (j['line_total'] as num).toDouble(),
       );
@@ -111,8 +112,8 @@ class PricingDetailWorkerDto {
     productId: productId,
     positionName: positionName,
     visitFrequency: visitFrequency,
-    firstVisitHours: firstVisitHours,
-    routineHours: routineHours,
+    firstVisitMinutes: firstVisitMinutes,
+    routineMinutes: routineMinutes,
     hourlyRate: hourlyRate,
     lineTotal: lineTotal,
   );

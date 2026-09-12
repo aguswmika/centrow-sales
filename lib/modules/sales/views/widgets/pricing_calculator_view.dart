@@ -103,7 +103,7 @@ class _PricingCalculatorViewState extends State<PricingCalculatorView> {
   Widget _buildTabContent() {
     switch (_activeTab) {
       case 0:
-        return PricingMaterialTab(
+        return PricingSupplyTab(
           controller: widget.calculatorController,
           isReadOnly: _isReadOnly,
         );

@@ -5,7 +5,7 @@ class CreatePricingRequestDto {
   final double markupValue;
   final double discountAmount;
   final double taxPercentage;
-  final List<PricingMaterialDto> materials;
+  final List<PricingSupplyDto> supplies;
   final List<PricingWorkerDto> workers;
   final List<PricingItemDto> items;
 
@@ -16,7 +16,7 @@ class CreatePricingRequestDto {
     required this.markupValue,
     required this.discountAmount,
     required this.taxPercentage,
-    required this.materials,
+    required this.supplies,
     required this.workers,
     required this.items,
   });
@@ -28,13 +28,13 @@ class CreatePricingRequestDto {
     'markup_value': markupValue,
     'discount_amount': discountAmount,
     'tax_percentage': taxPercentage,
-    'supplies': materials.map((e) => e.toJson()).toList(),
+    'supplies': supplies.map((e) => e.toJson()).toList(),
     'workers': workers.map((e) => e.toJson()).toList(),
     'items': items.map((e) => e.toJson()).toList(),
   };
 }
 
-class PricingMaterialDto {
+class PricingSupplyDto {
   final int supplyType;
   final String? productMappingId;
   final String? productId;
@@ -47,7 +47,7 @@ class PricingMaterialDto {
   final String? applicationVolumeUnitId;
   final int frequency;
 
-  const PricingMaterialDto({
+  const PricingSupplyDto({
     required this.supplyType,
     this.productMappingId,
     this.productId,
@@ -80,21 +80,21 @@ class PricingMaterialDto {
 class PricingWorkerDto {
   final String productId;
   final int? visitFrequency;
-  final double firstVisitHours;
-  final double routineHours;
+  final double firstVisitMinutes;
+  final double routineMinutes;
 
   const PricingWorkerDto({
     required this.productId,
     this.visitFrequency,
-    required this.firstVisitHours,
-    required this.routineHours,
+    required this.firstVisitMinutes,
+    required this.routineMinutes,
   });
 
   Map<String, dynamic> toJson() => {
     'product_id': productId,
     if (visitFrequency != null) 'visit_frequency': visitFrequency,
-    'first_visit_hours': firstVisitHours,
-    'routine_hours': routineHours,
+    'first_visit_minutes': firstVisitMinutes,
+    'routine_minutes': routineMinutes,
   };
 }
 

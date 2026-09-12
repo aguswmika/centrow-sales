@@ -49,8 +49,8 @@ void main() {
     markupValue: 25.0,
     discountAmount: 0.0,
     taxPercentage: 11.0,
-    materials: [
-      PricingMaterialDto(
+    supplies: [
+      PricingSupplyDto(
         supplyType: 1,
         productMappingId: 'pm-1',
         name: 'Material 1',
@@ -65,8 +65,8 @@ void main() {
     workers: [
       PricingWorkerDto(
         productId: 'prod-operator',
-        firstVisitHours: 3.0,
-        routineHours: 2.0,
+        firstVisitMinutes: 180.0,
+        routineMinutes: 120.0,
       ),
     ],
     items: [
