@@ -202,6 +202,7 @@ class ContractFormInput {
   final String signedDate;
   final int paymentTypeId;
   final String notes;
+  final String? contractTemplateId;
 
   const ContractFormInput({
     required this.categoryId,
@@ -211,6 +212,7 @@ class ContractFormInput {
     required this.signedDate,
     required this.paymentTypeId,
     required this.notes,
+    this.contractTemplateId,
   });
 }
 

@@ -28,6 +28,8 @@ class ContractFormController extends ChangeNotifier {
   ContractPaymentType paymentType = ContractPaymentType.full;
   String? notes;
 
+  String? contractTemplateId;
+
   bool _isSubmitting = false;
   bool get isSubmitting => _isSubmitting;
   bool get isEditMode => contractId != null;
@@ -75,6 +77,11 @@ class ContractFormController extends ChangeNotifier {
     return result.valueOrNull ?? [];
   }
 
+  void selectContractTemplate(String? id) {
+    contractTemplateId = id;
+    notifyListeners();
+  }
+
   void updateFields({
     ContractCategory? category,
     String? startDate,
@@ -84,7 +91,11 @@ class ContractFormController extends ChangeNotifier {
     ContractPaymentType? paymentType,
     String? notes,
   }) {
-    if (category != null) selectedCategory = category;
+    if (category != null) {
+      selectedCategory = category;
+      final matches = category.templates.where((t) => t.isDefault);
+      contractTemplateId = matches.isEmpty ? null : matches.first.id;
+    }
     if (startDate != null) this.startDate = startDate;
     if (endDate != null) this.endDate = endDate;
     if (signedDate != null) this.signedDate = signedDate;
@@ -117,6 +128,9 @@ class ContractFormController extends ChangeNotifier {
         UnknownFailure('Tanggal akhir tidak boleh sebelum tanggal mulai.'),
       );
     }
+    if (!isEditMode && contractTemplateId == null) {
+      return const Err(UnknownFailure('Template kontrak wajib dipilih.'));
+    }
 
     _isSubmitting = true;
     notifyListeners();
@@ -129,6 +143,7 @@ class ContractFormController extends ChangeNotifier {
       signedDate: signedDate!,
       paymentTypeId: paymentType.id,
       notes: notes!.trim(),
+      contractTemplateId: isEditMode ? null : contractTemplateId,
     );
 
     if (isEditMode) {

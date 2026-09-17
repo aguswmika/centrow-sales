@@ -10,6 +10,7 @@ import 'package:centrow_sales/modules/sales/entities/customer.dart';
 import 'package:centrow_sales/modules/sales/views/widgets/customer_contacts_tab.dart';
 import 'package:centrow_sales/modules/sales/views/widgets/customer_info_tab.dart';
 import 'package:centrow_sales/modules/sales/views/widgets/customer_locations_tab.dart';
+import 'package:centrow_sales/modules/sales/views/widgets/customer_photos_tab.dart';
 import 'package:centrow_sales/modules/sales/views/widgets/customer_proposals_tab.dart';
 
 class CustomerDetailPane extends StatelessWidget {
@@ -37,6 +38,7 @@ class CustomerDetailPane extends StatelessWidget {
     'Lokasi & Titik Servis',
     'Kontak Person & PIC',
     'Riwayat Proposal',
+    'Foto',
   ];
 
   @override
@@ -293,6 +295,8 @@ class CustomerDetailPane extends StatelessWidget {
         return CustomerContactsTab(contacts: customer.contacts);
       case 3:
         return CustomerProposalsTab(proposals: customer.proposals);
+      case 4:
+        return CustomerPhotosTab(customerId: customer.id);
       default:
         return CustomerInfoTab(customer: customer);
     }

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:centrow_sales/modules/core/views/pages/login_page.dart';
+import 'package:centrow_sales/modules/core/views/pages/splash_page.dart';
 import 'package:centrow_sales/modules/sales/views/pages/customer_page.dart';
 import 'package:centrow_sales/modules/sales/views/pages/customer_form_page.dart';
 import 'package:centrow_sales/modules/sales/views/pages/proposal_page.dart';
@@ -17,13 +18,16 @@ import 'package:centrow_sales/modules/sales/views/pages/contract_page.dart';
 import 'package:centrow_sales/modules/sales/views/pages/contract_document_page.dart';
 
 GoRouter createRouter({String? initialLocation}) => GoRouter(
-  initialLocation:
-      initialLocation ??
-      (AuthTokenHolder.instance.hasToken ? '/customers' : '/login'),
+  initialLocation: initialLocation ?? '/splash',
   redirect: (context, state) {
     final hasToken = AuthTokenHolder.instance.hasToken;
+    final isSplash = state.matchedLocation == '/splash';
     final isLoggingIn = state.matchedLocation == '/login';
     final isDashboard = state.matchedLocation == '/dashboard';
+
+    if (isSplash) {
+      return null;
+    }
 
     if (!hasToken && !isLoggingIn) {
       return '/login';
@@ -34,6 +38,11 @@ GoRouter createRouter({String? initialLocation}) => GoRouter(
     return null;
   },
   routes: [
+    GoRoute(
+      path: '/splash',
+      name: 'splash',
+      builder: (context, state) => const SplashPage(),
+    ),
     GoRoute(
       path: '/login',
       name: 'login',

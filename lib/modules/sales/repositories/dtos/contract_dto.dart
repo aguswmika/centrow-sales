@@ -296,6 +296,7 @@ class ContractFormRequestDto {
   final String signedDate;
   final int paymentTypeId;
   final String notes;
+  final String? contractTemplateId;
 
   const ContractFormRequestDto({
     required this.categoryId,
@@ -305,6 +306,7 @@ class ContractFormRequestDto {
     required this.signedDate,
     required this.paymentTypeId,
     required this.notes,
+    this.contractTemplateId,
   });
 
   factory ContractFormRequestDto.fromInput(ContractFormInput input) =>
@@ -316,6 +318,7 @@ class ContractFormRequestDto {
         signedDate: input.signedDate,
         paymentTypeId: input.paymentTypeId,
         notes: input.notes,
+        contractTemplateId: input.contractTemplateId,
       );
 
   Map<String, dynamic> toJson() => {
@@ -327,5 +330,6 @@ class ContractFormRequestDto {
     'signed_date': signedDate,
     'payment_type_id': paymentTypeId,
     'notes': notes,
+    if (contractTemplateId != null) 'contract_template_id': contractTemplateId,
   };
 }

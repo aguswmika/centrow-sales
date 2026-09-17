@@ -97,6 +97,17 @@ class _ProposalFormBottomSheetState extends State<ProposalFormBottomSheet> {
         child: ListenableBuilder(
           listenable: _controller,
           builder: (context, child) {
+            final bool isCreateMode =
+                !_controller.isEditMode && !_controller.isReviseMode;
+            final bool templatesUnavailable =
+                isCreateMode &&
+                _controller.selectedService != null &&
+                !_controller.isLoadingTemplates &&
+                _controller.availableTemplates.isEmpty;
+            final bool canSubmit =
+                !isCreateMode ||
+                (!_controller.isLoadingTemplates && !templatesUnavailable);
+
             return SingleChildScrollView(
               padding: EdgeInsets.only(
                 bottom: MediaQuery.of(context).viewInsets.bottom + 24.0,
@@ -160,6 +171,47 @@ class _ProposalFormBottomSheetState extends State<ProposalFormBottomSheet> {
                         s.code.isNotEmpty ? '[${s.code}] ${s.name}' : s.name,
                     onChanged: (s) => _controller.updateFields(service: s),
                   ),
+                  if (isCreateMode && _controller.selectedService != null) ...[
+                    const SizedBox(height: 16),
+                    if (_controller.isLoadingTemplates)
+                      Row(
+                        children: [
+                          const SizedBox(
+                            width: 16,
+                            height: 16,
+                            child: CircularProgressIndicator(strokeWidth: 2),
+                          ),
+                          const SizedBox(width: 8),
+                          Text(
+                            'Memuat template proposal…',
+                            style: AppTypography.bodySm(color: AppColors.sec),
+                          ),
+                        ],
+                      )
+                    else if (_controller.availableTemplates.isNotEmpty)
+                      AppDropdown<String>(
+                        label: 'Template Proposal',
+                        isRequired: true,
+                        value: _controller.templateId,
+                        items: _controller.availableTemplates
+                            .map(
+                              (t) => DropdownMenuItem(
+                                value: t.value,
+                                child: Text(
+                                  t.label,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ),
+                            )
+                            .toList(),
+                        onChanged: (val) => _controller.selectTemplate(val),
+                      )
+                    else
+                      Text(
+                        'Template proposal tidak tersedia untuk layanan ini',
+                        style: AppTypography.bodySm(color: AppColors.err),
+                      ),
+                  ],
                   const SizedBox(height: 16),
                   AppDropdown<String>(
                     label: 'Lokasi',
@@ -221,18 +273,20 @@ class _ProposalFormBottomSheetState extends State<ProposalFormBottomSheet> {
                   ),
                   const SizedBox(height: 32),
                   ElevatedButton(
-                    onPressed: () async {
-                      final result = await _controller.submit();
-                      if (result.isOk && context.mounted) {
-                        context.pop(result.valueOrNull);
-                      } else if (result.isErr && context.mounted) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text(result.failureOrNull!.message),
-                          ),
-                        );
-                      }
-                    },
+                    onPressed: !canSubmit
+                        ? null
+                        : () async {
+                            final result = await _controller.submit();
+                            if (result.isOk && context.mounted) {
+                              context.pop(result.valueOrNull);
+                            } else if (result.isErr && context.mounted) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text(result.failureOrNull!.message),
+                                ),
+                              );
+                            }
+                          },
                     child: Text(
                       _controller.isReviseMode
                           ? 'Simpan Revisi'

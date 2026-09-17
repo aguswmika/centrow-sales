@@ -1,11 +1,16 @@
 import 'package:dio/dio.dart';
 import 'package:centrow_sales/modules/sales/entities/service.dart';
+import 'package:centrow_sales/modules/sales/entities/proposal_template_option.dart';
+import 'package:centrow_sales/modules/sales/repositories/dtos/proposal_template_option_dto.dart';
 import 'package:centrow_sales/shared/network/dio_client.dart';
 import 'package:centrow_sales/shared/result/result.dart';
 import 'package:centrow_sales/shared/error/failure.dart';
 
 abstract interface class ServiceRepository {
   Future<Result<List<Service>>> getServices({String? query});
+  Future<Result<List<ProposalTemplateOption>>> getSelectableProposalTemplates(
+    String serviceId,
+  );
 }
 
 class ServiceRepositoryImpl implements ServiceRepository {
@@ -38,6 +43,30 @@ class ServiceRepositoryImpl implements ServiceRepository {
           .toList();
 
       return Ok(services);
+    } on DioException catch (e) {
+      return Err(mapDioException(e));
+    } catch (e) {
+      return Err(UnknownFailure(e.toString()));
+    }
+  }
+
+  @override
+  Future<Result<List<ProposalTemplateOption>>> getSelectableProposalTemplates(
+    String serviceId,
+  ) async {
+    try {
+      final response = await _dio.get<Map<String, dynamic>>(
+        '/v1/sales/services/$serviceId/proposal-templates/selectable',
+      );
+      final items = (response.data?['data'] as List?) ?? [];
+      final templates = items
+          .map(
+            (item) => ProposalTemplateOptionDto.fromJson(
+              (item as Map).cast<String, dynamic>(),
+            ).toEntity(),
+          )
+          .toList();
+      return Ok(templates);
     } on DioException catch (e) {
       return Err(mapDioException(e));
     } catch (e) {

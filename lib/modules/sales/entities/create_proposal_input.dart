@@ -2,6 +2,7 @@ class CreateProposalInput {
   final String customerId;
   final String serviceId;
   final String proposalDate;
+  final String proposalTemplateId;
   final String? validUntil;
   final String? addressId;
   final String? notes;
@@ -10,6 +11,7 @@ class CreateProposalInput {
     required this.customerId,
     required this.serviceId,
     required this.proposalDate,
+    required this.proposalTemplateId,
     this.validUntil,
     this.addressId,
     this.notes,
@@ -20,6 +22,7 @@ class CreateProposalInput {
       'customer_id': customerId,
       'service_id': serviceId,
       'proposal_date': proposalDate,
+      'proposal_template_id': proposalTemplateId,
       if (validUntil != null) 'valid_until': validUntil,
       if (addressId != null) 'address_id': addressId,
       'code': '',

@@ -1,6 +1,7 @@
 import 'package:centrow_sales/modules/sales/entities/create_proposal_input.dart';
 import 'package:centrow_sales/modules/sales/entities/update_proposal_input.dart';
 import 'package:centrow_sales/modules/sales/entities/proposal.dart';
+import 'package:centrow_sales/modules/sales/entities/proposal_template_option.dart';
 import 'package:centrow_sales/modules/sales/entities/customer.dart';
 import 'package:centrow_sales/modules/sales/entities/service.dart';
 import 'package:centrow_sales/modules/sales/repositories/proposal_repository.dart';
@@ -36,6 +37,10 @@ class ProposalFormController extends ChangeNotifier {
   bool get isReviseMode => _isReviseMode;
 
   List<CustomerLocation> availableLocations = [];
+
+  List<ProposalTemplateOption> availableTemplates = [];
+  String? templateId;
+  bool isLoadingTemplates = false;
 
   ProposalFormController(
     this._proposalRepository,
@@ -92,6 +97,30 @@ class ProposalFormController extends ChangeNotifier {
     }
   }
 
+  Future<void> _loadProposalTemplates(String serviceId) async {
+    availableTemplates = [];
+    templateId = null;
+    isLoadingTemplates = true;
+    notifyListeners();
+
+    final result = await _serviceRepository.getSelectableProposalTemplates(
+      serviceId,
+    );
+    if (result.isOk) {
+      availableTemplates = result.valueOrNull ?? [];
+      final defaultTemplate = availableTemplates
+          .where((t) => t.isDefault)
+          .cast<ProposalTemplateOption?>()
+          .firstWhere((_) => true, orElse: () => null);
+      templateId = defaultTemplate?.value;
+    } else {
+      availableTemplates = [];
+      templateId = null;
+    }
+    isLoadingTemplates = false;
+    notifyListeners();
+  }
+
   Future<List<Customer>> searchCustomers(String query) async {
     final result = await _customerRepository.getCustomers(query: query);
     return result.valueOrNull ?? [];
@@ -100,6 +129,11 @@ class ProposalFormController extends ChangeNotifier {
   Future<List<Service>> searchServices(String query) async {
     final result = await _serviceRepository.getServices(query: query);
     return result.valueOrNull ?? [];
+  }
+
+  void selectTemplate(String? id) {
+    templateId = id;
+    notifyListeners();
   }
 
   Future<Result<Proposal>> submit() async {
@@ -119,10 +153,14 @@ class ProposalFormController extends ChangeNotifier {
       }
       return await _proposalRepository.updateProposal(_editId!, input);
     } else {
+      if (templateId == null) {
+        return const Err(UnknownFailure('Template proposal wajib dipilih.'));
+      }
       final input = CreateProposalInput(
         customerId: _customerId!,
         serviceId: serviceId!,
         proposalDate: proposalDate!,
+        proposalTemplateId: templateId!,
         validUntil: validUntil,
         addressId: addressId,
         notes: notes,
@@ -146,6 +184,7 @@ class ProposalFormController extends ChangeNotifier {
     if (service != null) {
       selectedService = service;
       serviceId = service.id;
+      _loadProposalTemplates(service.id);
     }
     this.proposalDate = proposalDate ?? this.proposalDate;
     this.validUntil = validUntil ?? this.validUntil;

@@ -116,6 +116,13 @@ class _ContractFormBottomSheetState extends State<ContractFormBottomSheet> {
         child: ListenableBuilder(
           listenable: _controller,
           builder: (context, _) {
+            final bool isCreateMode = !_controller.isEditMode;
+            final bool templatesUnavailable =
+                isCreateMode &&
+                _controller.selectedCategory != null &&
+                _controller.selectedCategory!.templates.isEmpty;
+            final bool canSubmit = !isCreateMode || !templatesUnavailable;
+
             return SingleChildScrollView(
               padding: EdgeInsets.only(
                 bottom: MediaQuery.of(context).viewInsets.bottom + 24.0,
@@ -210,6 +217,33 @@ class _ContractFormBottomSheetState extends State<ContractFormBottomSheet> {
                     onChanged: (cat) => _controller.updateFields(category: cat),
                     isRequired: true,
                   ),
+                  if (isCreateMode && _controller.selectedCategory != null) ...[
+                    const SizedBox(height: 16),
+                    if (_controller.selectedCategory!.templates.isNotEmpty)
+                      AppDropdown<String>(
+                        label: 'Template Kontrak',
+                        isRequired: true,
+                        value: _controller.contractTemplateId,
+                        items: _controller.selectedCategory!.templates
+                            .map(
+                              (t) => DropdownMenuItem(
+                                value: t.id,
+                                child: Text(
+                                  t.label,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ),
+                            )
+                            .toList(),
+                        onChanged: (val) =>
+                            _controller.selectContractTemplate(val),
+                      )
+                    else
+                      Text(
+                        'Template kontrak tidak tersedia untuk kategori ini',
+                        style: AppTypography.bodySm(color: AppColors.err),
+                      ),
+                  ],
                   const SizedBox(height: 16),
 
                   // 2. Tanggal Mulai *
@@ -306,7 +340,7 @@ class _ContractFormBottomSheetState extends State<ContractFormBottomSheet> {
 
                   // Submit
                   ElevatedButton(
-                    onPressed: _controller.isSubmitting
+                    onPressed: (_controller.isSubmitting || !canSubmit)
                         ? null
                         : () async {
                             final result = await _controller.submit();

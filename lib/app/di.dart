@@ -2,18 +2,21 @@ import 'package:dio/dio.dart';
 import 'package:get_it/get_it.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:centrow_sales/modules/core/controllers/login_controller.dart';
+import 'package:centrow_sales/modules/core/controllers/splash_controller.dart';
 import 'package:centrow_sales/modules/core/repositories/auth_repository.dart';
 import 'package:centrow_sales/modules/core/repositories/region_repository.dart';
 import 'package:centrow_sales/modules/sales/controllers/sales_dashboard_controller.dart';
 import 'package:centrow_sales/modules/sales/repositories/sales_dashboard_repository.dart';
 import 'package:centrow_sales/modules/sales/controllers/customer_controller.dart';
 import 'package:centrow_sales/modules/sales/controllers/customer_form_controller.dart';
+import 'package:centrow_sales/modules/sales/controllers/customer_photo_controller.dart';
 import 'package:centrow_sales/modules/sales/controllers/proposal_controller.dart';
 import 'package:centrow_sales/modules/sales/controllers/proposal_document_controller.dart';
 import 'package:centrow_sales/modules/sales/controllers/proposal_form_controller.dart';
 import 'package:centrow_sales/modules/sales/controllers/product_controller.dart';
 import 'package:centrow_sales/modules/sales/controllers/pricing_calculator_controller.dart';
 import 'package:centrow_sales/modules/sales/repositories/customer_repository.dart';
+import 'package:centrow_sales/modules/sales/repositories/customer_photo_repository.dart';
 import 'package:centrow_sales/modules/sales/repositories/proposal_repository.dart';
 import 'package:centrow_sales/modules/sales/repositories/proposal_document_repository.dart';
 import 'package:centrow_sales/modules/sales/repositories/service_repository.dart';
@@ -70,6 +73,9 @@ Future<void> setupDi({LocalStorage? storage}) async {
   getIt.registerLazySingleton<CustomerRepository>(
     () => CustomerRepositoryImpl(getIt<Dio>()),
   );
+  getIt.registerLazySingleton<CustomerPhotoRepository>(
+    () => CustomerPhotoRepositoryImpl(getIt<Dio>()),
+  );
   getIt.registerLazySingleton<ProposalRepository>(
     () => ProposalRepositoryImpl(getIt<Dio>()),
   );
@@ -96,6 +102,9 @@ Future<void> setupDi({LocalStorage? storage}) async {
   );
 
   // Controllers
+  getIt.registerFactory<SplashController>(
+    () => SplashController(getIt<AuthRepository>()),
+  );
   getIt.registerFactory<LoginController>(
     () => LoginController(getIt<AuthRepository>()),
   );
@@ -104,6 +113,9 @@ Future<void> setupDi({LocalStorage? storage}) async {
   );
   getIt.registerFactory<CustomerController>(
     () => CustomerController(getIt<CustomerRepository>()),
+  );
+  getIt.registerFactory<CustomerPhotoController>(
+    () => CustomerPhotoController(getIt<CustomerPhotoRepository>()),
   );
   getIt.registerFactory<CustomerFormController>(
     () => CustomerFormController(
