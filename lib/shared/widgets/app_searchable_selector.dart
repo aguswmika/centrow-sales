@@ -14,6 +14,7 @@ class AppSearchableSelector<T> extends StatefulWidget {
   final ValueChanged<T?> onChanged;
   final bool isRequired;
   final bool enabled;
+  final String? helperText;
 
   const AppSearchableSelector({
     super.key,
@@ -25,6 +26,7 @@ class AppSearchableSelector<T> extends StatefulWidget {
     required this.onChanged,
     this.isRequired = false,
     this.enabled = true,
+    this.helperText,
   });
 
   @override
@@ -47,7 +49,13 @@ class _AppSearchableSelectorState<T> extends State<AppSearchableSelector<T>> {
           enabled: widget.enabled,
           decoration: InputDecoration(
             hintText: widget.hint,
-            suffixIcon: const Icon(Icons.search, color: AppColors.sec),
+            suffixIcon: widget.enabled
+                ? const Icon(Icons.search, color: AppColors.sec)
+                : const Icon(
+                    Icons.lock_outline,
+                    color: AppColors.muted,
+                    size: 18,
+                  ),
             filled: true,
             fillColor: widget.enabled
                 ? AppColors.subtle
@@ -73,21 +81,30 @@ class _AppSearchableSelectorState<T> extends State<AppSearchableSelector<T>> {
       ),
     );
 
-    if (widget.label == null) return textField;
+    if (widget.label == null && widget.helperText == null) return textField;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       mainAxisSize: MainAxisSize.min,
       children: [
-        Text(
-          widget.label!,
-          style: AppTypography.bodySm(
-            color: AppColors.sec,
-            fontWeight: FontWeight.w600,
+        if (widget.label != null) ...[
+          Text(
+            widget.label!,
+            style: AppTypography.bodySm(
+              color: AppColors.sec,
+              fontWeight: FontWeight.w600,
+            ),
           ),
-        ),
-        const SizedBox(height: AppSpacing.labelGap),
+          const SizedBox(height: AppSpacing.labelGap),
+        ],
         textField,
+        if (widget.helperText != null) ...[
+          const SizedBox(height: 4),
+          Text(
+            widget.helperText!,
+            style: AppTypography.bodySm(color: AppColors.muted),
+          ),
+        ],
       ],
     );
   }

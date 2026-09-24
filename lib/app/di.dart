@@ -34,9 +34,13 @@ import 'package:centrow_sales/app/router.dart';
 import 'package:centrow_sales/modules/sales/controllers/contract_controller.dart';
 import 'package:centrow_sales/modules/sales/controllers/contract_form_controller.dart';
 import 'package:centrow_sales/modules/sales/controllers/contract_document_controller.dart';
+import 'package:centrow_sales/modules/sales/controllers/contract_addendum_controller.dart';
 import 'package:centrow_sales/modules/sales/repositories/contract_repository.dart';
 import 'package:centrow_sales/modules/sales/repositories/contract_category_repository.dart';
 import 'package:centrow_sales/modules/sales/repositories/contract_document_repository.dart';
+import 'package:centrow_sales/modules/sales/repositories/contract_addendum_repository.dart';
+import 'package:centrow_sales/modules/sales/controllers/contract_addendum_document_controller.dart';
+import 'package:centrow_sales/modules/sales/repositories/contract_addendum_document_repository.dart';
 
 final GetIt getIt = GetIt.instance;
 
@@ -143,6 +147,7 @@ Future<void> setupDi({LocalStorage? storage}) async {
     () => PricingCalculatorController(
       getIt<PricingRepository>(),
       getIt<UomRepository>(),
+      getIt<TreatmentMethodRepository>(),
     ),
   );
   getIt.registerFactory<ProductMappingController>(
@@ -160,6 +165,12 @@ Future<void> setupDi({LocalStorage? storage}) async {
   getIt.registerLazySingleton<ContractDocumentRepository>(
     () => ContractDocumentRepositoryImpl(getIt<Dio>()),
   );
+  getIt.registerLazySingleton<ContractAddendumRepository>(
+    () => ContractAddendumRepositoryImpl(getIt<Dio>()),
+  );
+  getIt.registerLazySingleton<ContractAddendumDocumentRepository>(
+    () => ContractAddendumDocumentRepositoryImpl(getIt<Dio>()),
+  );
   getIt.registerFactory<ContractController>(
     () => ContractController(getIt<ContractRepository>()),
   );
@@ -171,5 +182,13 @@ Future<void> setupDi({LocalStorage? storage}) async {
   );
   getIt.registerFactory<ContractDocumentController>(
     () => ContractDocumentController(getIt<ContractDocumentRepository>()),
+  );
+  getIt.registerFactory<ContractAddendumController>(
+    () => ContractAddendumController(getIt<ContractAddendumRepository>()),
+  );
+  getIt.registerFactory<ContractAddendumDocumentController>(
+    () => ContractAddendumDocumentController(
+      getIt<ContractAddendumDocumentRepository>(),
+    ),
   );
 }

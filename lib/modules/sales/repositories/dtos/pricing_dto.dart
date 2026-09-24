@@ -8,6 +8,7 @@ class CreatePricingRequestDto {
   final List<PricingSupplyDto> supplies;
   final List<PricingWorkerDto> workers;
   final List<PricingItemDto> items;
+  final List<PricingTreatmentQuotaDto> treatmentQuotas;
 
   const CreatePricingRequestDto({
     required this.contractMonths,
@@ -19,6 +20,7 @@ class CreatePricingRequestDto {
     required this.supplies,
     required this.workers,
     required this.items,
+    this.treatmentQuotas = const [],
   });
 
   Map<String, dynamic> toJson() => {
@@ -31,6 +33,22 @@ class CreatePricingRequestDto {
     'supplies': supplies.map((e) => e.toJson()).toList(),
     'workers': workers.map((e) => e.toJson()).toList(),
     'items': items.map((e) => e.toJson()).toList(),
+    'treatment_quotas': treatmentQuotas.map((e) => e.toJson()).toList(),
+  };
+}
+
+class PricingTreatmentQuotaDto {
+  final String treatmentMethodId;
+  final int quota;
+
+  const PricingTreatmentQuotaDto({
+    required this.treatmentMethodId,
+    required this.quota,
+  });
+
+  Map<String, dynamic> toJson() => {
+    'treatment_method_id': treatmentMethodId,
+    'quota': quota,
   };
 }
 

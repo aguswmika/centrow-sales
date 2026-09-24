@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:centrow_sales/shared/state/ui_state.dart';
 import 'package:centrow_sales/modules/sales/entities/contract.dart';
+import 'package:centrow_sales/modules/sales/entities/contract_addendum.dart';
 import 'package:centrow_sales/modules/sales/views/widgets/contract_detail_pane.dart';
 
 void main() {
@@ -141,6 +143,223 @@ void main() {
       await tester.tap(find.text('Tangguhkan Kontrak'));
       await tester.pumpAndSettle();
       expect(suspendCalled, isTrue);
+    },
+  );
+
+  testWidgets(
+    'ContractDetailPane renders TANGGAL INVOICE PERTAMA when firstInvoiceDate is present',
+    (tester) async {
+      tester.view.physicalSize = const Size(1000, 800);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+
+      const contractWithInvoiceDate = Contract(
+        id: 'c-3',
+        code: 'CTR-2026-0003',
+        customerId: 'cust-3',
+        customerName: 'PT Sukses Selalu',
+        serviceId: 'srv-1',
+        serviceName: 'General Pest Control',
+        categoryId: 'cat-1',
+        categoryName: 'Commercial',
+        status: ContractStatus.draft,
+        startDate: '2026-01-01',
+        endDate: '2026-12-31',
+        firstInvoiceDate: '2026-02-01',
+        contractValue: 10000000.0,
+      );
+
+      await tester.pumpWidget(
+        const MaterialApp(
+          home: Scaffold(
+            body: ContractDetailPane(contract: contractWithInvoiceDate),
+          ),
+        ),
+      );
+
+      expect(find.text('TANGGAL INVOICE PERTAMA'), findsOneWidget);
+      expect(find.text('2026-02-01'), findsOneWidget);
+    },
+  );
+
+  testWidgets(
+    'ContractDetailPane omits TANGGAL INVOICE PERTAMA when firstInvoiceDate is null or empty',
+    (tester) async {
+      tester.view.physicalSize = const Size(1000, 800);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+
+      await tester.pumpWidget(
+        const MaterialApp(
+          home: Scaffold(
+            body: ContractDetailPane(contract: sampleDraftContract),
+          ),
+        ),
+      );
+
+      expect(find.text('TANGGAL INVOICE PERTAMA'), findsNothing);
+    },
+  );
+
+  testWidgets(
+    'ContractDetailPane renders monthly schedule cycle visit frequency label and unit',
+    (tester) async {
+      tester.view.physicalSize = const Size(1000, 800);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+
+      const contract = Contract(
+        id: 'c-monthly',
+        code: 'CTR-2026-0004',
+        customerId: 'cust-1',
+        serviceId: 'srv-1',
+        categoryId: 'cat-1',
+        status: ContractStatus.active,
+        startDate: '2026-01-01',
+        totalVisits: 12,
+        scheduleCycle: ContractScheduleCycle.monthly,
+      );
+
+      await tester.pumpWidget(
+        const MaterialApp(
+          home: Scaffold(body: ContractDetailPane(contract: contract)),
+        ),
+      );
+
+      expect(find.text('FREK. KUNJUNGAN (BULANAN)'), findsOneWidget);
+      expect(find.text('12 x / bulan'), findsOneWidget);
+    },
+  );
+
+  testWidgets(
+    'ContractDetailPane renders yearly schedule cycle visit frequency label and unit',
+    (tester) async {
+      tester.view.physicalSize = const Size(1000, 800);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+
+      const contract = Contract(
+        id: 'c-yearly',
+        code: 'CTR-2026-0005',
+        customerId: 'cust-1',
+        serviceId: 'srv-1',
+        categoryId: 'cat-1',
+        status: ContractStatus.active,
+        startDate: '2026-01-01',
+        totalVisits: 12,
+        scheduleCycle: ContractScheduleCycle.yearly,
+      );
+
+      await tester.pumpWidget(
+        const MaterialApp(
+          home: Scaffold(body: ContractDetailPane(contract: contract)),
+        ),
+      );
+
+      expect(find.text('FREK. KUNJUNGAN (TAHUNAN)'), findsOneWidget);
+      expect(find.text('12 x / tahun'), findsOneWidget);
+    },
+  );
+
+  testWidgets(
+    'ContractDetailPane renders fallback TOTAL KUNJUNGAN when scheduleCycle is null',
+    (tester) async {
+      tester.view.physicalSize = const Size(1000, 800);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+
+      const contract = Contract(
+        id: 'c-fallback',
+        code: 'CTR-2026-0006',
+        customerId: 'cust-1',
+        serviceId: 'srv-1',
+        categoryId: 'cat-1',
+        status: ContractStatus.active,
+        startDate: '2026-01-01',
+        totalVisits: 12,
+      );
+
+      await tester.pumpWidget(
+        const MaterialApp(
+          home: Scaffold(body: ContractDetailPane(contract: contract)),
+        ),
+      );
+
+      expect(find.text('TOTAL KUNJUNGAN'), findsOneWidget);
+      expect(find.text('12x'), findsOneWidget);
+    },
+  );
+
+  testWidgets(
+    'ContractDetailPane renders Buat Addendum button and triggers callback when active',
+    (tester) async {
+      tester.view.physicalSize = const Size(1000, 800);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+
+      bool addAddendumCalled = false;
+
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: ContractDetailPane(
+              contract: sampleActiveContract,
+              onAddAddendum: () => addAddendumCalled = true,
+            ),
+          ),
+        ),
+      );
+
+      // Verify "Buat Addendum" buttons exist
+      expect(find.text('Buat Addendum'), findsNWidgets(2));
+      expect(find.text('Riwayat Addendum'), findsOneWidget);
+
+      await tester.tap(find.text('Buat Addendum').first);
+      await tester.pumpAndSettle();
+      expect(addAddendumCalled, isTrue);
+    },
+  );
+
+  testWidgets(
+    'ContractDetailPane displays past addendums in Riwayat Addendum section',
+    (tester) async {
+      tester.view.physicalSize = const Size(1000, 800);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+
+      const addendum = ContractAddendum(
+        id: 'add-1',
+        contractId: 'c-2',
+        visitDelta: 3,
+        oldTotalVisits: 12,
+        newTotalVisits: 15,
+        oldContractValue: 15000000.0,
+        newContractValue: 18000000.0,
+        reason: 'Penambahan frekuensi',
+      );
+
+      await tester.pumpWidget(
+        const MaterialApp(
+          home: Scaffold(
+            body: ContractDetailPane(
+              contract: sampleActiveContract,
+              addendumsState: UiSuccess([addendum]),
+            ),
+          ),
+        ),
+      );
+
+      expect(find.text('Riwayat Addendum'), findsOneWidget);
+      expect(find.text('+3 Kunjungan'), findsOneWidget);
+      expect(find.text('12x  ➔  15x'), findsOneWidget);
+      expect(find.text('Penambahan frekuensi'), findsOneWidget);
     },
   );
 }

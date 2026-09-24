@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:signals/signals.dart';
+import 'package:centrow_sales/shared/error/failure.dart';
 import 'package:centrow_sales/shared/result/result.dart';
 import 'package:centrow_sales/shared/state/ui_state.dart';
 import 'package:centrow_sales/modules/sales/entities/proposal.dart';
@@ -11,6 +12,18 @@ class ProposalController {
   final ProposalRepository _repository;
 
   ProposalController(this._repository);
+
+  bool isTreatmentQuotaError(Failure failure) {
+    if (failure.statusCode == 400) {
+      final msg = failure.message.toLowerCase();
+      return msg.contains('kuota') ||
+          msg.contains('quota') ||
+          msg.contains('treatment') ||
+          msg.contains('metode') ||
+          msg.contains('wajib');
+    }
+    return false;
+  }
 
   bool _isDisposed = false;
 

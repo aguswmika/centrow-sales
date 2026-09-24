@@ -16,8 +16,13 @@ import 'package:flutter_test/flutter_test.dart';
 class _FakeProposalRepo implements ProposalRepository {
   final List<Proposal> proposals;
   final bool shouldFail;
+  final Failure? sendFailure;
 
-  _FakeProposalRepo({this.proposals = const [], this.shouldFail = false});
+  _FakeProposalRepo({
+    this.proposals = const [],
+    this.shouldFail = false,
+    this.sendFailure,
+  });
 
   @override
   Future<Result<List<Proposal>>> getProposals({
@@ -52,6 +57,7 @@ class _FakeProposalRepo implements ProposalRepository {
 
   @override
   Future<Result<ProposalStatusResult>> sendProposal(String id) async {
+    if (sendFailure != null) return Err(sendFailure!);
     return Ok(ProposalStatusResult(id: id, status: ProposalStatus.sent));
   }
 
@@ -250,4 +256,77 @@ void main() {
     expect(find.text('Gagal memuat proposal'), findsOneWidget);
     expect(find.text('Coba Lagi'), findsOneWidget);
   });
+
+  testWidgets(
+    'ProposalPage displays guidance dialog when sending proposal fails due to missing treatment quota',
+    (tester) async {
+      tester.view.physicalSize = const Size(1200, 900);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+
+      const draftProp = Proposal(
+        id: 'p-draft',
+        code: 'PRO-2026-0099',
+        clientName: 'Draft Client',
+        serviceName: 'Termite Protection',
+        status: ProposalStatus.draft,
+        date: '20 Agt 2026',
+        validUntil: '20 Sep 2026',
+        location: 'Ubud',
+        hasPricing: true,
+      );
+
+      final repo = _FakeProposalRepo(
+        proposals: [draftProp],
+        sendFailure: const ServerFailure(
+          'Metode treatment wajib belum memiliki kuota',
+          400,
+        ),
+      );
+      final controller = ProposalController(repo);
+
+      await tester.pumpWidget(
+        MaterialApp(
+          home: ProposalPage(
+            controller: controller,
+            documentController: createFakeDocController(),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      // Select proposal from master list
+      await tester.tap(find.text('Draft Client').first);
+      await tester.pumpAndSettle();
+
+      // Open Actions menu
+      await tester.tap(find.text('Aksi'));
+      await tester.pumpAndSettle();
+
+      // Tap 'Tandai Terkirim'
+      await tester.tap(find.text('Tandai Terkirim'));
+      await tester.pumpAndSettle();
+
+      // Confirm send dialog
+      expect(
+        find.text(
+          'Kalkulasi harga dan rincian proposal PRO-2026-0099 akan dikunci setelah ditandai terkirim. Apakah Anda yakin?',
+        ),
+        findsOneWidget,
+      );
+      await tester.tap(find.text('Kirim'));
+      await tester.pumpAndSettle();
+
+      // Guidance dialog should appear
+      expect(find.text('Kuota Treatment Wajib Belum Lengkap'), findsOneWidget);
+      expect(find.text('Atur Kuota Pricing'), findsOneWidget);
+      expect(find.text('Tutup'), findsOneWidget);
+
+      // Dismiss dialog
+      await tester.tap(find.text('Tutup'));
+      await tester.pumpAndSettle();
+      expect(find.text('Kuota Treatment Wajib Belum Lengkap'), findsNothing);
+    },
+  );
 }

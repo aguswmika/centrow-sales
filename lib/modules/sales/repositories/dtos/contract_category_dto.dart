@@ -28,12 +28,14 @@ class ContractCategoryDto {
   final String name;
   final String? createdAt;
   final List<ContractTemplateOptionDto> templates;
+  final int? scheduleCycle;
 
   const ContractCategoryDto({
     required this.id,
     required this.name,
     this.createdAt,
     this.templates = const [],
+    this.scheduleCycle,
   });
 
   factory ContractCategoryDto.fromJson(Map<String, dynamic> json) =>
@@ -50,6 +52,11 @@ class ContractCategoryDto {
                 )
                 .toList() ??
             const [],
+        scheduleCycle: switch (json['schedule_cycle']) {
+          final num n => n.toInt(),
+          final String s => int.tryParse(s),
+          _ => null,
+        },
       );
 
   ContractCategory toEntity() => ContractCategory(
@@ -57,5 +64,8 @@ class ContractCategoryDto {
     name: name,
     createdAt: createdAt,
     templates: templates.map((t) => t.toEntity()).toList(),
+    scheduleCycle:
+        ContractScheduleCycle.fromDynamic(scheduleCycle) ??
+        ContractScheduleCycle.yearly,
   );
 }

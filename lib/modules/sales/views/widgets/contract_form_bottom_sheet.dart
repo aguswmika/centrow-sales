@@ -98,7 +98,9 @@ class _ContractFormBottomSheetState extends State<ContractFormBottomSheet> {
     if (picked != null) {
       final s =
           '${picked.year}-${picked.month.toString().padLeft(2, '0')}-${picked.day.toString().padLeft(2, '0')}';
-      ctrl.text = s;
+      setState(() {
+        ctrl.text = s;
+      });
       onPicked(s);
     }
   }
@@ -213,10 +215,44 @@ class _ContractFormBottomSheetState extends State<ContractFormBottomSheet> {
                     hint: 'Pilih kategori…',
                     value: _controller.selectedCategory,
                     onSearch: _controller.searchCategories,
-                    itemAsString: (cat) => cat.name,
+                    itemAsString: (cat) =>
+                        '${cat.name} (${cat.scheduleCycle.displayName})',
                     onChanged: (cat) => _controller.updateFields(category: cat),
                     isRequired: true,
                   ),
+                  if (_controller.selectedCategory != null) ...[
+                    const SizedBox(height: 8),
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 10,
+                        vertical: 6,
+                      ),
+                      decoration: BoxDecoration(
+                        color: AppColors.subtle,
+                        borderRadius: BorderRadius.circular(6),
+                        border: Border.all(color: AppColors.border),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const Icon(
+                            Icons.info_outline,
+                            size: 14,
+                            color: AppColors.sec,
+                          ),
+                          const SizedBox(width: 6),
+                          Flexible(
+                            child: Text(
+                              'Siklus kuota kunjungan: ${_controller.selectedCategory!.scheduleCycle.displayName} (${_controller.selectedCategory!.scheduleCycle.isMonthly ? 'diperbarui setiap bulan' : 'total masa kontrak'})',
+                              style: AppTypography.caption(
+                                color: AppColors.sec,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
                   if (isCreateMode && _controller.selectedCategory != null) ...[
                     const SizedBox(height: 16),
                     if (_controller.selectedCategory!.templates.isNotEmpty)
@@ -295,9 +331,19 @@ class _ContractFormBottomSheetState extends State<ContractFormBottomSheet> {
                   TextFormField(
                     controller: _firstInvoiceDateCtrl,
                     readOnly: true,
-                    decoration: const InputDecoration(
+                    decoration: InputDecoration(
                       labelText: 'Tanggal Invoice Pertama',
-                      suffixIcon: Icon(Icons.calendar_today),
+                      suffixIcon: _firstInvoiceDateCtrl.text.isNotEmpty
+                          ? IconButton(
+                              icon: const Icon(Icons.clear),
+                              onPressed: () {
+                                setState(() {
+                                  _firstInvoiceDateCtrl.clear();
+                                });
+                                _controller.updateFields(firstInvoiceDate: '');
+                              },
+                            )
+                          : const Icon(Icons.calendar_today),
                     ),
                     onTap: () => _pickDate(
                       _firstInvoiceDateCtrl,

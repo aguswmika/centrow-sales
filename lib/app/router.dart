@@ -16,6 +16,7 @@ import 'package:centrow_sales/shared/widgets/nav_rail_shell.dart';
 import 'package:centrow_sales/modules/sales/entities/contract.dart';
 import 'package:centrow_sales/modules/sales/views/pages/contract_page.dart';
 import 'package:centrow_sales/modules/sales/views/pages/contract_document_page.dart';
+import 'package:centrow_sales/modules/sales/views/pages/contract_addendum_document_page.dart';
 
 GoRouter createRouter({String? initialLocation}) => GoRouter(
   initialLocation: initialLocation ?? '/splash',
@@ -166,6 +167,26 @@ GoRouter createRouter({String? initialLocation}) => GoRouter(
                         ? state.extra as Contract
                         : null,
                   ),
+                ),
+                GoRoute(
+                  path: ':id/addendums/:addendumId/document',
+                  name: 'contract-addendum-document',
+                  builder: (context, state) {
+                    final contractId = state.pathParameters['id']!;
+                    final addendumId = state.pathParameters['addendumId']!;
+                    final extra = state.extra;
+                    String? initialTemplateId;
+                    if (extra is Map<String, dynamic>) {
+                      initialTemplateId = extra['templateId'] as String?;
+                    } else if (extra is String) {
+                      initialTemplateId = extra;
+                    }
+                    return ContractAddendumDocumentPage(
+                      contractId: contractId,
+                      addendumId: addendumId,
+                      initialTemplateId: initialTemplateId,
+                    );
+                  },
                 ),
               ],
             ),

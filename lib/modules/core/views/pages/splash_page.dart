@@ -43,7 +43,7 @@ class _SplashPageState extends State<SplashPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.brand,
+      backgroundColor: AppColors.text,
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -84,7 +84,7 @@ class _SplashPageState extends State<SplashPage> {
             ),
             const SizedBox(height: 8.0),
             Text(
-              'Mobile ERP & POS',
+              'ERP',
               style: GoogleFonts.plusJakartaSans(
                 fontSize: 14.0,
                 fontWeight: FontWeight.w500,

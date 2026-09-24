@@ -39,15 +39,15 @@ class InMemoryLocalStorage implements LocalStorage {
 class MockAuthRepository implements AuthRepository {
   @override
   Future<Result<User>> getMe() async => const Ok(
-        User(
-          id: 'u-1',
-          name: 'Jane Doe',
-          email: 'jane@example.com',
-          role: 'sales',
-          branch: 'Main',
-          token: 'token123',
-        ),
-      );
+    User(
+      id: 'u-1',
+      name: 'Jane Doe',
+      email: 'jane@example.com',
+      role: 'sales',
+      branch: 'Main',
+      token: 'token123',
+    ),
+  );
 
   @override
   Future<Result<List<Tenant>>> getPublicTenants() => throw UnimplementedError();
@@ -57,15 +57,15 @@ class MockAuthRepository implements AuthRepository {
     required String email,
     required String password,
     required String tenantId,
-  }) =>
-      throw UnimplementedError();
+  }) => throw UnimplementedError();
 
   @override
   Future<Result<TokenDto>> refreshToken(String refreshToken) =>
       throw UnimplementedError();
 
   @override
-  Future<Result<void>> logout(String refreshToken) => throw UnimplementedError();
+  Future<Result<void>> logout(String refreshToken) =>
+      throw UnimplementedError();
 }
 
 void main() {

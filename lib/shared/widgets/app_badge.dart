@@ -65,7 +65,11 @@ class AppBadge extends StatelessWidget {
     final variant = switch (type.toLowerCase()) {
       'ok' || 'success' || 'disetujui' || 'aktif' => AppBadgeVariant.ok,
       'warn' || 'warning' || 'negosiasi' => AppBadgeVariant.warn,
-      'err' || 'danger' || 'critical' => AppBadgeVariant.err,
+      'err' ||
+      'danger' ||
+      'critical' ||
+      'cancelled' ||
+      'dibatalkan' => AppBadgeVariant.err,
       'info' || 'dikirim' => AppBadgeVariant.info,
       'brand' => AppBadgeVariant.brand,
       _ => AppBadgeVariant.neutral,

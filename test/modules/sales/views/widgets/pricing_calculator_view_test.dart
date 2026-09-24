@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:centrow_sales/modules/pc/entities/treatment_method.dart';
 import 'package:centrow_sales/modules/sales/controllers/pricing_calculator_controller.dart';
 import 'package:centrow_sales/modules/sales/entities/pricing_detail.dart';
 import 'package:centrow_sales/modules/sales/entities/pricing_preview.dart';
@@ -131,6 +132,16 @@ void main() {
         initialUnitPrice: 25000.0,
       ),
     );
+
+    controller.addTreatmentQuota(
+      const TreatmentMethod(
+        id: 'tm-1',
+        name: 'Misting Outing',
+        code: 'MST-01',
+        isRequired: true,
+      ),
+      quota: 4,
+    );
   }
 
   testWidgets(
@@ -214,6 +225,17 @@ void main() {
 
       expect(find.text('BBM'), findsOneWidget);
       expect(find.text('Add-on'), findsOneWidget);
+      expect(find.byIcon(Icons.close_rounded), findsOneWidget);
+
+      // Switch to Tab 3: Kuota Treatment
+      await tester.tap(find.text('Kuota Treatment'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Misting Outing'), findsOneWidget);
+      expect(find.text('MST-01'), findsOneWidget);
+      expect(find.text('Wajib'), findsOneWidget);
+      expect(find.text('Tambah Metode'), findsOneWidget);
+      expect(find.text('Isi Metode Wajib'), findsOneWidget);
       expect(find.byIcon(Icons.close_rounded), findsOneWidget);
 
       // Bottom action button displays 'Lihat Ringkasan' and is enabled

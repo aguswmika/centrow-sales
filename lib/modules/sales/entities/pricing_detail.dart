@@ -81,6 +81,22 @@ class PricingDetailItem {
   });
 }
 
+class PricingDetailTreatmentQuota {
+  final String treatmentMethodId;
+  final int quota;
+  final String treatmentMethodName;
+  final String treatmentMethodCode;
+  final bool isRequired;
+
+  const PricingDetailTreatmentQuota({
+    required this.treatmentMethodId,
+    required this.quota,
+    this.treatmentMethodName = '',
+    this.treatmentMethodCode = '',
+    this.isRequired = false,
+  });
+}
+
 class PricingDetail {
   final String id;
   final String customerId;
@@ -97,6 +113,7 @@ class PricingDetail {
   final List<PricingDetailSupply> supplies;
   final List<PricingDetailWorker> workers;
   final List<PricingDetailItem> items;
+  final List<PricingDetailTreatmentQuota> treatmentQuotas;
 
   const PricingDetail({
     required this.id,
@@ -113,5 +130,6 @@ class PricingDetail {
     required this.supplies,
     required this.workers,
     required this.items,
+    this.treatmentQuotas = const [],
   });
 }

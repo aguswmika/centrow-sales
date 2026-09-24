@@ -555,6 +555,51 @@ void main() {
           isA<UiInitial<ProposalStatusResult>>(),
         );
       });
+
+      test(
+        'isTreatmentQuotaError correctly identifies 400 quota validation errors',
+        () {
+          expect(
+            controller.isTreatmentQuotaError(
+              const ServerFailure(
+                'Proposal missing required treatment quotas',
+                400,
+              ),
+            ),
+            isTrue,
+          );
+          expect(
+            controller.isTreatmentQuotaError(
+              const ServerFailure(
+                'Terdapat metode treatment wajib yang belum memiliki kuota',
+                400,
+              ),
+            ),
+            isTrue,
+          );
+          expect(
+            controller.isTreatmentQuotaError(
+              const ServerFailure('General validation error', 400),
+            ),
+            isFalse,
+          );
+          expect(
+            controller.isTreatmentQuotaError(
+              const ServerFailure(
+                'Terdapat metode treatment wajib yang belum memiliki kuota',
+                500,
+              ),
+            ),
+            isFalse,
+          );
+          expect(
+            controller.isTreatmentQuotaError(
+              const NetworkFailure('Network error'),
+            ),
+            isFalse,
+          );
+        },
+      );
     });
   });
 }

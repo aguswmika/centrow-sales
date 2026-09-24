@@ -60,6 +60,7 @@ class ContractFormController extends ChangeNotifier {
     selectedCategory = ContractCategory(
       id: contract.categoryId,
       name: contract.categoryName,
+      scheduleCycle: contract.scheduleCycle ?? ContractScheduleCycle.yearly,
     );
     startDate = contract.startDate;
     endDate = contract.endDate;

@@ -168,6 +168,40 @@ class PricingDetailItemDto {
   );
 }
 
+class PricingDetailTreatmentQuotaDto {
+  final String treatmentMethodId;
+  final int quota;
+  final String treatmentMethodName;
+  final String treatmentMethodCode;
+  final bool isRequired;
+
+  PricingDetailTreatmentQuotaDto._(
+    this.treatmentMethodId,
+    this.quota,
+    this.treatmentMethodName,
+    this.treatmentMethodCode,
+    this.isRequired,
+  );
+
+  factory PricingDetailTreatmentQuotaDto.fromJson(
+    Map<String, dynamic> j,
+  ) => PricingDetailTreatmentQuotaDto._(
+    (j['treatment_method_id'] ?? j['treatmentMethodId']) as String? ?? '',
+    (j['quota'] as num?)?.toInt() ?? 0,
+    (j['treatment_method_name'] ?? j['treatmentMethodName']) as String? ?? '',
+    (j['treatment_method_code'] ?? j['treatmentMethodCode']) as String? ?? '',
+    (j['is_required'] ?? j['isRequired']) as bool? ?? false,
+  );
+
+  PricingDetailTreatmentQuota toEntity() => PricingDetailTreatmentQuota(
+    treatmentMethodId: treatmentMethodId,
+    quota: quota,
+    treatmentMethodName: treatmentMethodName,
+    treatmentMethodCode: treatmentMethodCode,
+    isRequired: isRequired,
+  );
+}
+
 class PricingDetailDto {
   final String id;
   final String customerId;
@@ -183,6 +217,7 @@ class PricingDetailDto {
   final List<PricingDetailSupplyDto> supplies;
   final List<PricingDetailWorkerDto> workers;
   final List<PricingDetailItemDto> items;
+  final List<PricingDetailTreatmentQuotaDto> treatmentQuotas;
 
   PricingDetailDto._({
     required this.id,
@@ -199,6 +234,7 @@ class PricingDetailDto {
     required this.supplies,
     required this.workers,
     required this.items,
+    this.treatmentQuotas = const [],
   });
 
   factory PricingDetailDto.fromJson(Map<String, dynamic> json) {
@@ -223,6 +259,10 @@ class PricingDetailDto {
       supplies: parseList(json['supplies'], PricingDetailSupplyDto.fromJson),
       workers: parseList(json['workers'], PricingDetailWorkerDto.fromJson),
       items: parseList(json['items'], PricingDetailItemDto.fromJson),
+      treatmentQuotas: parseList(
+        json['treatment_quotas'] ?? json['treatmentQuotas'],
+        PricingDetailTreatmentQuotaDto.fromJson,
+      ),
     );
   }
 
@@ -241,5 +281,6 @@ class PricingDetailDto {
     supplies: supplies.map((e) => e.toEntity()).toList(),
     workers: workers.map((e) => e.toEntity()).toList(),
     items: items.map((e) => e.toEntity()).toList(),
+    treatmentQuotas: treatmentQuotas.map((e) => e.toEntity()).toList(),
   );
 }

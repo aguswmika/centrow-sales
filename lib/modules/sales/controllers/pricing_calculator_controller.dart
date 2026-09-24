@@ -5,11 +5,33 @@ import 'package:centrow_sales/shared/state/ui_state.dart';
 import 'package:centrow_sales/modules/core/entities/uom.dart';
 import 'package:centrow_sales/modules/core/repositories/uom_repository.dart';
 import 'package:centrow_sales/modules/pc/entities/product_mapping.dart';
+import 'package:centrow_sales/modules/pc/entities/treatment_method.dart';
+import 'package:centrow_sales/modules/pc/repositories/treatment_method_repository.dart';
 import 'package:centrow_sales/modules/sales/entities/pricing_detail.dart';
 import 'package:centrow_sales/modules/sales/entities/pricing_preview.dart';
 import 'package:centrow_sales/modules/sales/entities/product.dart';
 import 'package:centrow_sales/modules/sales/repositories/pricing_repository.dart';
 import 'package:centrow_sales/modules/sales/repositories/dtos/pricing_dto.dart';
+
+class PricingTreatmentQuotaRow {
+  final String treatmentMethodId;
+  final String treatmentMethodName;
+  final String treatmentMethodCode;
+  final bool isRequired;
+  final Signal<int> quota;
+
+  PricingTreatmentQuotaRow({
+    required this.treatmentMethodId,
+    required this.treatmentMethodName,
+    required this.treatmentMethodCode,
+    this.isRequired = false,
+    int initialQuota = 1,
+  }) : quota = signal(initialQuota);
+
+  void dispose() {
+    quota.dispose();
+  }
+}
 
 class PricingSupplyRow {
   final String id;
@@ -17,6 +39,10 @@ class PricingSupplyRow {
   final String code;
   final String uomCode;
   final int kind;
+
+  final String? treatmentMethodId;
+  final String? treatmentMethodName;
+  final String? treatmentMethodCode;
 
   final double? doseMinLimit;
   final double? doseMaxLimit;
@@ -40,6 +66,9 @@ class PricingSupplyRow {
     required this.code,
     required this.uomCode,
     required this.kind,
+    this.treatmentMethodId,
+    this.treatmentMethodName,
+    this.treatmentMethodCode,
     this.doseMinLimit,
     this.doseMaxLimit,
     this.contractMonthsRef,
@@ -131,8 +160,13 @@ class PricingItemRow {
 class PricingCalculatorController {
   final PricingRepository _repository;
   final UomRepository? _uomRepository;
+  final TreatmentMethodRepository? _treatmentMethodRepository;
 
-  PricingCalculatorController(this._repository, [this._uomRepository]);
+  PricingCalculatorController(
+    this._repository, [
+    this._uomRepository,
+    this._treatmentMethodRepository,
+  ]);
 
   final uoms = ListSignal<Uom>([]);
   final uomState = signal<UiState<List<Uom>>>(const UiInitial());
@@ -153,6 +187,92 @@ class PricingCalculatorController {
   final supplies = ListSignal<PricingSupplyRow>([]);
   final workers = ListSignal<PricingWorkerRow>([]);
   final items = ListSignal<PricingItemRow>([]);
+  final _treatmentQuotas = ListSignal<PricingTreatmentQuotaRow>([]);
+
+  ListSignal<PricingTreatmentQuotaRow> get treatmentQuotas => _treatmentQuotas;
+  ReadonlySignal<List<PricingTreatmentQuotaRow>> get readonlyTreatmentQuotas =>
+      _treatmentQuotas.readonly();
+
+  void addTreatmentQuota(TreatmentMethod method, {int quota = 1}) {
+    if (_treatmentQuotas.any((q) => q.treatmentMethodId == method.id)) {
+      return;
+    }
+    _treatmentQuotas.add(
+      PricingTreatmentQuotaRow(
+        treatmentMethodId: method.id,
+        treatmentMethodName: method.name,
+        treatmentMethodCode: method.code,
+        isRequired: method.isRequired,
+        initialQuota: quota > 0 ? quota : 1,
+      ),
+    );
+  }
+
+  void removeTreatmentQuota(String treatmentMethodId) {
+    final index = _treatmentQuotas.indexWhere(
+      (q) => q.treatmentMethodId == treatmentMethodId,
+    );
+    if (index != -1) {
+      final removed = _treatmentQuotas.removeAt(index);
+      removed.dispose();
+    }
+  }
+
+  void updateTreatmentQuota(String treatmentMethodId, int newQuota) {
+    final index = _treatmentQuotas.indexWhere(
+      (q) => q.treatmentMethodId == treatmentMethodId,
+    );
+    if (index != -1 && newQuota >= 0) {
+      _treatmentQuotas[index].quota.value = newQuota;
+    }
+  }
+
+  void populateRequiredMethods(List<TreatmentMethod> methods) {
+    for (final method in methods) {
+      if (method.isRequired &&
+          !_treatmentQuotas.any((q) => q.treatmentMethodId == method.id)) {
+        _treatmentQuotas.add(
+          PricingTreatmentQuotaRow(
+            treatmentMethodId: method.id,
+            treatmentMethodName: method.name,
+            treatmentMethodCode: method.code,
+            isRequired: true,
+            initialQuota: 1,
+          ),
+        );
+      }
+    }
+  }
+
+  Future<void> populateRequiredMethodsFromRepo() async {
+    if (_treatmentMethodRepository == null) return;
+    final result = await _treatmentMethodRepository.getTreatmentMethods();
+    if (result is Ok<List<TreatmentMethod>>) {
+      populateRequiredMethods(result.value);
+    }
+  }
+
+  void populateFromSupplies() {
+    for (final supply in supplies) {
+      final methodId = supply.treatmentMethodId;
+      if (methodId != null &&
+          methodId.isNotEmpty &&
+          !_treatmentQuotas.any((q) => q.treatmentMethodId == methodId)) {
+        _treatmentQuotas.add(
+          PricingTreatmentQuotaRow(
+            treatmentMethodId: methodId,
+            treatmentMethodName:
+                supply.treatmentMethodName ??
+                supply.treatmentMethodCode ??
+                methodId,
+            treatmentMethodCode: supply.treatmentMethodCode ?? '',
+            isRequired: true,
+            initialQuota: 1,
+          ),
+        );
+      }
+    }
+  }
 
   final contractMonths = signal<int?>(null);
   final visitFrequency = signal<int?>(null);
@@ -182,6 +302,9 @@ class PricingCalculatorController {
         code: mapping.productCode ?? '',
         uomCode: mapping.doseUnitCode,
         kind: 1,
+        treatmentMethodId: mapping.treatmentMethodId,
+        treatmentMethodName: mapping.treatmentMethodName,
+        treatmentMethodCode: mapping.treatmentMethodCode,
         initialProductMappingId: mapping.id,
         initialDoseUsage: mapping.defaultDose ?? mapping.doseMinLimit,
         initialDoseUnitId: mapping.doseUnitId,
@@ -190,6 +313,16 @@ class PricingCalculatorController {
         contractMonthsRef: contractMonths,
       ),
     );
+    if (mapping.treatmentMethodId.isNotEmpty) {
+      addTreatmentQuota(
+        TreatmentMethod(
+          id: mapping.treatmentMethodId,
+          code: mapping.treatmentMethodCode,
+          name: mapping.treatmentMethodName ?? mapping.treatmentMethodCode,
+          isRequired: true,
+        ),
+      );
+    }
   }
 
   void addRow(Product product, int expectedKind) {
@@ -344,6 +477,15 @@ class PricingCalculatorController {
         )
         .toList();
 
+    final quotaDtos = _treatmentQuotas
+        .map(
+          (q) => PricingTreatmentQuotaDto(
+            treatmentMethodId: q.treatmentMethodId,
+            quota: q.quota.value,
+          ),
+        )
+        .toList();
+
     return CreatePricingRequestDto(
       contractMonths: contractMonths.value ?? 12,
       visitFrequency: visitFrequency.value ?? 1,
@@ -354,6 +496,7 @@ class PricingCalculatorController {
       supplies: supplyDtos,
       workers: workerDtos,
       items: itemDtos,
+      treatmentQuotas: quotaDtos,
     );
   }
 
@@ -435,6 +578,22 @@ class PricingCalculatorController {
           ),
         );
       }
+
+      for (final q in _treatmentQuotas) {
+        q.dispose();
+      }
+      _treatmentQuotas.clear();
+      for (final q in data.treatmentQuotas) {
+        _treatmentQuotas.add(
+          PricingTreatmentQuotaRow(
+            treatmentMethodId: q.treatmentMethodId,
+            treatmentMethodName: q.treatmentMethodName,
+            treatmentMethodCode: q.treatmentMethodCode,
+            isRequired: q.isRequired,
+            initialQuota: q.quota,
+          ),
+        );
+      }
     }
 
     existingPricingState.value = switch (result) {
@@ -471,7 +630,13 @@ class PricingCalculatorController {
     }
     items.dispose();
 
+    for (final quota in _treatmentQuotas) {
+      quota.dispose();
+    }
+    _treatmentQuotas.dispose();
+
     contractMonths.dispose();
+    visitFrequency.dispose();
     markupPercent.dispose();
     markupType.dispose();
     discountAmount.dispose();

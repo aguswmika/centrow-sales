@@ -4,7 +4,7 @@ enum ProposalStatus {
   accepted('Diterima', 'ok', 'accepted'),
   rejected('Ditolak', 'err', 'rejected'),
   expired('Kedaluwarsa', 'warn', 'expired'),
-  cancelled('Dibatalkan', 'neutral', 'cancelled');
+  cancelled('Dibatalkan', 'err', 'cancelled');
 
   final String displayName;
   final String badgeType;

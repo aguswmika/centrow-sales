@@ -112,12 +112,20 @@ class _ProposalPageState extends State<ProposalPage> {
   }
 
   Future<void> _handleSendProposal(Proposal proposal) async {
+    if (!proposal.hasPricing) {
+      showAppToast(
+        context,
+        'Harga proposal belum tersedia. Lengkapi kalkulasi harga terlebih dahulu sebelum menandai terkirim.',
+        isError: true,
+      );
+      return;
+    }
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Kirim Proposal'),
+        title: const Text('Tandai Terkirim'),
         content: Text(
-          'Kirim proposal ${proposal.code} ke klien? Kalkulasi harga dan rincian akan dikunci setelah dikirim.',
+          'Kalkulasi harga dan rincian proposal ${proposal.code} akan dikunci setelah ditandai terkirim. Apakah Anda yakin?',
         ),
         actions: [
           TextButton(
@@ -135,9 +143,63 @@ class _ProposalPageState extends State<ProposalPage> {
       final res = await _controller.sendProposal(proposal.id);
       if (mounted) {
         if (res is Ok) {
-          showAppToast(context, 'Proposal berhasil dikirim.', isSuccess: true);
+          showAppToast(
+            context,
+            'Proposal berhasil ditandai terkirim.',
+            isSuccess: true,
+          );
         } else if (res is Err) {
-          showAppToast(context, (res as Err).failure.message, isError: true);
+          final failure = (res as Err).failure;
+          if (_controller.isTreatmentQuotaError(failure)) {
+            await showDialog<void>(
+              context: context,
+              builder: (ctx) => AlertDialog(
+                title: const Row(
+                  children: [
+                    Icon(
+                      Icons.warning_amber_rounded,
+                      color: AppColors.warn,
+                      size: 24.0,
+                    ),
+                    SizedBox(width: 8.0),
+                    Flexible(
+                      child: Text('Kuota Treatment Wajib Belum Lengkap'),
+                    ),
+                  ],
+                ),
+                content: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(failure.message),
+                    const SizedBox(height: 12.0),
+                    const Text(
+                      'Proposal tidak dapat dikirim karena masih ada metode treatment wajib yang belum memiliki kuota pada pricing. Silakan buka kalkulator pricing pada tab "Kuota Treatment" dan lengkapi kuota metode wajib.',
+                      style: TextStyle(fontSize: 13.0, color: AppColors.sec),
+                    ),
+                  ],
+                ),
+                actions: [
+                  TextButton(
+                    onPressed: () => Navigator.of(ctx).pop(),
+                    child: const Text('Tutup'),
+                  ),
+                  ElevatedButton(
+                    onPressed: () {
+                      Navigator.of(ctx).pop();
+                      context.go(
+                        '/proposals/${proposal.id}/pricing',
+                        extra: proposal,
+                      );
+                    },
+                    child: const Text('Atur Kuota Pricing'),
+                  ),
+                ],
+              ),
+            );
+          } else {
+            showAppToast(context, failure.message, isError: true);
+          }
         }
       }
     }

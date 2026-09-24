@@ -10,6 +10,7 @@ import 'package:centrow_sales/modules/sales/entities/proposal.dart';
 
 import 'package:centrow_sales/shared/theme/app_typography.dart';
 import 'package:centrow_sales/shared/theme/app_colors.dart';
+import 'package:centrow_sales/shared/theme/app_radius.dart';
 
 class ProposalFormBottomSheet extends StatefulWidget {
   final String? customerId;
@@ -149,11 +150,46 @@ class _ProposalFormBottomSheetState extends State<ProposalFormBottomSheet> {
                       ),
                     ],
                   ),
+                  if (_controller.isReviseMode) ...[
+                    const SizedBox(height: 16),
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 14.0,
+                        vertical: 10.0,
+                      ),
+                      decoration: BoxDecoration(
+                        color: AppColors.subtle,
+                        borderRadius: AppRadius.borderMd,
+                        border: Border.all(color: AppColors.border),
+                      ),
+                      child: Row(
+                        children: [
+                          const Icon(
+                            Icons.info_outline,
+                            size: 18,
+                            color: AppColors.sec,
+                          ),
+                          const SizedBox(width: 10),
+                          Expanded(
+                            child: Text(
+                              'Revisi akan membuat versi baru proposal. Pelanggan dan Layanan tidak dapat diubah.',
+                              style: AppTypography.bodySm(color: AppColors.sec),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
                   const SizedBox(height: 24),
                   AppSearchableSelector<Customer>(
                     label: 'Pelanggan',
                     enabled:
                         !_controller.isEditMode && !_controller.isReviseMode,
+                    helperText: _controller.isReviseMode
+                        ? 'Terkunci pada mode revisi'
+                        : (_controller.isEditMode
+                              ? 'Terkunci pada mode ubah'
+                              : null),
                     value: _controller.selectedCustomer,
                     onSearch: _controller.searchCustomers,
                     itemAsString: (c) =>
@@ -165,6 +201,11 @@ class _ProposalFormBottomSheetState extends State<ProposalFormBottomSheet> {
                     label: 'Layanan',
                     enabled:
                         !_controller.isEditMode && !_controller.isReviseMode,
+                    helperText: _controller.isReviseMode
+                        ? 'Terkunci pada mode revisi'
+                        : (_controller.isEditMode
+                              ? 'Terkunci pada mode ubah'
+                              : null),
                     value: _controller.selectedService,
                     onSearch: _controller.searchServices,
                     itemAsString: (s) =>

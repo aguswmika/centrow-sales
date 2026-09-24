@@ -8,6 +8,8 @@ import 'package:centrow_sales/shared/widgets/app_badge.dart';
 import 'package:centrow_sales/shared/widgets/app_button.dart';
 import 'package:centrow_sales/shared/widgets/error_view.dart';
 import 'package:centrow_sales/modules/sales/entities/contract.dart';
+import 'package:centrow_sales/modules/sales/entities/contract_addendum.dart';
+import 'package:centrow_sales/modules/sales/views/widgets/contract_addendum_history_list.dart';
 
 class ContractDetailPane extends StatelessWidget {
   final Contract? contract;
@@ -23,6 +25,9 @@ class ContractDetailPane extends StatelessWidget {
   final VoidCallback? onOpenDocument;
   final VoidCallback? onExportPdf;
   final bool isExportingPdf;
+  final VoidCallback? onAddAddendum;
+  final UiState<List<ContractAddendum>>? addendumsState;
+  final VoidCallback? onRetryAddendums;
 
   const ContractDetailPane({
     super.key,
@@ -39,6 +44,9 @@ class ContractDetailPane extends StatelessWidget {
     this.onOpenDocument,
     this.onExportPdf,
     this.isExportingPdf = false,
+    this.onAddAddendum,
+    this.addendumsState,
+    this.onRetryAddendums,
   });
 
   @override
@@ -119,6 +127,12 @@ class ContractDetailPane extends StatelessWidget {
                       _buildInfoSection('TANGGAL SELESAI', c.endDate ?? '-'),
                       if (c.signedDate != null)
                         _buildInfoSection('TANGGAL TTD', c.signedDate!),
+                      if (c.firstInvoiceDate != null &&
+                          c.firstInvoiceDate!.isNotEmpty)
+                        _buildInfoSection(
+                          'TANGGAL INVOICE PERTAMA',
+                          c.firstInvoiceDate!,
+                        ),
                     ],
                   ),
                   const SizedBox(height: 16.0),
@@ -137,8 +151,8 @@ class ContractDetailPane extends StatelessWidget {
                       ),
                       if (c.totalVisits != null)
                         _buildInfoSection(
-                          'TOTAL KUNJUNGAN',
-                          '${c.totalVisits}x',
+                          c.visitFrequencyLabel,
+                          c.formattedVisitFrequency,
                         ),
                     ],
                   ),
@@ -220,6 +234,49 @@ class ContractDetailPane extends StatelessWidget {
                   ],
                   const SizedBox(height: 8.0),
                   _buildInfoSection('DIBUAT PADA', c.createdAt ?? '-'),
+                  if (c.status.isActive ||
+                      (addendumsState is UiSuccess<List<ContractAddendum>> &&
+                          (addendumsState as UiSuccess<List<ContractAddendum>>)
+                              .data
+                              .isNotEmpty)) ...[
+                    const SizedBox(height: 24.0),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          'Riwayat Addendum',
+                          style: GoogleFonts.plusJakartaSans(
+                            fontSize: 15.0,
+                            fontWeight: FontWeight.w700,
+                            color: AppColors.text,
+                          ),
+                        ),
+                        if (c.status.isActive && onAddAddendum != null)
+                          TextButton.icon(
+                            onPressed: isActionLoading ? null : onAddAddendum,
+                            icon: const Icon(
+                              Icons.add,
+                              size: 16.0,
+                              color: AppColors.brand,
+                            ),
+                            label: Text(
+                              'Buat Addendum',
+                              style: GoogleFonts.inter(
+                                fontSize: 13.0,
+                                fontWeight: FontWeight.w600,
+                                color: AppColors.brand,
+                              ),
+                            ),
+                          ),
+                      ],
+                    ),
+                    const SizedBox(height: 12.0),
+                    ContractAddendumHistoryList(
+                      state: addendumsState,
+                      onRetry: onRetryAddendums,
+                      onAddAddendum: onAddAddendum,
+                    ),
+                  ],
                 ],
               ),
             ),
@@ -305,11 +362,26 @@ class ContractDetailPane extends StatelessWidget {
                   ),
                   onPressed: isActionLoading ? null : onActivate,
                 ),
+              if (c.status.isActive && onAddAddendum != null)
+                AppButton(
+                  text: 'Buat Addendum',
+                  height: 40.0,
+                  isFullWidth: false,
+                  borderRadius: AppRadius.borderMd,
+                  icon: const Icon(
+                    Icons.post_add,
+                    size: 16.0,
+                    color: Colors.white,
+                  ),
+                  onPressed: isLoading ? null : onAddAddendum,
+                ),
               PopupMenuButton<String>(
                 tooltip: 'Aksi',
                 enabled: !isLoading,
                 onSelected: (val) {
                   switch (val) {
+                    case 'addendum':
+                      onAddAddendum?.call();
                     case 'edit':
                       onEdit?.call();
                     case 'pdf':
@@ -325,6 +397,22 @@ class ContractDetailPane extends StatelessWidget {
                   }
                 },
                 itemBuilder: (context) => [
+                  if (c.status.isActive && onAddAddendum != null)
+                    const PopupMenuItem<String>(
+                      value: 'addendum',
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(
+                            Icons.post_add,
+                            size: 18,
+                            color: AppColors.brand,
+                          ),
+                          SizedBox(width: 8),
+                          Flexible(child: Text('Buat Addendum')),
+                        ],
+                      ),
+                    ),
                   if (c.status.canEdit && onEdit != null)
                     const PopupMenuItem<String>(
                       value: 'edit',

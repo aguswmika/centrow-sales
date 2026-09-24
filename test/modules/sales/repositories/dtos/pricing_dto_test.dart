@@ -105,5 +105,43 @@ void main() {
         });
       },
     );
+
+    test(
+      'PricingTreatmentQuotaDto toJson serializes treatment_method_id and quota',
+      () {
+        const dto = PricingTreatmentQuotaDto(
+          treatmentMethodId: 'tm-123',
+          quota: 8,
+        );
+
+        final json = dto.toJson();
+        expect(json, {'treatment_method_id': 'tm-123', 'quota': 8});
+      },
+    );
+
+    test('CreatePricingRequestDto serializes treatment_quotas correctly', () {
+      const quota = PricingTreatmentQuotaDto(
+        treatmentMethodId: 'tm-123',
+        quota: 8,
+      );
+
+      const request = CreatePricingRequestDto(
+        contractMonths: 12,
+        visitFrequency: 4,
+        markupType: 1,
+        markupValue: 20.0,
+        discountAmount: 0.0,
+        taxPercentage: 11.0,
+        supplies: [],
+        workers: [],
+        items: [],
+        treatmentQuotas: [quota],
+      );
+
+      final json = request.toJson();
+      expect(json['treatment_quotas'], [
+        {'treatment_method_id': 'tm-123', 'quota': 8},
+      ]);
+    });
   });
 }

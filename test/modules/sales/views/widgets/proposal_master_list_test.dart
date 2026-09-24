@@ -1,5 +1,6 @@
 import 'package:centrow_sales/modules/sales/entities/proposal.dart';
 import 'package:centrow_sales/modules/sales/views/widgets/proposal_master_list.dart';
+import 'package:centrow_sales/shared/widgets/app_badge.dart';
 import 'package:centrow_sales/shared/widgets/app_segmented_control.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -121,4 +122,47 @@ void main() {
       expect(find.text('Tidak ada proposal yang ditemukan'), findsOneWidget);
     },
   );
+
+  testWidgets('ProposalMasterList renders red badge for cancelled proposal', (
+    tester,
+  ) async {
+    const cancelledProposal = Proposal(
+      id: 'p-cancelled',
+      code: 'PRO-2026-0099',
+      clientName: 'Resort Canceled Test',
+      initials: 'RC',
+      serviceName: 'Termite Protection',
+      status: ProposalStatus.cancelled,
+      date: '15 Agt 2026',
+      validUntil: '15 Sep 2026',
+      location: 'Seminyak, Bali',
+      total: 5000000.0,
+      shortAmount: 'Rp 5jt',
+    );
+
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Scaffold(
+          body: SizedBox(
+            width: 360,
+            child: ProposalMasterList(
+              proposals: const [cancelledProposal],
+              selectedProposalId: '',
+              selectedStatus: 'all',
+              searchQuery: '',
+              onSelectProposal: (_) {},
+              onSelectStatus: (_) {},
+              onSearchChanged: (_) {},
+            ),
+          ),
+        ),
+      ),
+    );
+
+    expect(find.text('Dibatalkan'), findsOneWidget);
+    final badge = tester.widget<AppBadge>(
+      find.widgetWithText(AppBadge, 'Dibatalkan'),
+    );
+    expect(badge.variant, AppBadgeVariant.err);
+  });
 }

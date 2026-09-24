@@ -12,6 +12,7 @@ import 'pricing_calculator/pricing_tabs.dart';
 import 'pricing_calculator/pricing_material_tab.dart';
 import 'pricing_calculator/pricing_worker_tab.dart';
 import 'pricing_calculator/pricing_item_tab.dart';
+import 'pricing_calculator/pricing_treatment_quota_tab.dart';
 import 'pricing_calculator/pricing_settings_card.dart';
 
 class PricingCalculatorView extends StatefulWidget {
@@ -114,6 +115,11 @@ class _PricingCalculatorViewState extends State<PricingCalculatorView> {
         );
       case 2:
         return PricingItemTab(
+          controller: widget.calculatorController,
+          isReadOnly: _isReadOnly,
+        );
+      case 3:
+        return PricingTreatmentQuotaTab(
           controller: widget.calculatorController,
           isReadOnly: _isReadOnly,
         );

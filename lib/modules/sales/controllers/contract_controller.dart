@@ -112,6 +112,8 @@ class ContractController {
     }
   }
 
+  Future<void> loadContractDetail(String id) => selectContract(id);
+
   Future<Result<Contract>> createContractFromProposal(
     String proposalId,
     ContractFormInput input,

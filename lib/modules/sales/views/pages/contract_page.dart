@@ -11,10 +11,12 @@ import 'package:centrow_sales/shared/widgets/error_view.dart';
 import 'package:centrow_sales/shared/widgets/toast.dart';
 import 'package:centrow_sales/modules/sales/controllers/contract_controller.dart';
 import 'package:centrow_sales/modules/sales/controllers/contract_document_controller.dart';
+import 'package:centrow_sales/modules/sales/controllers/contract_addendum_controller.dart';
 import 'package:centrow_sales/modules/sales/entities/contract.dart';
 import 'package:centrow_sales/modules/sales/views/widgets/contract_master_list.dart';
 import 'package:centrow_sales/modules/sales/views/widgets/contract_detail_pane.dart';
 import 'package:centrow_sales/modules/sales/views/widgets/contract_form_bottom_sheet.dart';
+import 'package:centrow_sales/modules/sales/views/widgets/contract_addendum_form_sheet.dart';
 
 class ContractPage extends StatefulWidget {
   final ContractController? controller;
@@ -29,7 +31,9 @@ class ContractPage extends StatefulWidget {
 class _ContractPageState extends State<ContractPage> {
   late final ContractController _controller;
   late final ContractDocumentController _documentController;
+  late final ContractAddendumController _addendumController;
   late final void Function() _pdfEffect;
+  late final void Function() _addendumEffect;
 
   @override
   void didUpdateWidget(ContractPage oldWidget) {
@@ -47,6 +51,7 @@ class _ContractPageState extends State<ContractPage> {
     super.initState();
     _controller = widget.controller ?? getIt<ContractController>();
     _documentController = getIt<ContractDocumentController>();
+    _addendumController = getIt<ContractAddendumController>();
     _controller.loadContracts().then((_) {
       if (widget.initialContractId != null) {
         _controller.selectContract(widget.initialContractId!);
@@ -70,12 +75,21 @@ class _ContractPageState extends State<ContractPage> {
         });
       }
     });
+
+    _addendumEffect = effect(() {
+      final id = _controller.selectedContractId.value;
+      if (id.isNotEmpty) {
+        _addendumController.loadAddendums(id);
+      }
+    });
   }
 
   @override
   void dispose() {
     _pdfEffect();
+    _addendumEffect();
     _documentController.dispose();
+    _addendumController.dispose();
     _controller.dispose();
     super.dispose();
   }
@@ -188,6 +202,13 @@ class _ContractPageState extends State<ContractPage> {
             onDelete: selectedContract?.status.canDelete == true
                 ? () => _handleDelete(selectedContract!)
                 : null,
+            onAddAddendum: selectedContract?.status.isActive == true
+                ? () => _handleAddAddendum(selectedContract!)
+                : null,
+            addendumsState: _addendumController.addendumsState.value,
+            onRetryAddendums: selectedId.isNotEmpty
+                ? () => _addendumController.loadAddendums(selectedId)
+                : null,
           ),
         ),
       ],
@@ -223,53 +244,10 @@ class _ContractPageState extends State<ContractPage> {
   }
 
   Future<void> _handleTerminate(Contract c) async {
-    final reasonCtrl = TextEditingController();
     final reason = await showDialog<String>(
       context: context,
-      builder: (ctx) => AlertDialog(
-        title: const Text('Terminasi Kontrak'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text('Masukkan alasan terminasi untuk kontrak ${c.code}:'),
-            const SizedBox(height: 12),
-            TextField(
-              controller: reasonCtrl,
-              autofocus: true,
-              maxLines: 3,
-              decoration: const InputDecoration(
-                hintText: 'Contoh: Kontrak dibatalkan oleh klien',
-                border: OutlineInputBorder(),
-              ),
-            ),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(ctx).pop(),
-            child: const Text('Batal'),
-          ),
-          ElevatedButton(
-            style: ElevatedButton.styleFrom(backgroundColor: AppColors.err),
-            onPressed: () {
-              final text = reasonCtrl.text.trim();
-              if (text.isEmpty) {
-                showAppToast(
-                  ctx,
-                  'Alasan terminasi wajib diisi',
-                  isError: true,
-                );
-                return;
-              }
-              Navigator.of(ctx).pop(text);
-            },
-            child: const Text('Terminasi'),
-          ),
-        ],
-      ),
+      builder: (ctx) => _TerminateContractDialog(contractCode: c.code),
     );
-    reasonCtrl.dispose();
     if (reason != null && reason.isNotEmpty && mounted) {
       final res = await _controller.terminateContract(c.id, reason);
       if (mounted) {
@@ -305,6 +283,21 @@ class _ContractPageState extends State<ContractPage> {
       showAppToast(context, 'Kontrak berhasil diperbarui.', isSuccess: true);
       await _controller.loadContracts(isRefresh: true);
       await _controller.selectContract(c.id);
+    }
+  }
+
+  Future<void> _handleAddAddendum(Contract c) async {
+    final result = await showModalBottomSheet<bool>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (_) => ContractAddendumFormSheet(contract: c),
+    );
+    if (result == true && mounted) {
+      showAppToast(context, 'Addendum berhasil dibuat.', isSuccess: true);
+      await _controller.loadContracts(isRefresh: true);
+      await _controller.loadContractDetail(c.id);
+      await _addendumController.loadAddendums(c.id);
     }
   }
 
@@ -363,5 +356,79 @@ class _ContractPageState extends State<ContractPage> {
       ),
     );
     return result == true;
+  }
+}
+
+class _TerminateContractDialog extends StatefulWidget {
+  final String contractCode;
+
+  const _TerminateContractDialog({required this.contractCode});
+
+  @override
+  State<_TerminateContractDialog> createState() =>
+      _TerminateContractDialogState();
+}
+
+class _TerminateContractDialogState extends State<_TerminateContractDialog> {
+  late final TextEditingController _reasonCtrl;
+
+  @override
+  void initState() {
+    super.initState();
+    _reasonCtrl = TextEditingController();
+  }
+
+  @override
+  void dispose() {
+    _reasonCtrl.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      title: const Text('Terminasi Kontrak'),
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Masukkan alasan terminasi untuk kontrak ${widget.contractCode}:',
+          ),
+          const SizedBox(height: 12),
+          TextField(
+            controller: _reasonCtrl,
+            autofocus: true,
+            maxLines: 3,
+            decoration: const InputDecoration(
+              hintText: 'Contoh: Kontrak dibatalkan oleh klien',
+              border: OutlineInputBorder(),
+            ),
+          ),
+        ],
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.of(context).pop(),
+          child: const Text('Batal'),
+        ),
+        ElevatedButton(
+          style: ElevatedButton.styleFrom(backgroundColor: AppColors.err),
+          onPressed: () {
+            final text = _reasonCtrl.text.trim();
+            if (text.isEmpty) {
+              showAppToast(
+                context,
+                'Alasan terminasi wajib diisi',
+                isError: true,
+              );
+              return;
+            }
+            Navigator.of(context).pop(text);
+          },
+          child: const Text('Terminasi'),
+        ),
+      ],
+    );
   }
 }

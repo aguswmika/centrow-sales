@@ -36,7 +36,7 @@ void main() {
       expect(ProposalStatus.expired.value, 'expired');
 
       expect(ProposalStatus.cancelled.displayName, 'Dibatalkan');
-      expect(ProposalStatus.cancelled.badgeType, 'neutral');
+      expect(ProposalStatus.cancelled.badgeType, 'err');
       expect(ProposalStatus.cancelled.value, 'cancelled');
     });
 

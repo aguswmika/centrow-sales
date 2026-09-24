@@ -62,15 +62,15 @@ class MockAuthRepository implements AuthRepository {
     required String email,
     required String password,
     required String tenantId,
-  }) =>
-      throw UnimplementedError();
+  }) => throw UnimplementedError();
 
   @override
   Future<Result<TokenDto>> refreshToken(String refreshToken) =>
       throw UnimplementedError();
 
   @override
-  Future<Result<void>> logout(String refreshToken) => throw UnimplementedError();
+  Future<Result<void>> logout(String refreshToken) =>
+      throw UnimplementedError();
 }
 
 void main() {
@@ -123,31 +123,37 @@ void main() {
     expect(controller.targetRoute.value, '/customers');
   });
 
-  test('clears token and routes to /login when token is 401 unauthorized', () async {
-    tokenHolder.token = 'expired-token';
-    mockAuthRepo.getMeResult = const Err(
-      ServerFailure('Sesi telah berakhir.', 401),
-    );
+  test(
+    'clears token and routes to /login when token is 401 unauthorized',
+    () async {
+      tokenHolder.token = 'expired-token';
+      mockAuthRepo.getMeResult = const Err(
+        ServerFailure('Sesi telah berakhir.', 401),
+      );
 
-    await controller.checkSession(
-      minDuration: const Duration(milliseconds: 10),
-    );
+      await controller.checkSession(
+        minDuration: const Duration(milliseconds: 10),
+      );
 
-    expect(mockAuthRepo.getMeCalled, isTrue);
-    expect(tokenHolder.token, isNull);
-    expect(controller.targetRoute.value, '/login');
-  });
+      expect(mockAuthRepo.getMeCalled, isTrue);
+      expect(tokenHolder.token, isNull);
+      expect(controller.targetRoute.value, '/login');
+    },
+  );
 
-  test('gracefully routes to /customers when offline or network fails', () async {
-    tokenHolder.token = 'cached-token';
-    mockAuthRepo.getMeResult = const Err(NetworkFailure('No connection'));
+  test(
+    'gracefully routes to /customers when offline or network fails',
+    () async {
+      tokenHolder.token = 'cached-token';
+      mockAuthRepo.getMeResult = const Err(NetworkFailure('No connection'));
 
-    await controller.checkSession(
-      minDuration: const Duration(milliseconds: 10),
-    );
+      await controller.checkSession(
+        minDuration: const Duration(milliseconds: 10),
+      );
 
-    expect(mockAuthRepo.getMeCalled, isTrue);
-    expect(tokenHolder.token, 'cached-token');
-    expect(controller.targetRoute.value, '/customers');
-  });
+      expect(mockAuthRepo.getMeCalled, isTrue);
+      expect(tokenHolder.token, 'cached-token');
+      expect(controller.targetRoute.value, '/customers');
+    },
+  );
 }

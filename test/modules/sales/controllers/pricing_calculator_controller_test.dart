@@ -1,5 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:centrow_sales/modules/pc/entities/product_mapping.dart';
+import 'package:centrow_sales/modules/pc/entities/treatment_method.dart';
 import 'package:centrow_sales/modules/sales/controllers/pricing_calculator_controller.dart';
 import 'package:centrow_sales/modules/sales/entities/pricing_preview.dart';
 import 'package:centrow_sales/modules/sales/entities/pricing_detail.dart';
@@ -255,6 +256,9 @@ void main() {
         expect(row1.productMappingId.value, 'pm-101');
         expect(row1.doseUsage.value, 2.5);
         expect(row1.doseUnitId.value, 'uom-ml');
+        expect(row1.treatmentMethodId, 'tm-1');
+        expect(row1.treatmentMethodName, 'Spraying Method');
+        expect(row1.treatmentMethodCode, 'SPRAY');
 
         const mappingWithoutDefaultDose = ProductMapping(
           id: 'pm-102',
@@ -284,6 +288,8 @@ void main() {
         expect(row2.productMappingId.value, 'pm-102');
         expect(row2.doseUsage.value, 5.0);
         expect(row2.doseUnitId.value, 'uom-gr');
+        expect(row2.treatmentMethodId, 'tm-2');
+        expect(row2.treatmentMethodCode, 'BAIT');
       },
     );
 
@@ -584,6 +590,291 @@ void main() {
         expect(workerRow.firstVisitMinutes.value, 240.0);
         expect(workerRow.routineMinutes.value, 120.0);
         expect(workerRow.hourlyRate.value, 100000.0);
+      },
+    );
+
+    test(
+      'loads existing pricing treatment quotas into treatmentQuotas signal',
+      () async {
+        repository.detailResponse = const Ok(
+          PricingDetail(
+            id: 'price-1',
+            customerId: 'cust-1',
+            serviceId: 'srv-1',
+            contractMonths: 12,
+            visitFrequency: 4,
+            markupType: 1,
+            markupValue: 20.0,
+            discountAmount: 0.0,
+            taxPercentage: 11.0,
+            supplies: [],
+            workers: [],
+            items: [],
+            treatmentQuotas: [
+              PricingDetailTreatmentQuota(
+                treatmentMethodId: 'tm-spray',
+                quota: 12,
+                treatmentMethodName: 'Residual Spraying',
+                treatmentMethodCode: 'SPRAY',
+                isRequired: true,
+              ),
+              PricingDetailTreatmentQuota(
+                treatmentMethodId: 'tm-fog',
+                quota: 6,
+                treatmentMethodName: 'Cold Fogging',
+                treatmentMethodCode: 'FOG',
+                isRequired: false,
+              ),
+            ],
+          ),
+        );
+
+        await controller.loadExistingPricing('prop-1');
+
+        expect(controller.treatmentQuotas.length, 2);
+        expect(controller.treatmentQuotas[0].treatmentMethodId, 'tm-spray');
+        expect(
+          controller.treatmentQuotas[0].treatmentMethodName,
+          'Residual Spraying',
+        );
+        expect(controller.treatmentQuotas[0].treatmentMethodCode, 'SPRAY');
+        expect(controller.treatmentQuotas[0].isRequired, isTrue);
+        expect(controller.treatmentQuotas[0].quota.value, 12);
+
+        expect(controller.treatmentQuotas[1].treatmentMethodId, 'tm-fog');
+        expect(controller.treatmentQuotas[1].quota.value, 6);
+        expect(controller.treatmentQuotas[1].isRequired, isFalse);
+      },
+    );
+  });
+
+  group('PricingCalculatorController - Treatment Quotas', () {
+    test('addTreatmentQuota adds row and prevents duplicates', () {
+      const method = TreatmentMethod(
+        id: 'tm-1',
+        code: 'M1',
+        name: 'Method 1',
+        isRequired: true,
+      );
+
+      controller.addTreatmentQuota(method, quota: 5);
+      expect(controller.treatmentQuotas.length, 1);
+      expect(controller.treatmentQuotas.first.treatmentMethodId, 'tm-1');
+      expect(controller.treatmentQuotas.first.treatmentMethodName, 'Method 1');
+      expect(controller.treatmentQuotas.first.treatmentMethodCode, 'M1');
+      expect(controller.treatmentQuotas.first.isRequired, isTrue);
+      expect(controller.treatmentQuotas.first.quota.value, 5);
+
+      // Attempt duplicate addition
+      controller.addTreatmentQuota(method, quota: 10);
+      expect(controller.treatmentQuotas.length, 1);
+      expect(controller.treatmentQuotas.first.quota.value, 5);
+    });
+
+    test('updateTreatmentQuota updates quota value', () {
+      const method = TreatmentMethod(id: 'tm-1', code: 'M1', name: 'Method 1');
+      controller.addTreatmentQuota(method, quota: 2);
+
+      controller.updateTreatmentQuota('tm-1', 8);
+      expect(controller.treatmentQuotas.first.quota.value, 8);
+    });
+
+    test('removeTreatmentQuota removes row and disposes it', () {
+      const method1 = TreatmentMethod(id: 'tm-1', code: 'M1', name: 'Method 1');
+      const method2 = TreatmentMethod(id: 'tm-2', code: 'M2', name: 'Method 2');
+      controller.addTreatmentQuota(method1);
+      controller.addTreatmentQuota(method2);
+      expect(controller.treatmentQuotas.length, 2);
+
+      controller.removeTreatmentQuota('tm-1');
+      expect(controller.treatmentQuotas.length, 1);
+      expect(controller.treatmentQuotas.first.treatmentMethodId, 'tm-2');
+    });
+
+    test(
+      'populateRequiredMethods adds only missing isRequired methods with default quota 1',
+      () {
+        const method1 = TreatmentMethod(
+          id: 'tm-1',
+          code: 'M1',
+          name: 'Method 1',
+          isRequired: true,
+        );
+        const method2 = TreatmentMethod(
+          id: 'tm-2',
+          code: 'M2',
+          name: 'Method 2',
+          isRequired: false,
+        );
+        const method3 = TreatmentMethod(
+          id: 'tm-3',
+          code: 'M3',
+          name: 'Method 3',
+          isRequired: true,
+        );
+
+        // Pre-add method1 with quota 4
+        controller.addTreatmentQuota(method1, quota: 4);
+
+        controller.populateRequiredMethods([method1, method2, method3]);
+
+        expect(controller.treatmentQuotas.length, 2);
+        expect(controller.treatmentQuotas[0].treatmentMethodId, 'tm-1');
+        expect(controller.treatmentQuotas[0].quota.value, 4); // preserved
+
+        expect(controller.treatmentQuotas[1].treatmentMethodId, 'tm-3');
+        expect(controller.treatmentQuotas[1].quota.value, 1); // defaulted to 1
+        expect(controller.treatmentQuotas[1].isRequired, isTrue);
+      },
+    );
+
+    test(
+      'submitPricing and previewPricing include treatment quotas in request',
+      () async {
+        const method = TreatmentMethod(
+          id: 'tm-1',
+          code: 'M1',
+          name: 'Method 1',
+        );
+        controller.addTreatmentQuota(method, quota: 15);
+
+        await controller.previewPricing('prop-1');
+        expect(repository.lastPreviewRequest, isNotNull);
+        expect(repository.lastPreviewRequest!.treatmentQuotas.length, 1);
+        expect(
+          repository
+              .lastPreviewRequest!
+              .treatmentQuotas
+              .first
+              .treatmentMethodId,
+          'tm-1',
+        );
+        expect(repository.lastPreviewRequest!.treatmentQuotas.first.quota, 15);
+
+        await controller.submitPricing('prop-1');
+        expect(repository.lastRequest, isNotNull);
+        expect(repository.lastRequest!.treatmentQuotas.length, 1);
+        expect(
+          repository.lastRequest!.treatmentQuotas.first.treatmentMethodId,
+          'tm-1',
+        );
+        expect(repository.lastRequest!.treatmentQuotas.first.quota, 15);
+      },
+    );
+
+    test(
+      'addSupplyRow automatically adds treatment quota and avoids duplicates',
+      () {
+        const mapping1 = ProductMapping(
+          id: 'pm-1',
+          productId: 'prod-1',
+          productName: 'Chem 1',
+          pestId: 'pest-1',
+          pestName: 'Pest 1',
+          treatmentMethodId: 'tm-spray',
+          treatmentMethodCode: 'SPRAY',
+          treatmentMethodName: 'Residual Spraying',
+          doseMinLimit: 1.0,
+          doseMaxLimit: 2.0,
+          doseUnitId: 'u-1',
+          doseUnitCode: 'ML',
+        );
+
+        const mapping2 = ProductMapping(
+          id: 'pm-2',
+          productId: 'prod-2',
+          productName: 'Chem 2',
+          pestId: 'pest-1',
+          pestName: 'Pest 1',
+          treatmentMethodId: 'tm-spray',
+          treatmentMethodCode: 'SPRAY',
+          treatmentMethodName: 'Residual Spraying',
+          doseMinLimit: 1.0,
+          doseMaxLimit: 2.0,
+          doseUnitId: 'u-1',
+          doseUnitCode: 'ML',
+        );
+
+        controller.addSupplyRow(mapping1);
+        expect(controller.treatmentQuotas.length, 1);
+        expect(controller.treatmentQuotas.first.treatmentMethodId, 'tm-spray');
+        expect(
+          controller.treatmentQuotas.first.treatmentMethodName,
+          'Residual Spraying',
+        );
+        expect(controller.treatmentQuotas.first.isRequired, isTrue);
+        expect(controller.treatmentQuotas.first.quota.value, 1);
+
+        // Second supply with the same treatmentMethodId should not duplicate quota
+        controller.addSupplyRow(mapping2);
+        expect(controller.treatmentQuotas.length, 1);
+      },
+    );
+
+    test(
+      'populateFromSupplies populates missing treatment methods from current supplies',
+      () {
+        controller.supplies.add(
+          PricingSupplyRow(
+            id: 'prod-1',
+            title: 'Chemical 1',
+            code: 'CHM-1',
+            uomCode: 'BTL',
+            kind: 1,
+            treatmentMethodId: 'tm-fog',
+            treatmentMethodCode: 'FOG',
+            treatmentMethodName: 'Thermal Fogging',
+          ),
+        );
+
+        expect(controller.treatmentQuotas.isEmpty, isTrue);
+
+        controller.populateFromSupplies();
+
+        expect(controller.treatmentQuotas.length, 1);
+        expect(controller.treatmentQuotas.first.treatmentMethodId, 'tm-fog');
+        expect(
+          controller.treatmentQuotas.first.treatmentMethodName,
+          'Thermal Fogging',
+        );
+        expect(controller.treatmentQuotas.first.isRequired, isTrue);
+        expect(controller.treatmentQuotas.first.quota.value, 1);
+      },
+    );
+
+    test(
+      'removing supply does not remove already added treatment quota (Option C)',
+      () {
+        const mapping = ProductMapping(
+          id: 'pm-1',
+          productId: 'prod-1',
+          productName: 'Chem 1',
+          pestId: 'pest-1',
+          pestName: 'Pest 1',
+          treatmentMethodId: 'tm-spray',
+          treatmentMethodCode: 'SPRAY',
+          treatmentMethodName: 'Residual Spraying',
+          doseMinLimit: 1.0,
+          doseMaxLimit: 2.0,
+          doseUnitId: 'u-1',
+          doseUnitCode: 'ML',
+        );
+
+        controller.addSupplyRow(mapping);
+        expect(controller.supplies.length, 1);
+        expect(controller.treatmentQuotas.length, 1);
+
+        // User customizes quota
+        controller.updateTreatmentQuota('tm-spray', 5);
+        expect(controller.treatmentQuotas.first.quota.value, 5);
+
+        // Remove supply row
+        controller.supplies.clear();
+        expect(controller.supplies.isEmpty, isTrue);
+
+        // Quota is preserved
+        expect(controller.treatmentQuotas.length, 1);
+        expect(controller.treatmentQuotas.first.quota.value, 5);
       },
     );
   });

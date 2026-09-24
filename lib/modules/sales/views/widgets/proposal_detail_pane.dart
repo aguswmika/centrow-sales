@@ -239,7 +239,7 @@ class ProposalDetailPane extends StatelessWidget {
                           SizedBox(width: 8),
                           Flexible(
                             child: Text(
-                              'Kirim Proposal',
+                              'Tandai Terkirim',
                               style: TextStyle(
                                 color: AppColors.brand,
                                 fontWeight: FontWeight.w600,
@@ -451,6 +451,65 @@ class ProposalDetailPane extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          if (proposal.status.isDraft && !proposal.hasPricing) ...[
+            Container(
+              padding: const EdgeInsets.all(14.0),
+              decoration: BoxDecoration(
+                color: AppColors.warn.withValues(alpha: 0.08),
+                borderRadius: AppRadius.borderMd,
+                border: Border.all(
+                  color: AppColors.warn.withValues(alpha: 0.3),
+                ),
+              ),
+              child: Row(
+                children: [
+                  const Icon(
+                    Icons.warning_amber_rounded,
+                    color: AppColors.warn,
+                  ),
+                  const SizedBox(width: 12.0),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Kalkulasi Harga Belum Diisi',
+                          style: GoogleFonts.plusJakartaSans(
+                            fontSize: 14.0,
+                            fontWeight: FontWeight.w700,
+                            color: AppColors.text,
+                          ),
+                        ),
+                        const SizedBox(height: 2.0),
+                        Text(
+                          'Proposal ini berstatus Draf dan belum memiliki harga. Lengkapi kalkulasi harga terlebih dahulu agar proposal dapat dikirim ke klien.',
+                          style: GoogleFonts.inter(
+                            fontSize: 12.0,
+                            color: AppColors.sec,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  if (onOpenCalculator != null) ...[
+                    const SizedBox(width: 12.0),
+                    AppButton.secondary(
+                      text: 'Isi Pricing',
+                      isFullWidth: false,
+                      height: 38.0,
+                      icon: const Icon(
+                        Icons.calculate_outlined,
+                        size: 16.0,
+                        color: AppColors.text,
+                      ),
+                      onPressed: onOpenCalculator,
+                    ),
+                  ],
+                ],
+              ),
+            ),
+            const SizedBox(height: 24.0),
+          ],
           if (proposal.linkedContract != null) ...[
             Container(
               padding: const EdgeInsets.all(14.0),
