@@ -15,7 +15,6 @@ class ContractListItemDto {
   final String paymentType;
   final String status;
   final String? createdAt;
-  final int? scheduleCycle;
 
   const ContractListItemDto({
     required this.id,
@@ -32,7 +31,6 @@ class ContractListItemDto {
     required this.paymentType,
     required this.status,
     this.createdAt,
-    this.scheduleCycle,
   });
 
   factory ContractListItemDto.fromJson(Map<String, dynamic> json) =>
@@ -51,12 +49,6 @@ class ContractListItemDto {
         paymentType: json['payment_type']?.toString() ?? 'full',
         status: json['status']?.toString() ?? 'draft',
         createdAt: json['created_at']?.toString(),
-        scheduleCycle: switch (json['schedule_cycle'] ??
-            json['category_schedule_cycle']) {
-          final num n => n.toInt(),
-          final String s => int.tryParse(s),
-          _ => null,
-        },
       );
 
   Contract toEntity() => Contract(
@@ -74,7 +66,6 @@ class ContractListItemDto {
     contractValue: contractValue,
     paymentType: ContractPaymentType.fromString(paymentType),
     createdAt: createdAt,
-    scheduleCycle: ContractScheduleCycle.fromDynamic(scheduleCycle),
   );
 }
 
@@ -125,7 +116,6 @@ class ContractDetailDto {
   final String? notes;
   final String? createdAt;
   final Map<String, dynamic>? sourceProposal;
-  final int? scheduleCycle;
 
   const ContractDetailDto({
     required this.id,
@@ -153,7 +143,6 @@ class ContractDetailDto {
     this.notes,
     this.createdAt,
     this.sourceProposal,
-    this.scheduleCycle,
   });
 
   factory ContractDetailDto.fromJson(Map<String, dynamic> json) =>
@@ -184,12 +173,6 @@ class ContractDetailDto {
         createdAt: json['created_at']?.toString(),
         sourceProposal: (json['source_proposal'] as Map?)
             ?.cast<String, dynamic>(),
-        scheduleCycle: switch (json['schedule_cycle'] ??
-            json['category_schedule_cycle']) {
-          final num n => n.toInt(),
-          final String s => int.tryParse(s),
-          _ => null,
-        },
       );
 
   Contract toEntity() {
@@ -219,7 +202,6 @@ class ContractDetailDto {
       createdAt: createdAt,
       sourceProposalId: sp?['id']?.toString(),
       sourceProposalCode: sp?['code']?.toString(),
-      scheduleCycle: ContractScheduleCycle.fromDynamic(scheduleCycle),
     );
   }
 }

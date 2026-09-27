@@ -1,48 +1,32 @@
 import 'package:signals/signals.dart';
-import 'package:centrow_sales/shared/result/result.dart';
-import 'package:centrow_sales/shared/error/failure.dart';
 import 'package:centrow_sales/shared/state/ui_state.dart';
-import 'package:centrow_sales/modules/core/entities/uom.dart';
-import 'package:centrow_sales/modules/core/repositories/uom_repository.dart';
+import 'package:centrow_sales/shared/error/failure.dart';
+import 'package:centrow_sales/shared/result/result.dart';
+import 'package:centrow_sales/modules/sales/entities/product.dart';
 import 'package:centrow_sales/modules/pc/entities/product_mapping.dart';
 import 'package:centrow_sales/modules/pc/entities/treatment_method.dart';
-import 'package:centrow_sales/modules/pc/repositories/treatment_method_repository.dart';
-import 'package:centrow_sales/modules/sales/entities/pricing_detail.dart';
+import 'package:centrow_sales/modules/core/entities/uom.dart';
 import 'package:centrow_sales/modules/sales/entities/pricing_preview.dart';
-import 'package:centrow_sales/modules/sales/entities/product.dart';
-import 'package:centrow_sales/modules/sales/repositories/pricing_repository.dart';
+import 'package:centrow_sales/modules/sales/entities/pricing_detail.dart';
 import 'package:centrow_sales/modules/sales/repositories/dtos/pricing_dto.dart';
-
-class PricingTreatmentQuotaRow {
-  final String treatmentMethodId;
-  final String treatmentMethodName;
-  final String treatmentMethodCode;
-  final bool isRequired;
-  final Signal<int> quota;
-
-  PricingTreatmentQuotaRow({
-    required this.treatmentMethodId,
-    required this.treatmentMethodName,
-    required this.treatmentMethodCode,
-    this.isRequired = false,
-    int initialQuota = 1,
-  }) : quota = signal(initialQuota);
-
-  void dispose() {
-    quota.dispose();
-  }
-}
+import 'package:centrow_sales/modules/sales/repositories/pricing_repository.dart';
+import 'package:centrow_sales/modules/core/repositories/uom_repository.dart';
+import 'package:centrow_sales/modules/pc/repositories/treatment_method_repository.dart';
 
 class PricingSupplyRow {
   final String id;
   final String title;
   final String code;
   final String uomCode;
-  final int kind;
+  final int kind; // 1 = chemical, 2 = tool
 
-  final String? treatmentMethodId;
-  final String? treatmentMethodName;
-  final String? treatmentMethodCode;
+  final Signal<String?> treatmentMethodId;
+  final Signal<String?> treatmentMethodName;
+  final Signal<String?> treatmentMethodCode;
+
+  final Signal<String> areaKerja;
+  final Signal<String> note;
+  final Signal<int?> installedUnits;
 
   final double? doseMinLimit;
   final double? doseMaxLimit;
@@ -66,9 +50,12 @@ class PricingSupplyRow {
     required this.code,
     required this.uomCode,
     required this.kind,
-    this.treatmentMethodId,
-    this.treatmentMethodName,
-    this.treatmentMethodCode,
+    String? initialTreatmentMethodId,
+    String? initialTreatmentMethodName,
+    String? initialTreatmentMethodCode,
+    String? initialAreaKerja,
+    String? initialNote,
+    int? initialInstalledUnits,
     this.doseMinLimit,
     this.doseMaxLimit,
     this.contractMonthsRef,
@@ -78,7 +65,13 @@ class PricingSupplyRow {
     double initialApplicationVolume = 1.0,
     String initialApplicationVolumeUnitId = '',
     double initialFreq = 1.0,
-  }) : productMappingId = signal(initialProductMappingId ?? id),
+  }) : treatmentMethodId = signal(initialTreatmentMethodId),
+       treatmentMethodName = signal(initialTreatmentMethodName),
+       treatmentMethodCode = signal(initialTreatmentMethodCode),
+       areaKerja = signal(initialAreaKerja ?? ''),
+       note = signal(initialNote ?? ''),
+       installedUnits = signal(initialInstalledUnits ?? (kind == 2 ? 1 : null)),
+       productMappingId = signal(initialProductMappingId ?? id),
        doseUsage = signal(initialDoseUsage),
        doseUnitId = signal(initialDoseUnitId),
        applicationVolume = signal(initialApplicationVolume),
@@ -86,6 +79,12 @@ class PricingSupplyRow {
        freq = signal(initialFreq);
 
   void dispose() {
+    treatmentMethodId.dispose();
+    treatmentMethodName.dispose();
+    treatmentMethodCode.dispose();
+    areaKerja.dispose();
+    note.dispose();
+    installedUnits.dispose();
     productMappingId.dispose();
     doseUsage.dispose();
     doseUnitId.dispose();
@@ -184,98 +183,31 @@ class PricingCalculatorController {
     };
   }
 
+  final treatmentMethods = ListSignal<TreatmentMethod>([]);
+  final treatmentMethodState = signal<UiState<List<TreatmentMethod>>>(
+    const UiInitial(),
+  );
+
+  Future<void> loadTreatmentMethods() async {
+    if (_treatmentMethodRepository == null) return;
+    treatmentMethodState.value = const UiLoading();
+    final result = await _treatmentMethodRepository.getTreatmentMethods();
+    treatmentMethodState.value = switch (result) {
+      Ok(:final value) => () {
+        treatmentMethods.value = value;
+        return UiSuccess(value);
+      }(),
+      Err(:final failure) => UiFailure(failure),
+    };
+  }
+
   final supplies = ListSignal<PricingSupplyRow>([]);
   final workers = ListSignal<PricingWorkerRow>([]);
   final items = ListSignal<PricingItemRow>([]);
-  final _treatmentQuotas = ListSignal<PricingTreatmentQuotaRow>([]);
-
-  ListSignal<PricingTreatmentQuotaRow> get treatmentQuotas => _treatmentQuotas;
-  ReadonlySignal<List<PricingTreatmentQuotaRow>> get readonlyTreatmentQuotas =>
-      _treatmentQuotas.readonly();
-
-  void addTreatmentQuota(TreatmentMethod method, {int quota = 1}) {
-    if (_treatmentQuotas.any((q) => q.treatmentMethodId == method.id)) {
-      return;
-    }
-    _treatmentQuotas.add(
-      PricingTreatmentQuotaRow(
-        treatmentMethodId: method.id,
-        treatmentMethodName: method.name,
-        treatmentMethodCode: method.code,
-        isRequired: method.isRequired,
-        initialQuota: quota > 0 ? quota : 1,
-      ),
-    );
-  }
-
-  void removeTreatmentQuota(String treatmentMethodId) {
-    final index = _treatmentQuotas.indexWhere(
-      (q) => q.treatmentMethodId == treatmentMethodId,
-    );
-    if (index != -1) {
-      final removed = _treatmentQuotas.removeAt(index);
-      removed.dispose();
-    }
-  }
-
-  void updateTreatmentQuota(String treatmentMethodId, int newQuota) {
-    final index = _treatmentQuotas.indexWhere(
-      (q) => q.treatmentMethodId == treatmentMethodId,
-    );
-    if (index != -1 && newQuota >= 0) {
-      _treatmentQuotas[index].quota.value = newQuota;
-    }
-  }
-
-  void populateRequiredMethods(List<TreatmentMethod> methods) {
-    for (final method in methods) {
-      if (method.isRequired &&
-          !_treatmentQuotas.any((q) => q.treatmentMethodId == method.id)) {
-        _treatmentQuotas.add(
-          PricingTreatmentQuotaRow(
-            treatmentMethodId: method.id,
-            treatmentMethodName: method.name,
-            treatmentMethodCode: method.code,
-            isRequired: true,
-            initialQuota: 1,
-          ),
-        );
-      }
-    }
-  }
-
-  Future<void> populateRequiredMethodsFromRepo() async {
-    if (_treatmentMethodRepository == null) return;
-    final result = await _treatmentMethodRepository.getTreatmentMethods();
-    if (result is Ok<List<TreatmentMethod>>) {
-      populateRequiredMethods(result.value);
-    }
-  }
-
-  void populateFromSupplies() {
-    for (final supply in supplies) {
-      final methodId = supply.treatmentMethodId;
-      if (methodId != null &&
-          methodId.isNotEmpty &&
-          !_treatmentQuotas.any((q) => q.treatmentMethodId == methodId)) {
-        _treatmentQuotas.add(
-          PricingTreatmentQuotaRow(
-            treatmentMethodId: methodId,
-            treatmentMethodName:
-                supply.treatmentMethodName ??
-                supply.treatmentMethodCode ??
-                methodId,
-            treatmentMethodCode: supply.treatmentMethodCode ?? '',
-            isRequired: true,
-            initialQuota: 1,
-          ),
-        );
-      }
-    }
-  }
 
   final contractMonths = signal<int?>(null);
   final visitFrequency = signal<int?>(null);
+  final totalVisits = signal<int?>(null);
 
   final markupPercent = signal<double>(0.0);
   final markupType = signal<int>(1); // 1=percent, 2=nominal, 3=target price
@@ -302,9 +234,9 @@ class PricingCalculatorController {
         code: mapping.productCode ?? '',
         uomCode: mapping.doseUnitCode,
         kind: 1,
-        treatmentMethodId: mapping.treatmentMethodId,
-        treatmentMethodName: mapping.treatmentMethodName,
-        treatmentMethodCode: mapping.treatmentMethodCode,
+        initialTreatmentMethodId: mapping.treatmentMethodId,
+        initialTreatmentMethodName: mapping.treatmentMethodName,
+        initialTreatmentMethodCode: mapping.treatmentMethodCode,
         initialProductMappingId: mapping.id,
         initialDoseUsage: mapping.defaultDose ?? mapping.doseMinLimit,
         initialDoseUnitId: mapping.doseUnitId,
@@ -313,16 +245,6 @@ class PricingCalculatorController {
         contractMonthsRef: contractMonths,
       ),
     );
-    if (mapping.treatmentMethodId.isNotEmpty) {
-      addTreatmentQuota(
-        TreatmentMethod(
-          id: mapping.treatmentMethodId,
-          code: mapping.treatmentMethodCode,
-          name: mapping.treatmentMethodName ?? mapping.treatmentMethodCode,
-          isRequired: true,
-        ),
-      );
-    }
   }
 
   void addRow(Product product, int expectedKind) {
@@ -340,6 +262,7 @@ class PricingCalculatorController {
           uomCode: product.uomCode,
           kind: expectedKind,
           initialProductMappingId: expectedKind == 1 ? '' : product.id,
+          initialInstalledUnits: expectedKind == 2 ? 1 : null,
           contractMonthsRef: contractMonths,
         ),
       );
@@ -374,6 +297,17 @@ class PricingCalculatorController {
   }
 
   bool _validateInputs({required bool setOnPreview}) {
+    final tv = totalVisits.value;
+    if (tv == null || tv <= 0) {
+      const failure = UnknownFailure('Total kunjungan harus lebih dari 0.');
+      if (setOnPreview) {
+        previewState.value = const UiFailure<PricingPreview>(failure);
+      } else {
+        submitState.value = const UiFailure<void>(failure);
+      }
+      return false;
+    }
+
     for (final m in supplies) {
       if (m.kind == 1) {
         // Chemical
@@ -404,6 +338,18 @@ class PricingCalculatorController {
         if (m.doseUsage.value <= 0) {
           final failure = UnknownFailure(
             'Qty untuk ${m.title} harus lebih dari 0.',
+          );
+          if (setOnPreview) {
+            previewState.value = UiFailure(failure);
+          } else {
+            submitState.value = UiFailure(failure);
+          }
+          return false;
+        }
+        final units = m.installedUnits.value;
+        if (units == null || units <= 0) {
+          final failure = UnknownFailure(
+            'Jumlah unit terpasang untuk ${m.title} wajib diisi (> 0).',
           );
           if (setOnPreview) {
             previewState.value = UiFailure(failure);
@@ -449,6 +395,12 @@ class PricingCalculatorController {
                 ? m.applicationVolumeUnitId.value
                 : null,
             frequency: m.freq.value.round(),
+            treatmentMethodId: m.treatmentMethodId.value,
+            areaKerja: m.areaKerja.value.trim().isEmpty
+                ? null
+                : m.areaKerja.value.trim(),
+            note: m.note.value.trim().isEmpty ? null : m.note.value.trim(),
+            installedUnits: m.kind == 2 ? m.installedUnits.value : null,
           ),
         )
         .toList();
@@ -477,18 +429,10 @@ class PricingCalculatorController {
         )
         .toList();
 
-    final quotaDtos = _treatmentQuotas
-        .map(
-          (q) => PricingTreatmentQuotaDto(
-            treatmentMethodId: q.treatmentMethodId,
-            quota: q.quota.value,
-          ),
-        )
-        .toList();
-
     return CreatePricingRequestDto(
       contractMonths: contractMonths.value ?? 12,
       visitFrequency: visitFrequency.value ?? 1,
+      totalVisits: totalVisits.value ?? 1,
       markupType: markupType.value,
       markupValue: markupPercent.value,
       discountAmount: discountAmount.value,
@@ -496,7 +440,6 @@ class PricingCalculatorController {
       supplies: supplyDtos,
       workers: workerDtos,
       items: itemDtos,
-      treatmentQuotas: quotaDtos,
     );
   }
 
@@ -519,10 +462,11 @@ class PricingCalculatorController {
     existingPricingState.value = const UiLoading();
     final result = await _repository.getPricingDetail(proposalId);
 
-    if (result.isOk) {
-      final data = result.valueOrNull!;
+    if (result case Ok(:final value)) {
+      final data = value;
       contractMonths.value = data.contractMonths;
       visitFrequency.value = data.visitFrequency;
+      totalVisits.value = data.totalVisits;
       markupType.value = data.markupType;
       markupPercent.value = data.markupValue;
       discountAmount.value = data.discountAmount;
@@ -543,6 +487,10 @@ class PricingCalculatorController {
             initialApplicationVolume: s.applicationVolume ?? 1.0,
             initialApplicationVolumeUnitId: s.applicationVolumeUnitId,
             initialFreq: s.frequency.toDouble(),
+            initialTreatmentMethodId: s.treatmentMethodId,
+            initialAreaKerja: s.areaKerja,
+            initialNote: s.note,
+            initialInstalledUnits: s.installedUnits,
             contractMonthsRef: contractMonths,
           ),
         );
@@ -575,22 +523,6 @@ class PricingCalculatorController {
             initialQty: i.qty,
             initialFreq: i.frequency.toDouble(),
             initialUnitPrice: i.unitPrice ?? 0.0,
-          ),
-        );
-      }
-
-      for (final q in _treatmentQuotas) {
-        q.dispose();
-      }
-      _treatmentQuotas.clear();
-      for (final q in data.treatmentQuotas) {
-        _treatmentQuotas.add(
-          PricingTreatmentQuotaRow(
-            treatmentMethodId: q.treatmentMethodId,
-            treatmentMethodName: q.treatmentMethodName,
-            treatmentMethodCode: q.treatmentMethodCode,
-            isRequired: q.isRequired,
-            initialQuota: q.quota,
           ),
         );
       }
@@ -630,13 +562,9 @@ class PricingCalculatorController {
     }
     items.dispose();
 
-    for (final quota in _treatmentQuotas) {
-      quota.dispose();
-    }
-    _treatmentQuotas.dispose();
-
     contractMonths.dispose();
     visitFrequency.dispose();
+    totalVisits.dispose();
     markupPercent.dispose();
     markupType.dispose();
     discountAmount.dispose();
@@ -646,5 +574,7 @@ class PricingCalculatorController {
     existingPricingState.dispose();
     uomState.dispose();
     uoms.dispose();
+    treatmentMethodState.dispose();
+    treatmentMethods.dispose();
   }
 }

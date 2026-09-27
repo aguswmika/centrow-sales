@@ -1,8 +1,3 @@
-import 'package:centrow_sales/modules/sales/entities/contract_category.dart';
-
-export 'package:centrow_sales/modules/sales/entities/contract_category.dart'
-    show ContractScheduleCycle;
-
 enum ContractStatus {
   draft('Draf', 'neutral', 'draft'),
   active('Aktif', 'ok', 'active'),
@@ -98,7 +93,6 @@ class Contract {
   final String? createdAt;
   final String? sourceProposalId;
   final String? sourceProposalCode;
-  final ContractScheduleCycle? scheduleCycle;
 
   const Contract({
     required this.id,
@@ -125,28 +119,13 @@ class Contract {
     this.createdAt,
     this.sourceProposalId,
     this.sourceProposalCode,
-    this.scheduleCycle,
   });
 
   String get formattedValue => _formatCurrency(contractValue);
 
-  String get visitFrequencyLabel {
-    return switch (scheduleCycle) {
-      ContractScheduleCycle.monthly => 'FREK. KUNJUNGAN (BULANAN)',
-      ContractScheduleCycle.yearly => 'FREK. KUNJUNGAN (TAHUNAN)',
-      null => 'TOTAL KUNJUNGAN',
-    };
-  }
+  String get visitFrequencyLabel => 'TOTAL KUNJUNGAN';
 
-  String get formattedVisitFrequency {
-    final visits = totalVisits;
-    if (visits == null) return '-';
-    return switch (scheduleCycle) {
-      ContractScheduleCycle.monthly => '$visits x / bulan',
-      ContractScheduleCycle.yearly => '$visits x / tahun',
-      null => '${visits}x',
-    };
-  }
+  String get formattedVisitFrequency => '${totalVisits ?? 0}x';
 
   Contract copyWith({
     String? id,
@@ -173,7 +152,6 @@ class Contract {
     String? createdAt,
     String? sourceProposalId,
     String? sourceProposalCode,
-    ContractScheduleCycle? scheduleCycle,
   }) {
     return Contract(
       id: id ?? this.id,
@@ -200,7 +178,6 @@ class Contract {
       createdAt: createdAt ?? this.createdAt,
       sourceProposalId: sourceProposalId ?? this.sourceProposalId,
       sourceProposalCode: sourceProposalCode ?? this.sourceProposalCode,
-      scheduleCycle: scheduleCycle ?? this.scheduleCycle,
     );
   }
 

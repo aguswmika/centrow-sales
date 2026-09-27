@@ -21,7 +21,6 @@ class PricingTabs extends StatelessWidget {
     'Persiapan Bahan & Alat',
     'Tenaga Kerja',
     'Transport & Add-on',
-    'Kuota Treatment',
   ];
 
   @override
@@ -32,7 +31,6 @@ class PricingTabs extends StatelessWidget {
           controller.supplies.length,
           controller.workers.length,
           controller.items.length,
-          controller.treatmentQuotas.length,
         ];
         return Container(
           width: double.infinity,

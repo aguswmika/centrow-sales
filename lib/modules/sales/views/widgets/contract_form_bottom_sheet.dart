@@ -215,44 +215,10 @@ class _ContractFormBottomSheetState extends State<ContractFormBottomSheet> {
                     hint: 'Pilih kategori…',
                     value: _controller.selectedCategory,
                     onSearch: _controller.searchCategories,
-                    itemAsString: (cat) =>
-                        '${cat.name} (${cat.scheduleCycle.displayName})',
+                    itemAsString: (cat) => cat.name,
                     onChanged: (cat) => _controller.updateFields(category: cat),
                     isRequired: true,
                   ),
-                  if (_controller.selectedCategory != null) ...[
-                    const SizedBox(height: 8),
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 10,
-                        vertical: 6,
-                      ),
-                      decoration: BoxDecoration(
-                        color: AppColors.subtle,
-                        borderRadius: BorderRadius.circular(6),
-                        border: Border.all(color: AppColors.border),
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          const Icon(
-                            Icons.info_outline,
-                            size: 14,
-                            color: AppColors.sec,
-                          ),
-                          const SizedBox(width: 6),
-                          Flexible(
-                            child: Text(
-                              'Siklus kuota kunjungan: ${_controller.selectedCategory!.scheduleCycle.displayName} (${_controller.selectedCategory!.scheduleCycle.isMonthly ? 'diperbarui setiap bulan' : 'total masa kontrak'})',
-                              style: AppTypography.caption(
-                                color: AppColors.sec,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
                   if (isCreateMode && _controller.selectedCategory != null) ...[
                     const SizedBox(height: 16),
                     if (_controller.selectedCategory!.templates.isNotEmpty)

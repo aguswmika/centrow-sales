@@ -191,22 +191,10 @@ void main() {
     expect(selectedMethod, isNull);
   });
 
-  testWidgets('displays "Wajib" badge tag when method.isRequired is true', (
-    tester,
-  ) async {
+  testWidgets('displays method items properly', (tester) async {
     mockRepository.methods = [
-      const TreatmentMethod(
-        id: 'tm-1',
-        code: 'SPRAY',
-        name: 'Spraying',
-        isRequired: true,
-      ),
-      const TreatmentMethod(
-        id: 'tm-2',
-        code: 'BAIT',
-        name: 'Baiting',
-        isRequired: false,
-      ),
+      const TreatmentMethod(id: 'tm-1', code: 'SPRAY', name: 'Spraying'),
+      const TreatmentMethod(id: 'tm-2', code: 'BAIT', name: 'Baiting'),
     ];
 
     await tester.pumpWidget(
@@ -214,7 +202,7 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    expect(find.text('Wajib'), findsOneWidget);
+    expect(find.text('Wajib'), findsNothing);
     expect(find.text('Spraying'), findsOneWidget);
     expect(find.text('Baiting'), findsOneWidget);
   });

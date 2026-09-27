@@ -15,6 +15,10 @@ class PricingDetailSupplyDto {
   final int frequency;
   final double unitCost;
   final double lineTotal;
+  final String? treatmentMethodId;
+  final String? areaKerja;
+  final String? note;
+  final int? installedUnits;
 
   PricingDetailSupplyDto._(
     this.id,
@@ -31,6 +35,10 @@ class PricingDetailSupplyDto {
     this.frequency,
     this.unitCost,
     this.lineTotal,
+    this.treatmentMethodId,
+    this.areaKerja,
+    this.note,
+    this.installedUnits,
   );
 
   factory PricingDetailSupplyDto.fromJson(Map<String, dynamic> j) =>
@@ -51,6 +59,10 @@ class PricingDetailSupplyDto {
         (j['frequency'] as num).toInt(),
         (j['unit_cost'] as num).toDouble(),
         (j['line_total'] as num).toDouble(),
+        j['treatment_method_id'] as String?,
+        j['area_kerja'] as String?,
+        j['note'] as String?,
+        (j['installed_units'] as num?)?.toInt(),
       );
 
   PricingDetailSupply toEntity() => PricingDetailSupply(
@@ -68,6 +80,10 @@ class PricingDetailSupplyDto {
     frequency: frequency,
     unitCost: unitCost,
     lineTotal: lineTotal,
+    treatmentMethodId: treatmentMethodId,
+    areaKerja: areaKerja,
+    note: note,
+    installedUnits: installedUnits,
   );
 }
 
@@ -168,40 +184,6 @@ class PricingDetailItemDto {
   );
 }
 
-class PricingDetailTreatmentQuotaDto {
-  final String treatmentMethodId;
-  final int quota;
-  final String treatmentMethodName;
-  final String treatmentMethodCode;
-  final bool isRequired;
-
-  PricingDetailTreatmentQuotaDto._(
-    this.treatmentMethodId,
-    this.quota,
-    this.treatmentMethodName,
-    this.treatmentMethodCode,
-    this.isRequired,
-  );
-
-  factory PricingDetailTreatmentQuotaDto.fromJson(
-    Map<String, dynamic> j,
-  ) => PricingDetailTreatmentQuotaDto._(
-    (j['treatment_method_id'] ?? j['treatmentMethodId']) as String? ?? '',
-    (j['quota'] as num?)?.toInt() ?? 0,
-    (j['treatment_method_name'] ?? j['treatmentMethodName']) as String? ?? '',
-    (j['treatment_method_code'] ?? j['treatmentMethodCode']) as String? ?? '',
-    (j['is_required'] ?? j['isRequired']) as bool? ?? false,
-  );
-
-  PricingDetailTreatmentQuota toEntity() => PricingDetailTreatmentQuota(
-    treatmentMethodId: treatmentMethodId,
-    quota: quota,
-    treatmentMethodName: treatmentMethodName,
-    treatmentMethodCode: treatmentMethodCode,
-    isRequired: isRequired,
-  );
-}
-
 class PricingDetailDto {
   final String id;
   final String customerId;
@@ -210,6 +192,7 @@ class PricingDetailDto {
   final String? areaUnitId;
   final int contractMonths;
   final int visitFrequency;
+  final int totalVisits;
   final int markupType;
   final double markupValue;
   final double discountAmount;
@@ -217,7 +200,6 @@ class PricingDetailDto {
   final List<PricingDetailSupplyDto> supplies;
   final List<PricingDetailWorkerDto> workers;
   final List<PricingDetailItemDto> items;
-  final List<PricingDetailTreatmentQuotaDto> treatmentQuotas;
 
   PricingDetailDto._({
     required this.id,
@@ -227,6 +209,7 @@ class PricingDetailDto {
     this.areaUnitId,
     required this.contractMonths,
     required this.visitFrequency,
+    required this.totalVisits,
     required this.markupType,
     required this.markupValue,
     required this.discountAmount,
@@ -234,7 +217,6 @@ class PricingDetailDto {
     required this.supplies,
     required this.workers,
     required this.items,
-    this.treatmentQuotas = const [],
   });
 
   factory PricingDetailDto.fromJson(Map<String, dynamic> json) {
@@ -251,6 +233,10 @@ class PricingDetailDto {
       areaUnitId: json['area_unit_id'] as String?,
       contractMonths: (json['contract_months'] as num).toInt(),
       visitFrequency: (json['visit_frequency'] as num).toInt(),
+      totalVisits:
+          (json['total_visits'] as num?)?.toInt() ??
+          (json['visit_frequency'] as num?)?.toInt() ??
+          1,
       markupType: (json['markup_type'] as num).toInt(),
       markupValue: (json['markup_value'] as num).toDouble(),
       discountAmount: (json['discount_amount'] as num).toDouble(),
@@ -259,10 +245,6 @@ class PricingDetailDto {
       supplies: parseList(json['supplies'], PricingDetailSupplyDto.fromJson),
       workers: parseList(json['workers'], PricingDetailWorkerDto.fromJson),
       items: parseList(json['items'], PricingDetailItemDto.fromJson),
-      treatmentQuotas: parseList(
-        json['treatment_quotas'] ?? json['treatmentQuotas'],
-        PricingDetailTreatmentQuotaDto.fromJson,
-      ),
     );
   }
 
@@ -274,6 +256,7 @@ class PricingDetailDto {
     areaUnitId: areaUnitId,
     contractMonths: contractMonths,
     visitFrequency: visitFrequency,
+    totalVisits: totalVisits,
     markupType: markupType,
     markupValue: markupValue,
     discountAmount: discountAmount,
@@ -281,6 +264,5 @@ class PricingDetailDto {
     supplies: supplies.map((e) => e.toEntity()).toList(),
     workers: workers.map((e) => e.toEntity()).toList(),
     items: items.map((e) => e.toEntity()).toList(),
-    treatmentQuotas: treatmentQuotas.map((e) => e.toEntity()).toList(),
   );
 }

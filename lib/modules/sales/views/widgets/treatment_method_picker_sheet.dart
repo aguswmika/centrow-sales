@@ -7,7 +7,6 @@ import 'package:centrow_sales/modules/pc/entities/treatment_method.dart';
 import 'package:centrow_sales/shared/state/ui_state.dart';
 import 'package:centrow_sales/shared/theme/app_colors.dart';
 import 'package:centrow_sales/shared/theme/app_radius.dart';
-import 'package:centrow_sales/shared/widgets/app_badge.dart';
 import 'package:centrow_sales/shared/widgets/error_view.dart';
 
 class TreatmentMethodPickerSheet extends StatefulWidget {
@@ -153,7 +152,6 @@ class _TreatmentMethodPickerSheetState
       itemBuilder: (context, index) {
         final method = methods[index];
         final hasSubtitle =
-            method.isRequired ||
             method.code.isNotEmpty ||
             (method.description != null && method.description!.isNotEmpty);
 
@@ -178,7 +176,6 @@ class _TreatmentMethodPickerSheetState
                     runSpacing: 4.0,
                     crossAxisAlignment: WrapCrossAlignment.center,
                     children: [
-                      if (method.isRequired) const AppBadge.warn(text: 'Wajib'),
                       if (method.code.isNotEmpty)
                         Container(
                           padding: const EdgeInsets.symmetric(

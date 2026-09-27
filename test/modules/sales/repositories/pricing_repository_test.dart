@@ -45,6 +45,7 @@ void main() {
   const requestDto = CreatePricingRequestDto(
     contractMonths: 12,
     visitFrequency: 4,
+    totalVisits: 48,
     markupType: 1,
     markupValue: 25.0,
     discountAmount: 0.0,

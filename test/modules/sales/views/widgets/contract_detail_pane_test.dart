@@ -204,69 +204,7 @@ void main() {
   );
 
   testWidgets(
-    'ContractDetailPane renders monthly schedule cycle visit frequency label and unit',
-    (tester) async {
-      tester.view.physicalSize = const Size(1000, 800);
-      tester.view.devicePixelRatio = 1.0;
-      addTearDown(tester.view.resetPhysicalSize);
-      addTearDown(tester.view.resetDevicePixelRatio);
-
-      const contract = Contract(
-        id: 'c-monthly',
-        code: 'CTR-2026-0004',
-        customerId: 'cust-1',
-        serviceId: 'srv-1',
-        categoryId: 'cat-1',
-        status: ContractStatus.active,
-        startDate: '2026-01-01',
-        totalVisits: 12,
-        scheduleCycle: ContractScheduleCycle.monthly,
-      );
-
-      await tester.pumpWidget(
-        const MaterialApp(
-          home: Scaffold(body: ContractDetailPane(contract: contract)),
-        ),
-      );
-
-      expect(find.text('FREK. KUNJUNGAN (BULANAN)'), findsOneWidget);
-      expect(find.text('12 x / bulan'), findsOneWidget);
-    },
-  );
-
-  testWidgets(
-    'ContractDetailPane renders yearly schedule cycle visit frequency label and unit',
-    (tester) async {
-      tester.view.physicalSize = const Size(1000, 800);
-      tester.view.devicePixelRatio = 1.0;
-      addTearDown(tester.view.resetPhysicalSize);
-      addTearDown(tester.view.resetDevicePixelRatio);
-
-      const contract = Contract(
-        id: 'c-yearly',
-        code: 'CTR-2026-0005',
-        customerId: 'cust-1',
-        serviceId: 'srv-1',
-        categoryId: 'cat-1',
-        status: ContractStatus.active,
-        startDate: '2026-01-01',
-        totalVisits: 12,
-        scheduleCycle: ContractScheduleCycle.yearly,
-      );
-
-      await tester.pumpWidget(
-        const MaterialApp(
-          home: Scaffold(body: ContractDetailPane(contract: contract)),
-        ),
-      );
-
-      expect(find.text('FREK. KUNJUNGAN (TAHUNAN)'), findsOneWidget);
-      expect(find.text('12 x / tahun'), findsOneWidget);
-    },
-  );
-
-  testWidgets(
-    'ContractDetailPane renders fallback TOTAL KUNJUNGAN when scheduleCycle is null',
+    'ContractDetailPane renders TOTAL KUNJUNGAN when totalVisits is set',
     (tester) async {
       tester.view.physicalSize = const Size(1000, 800);
       tester.view.devicePixelRatio = 1.0;

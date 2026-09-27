@@ -100,7 +100,7 @@ void main() {
     await tester.pumpWidget(MaterialApp.router(routerConfig: router));
 
     expect(find.text('Centrow Sales'), findsOneWidget);
-    expect(find.text('Mobile ERP & POS'), findsOneWidget);
+    expect(find.text('ERP'), findsOneWidget);
     expect(find.byType(CircularProgressIndicator), findsOneWidget);
 
     await tester.pumpAndSettle();

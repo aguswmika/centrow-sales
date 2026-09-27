@@ -3,7 +3,6 @@ class TreatmentMethod {
   final String code;
   final String name;
   final String? description;
-  final bool isRequired;
   final bool isActive;
 
   const TreatmentMethod({
@@ -11,7 +10,6 @@ class TreatmentMethod {
     required this.code,
     required this.name,
     this.description,
-    this.isRequired = false,
     this.isActive = true,
   });
 
@@ -20,7 +18,6 @@ class TreatmentMethod {
     String? code,
     String? name,
     String? description,
-    bool? isRequired,
     bool? isActive,
   }) {
     return TreatmentMethod(
@@ -28,7 +25,6 @@ class TreatmentMethod {
       code: code ?? this.code,
       name: name ?? this.name,
       description: description ?? this.description,
-      isRequired: isRequired ?? this.isRequired,
       isActive: isActive ?? this.isActive,
     );
   }
@@ -42,14 +38,12 @@ class TreatmentMethod {
           code == other.code &&
           name == other.name &&
           description == other.description &&
-          isRequired == other.isRequired &&
           isActive == other.isActive;
 
   @override
-  int get hashCode =>
-      Object.hash(id, code, name, description, isRequired, isActive);
+  int get hashCode => Object.hash(id, code, name, description, isActive);
 
   @override
   String toString() =>
-      'TreatmentMethod(id: $id, code: $code, name: $name, description: $description, isRequired: $isRequired, isActive: $isActive)';
+      'TreatmentMethod(id: $id, code: $code, name: $name, description: $description, isActive: $isActive)';
 }

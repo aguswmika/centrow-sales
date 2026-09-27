@@ -254,6 +254,19 @@ class _PricingPageState extends State<PricingPage> {
                   _calcController.visitFrequency.value = int.tryParse(val),
             ),
           ),
+          const SizedBox(width: 16.0),
+          Expanded(
+            child: _buildParamItem(
+              'Total Kunjungan',
+              _calcController.totalVisits.value?.toString(),
+              icon: Icons.numbers,
+              suffix: 'Kali',
+              keyboardType: TextInputType.number,
+              enabled: enabled,
+              onChanged: (val) =>
+                  _calcController.totalVisits.value = int.tryParse(val),
+            ),
+          ),
         ],
       ),
     );

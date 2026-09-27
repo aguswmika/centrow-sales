@@ -4,7 +4,7 @@ import 'package:centrow_sales/modules/sales/repositories/dtos/pricing_dto.dart';
 void main() {
   group('Pricing DTOs', () {
     test(
-      'CreatePricingRequestDto toJson serializes correctly with snake_case keys',
+      'CreatePricingRequestDto toJson serializes correctly with snake_case keys and new supply fields',
       () {
         const supply = PricingSupplyDto(
           supplyType: 1,
@@ -16,6 +16,9 @@ void main() {
           applicationVolume: 10.0,
           applicationVolumeUnitId: 'uom-l',
           frequency: 2,
+          treatmentMethodId: 'tm-1',
+          areaKerja: 'Kitchen',
+          note: 'Handle with care',
         );
 
         const tool = PricingSupplyDto(
@@ -25,6 +28,10 @@ void main() {
           uomCode: 'UNIT',
           qty: 1.0,
           frequency: 1,
+          treatmentMethodId: 'tm-2',
+          areaKerja: 'Lobby',
+          note: 'Wall mount',
+          installedUnits: 2,
         );
 
         const worker = PricingWorkerDto(
@@ -45,6 +52,7 @@ void main() {
         const request = CreatePricingRequestDto(
           contractMonths: 12,
           visitFrequency: 4,
+          totalVisits: 48,
           markupType: 1,
           markupValue: 20.0,
           discountAmount: 10000.0,
@@ -57,11 +65,13 @@ void main() {
         final json = request.toJson();
 
         expect(json['contract_months'], 12);
+        expect(json['visit_frequency'], 4);
+        expect(json['total_visits'], 48);
         expect(json['markup_type'], 1);
         expect(json['markup_value'], 20.0);
         expect(json['discount_amount'], 10000.0);
         expect(json['tax_percentage'], 11.0);
-        expect(json.containsKey('area_value'), isFalse);
+        expect(json.containsKey('treatment_quotas'), isFalse);
 
         final suppliesList = json['supplies'] as List<dynamic>;
         expect(suppliesList.length, 2);
@@ -75,6 +85,9 @@ void main() {
           'application_volume': 10.0,
           'application_volume_unit_id': 'uom-l',
           'frequency': 2,
+          'treatment_method_id': 'tm-1',
+          'area_kerja': 'Kitchen',
+          'note': 'Handle with care',
         });
         expect(suppliesList[1], {
           'supply_type': 2,
@@ -83,6 +96,10 @@ void main() {
           'uom_code': 'UNIT',
           'qty': 1.0,
           'frequency': 1,
+          'treatment_method_id': 'tm-2',
+          'area_kerja': 'Lobby',
+          'note': 'Wall mount',
+          'installed_units': 2,
         });
 
         final workersList = json['workers'] as List<dynamic>;
@@ -105,43 +122,5 @@ void main() {
         });
       },
     );
-
-    test(
-      'PricingTreatmentQuotaDto toJson serializes treatment_method_id and quota',
-      () {
-        const dto = PricingTreatmentQuotaDto(
-          treatmentMethodId: 'tm-123',
-          quota: 8,
-        );
-
-        final json = dto.toJson();
-        expect(json, {'treatment_method_id': 'tm-123', 'quota': 8});
-      },
-    );
-
-    test('CreatePricingRequestDto serializes treatment_quotas correctly', () {
-      const quota = PricingTreatmentQuotaDto(
-        treatmentMethodId: 'tm-123',
-        quota: 8,
-      );
-
-      const request = CreatePricingRequestDto(
-        contractMonths: 12,
-        visitFrequency: 4,
-        markupType: 1,
-        markupValue: 20.0,
-        discountAmount: 0.0,
-        taxPercentage: 11.0,
-        supplies: [],
-        workers: [],
-        items: [],
-        treatmentQuotas: [quota],
-      );
-
-      final json = request.toJson();
-      expect(json['treatment_quotas'], [
-        {'treatment_method_id': 'tm-123', 'quota': 8},
-      ]);
-    });
   });
 }

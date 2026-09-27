@@ -1,6 +1,7 @@
 class CreatePricingRequestDto {
   final int contractMonths;
   final int visitFrequency;
+  final int totalVisits;
   final int markupType;
   final double markupValue;
   final double discountAmount;
@@ -8,11 +9,11 @@ class CreatePricingRequestDto {
   final List<PricingSupplyDto> supplies;
   final List<PricingWorkerDto> workers;
   final List<PricingItemDto> items;
-  final List<PricingTreatmentQuotaDto> treatmentQuotas;
 
   const CreatePricingRequestDto({
     required this.contractMonths,
     required this.visitFrequency,
+    required this.totalVisits,
     required this.markupType,
     required this.markupValue,
     required this.discountAmount,
@@ -20,12 +21,12 @@ class CreatePricingRequestDto {
     required this.supplies,
     required this.workers,
     required this.items,
-    this.treatmentQuotas = const [],
   });
 
   Map<String, dynamic> toJson() => {
     'contract_months': contractMonths,
     'visit_frequency': visitFrequency,
+    'total_visits': totalVisits,
     'markup_type': markupType,
     'markup_value': markupValue,
     'discount_amount': discountAmount,
@@ -33,22 +34,6 @@ class CreatePricingRequestDto {
     'supplies': supplies.map((e) => e.toJson()).toList(),
     'workers': workers.map((e) => e.toJson()).toList(),
     'items': items.map((e) => e.toJson()).toList(),
-    'treatment_quotas': treatmentQuotas.map((e) => e.toJson()).toList(),
-  };
-}
-
-class PricingTreatmentQuotaDto {
-  final String treatmentMethodId;
-  final int quota;
-
-  const PricingTreatmentQuotaDto({
-    required this.treatmentMethodId,
-    required this.quota,
-  });
-
-  Map<String, dynamic> toJson() => {
-    'treatment_method_id': treatmentMethodId,
-    'quota': quota,
   };
 }
 
@@ -64,6 +49,10 @@ class PricingSupplyDto {
   final double? applicationVolume;
   final String? applicationVolumeUnitId;
   final int frequency;
+  final String? treatmentMethodId;
+  final String? areaKerja;
+  final String? note;
+  final int? installedUnits;
 
   const PricingSupplyDto({
     required this.supplyType,
@@ -77,6 +66,10 @@ class PricingSupplyDto {
     this.applicationVolume,
     this.applicationVolumeUnitId,
     required this.frequency,
+    this.treatmentMethodId,
+    this.areaKerja,
+    this.note,
+    this.installedUnits,
   });
 
   Map<String, dynamic> toJson() => {
@@ -84,6 +77,10 @@ class PricingSupplyDto {
     'name': name,
     'uom_code': uomCode,
     'frequency': frequency,
+    if (treatmentMethodId != null && treatmentMethodId!.isNotEmpty)
+      'treatment_method_id': treatmentMethodId,
+    if (areaKerja != null && areaKerja!.isNotEmpty) 'area_kerja': areaKerja,
+    if (note != null && note!.isNotEmpty) 'note': note,
     if (supplyType == 1) ...{
       'product_mapping_id': productMappingId,
       'dose_usage': doseUsage,
@@ -91,7 +88,11 @@ class PricingSupplyDto {
       'application_volume': applicationVolume,
       'application_volume_unit_id': applicationVolumeUnitId,
     },
-    if (supplyType == 2) ...{'product_id': productId, 'qty': qty},
+    if (supplyType == 2) ...{
+      'product_id': productId,
+      'qty': qty,
+      if (installedUnits != null) 'installed_units': installedUnits,
+    },
   };
 }
 

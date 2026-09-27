@@ -5,7 +5,6 @@ class TreatmentMethodDto {
   final String code;
   final String name;
   final String? description;
-  final bool isRequired;
   final bool isActive;
 
   const TreatmentMethodDto({
@@ -13,7 +12,6 @@ class TreatmentMethodDto {
     required this.code,
     required this.name,
     this.description,
-    this.isRequired = false,
     this.isActive = true,
   });
 
@@ -23,7 +21,6 @@ class TreatmentMethodDto {
       code: json['code']?.toString() ?? '',
       name: json['name']?.toString() ?? '',
       description: (json['description'] ?? json['desc'])?.toString(),
-      isRequired: (json['is_required'] ?? json['isRequired']) as bool? ?? false,
       isActive: (json['is_active'] ?? json['isActive']) as bool? ?? true,
     );
   }
@@ -34,7 +31,6 @@ class TreatmentMethodDto {
       code: code,
       name: name,
       description: description,
-      isRequired: isRequired,
       isActive: isActive,
     );
   }

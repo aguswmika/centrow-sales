@@ -16,6 +16,10 @@ class PricingDetailSupply {
   final int frequency;
   final double unitCost;
   final double lineTotal;
+  final String? treatmentMethodId;
+  final String? areaKerja;
+  final String? note;
+  final int? installedUnits;
 
   const PricingDetailSupply({
     required this.id,
@@ -32,6 +36,10 @@ class PricingDetailSupply {
     required this.frequency,
     required this.unitCost,
     required this.lineTotal,
+    this.treatmentMethodId,
+    this.areaKerja,
+    this.note,
+    this.installedUnits,
   });
 }
 
@@ -81,22 +89,6 @@ class PricingDetailItem {
   });
 }
 
-class PricingDetailTreatmentQuota {
-  final String treatmentMethodId;
-  final int quota;
-  final String treatmentMethodName;
-  final String treatmentMethodCode;
-  final bool isRequired;
-
-  const PricingDetailTreatmentQuota({
-    required this.treatmentMethodId,
-    required this.quota,
-    this.treatmentMethodName = '',
-    this.treatmentMethodCode = '',
-    this.isRequired = false,
-  });
-}
-
 class PricingDetail {
   final String id;
   final String customerId;
@@ -105,6 +97,7 @@ class PricingDetail {
   final String? areaUnitId;
   final int contractMonths;
   final int visitFrequency;
+  final int totalVisits;
   final int markupType;
   final double markupValue;
   final double discountAmount;
@@ -113,7 +106,6 @@ class PricingDetail {
   final List<PricingDetailSupply> supplies;
   final List<PricingDetailWorker> workers;
   final List<PricingDetailItem> items;
-  final List<PricingDetailTreatmentQuota> treatmentQuotas;
 
   const PricingDetail({
     required this.id,
@@ -123,6 +115,7 @@ class PricingDetail {
     this.areaUnitId,
     required this.contractMonths,
     required this.visitFrequency,
+    required this.totalVisits,
     required this.markupType,
     required this.markupValue,
     required this.discountAmount,
@@ -130,6 +123,5 @@ class PricingDetail {
     required this.supplies,
     required this.workers,
     required this.items,
-    this.treatmentQuotas = const [],
   });
 }

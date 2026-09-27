@@ -82,7 +82,6 @@ void main() {
   const monthlyCategory = ContractCategory(
     id: 'cat-monthly',
     name: 'Pest Control Monthly',
-    scheduleCycle: ContractScheduleCycle.monthly,
     templates: [
       ContractTemplateOption(
         id: 'tmpl-1',
@@ -95,7 +94,6 @@ void main() {
   const yearlyCategory = ContractCategory(
     id: 'cat-yearly',
     name: 'Termite Control Yearly',
-    scheduleCycle: ContractScheduleCycle.yearly,
     templates: [
       ContractTemplateOption(
         id: 'tmpl-2',
@@ -158,7 +156,7 @@ void main() {
   }
 
   testWidgets(
-    'Category selector formats item with (\${cat.scheduleCycle.displayName}) and selecting displays cycle guidance for monthly',
+    'Category selector formats item with cat.name and allows selection',
     (tester) async {
       tester.view.physicalSize = const Size(800, 1000);
       tester.view.devicePixelRatio = 1.0;
@@ -168,35 +166,24 @@ void main() {
       await tester.pumpWidget(buildTestWidget());
       await tester.pumpAndSettle();
 
-      // No cycle guidance displayed yet when category is null
-      expect(find.textContaining('Siklus kuota kunjungan:'), findsNothing);
-
       // Tap category selector to open modal
       await tester.tap(find.byType(AppSearchableSelector<ContractCategory>));
       await tester.pumpAndSettle();
 
-      // Verify categories formatted with (${cat.scheduleCycle.displayName})
-      expect(find.text('Pest Control Monthly (Bulanan)'), findsOneWidget);
-      expect(find.text('Termite Control Yearly (Tahunan)'), findsOneWidget);
+      // Verify categories formatted with name
+      expect(find.text('Pest Control Monthly'), findsOneWidget);
+      expect(find.text('Termite Control Yearly'), findsOneWidget);
 
       // Select monthly category
-      await tester.tap(find.text('Pest Control Monthly (Bulanan)'));
+      await tester.tap(find.text('Pest Control Monthly'));
       await tester.pumpAndSettle();
 
-      // Category selector input field now displays the selected item formatted with cycle
-      expect(find.text('Pest Control Monthly (Bulanan)'), findsOneWidget);
-
-      // Cycle guidance banner / caption is visible for monthly
-      expect(
-        find.text('Siklus kuota kunjungan: Bulanan (diperbarui setiap bulan)'),
-        findsOneWidget,
-      );
+      // Category selector input field now displays the selected item
+      expect(find.text('Pest Control Monthly'), findsOneWidget);
     },
   );
 
-  testWidgets('Selecting yearly category displays cycle guidance for yearly', (
-    tester,
-  ) async {
+  testWidgets('Selecting yearly category updates selection', (tester) async {
     tester.view.physicalSize = const Size(800, 1000);
     tester.view.devicePixelRatio = 1.0;
     addTearDown(tester.view.resetPhysicalSize);
@@ -210,46 +197,36 @@ void main() {
     await tester.pumpAndSettle();
 
     // Select yearly category
-    await tester.tap(find.text('Termite Control Yearly (Tahunan)'));
+    await tester.tap(find.text('Termite Control Yearly'));
     await tester.pumpAndSettle();
 
-    // Cycle guidance banner / caption is visible for yearly
-    expect(
-      find.text('Siklus kuota kunjungan: Tahunan (total masa kontrak)'),
-      findsOneWidget,
-    );
+    expect(find.text('Termite Control Yearly'), findsOneWidget);
   });
 
-  testWidgets(
-    'Initial contract with monthly scheduleCycle pre-renders cycle guidance',
-    (tester) async {
-      tester.view.physicalSize = const Size(800, 1000);
-      tester.view.devicePixelRatio = 1.0;
-      addTearDown(tester.view.resetPhysicalSize);
-      addTearDown(tester.view.resetDevicePixelRatio);
+  testWidgets('Initial contract with category pre-renders category name', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(800, 1000);
+    tester.view.devicePixelRatio = 1.0;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
 
-      const contract = Contract(
-        id: 'c-100',
-        code: 'CTR-100',
-        customerId: 'cust-1',
-        customerName: 'PT Maju Terus',
-        serviceId: 'srv-1',
-        serviceName: 'General Pest Control',
-        categoryId: 'cat-monthly',
-        categoryName: 'Pest Control Monthly',
-        scheduleCycle: ContractScheduleCycle.monthly,
-        status: ContractStatus.draft,
-        startDate: '2026-01-01',
-      );
+    const contract = Contract(
+      id: 'c-100',
+      code: 'CTR-100',
+      customerId: 'cust-1',
+      customerName: 'PT Maju Terus',
+      serviceId: 'srv-1',
+      serviceName: 'General Pest Control',
+      categoryId: 'cat-monthly',
+      categoryName: 'Pest Control Monthly',
+      status: ContractStatus.draft,
+      startDate: '2026-01-01',
+    );
 
-      await tester.pumpWidget(buildTestWidget(initialContract: contract));
-      await tester.pumpAndSettle();
+    await tester.pumpWidget(buildTestWidget(initialContract: contract));
+    await tester.pumpAndSettle();
 
-      expect(find.text('Pest Control Monthly (Bulanan)'), findsOneWidget);
-      expect(
-        find.text('Siklus kuota kunjungan: Bulanan (diperbarui setiap bulan)'),
-        findsOneWidget,
-      );
-    },
-  );
+    expect(find.text('Pest Control Monthly'), findsOneWidget);
+  });
 }

@@ -162,7 +162,7 @@ void main() {
       expect(calculatorClicked, isTrue);
 
       // Actions should not be visible directly
-      expect(find.text('Kirim Proposal'), findsNothing);
+      expect(find.text('Tandai Terkirim'), findsNothing);
       expect(find.text('Ubah Data'), findsNothing);
       expect(find.text('Ekspor PDF'), findsNothing);
       expect(find.text('Batalkan Proposal'), findsNothing);
@@ -170,16 +170,16 @@ void main() {
       expect(find.text('Tolak Proposal'), findsNothing);
       expect(find.text('Revisi Proposal'), findsNothing);
 
-      // Open popup menu and test Kirim Proposal
+      // Open popup menu and test Tandai Terkirim
       await tester.tap(find.text('Aksi'));
       await tester.pumpAndSettle();
 
-      expect(find.text('Kirim Proposal'), findsOneWidget);
+      expect(find.text('Tandai Terkirim'), findsOneWidget);
       expect(find.text('Ekspor PDF'), findsOneWidget);
       expect(find.text('Ubah Data'), findsOneWidget);
       expect(find.text('Batalkan Proposal'), findsOneWidget);
 
-      await tester.tap(find.text('Kirim Proposal'));
+      await tester.tap(find.text('Tandai Terkirim'));
       await tester.pumpAndSettle();
       expect(sendClicked, isTrue);
 
@@ -260,8 +260,7 @@ void main() {
       expect(find.text('Revisi Proposal'), findsNothing);
       expect(find.text('Ekspor PDF'), findsNothing);
       expect(find.text('Tandai Kedaluwarsa'), findsNothing);
-      expect(find.text('Batalkan Proposal'), findsNothing);
-      expect(find.text('Kirim Proposal'), findsNothing);
+      expect(find.text('Tandai Terkirim'), findsNothing);
       expect(find.text('Ubah Data'), findsNothing);
 
       // Open popup menu and test Terima Proposal
