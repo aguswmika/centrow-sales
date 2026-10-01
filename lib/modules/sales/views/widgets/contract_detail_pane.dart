@@ -154,6 +154,12 @@ class ContractDetailPane extends StatelessWidget {
                           c.visitFrequencyLabel,
                           c.formattedVisitFrequency,
                         ),
+                      if (c.scheduleWorkOrderType != null &&
+                          c.scheduleWorkOrderType! > 0)
+                        _buildInfoSection(
+                          'JENIS PENJADWALAN',
+                          c.scheduleWorkOrderType == 1 ? 'Routine' : 'Station',
+                        ),
                     ],
                   ),
                   if (c.signatoryName != null &&

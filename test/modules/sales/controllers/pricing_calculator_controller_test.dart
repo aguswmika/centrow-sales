@@ -130,6 +130,7 @@ void main() {
         initialUnitPrice: 50000.0,
       );
 
+      expect(transportItem.title.value, 'Transport');
       expect(transportItem.qty.value, 2.0);
       expect(transportItem.freq.value, 2.0);
       expect(transportItem.unitPrice.value, 50000.0);
@@ -145,10 +146,28 @@ void main() {
         initialUnitPrice: 50000.0,
       );
 
+      expect(addonItem.title.value, 'Addon');
       expect(addonItem.qty.value, 2.0);
       expect(addonItem.freq.value, 2.0);
       expect(addonItem.unitPrice.value, 50000.0);
       addonItem.dispose();
+
+      final customItem = PricingItemRow(
+        id: 'custom-1',
+        title: 'Sewa Alat Khusus',
+        code: '',
+        kind: 0,
+        initialQty: 1.0,
+        initialFreq: 1.0,
+        initialUnitPrice: 75000.0,
+      );
+
+      expect(customItem.kind, 0);
+      expect(customItem.title.value, 'Sewa Alat Khusus');
+      customItem.title.value = 'Sewa Truk';
+      expect(customItem.title.value, 'Sewa Truk');
+      expect(customItem.unitPrice.value, 75000.0);
+      customItem.dispose();
     });
   });
 
@@ -413,6 +432,34 @@ void main() {
       expect(controller.items.length, 2);
     });
 
+    test('addCustomItem creates row with kind == 0 and unique id', () {
+      controller.addCustomItem(
+        defaultTitle: 'Biaya Perizinan',
+        initialPrice: 150000.0,
+      );
+
+      expect(controller.items.length, 1);
+      final item = controller.items.first;
+      expect(item.kind, 0);
+      expect(item.title.value, 'Biaya Perizinan');
+      expect(item.unitPrice.value, 150000.0);
+      expect(item.id.startsWith('custom_'), isTrue);
+      expect(item.code, '');
+    });
+
+    test('validateInputs rejects custom items with empty title', () {
+      controller.totalVisits.value = 10;
+      controller.addCustomItem(defaultTitle: '   ', initialPrice: 10000.0);
+
+      expect(
+        controller.validateInputs(),
+        'Nama item kustom tidak boleh kosong.',
+      );
+
+      controller.items.first.title.value = 'Valid Title';
+      expect(controller.validateInputs(), isNull);
+    });
+
     test('addRow allows duplicate workers for kind 4', () {
       const workerProduct = Product(
         id: 'p4',
@@ -441,6 +488,7 @@ void main() {
           uomCode: 'BTL',
           kind: 1,
           initialProductMappingId: 'pm-1',
+          initialTreatmentMethodId: 'tm-1',
           initialDoseUsage: 2.0,
           initialDoseUnitId: 'uom-ml',
           initialApplicationVolume: 1.0,
@@ -702,6 +750,7 @@ void main() {
             code: 'T-01',
             uomCode: 'UNIT',
             kind: 2,
+            initialTreatmentMethodId: 'tm-1',
             initialDoseUsage: 1.0,
           ),
         );
@@ -735,6 +784,7 @@ void main() {
             code: 'T-01',
             uomCode: 'UNIT',
             kind: 2,
+            initialTreatmentMethodId: 'tm-1',
             initialDoseUsage: 1.0,
           ),
         );
@@ -761,6 +811,317 @@ void main() {
         expect(repository.lastRequest!.supplies.first.installedUnits, 3);
         expect(repository.lastRequest!.supplies.first.areaKerja, 'Dining Hall');
         expect(repository.lastRequest!.supplies.first.note, 'Clean monthly');
+      },
+    );
+
+    test('auto-calculates totalVisits and allows direct manual override', () {
+      // 1. Setting contractMonths and visitFrequency auto-calculates totalVisits
+      controller.setContractMonths(3);
+      controller.setVisitFrequency(4);
+      expect(controller.totalVisits.value, 12);
+
+      controller.setContractMonths(12);
+      controller.setVisitFrequency(2);
+      expect(controller.totalVisits.value, 24);
+
+      // 2. User can directly override totalVisits
+      controller.setTotalVisits(15);
+      expect(controller.totalVisits.value, 15);
+
+      // 3. Changing contract parameters again recalculates totalVisits
+      controller.setContractMonths(6);
+      expect(controller.totalVisits.value, 12); // 6 * 2
+
+      // 4. If either is null, totalVisits is null
+      controller.setVisitFrequency(null);
+      expect(controller.totalVisits.value, isNull);
+    });
+  });
+
+  group('PricingCalculatorController - scheduleWorkOrderType', () {
+    test('defaults to 1 on fresh controller', () {
+      expect(controller.scheduleWorkOrderType.value, 1);
+    });
+
+    test('setScheduleWorkOrderType updates the signal', () {
+      controller.setScheduleWorkOrderType(2);
+      expect(controller.scheduleWorkOrderType.value, 2);
+    });
+
+    test('buildRequest() includes the updated scheduleWorkOrderType', () {
+      controller.totalVisits.value = 12;
+      controller.setScheduleWorkOrderType(2);
+
+      final request = controller.buildRequest();
+      expect(request.scheduleWorkOrderType, 2);
+      expect(request.toJson()['schedule_work_order_type'], 2);
+    });
+
+    test(
+      'loadExistingPricing restores scheduleWorkOrderType from PricingDetail',
+      () async {
+        repository.detailResponse = const Ok(
+          PricingDetail(
+            id: 'price-x',
+            customerId: 'cust-x',
+            serviceId: 'srv-x',
+            contractMonths: 12,
+            visitFrequency: 2,
+            totalVisits: 24,
+            markupType: 1,
+            markupValue: 0.0,
+            discountAmount: 0.0,
+            taxPercentage: 0.0,
+            scheduleWorkOrderType: 2,
+            supplies: [],
+            workers: [],
+            items: [],
+          ),
+        );
+
+        await controller.loadExistingPricing('prop-x');
+
+        expect(controller.scheduleWorkOrderType.value, 2);
+      },
+    );
+
+    test(
+      'buildRequest() serializes custom item as item_type 2 with product_id null',
+      () {
+        controller.totalVisits.value = 10;
+        controller.addCustomItem(
+          defaultTitle: 'Sewa Generator',
+          initialPrice: 250000.0,
+        );
+        final request = controller.buildRequest();
+
+        expect(request.items.length, 1);
+        final itemDto = request.items.first;
+        expect(itemDto.itemType, 2);
+        expect(itemDto.productId, isNull);
+        expect(itemDto.name, 'Sewa Generator');
+        expect(itemDto.unitPrice, 250000.0);
+        expect(itemDto.toJson().containsKey('product_id'), isFalse);
+        expect(itemDto.toJson()['item_type'], 2);
+      },
+    );
+
+    test('loadExistingPricing restores custom item as kind 0', () async {
+      repository.detailResponse = const Ok(
+        PricingDetail(
+          id: 'price-custom',
+          customerId: 'cust-1',
+          serviceId: 'srv-1',
+          contractMonths: 12,
+          visitFrequency: 1,
+          totalVisits: 12,
+          markupType: 1,
+          markupValue: 0.0,
+          discountAmount: 0.0,
+          taxPercentage: 0.0,
+          supplies: [],
+          workers: [],
+          items: [
+            PricingDetailItem(
+              id: 'custom-saved-1',
+              itemType: 2,
+              productId: null,
+              code: '',
+              name: 'Biaya Fogging Khusus',
+              qty: 2.0,
+              frequency: 1,
+              unitCost: 0.0,
+              unitPrice: 150000.0,
+              lineTotal: 300000.0,
+            ),
+          ],
+        ),
+      );
+
+      await controller.loadExistingPricing('prop-custom');
+
+      expect(controller.items.length, 1);
+      final restored = controller.items.first;
+      expect(restored.kind, 0);
+      expect(restored.title.value, 'Biaya Fogging Khusus');
+      expect(restored.unitPrice.value, 150000.0);
+      expect(restored.qty.value, 2.0);
+    });
+
+    test('validateInputs requires treatmentMethodId for all supply lines', () {
+      controller.totalVisits.value = 10;
+      final chemRow = PricingSupplyRow(
+        id: 'chem-1',
+        title: 'Chemical 1',
+        code: 'CHM-1',
+        uomCode: 'ML',
+        kind: 1,
+        initialTreatmentMethodId: null,
+        initialDoseUsage: 5.0,
+        initialSpkDoseUsage: 5.0,
+      );
+      controller.supplies.add(chemRow);
+
+      expect(
+        controller.validateInputs(),
+        'Metode penanganan untuk Chemical 1 wajib dipilih.',
+      );
+
+      chemRow.treatmentMethodId.value = 'tm-1';
+      expect(controller.validateInputs(), isNull);
+
+      final toolRow = PricingSupplyRow(
+        id: 'tool-1',
+        title: 'Tool 1',
+        code: 'TL-1',
+        uomCode: 'UNIT',
+        kind: 2,
+        initialTreatmentMethodId: '',
+        initialDoseUsage: 1.0,
+        initialInstalledUnits: 1,
+      );
+      controller.supplies.add(toolRow);
+
+      expect(
+        controller.validateInputs(),
+        'Metode penanganan untuk Tool 1 wajib dipilih.',
+      );
+
+      toolRow.treatmentMethodId.value = 'tm-2';
+      expect(controller.validateInputs(), isNull);
+    });
+
+    test(
+      'validateInputs requires positive spkDoseUsage for chemical lines',
+      () {
+        controller.totalVisits.value = 10;
+        final chemRow = PricingSupplyRow(
+          id: 'chem-1',
+          title: 'Chemical 1',
+          code: 'CHM-1',
+          uomCode: 'ML',
+          kind: 1,
+          initialTreatmentMethodId: 'tm-1',
+          initialDoseUsage: 5.0,
+          initialSpkDoseUsage: 0.0,
+        );
+        controller.supplies.add(chemRow);
+
+        expect(
+          controller.validateInputs(),
+          'Dosis SPK untuk Chemical 1 harus lebih dari 0.',
+        );
+
+        chemRow.spkDoseUsage.value = -1.0;
+        expect(
+          controller.validateInputs(),
+          'Dosis SPK untuk Chemical 1 harus lebih dari 0.',
+        );
+
+        chemRow.spkDoseUsage.value = 60.0;
+        expect(controller.validateInputs(), isNull);
+      },
+    );
+
+    test(
+      'buildRequest includes spk_dose_usage on chemicals and omits on tools',
+      () {
+        controller.totalVisits.value = 10;
+        controller.supplies.add(
+          PricingSupplyRow(
+            id: 'chem-1',
+            title: 'Chemical 1',
+            code: 'CHM-1',
+            uomCode: 'ML',
+            kind: 1,
+            initialTreatmentMethodId: 'tm-1',
+            initialDoseUsage: 5.0,
+            initialSpkDoseUsage: 60.0,
+          ),
+        );
+        controller.supplies.add(
+          PricingSupplyRow(
+            id: 'tool-1',
+            title: 'Tool 1',
+            code: 'TL-1',
+            uomCode: 'UNIT',
+            kind: 2,
+            initialTreatmentMethodId: 'tm-2',
+            initialDoseUsage: 1.0,
+            initialInstalledUnits: 2,
+          ),
+        );
+
+        final req = controller.buildRequest();
+        expect(req.supplies.length, 2);
+
+        expect(req.supplies[0].spkDoseUsage, 60.0);
+        expect(req.supplies[0].toJson()['spk_dose_usage'], 60.0);
+
+        expect(req.supplies[1].spkDoseUsage, isNull);
+        expect(req.supplies[1].toJson().containsKey('spk_dose_usage'), isFalse);
+      },
+    );
+
+    test(
+      'loadExistingPricing initialises spkDoseUsage falling back to doseUsage',
+      () async {
+        repository.detailResponse = const Ok(
+          PricingDetail(
+            id: 'price-spk',
+            customerId: 'c-1',
+            serviceId: 's-1',
+            contractMonths: 12,
+            visitFrequency: 1,
+            totalVisits: 12,
+            markupType: 1,
+            markupValue: 0.0,
+            discountAmount: 0.0,
+            taxPercentage: 0.0,
+            supplies: [
+              PricingDetailSupply(
+                id: 's-1',
+                supplyType: 1,
+                name: 'Chem With SPK',
+                uomCode: 'ML',
+                qty: 10.0,
+                doseUsage: 2.0,
+                doseUnitId: 'u-1',
+                applicationVolume: 5.0,
+                applicationVolumeUnitId: 'u-2',
+                frequency: 1,
+                unitCost: 100.0,
+                lineTotal: 1000.0,
+                spkDoseUsage: 75.0,
+                treatmentMethodId: 'tm-1',
+              ),
+              PricingDetailSupply(
+                id: 's-2',
+                supplyType: 1,
+                name: 'Chem Fallback',
+                uomCode: 'ML',
+                qty: 10.0,
+                doseUsage: 4.0,
+                doseUnitId: 'u-1',
+                applicationVolume: 5.0,
+                applicationVolumeUnitId: 'u-2',
+                frequency: 1,
+                unitCost: 100.0,
+                lineTotal: 1000.0,
+                spkDoseUsage: null,
+                treatmentMethodId: 'tm-1',
+              ),
+            ],
+            workers: [],
+            items: [],
+          ),
+        );
+
+        await controller.loadExistingPricing('prop-spk');
+
+        expect(controller.supplies.length, 2);
+        expect(controller.supplies[0].spkDoseUsage.value, 75.0);
+        expect(controller.supplies[1].spkDoseUsage.value, 4.0);
       },
     );
   });

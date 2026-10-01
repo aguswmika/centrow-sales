@@ -18,6 +18,7 @@ class PricingSupplyRow {
   final String title;
   final String code;
   final String uomCode;
+  final String? uomName;
   final int kind; // 1 = chemical, 2 = tool
 
   final Signal<String?> treatmentMethodId;
@@ -38,6 +39,11 @@ class PricingSupplyRow {
   final Signal<double> applicationVolume;
   final Signal<String> applicationVolumeUnitId;
   final Signal<double> freq;
+  final Signal<double> spkDoseUsage;
+  Signal<double> get actualDosageUsage => spkDoseUsage;
+
+  String get uomDisplayName =>
+      (uomName != null && uomName!.isNotEmpty) ? uomName! : uomCode;
 
   late final ReadonlySignal<double> qty = computed(() {
     if (kind == 2) return doseUsage.value;
@@ -49,6 +55,7 @@ class PricingSupplyRow {
     required this.title,
     required this.code,
     required this.uomCode,
+    this.uomName,
     required this.kind,
     String? initialTreatmentMethodId,
     String? initialTreatmentMethodName,
@@ -65,6 +72,7 @@ class PricingSupplyRow {
     double initialApplicationVolume = 1.0,
     String initialApplicationVolumeUnitId = '',
     double initialFreq = 1.0,
+    double initialSpkDoseUsage = 1.0,
   }) : treatmentMethodId = signal(initialTreatmentMethodId),
        treatmentMethodName = signal(initialTreatmentMethodName),
        treatmentMethodCode = signal(initialTreatmentMethodCode),
@@ -76,7 +84,8 @@ class PricingSupplyRow {
        doseUnitId = signal(initialDoseUnitId),
        applicationVolume = signal(initialApplicationVolume),
        applicationVolumeUnitId = signal(initialApplicationVolumeUnitId),
-       freq = signal(initialFreq);
+       freq = signal(initialFreq),
+       spkDoseUsage = signal(initialSpkDoseUsage);
 
   void dispose() {
     treatmentMethodId.dispose();
@@ -91,6 +100,7 @@ class PricingSupplyRow {
     applicationVolume.dispose();
     applicationVolumeUnitId.dispose();
     freq.dispose();
+    spkDoseUsage.dispose();
   }
 }
 
@@ -129,7 +139,7 @@ class PricingWorkerRow {
 
 class PricingItemRow {
   final String id;
-  final String title;
+  final Signal<String> title;
   final String code;
   final int kind;
 
@@ -139,17 +149,20 @@ class PricingItemRow {
 
   PricingItemRow({
     required this.id,
-    required this.title,
+    String? title,
+    String? initialTitle,
     required this.code,
     required this.kind,
     double initialQty = 1.0,
     double initialFreq = 1.0,
     double initialUnitPrice = 0.0,
-  }) : qty = signal(initialQty),
+  }) : title = signal(title ?? initialTitle ?? ''),
+       qty = signal(initialQty),
        freq = signal(initialFreq),
        unitPrice = signal(initialUnitPrice);
 
   void dispose() {
+    title.dispose();
     qty.dispose();
     freq.dispose();
     unitPrice.dispose();
@@ -225,6 +238,37 @@ class PricingCalculatorController {
     const UiInitial(),
   );
 
+  final _scheduleWorkOrderType = signal<int>(1);
+  ReadonlySignal<int> get scheduleWorkOrderType => _scheduleWorkOrderType;
+
+  void setContractMonths(int? months) {
+    contractMonths.value = months;
+    autoCalculateTotalVisits();
+  }
+
+  void setVisitFrequency(int? freq) {
+    visitFrequency.value = freq;
+    autoCalculateTotalVisits();
+  }
+
+  void setTotalVisits(int? visits) {
+    totalVisits.value = visits;
+  }
+
+  void setScheduleWorkOrderType(int type) {
+    _scheduleWorkOrderType.value = type;
+  }
+
+  void autoCalculateTotalVisits() {
+    final months = contractMonths.value;
+    final freq = visitFrequency.value;
+    if (months != null && freq != null) {
+      totalVisits.value = months * freq;
+    } else {
+      totalVisits.value = null;
+    }
+  }
+
   void addSupplyRow(ProductMapping mapping) {
     if (supplies.any((m) => m.id == mapping.productId)) return;
     supplies.add(
@@ -233,12 +277,14 @@ class PricingCalculatorController {
         title: mapping.productName,
         code: mapping.productCode ?? '',
         uomCode: mapping.doseUnitCode,
+        uomName: mapping.doseUnitName ?? mapping.doseUnitCode,
         kind: 1,
         initialTreatmentMethodId: mapping.treatmentMethodId,
         initialTreatmentMethodName: mapping.treatmentMethodName,
         initialTreatmentMethodCode: mapping.treatmentMethodCode,
         initialProductMappingId: mapping.id,
         initialDoseUsage: mapping.defaultDose ?? mapping.doseMinLimit,
+        initialSpkDoseUsage: mapping.defaultDose ?? mapping.doseMinLimit,
         initialDoseUnitId: mapping.doseUnitId,
         doseMinLimit: mapping.doseMinLimit,
         doseMaxLimit: mapping.doseMaxLimit,
@@ -260,6 +306,9 @@ class PricingCalculatorController {
           title: product.name,
           code: product.code,
           uomCode: product.uomCode,
+          uomName: product.uomName.isNotEmpty
+              ? product.uomName
+              : product.uomCode,
           kind: expectedKind,
           initialProductMappingId: expectedKind == 1 ? '' : product.id,
           initialInstalledUnits: expectedKind == 2 ? 1 : null,
@@ -290,91 +339,91 @@ class PricingCalculatorController {
     }
   }
 
+  void addCustomItem({
+    String defaultTitle = 'Item Kustom',
+    double initialPrice = 0.0,
+  }) {
+    final uniqueId = 'custom_${DateTime.now().microsecondsSinceEpoch}';
+    items.add(
+      PricingItemRow(
+        id: uniqueId,
+        title: defaultTitle,
+        code: '',
+        kind: 0,
+        initialUnitPrice: initialPrice,
+      ),
+    );
+  }
+
   int? _workerVisitFrequencyOverride(PricingWorkerRow w) {
     final workerFreq = w.visitFreq.value.round();
     if (workerFreq <= 0) return null;
     return workerFreq;
   }
 
-  bool _validateInputs({required bool setOnPreview}) {
+  String? validateInputs() {
     final tv = totalVisits.value;
     if (tv == null || tv <= 0) {
-      const failure = UnknownFailure('Total kunjungan harus lebih dari 0.');
-      if (setOnPreview) {
-        previewState.value = const UiFailure<PricingPreview>(failure);
-      } else {
-        submitState.value = const UiFailure<void>(failure);
-      }
-      return false;
+      return 'Total kunjungan harus lebih dari 0.';
     }
 
     for (final m in supplies) {
+      // Treatment method required on ALL supply lines
+      if (m.treatmentMethodId.value == null ||
+          m.treatmentMethodId.value!.isEmpty) {
+        return 'Metode penanganan untuk ${m.title} wajib dipilih.';
+      }
       if (m.kind == 1) {
-        // Chemical
+        // Chemical: dose range
         if (m.doseMinLimit != null && m.doseUsage.value < m.doseMinLimit!) {
-          final failure = UnknownFailure(
-            'Dosis untuk ${m.title} tidak boleh kurang dari batas minimum (${m.doseMinLimit}).',
-          );
-          if (setOnPreview) {
-            previewState.value = UiFailure(failure);
-          } else {
-            submitState.value = UiFailure(failure);
-          }
-          return false;
+          return 'Dosis untuk ${m.title} tidak boleh kurang dari batas minimum (${m.doseMinLimit}).';
         }
         if (m.doseMaxLimit != null && m.doseUsage.value > m.doseMaxLimit!) {
-          final failure = UnknownFailure(
-            'Dosis untuk ${m.title} tidak boleh lebih dari batas maksimum (${m.doseMaxLimit}).',
-          );
-          if (setOnPreview) {
-            previewState.value = UiFailure(failure);
-          } else {
-            submitState.value = UiFailure(failure);
-          }
-          return false;
+          return 'Dosis untuk ${m.title} tidak boleh lebih dari batas maksimum (${m.doseMaxLimit}).';
+        }
+        // Chemical: SPK dose required
+        if (m.spkDoseUsage.value <= 0) {
+          return 'Dosis SPK untuk ${m.title} harus lebih dari 0.';
         }
       } else if (m.kind == 2) {
         // Tool
         if (m.doseUsage.value <= 0) {
-          final failure = UnknownFailure(
-            'Qty untuk ${m.title} harus lebih dari 0.',
-          );
-          if (setOnPreview) {
-            previewState.value = UiFailure(failure);
-          } else {
-            submitState.value = UiFailure(failure);
-          }
-          return false;
+          return 'Qty untuk ${m.title} harus lebih dari 0.';
         }
         final units = m.installedUnits.value;
         if (units == null || units <= 0) {
-          final failure = UnknownFailure(
-            'Jumlah unit terpasang untuk ${m.title} wajib diisi (> 0).',
-          );
-          if (setOnPreview) {
-            previewState.value = UiFailure(failure);
-          } else {
-            submitState.value = UiFailure(failure);
-          }
-          return false;
+          return 'Jumlah unit terpasang untuk ${m.title} wajib diisi (> 0).';
         }
       }
     }
     for (final w in workers) {
       if (w.firstVisitMinutes.value < 0 || w.routineMinutes.value < 0) {
-        const failure = UnknownFailure('Menit kerja tidak boleh negatif.');
-        if (setOnPreview) {
-          previewState.value = const UiFailure<PricingPreview>(failure);
-        } else {
-          submitState.value = const UiFailure<void>(failure);
-        }
-        return false;
+        return 'Menit kerja tidak boleh negatif.';
       }
+    }
+    for (final item in items) {
+      if (item.kind == 0 && item.title.value.trim().isEmpty) {
+        return 'Nama item kustom tidak boleh kosong.';
+      }
+    }
+    return null;
+  }
+
+  bool _validateInputs({required bool setOnPreview}) {
+    final err = validateInputs();
+    if (err != null) {
+      final failure = UnknownFailure(err);
+      if (setOnPreview) {
+        previewState.value = UiFailure<PricingPreview>(failure);
+      } else {
+        submitState.value = UiFailure<void>(failure);
+      }
+      return false;
     }
     return true;
   }
 
-  CreatePricingRequestDto _buildRequest() {
+  CreatePricingRequestDto buildRequest() {
     final supplyDtos = supplies
         .map(
           (m) => PricingSupplyDto(
@@ -401,6 +450,7 @@ class PricingCalculatorController {
                 : m.areaKerja.value.trim(),
             note: m.note.value.trim().isEmpty ? null : m.note.value.trim(),
             installedUnits: m.kind == 2 ? m.installedUnits.value : null,
+            spkDoseUsage: m.kind == 1 ? m.spkDoseUsage.value : null,
           ),
         )
         .toList();
@@ -419,12 +469,12 @@ class PricingCalculatorController {
     final itemDtos = items
         .map(
           (i) => PricingItemDto(
-            itemType: i.kind == 5 ? 2 : 1,
-            productId: i.id,
-            name: i.title,
+            itemType: (i.kind == 5 || i.kind == 0) ? 2 : 1,
+            productId: i.kind == 0 ? null : (i.id.isNotEmpty ? i.id : null),
+            name: i.title.value,
             qty: i.qty.value,
             frequency: i.freq.value.round(),
-            unitPrice: i.kind == 5 ? i.unitPrice.value : null,
+            unitPrice: (i.kind == 5 || i.kind == 0) ? i.unitPrice.value : null,
           ),
         )
         .toList();
@@ -437,6 +487,7 @@ class PricingCalculatorController {
       markupValue: markupPercent.value,
       discountAmount: discountAmount.value,
       taxPercentage: taxPercentage.value,
+      scheduleWorkOrderType: _scheduleWorkOrderType.value,
       supplies: supplyDtos,
       workers: workerDtos,
       items: itemDtos,
@@ -448,10 +499,7 @@ class PricingCalculatorController {
     await Future<void>.delayed(Duration.zero);
     if (!_validateInputs(setOnPreview: true)) return;
     previewState.value = const UiLoading();
-    final result = await _repository.previewPricing(
-      proposalId,
-      _buildRequest(),
-    );
+    final result = await _repository.previewPricing(proposalId, buildRequest());
     previewState.value = switch (result) {
       Ok(:final value) => UiSuccess(value),
       Err(:final failure) => UiFailure(failure),
@@ -471,6 +519,7 @@ class PricingCalculatorController {
       markupPercent.value = data.markupValue;
       discountAmount.value = data.discountAmount;
       taxPercentage.value = data.taxPercentage;
+      _scheduleWorkOrderType.value = data.scheduleWorkOrderType;
 
       supplies.clear();
       for (final s in data.supplies) {
@@ -478,16 +527,23 @@ class PricingCalculatorController {
           PricingSupplyRow(
             id: s.productId ?? s.id,
             title: s.name,
-            code: '',
+            code: s.code,
             uomCode: s.uomCode,
+            uomName: s.doseUnitName.isNotEmpty
+                ? s.doseUnitName
+                : (s.uomName.isNotEmpty ? s.uomName : s.uomCode),
             kind: s.supplyType,
             initialProductMappingId: s.productMappingId,
             initialDoseUsage: s.doseUsage ?? s.qty,
+            initialSpkDoseUsage:
+                s.actualDosageUsage ?? s.spkDoseUsage ?? (s.doseUsage ?? 1.0),
             initialDoseUnitId: s.doseUnitId,
             initialApplicationVolume: s.applicationVolume ?? 1.0,
             initialApplicationVolumeUnitId: s.applicationVolumeUnitId,
             initialFreq: s.frequency.toDouble(),
             initialTreatmentMethodId: s.treatmentMethodId,
+            initialTreatmentMethodName: s.treatmentMethodName,
+            initialTreatmentMethodCode: s.treatmentMethodCode,
             initialAreaKerja: s.areaKerja,
             initialNote: s.note,
             initialInstalledUnits: s.installedUnits,
@@ -502,7 +558,7 @@ class PricingCalculatorController {
           PricingWorkerRow(
             id: w.productId,
             title: w.positionName,
-            code: '',
+            code: w.code,
             kind: 4,
             initialVisitFreq: (w.visitFrequency ?? 1).toDouble(),
             initialFirstVisitMinutes: w.firstVisitMinutes,
@@ -514,15 +570,20 @@ class PricingCalculatorController {
 
       items.clear();
       for (final i in data.items) {
+        final isCustom =
+            i.itemType == 2 && (i.productId == null || i.productId!.isEmpty);
+        final itemKind = isCustom ? 0 : (i.itemType == 2 ? 5 : 3);
         items.add(
           PricingItemRow(
             id: i.productId ?? i.id,
             title: i.name,
-            code: '',
-            kind: i.itemType == 2 ? 5 : 3,
+            code: i.code,
+            kind: itemKind,
             initialQty: i.qty,
             initialFreq: i.frequency.toDouble(),
-            initialUnitPrice: i.unitPrice ?? 0.0,
+            initialUnitPrice: (i.unitPrice != null && i.unitPrice! > 0)
+                ? i.unitPrice!
+                : (i.unitCost > 0 ? i.unitCost : 0.0),
           ),
         );
       }
@@ -539,7 +600,7 @@ class PricingCalculatorController {
     await Future<void>.delayed(Duration.zero);
     if (!_validateInputs(setOnPreview: false)) return;
     submitState.value = const UiLoading();
-    final result = await _repository.savePricing(proposalId, _buildRequest());
+    final result = await _repository.savePricing(proposalId, buildRequest());
     submitState.value = switch (result) {
       Ok(:final value) => UiSuccess(value),
       Err(:final failure) => UiFailure(failure),
@@ -569,6 +630,7 @@ class PricingCalculatorController {
     markupType.dispose();
     discountAmount.dispose();
     taxPercentage.dispose();
+    _scheduleWorkOrderType.dispose();
     previewState.dispose();
     submitState.dispose();
     existingPricingState.dispose();

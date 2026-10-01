@@ -3,6 +3,7 @@ import 'package:centrow_sales/shared/result/result.dart';
 import 'package:centrow_sales/shared/state/ui_state.dart';
 import 'package:centrow_sales/modules/sales/entities/contract_addendum.dart';
 import 'package:centrow_sales/modules/sales/repositories/contract_addendum_repository.dart';
+import 'package:centrow_sales/modules/sales/repositories/dtos/contract_addendum_dto.dart';
 
 class ContractAddendumController {
   final ContractAddendumRepository _repository;
@@ -35,16 +36,11 @@ class ContractAddendumController {
   }
 
   Future<Result<ContractAddendum>> createAddendum(
-    String contractId, {
-    required int visitDelta,
-    String? reason,
-  }) async {
+    String contractId,
+    CreateContractAddendumRequestDto request,
+  ) async {
     _createState.value = const UiLoading();
-    final result = await _repository.createAddendum(
-      contractId,
-      visitDelta: visitDelta,
-      reason: reason,
-    );
+    final result = await _repository.createAddendum(contractId, request);
     if (_isDisposed) return result;
     _createState.value = switch (result) {
       Ok(:final value) => UiSuccess<ContractAddendum>(value),

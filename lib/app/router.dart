@@ -17,6 +17,7 @@ import 'package:centrow_sales/modules/sales/entities/contract.dart';
 import 'package:centrow_sales/modules/sales/views/pages/contract_page.dart';
 import 'package:centrow_sales/modules/sales/views/pages/contract_document_page.dart';
 import 'package:centrow_sales/modules/sales/views/pages/contract_addendum_document_page.dart';
+import 'package:centrow_sales/modules/sales/views/pages/contract_addendum_pricing_page.dart';
 
 GoRouter createRouter({String? initialLocation}) => GoRouter(
   initialLocation: initialLocation ?? '/splash',
@@ -167,6 +168,14 @@ GoRouter createRouter({String? initialLocation}) => GoRouter(
                         ? state.extra as Contract
                         : null,
                   ),
+                ),
+                GoRoute(
+                  path: ':id/addendum',
+                  name: 'contract-addendum-pricing',
+                  builder: (context, state) {
+                    final contract = state.extra as Contract;
+                    return ContractAddendumPricingPage(contract: contract);
+                  },
                 ),
                 GoRoute(
                   path: ':id/addendums/:addendumId/document',

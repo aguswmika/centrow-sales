@@ -5,10 +5,48 @@ import 'package:centrow_sales/modules/sales/controllers/customer_form_controller
 import 'package:centrow_sales/modules/sales/entities/create_customer_input.dart';
 import 'package:centrow_sales/modules/sales/entities/customer.dart';
 import 'package:centrow_sales/modules/sales/entities/segment.dart';
+import 'package:centrow_sales/modules/sales/entities/site_risk.dart';
 import 'package:centrow_sales/modules/sales/repositories/customer_repository.dart';
+import 'package:centrow_sales/modules/sales/repositories/site_risk_repository.dart';
 import 'package:centrow_sales/shared/error/failure.dart';
 import 'package:centrow_sales/shared/result/result.dart';
 import 'package:centrow_sales/shared/state/ui_state.dart';
+
+class FakeSiteRiskRepository implements SiteRiskRepository {
+  List<SiteRiskMaster> masters = [];
+  Map<String, List<CustomerAddressRisk>> addressRisks = {};
+  bool failGetAddressRisks = false;
+  String? lastCustomerId;
+  String? lastAddressId;
+
+  @override
+  Future<Result<List<SiteRiskMaster>>> getSiteRiskMasters() async =>
+      Ok(masters);
+
+  @override
+  Future<Result<List<CustomerAddressRisk>>> getAddressRisks({
+    required String customerId,
+    required String addressId,
+  }) async {
+    lastCustomerId = customerId;
+    lastAddressId = addressId;
+    if (failGetAddressRisks) {
+      return const Err(ServerFailure('Gagal memuat risiko lokasi', 500));
+    }
+    final key = '$customerId:$addressId';
+    return Ok(addressRisks[key] ?? addressRisks[addressId] ?? const []);
+  }
+
+  @override
+  Future<Result<List<CustomerAddressRisk>>> updateAddressRisks({
+    required String customerId,
+    required String addressId,
+    required List<String> siteRiskIds,
+    required List<String> customRisks,
+  }) async {
+    return const Ok([]);
+  }
+}
 
 class FakeRegionRepository implements RegionRepository {
   List<Province> provinces = [];
@@ -90,6 +128,7 @@ class FakeCustomerRepository implements CustomerRepository {
       phone: input.phone,
       phoneAlt: input.phoneAlt,
       email: input.email,
+      taxPercentage: input.taxPercentage,
       riskNotes: input.riskNotes,
       notes: input.notes,
       locations: input.locations
@@ -143,6 +182,7 @@ class FakeCustomerRepository implements CustomerRepository {
       phone: input.phone,
       phoneAlt: input.phoneAlt,
       email: input.email,
+      taxPercentage: input.taxPercentage,
       riskNotes: input.riskNotes,
       notes: input.notes,
       locations: input.locations
@@ -192,11 +232,19 @@ class FakeCustomerRepository implements CustomerRepository {
 void main() {
   group('CustomerFormController', () {
     late FakeCustomerRepository repository;
+    late FakeRegionRepository regionRepository;
+    late FakeSiteRiskRepository siteRiskRepository;
     late CustomerFormController controller;
 
     setUp(() {
       repository = FakeCustomerRepository();
-      controller = CustomerFormController(repository);
+      regionRepository = FakeRegionRepository();
+      siteRiskRepository = FakeSiteRiskRepository();
+      controller = CustomerFormController(
+        repository,
+        regionRepository,
+        siteRiskRepository,
+      );
     });
 
     tearDown(() {
@@ -215,6 +263,7 @@ void main() {
       expect(controller.phone.value, '');
       expect(controller.phoneAlt.value, '');
       expect(controller.email.value, '');
+      expect(controller.taxPercentage.value, 0.0);
       expect(controller.riskNotes.value, '');
       expect(controller.notes.value, '');
 
@@ -267,6 +316,18 @@ void main() {
           villageId: 1,
         ),
       );
+      // SRA is mandatory: still invalid without SRA
+      expect(controller.isPrimaryLocationSraFilled.value, false);
+      expect(controller.isStep2Valid.value, false);
+      expect(controller.nextStep(), false);
+      expect(controller.currentStep.value, 2);
+
+      // Populate SRA on primary location
+      controller.updatePrimaryLocationSra(
+        siteRiskIds: ['sr-1'],
+        customRisks: [],
+      );
+      expect(controller.isPrimaryLocationSraFilled.value, true);
       expect(controller.isStep2Valid.value, true);
 
       // Advance to Step 3
@@ -525,6 +586,7 @@ void main() {
         expect(controller.phone.value, '+62 811 2233 4455');
         expect(controller.phoneAlt.value, '+62 811 2233 4456');
         expect(controller.email.value, 'info@grandhotelbali.com');
+        expect(controller.taxPercentage.value, 0.0);
         expect(controller.riskNotes.value, 'VIP client, high volume');
         expect(controller.notes.value, 'Annual contract renewal every January');
 
@@ -705,15 +767,140 @@ void main() {
       },
     );
 
-    test('isRegionMatch correctly normalizes administrative prefixes', () {
-      expect(isRegionMatch('KAB. BADUNG', 'Badung'), isTrue);
-      expect(isRegionMatch('KABUPATEN BADUNG', 'Badung'), isTrue);
-      expect(isRegionMatch('KOTA DENPASAR', 'Denpasar'), isTrue);
-      expect(isRegionMatch('Kecamatan Kuta', 'Kuta'), isTrue);
-      expect(isRegionMatch('Desa Seminyak', 'Seminyak'), isTrue);
-      expect(isRegionMatch('Kelurahan Kerobokan', 'Kerobokan'), isTrue);
-      expect(isRegionMatch('Denpasar', 'Badung'), isFalse);
-    });
+    test(
+      'isRegionMatch correctly normalizes administrative prefixes, suffixes, casing, and punctuation',
+      () {
+        // Prefixes
+        expect(isRegionMatch('KAB. BADUNG', 'Badung'), isTrue);
+        expect(isRegionMatch('KABUPATEN BADUNG', 'Badung'), isTrue);
+        expect(isRegionMatch('KOTA DENPASAR', 'Denpasar'), isTrue);
+        expect(isRegionMatch('Kotamadya Denpasar', 'Denpasar'), isTrue);
+        expect(
+          isRegionMatch('Kota Adm. Jakarta Selatan', 'Jakarta Selatan'),
+          isTrue,
+        );
+        expect(
+          isRegionMatch('Adm. Kepulauan Seribu', 'Kepulauan Seribu'),
+          isTrue,
+        );
+        expect(isRegionMatch('Kecamatan Kuta', 'Kuta'), isTrue);
+        expect(isRegionMatch('Kec. Kuta', 'Kuta'), isTrue);
+        expect(isRegionMatch('Desa Seminyak', 'Seminyak'), isTrue);
+        expect(isRegionMatch('Kelurahan Kerobokan', 'Kerobokan'), isTrue);
+        expect(isRegionMatch('Kel. Kerobokan', 'Kerobokan'), isTrue);
+
+        // Trailing tokens (city, regency, etc.)
+        expect(isRegionMatch('Denpasar City', 'Denpasar'), isTrue);
+        expect(isRegionMatch('Badung Regency', 'Badung'), isTrue);
+        expect(isRegionMatch('Badung Regency', 'Kab. Badung'), isTrue);
+
+        // Casing and punctuation
+        expect(isRegionMatch('DENPASAR', 'denpasar'), isTrue);
+        expect(isRegionMatch('Kab. Badung', 'Badung'), isTrue);
+        expect(isRegionMatch('Badung (Regency)', 'Badung'), isTrue);
+
+        // Containment matching
+        expect(isRegionMatch('Kota Denpasar', 'Denpasar'), isTrue);
+        expect(isRegionMatch('Denpasar', 'Kota Denpasar'), isTrue);
+        expect(isRegionMatch('Pemerintah Kota Denpasar', 'Denpasar'), isTrue);
+
+        // Negative cases
+        expect(isRegionMatch('Denpasar', 'Badung'), isFalse);
+        expect(isRegionMatch('', 'Denpasar'), isFalse);
+        expect(isRegionMatch('Denpasar', ''), isFalse);
+        expect(isRegionMatch('   ', '   '), isFalse);
+      },
+    );
+
+    test(
+      'loadInitialData populates region names and IDs across all 4 tiers when editing a customer',
+      () async {
+        final regionRepo = FakeRegionRepository()
+          ..provinces = [const Province(id: 51, name: 'BALI')]
+          ..regencies = [const Regency(id: 5103, name: 'KAB. BADUNG')]
+          ..districts = [const District(id: 5103040, name: 'Kecamatan Kuta')]
+          ..villages = [const Village(id: 5103040001, name: 'Desa Seminyak')];
+
+        final ctrl = CustomerFormController(repository, regionRepo);
+
+        // Case A: Customer with only region IDs (empty names)
+        repository.customers.add(
+          const Customer(
+            id: 'cust-ids-only',
+            code: 'CRM-2001',
+            name: 'Villa Legian',
+            initials: 'VL',
+            segment: 'Villa',
+            status: 'active',
+            locations: [
+              CustomerLocation(
+                label: 'Main Office',
+                addressLine: 'Jl. Padma No. 10',
+                provinceId: 51,
+                province: '',
+                regencyId: 5103,
+                regency: '',
+                districtId: 5103040,
+                district: '',
+                villageId: 5103040001,
+                village: '',
+                isPrimary: true,
+              ),
+            ],
+          ),
+        );
+
+        await ctrl.loadInitialData('cust-ids-only');
+
+        expect(ctrl.locations.value.length, 1);
+        final loc = ctrl.locations.value.first;
+        expect(loc.provinceId, 51);
+        expect(loc.province, 'BALI');
+        expect(loc.regencyId, 5103);
+        expect(loc.regency, 'KAB. BADUNG');
+        expect(loc.districtId, 5103040);
+        expect(loc.district, 'Kecamatan Kuta');
+        expect(loc.villageId, 5103040001);
+        expect(loc.village, 'Desa Seminyak');
+
+        // Case B: Customer with region names without IDs (legacy customer data)
+        repository.customers.add(
+          const Customer(
+            id: 'cust-names-only',
+            code: 'CRM-2002',
+            name: 'Villa Seminyak Suite',
+            initials: 'VSS',
+            segment: 'Villa',
+            status: 'active',
+            locations: [
+              CustomerLocation(
+                label: 'Suite 1',
+                addressLine: 'Jl. Kayu Aya No. 20',
+                province: 'Bali',
+                regency: 'Badung',
+                district: 'Kuta',
+                village: 'Seminyak',
+                isPrimary: true,
+              ),
+            ],
+          ),
+        );
+
+        await ctrl.loadInitialData('cust-names-only');
+
+        final loc2 = ctrl.locations.value.first;
+        expect(loc2.provinceId, 51);
+        expect(loc2.province, 'Bali');
+        expect(loc2.regencyId, 5103);
+        expect(loc2.regency, 'Badung');
+        expect(loc2.districtId, 5103040);
+        expect(loc2.district, 'Kuta');
+        expect(loc2.villageId, 5103040001);
+        expect(loc2.village, 'Seminyak');
+
+        ctrl.dispose();
+      },
+    );
 
     test('loadInitialData handles not found gracefully', () async {
       await controller.loadInitialData('non-existent');
@@ -766,5 +953,334 @@ void main() {
         'Gagal memperbarui pelanggan',
       );
     });
+
+    test(
+      'findRegionMatchFromAddress accurately matches segments and full address',
+      () {
+        final regencies = [
+          const Regency(id: 5103, name: 'KABUPATEN BADUNG'),
+          const Regency(id: 5171, name: 'KOTA DENPASAR'),
+        ];
+
+        final match = findRegionMatchFromAddress(
+          items: regencies,
+          nameSelector: (r) => r.name,
+          address:
+              'SMA Negeri 1 Denpasar, Jalan Kamboja, Dangin Puri Kangin, Denpasar Utara, Denpasar, Bali, 80233',
+        );
+
+        expect(match?.id, 5171);
+        expect(match?.name, 'KOTA DENPASAR');
+      },
+    );
+
+    test(
+      'loadInitialData resolves missing regency/district/village from address line',
+      () async {
+        final regionRepo = FakeRegionRepository()
+          ..provinces = [const Province(id: 51, name: 'BALI')]
+          ..regencies = [const Regency(id: 5171, name: 'KOTA DENPASAR')]
+          ..districts = [const District(id: 5171010, name: 'Denpasar Utara')]
+          ..villages = [
+            const Village(id: 5171010001, name: 'Dangin Puri Kangin'),
+          ];
+
+        final ctrl = CustomerFormController(repository, regionRepo);
+
+        // SMA 1 Denpasar has provinceId: 51, but null regency, district, village in DB,
+        // and full address line in addressLine
+        repository.customers.add(
+          const Customer(
+            id: 'cust-sma-1',
+            name: 'SMA 1 Denpasar',
+            code: 'CUST-202609-0002',
+            initials: 'SMA',
+            status: 'active',
+            segment: 'Education',
+            locations: [
+              CustomerLocation(
+                id: 'loc-1',
+                customerId: 'cust-sma-1',
+                isPrimary: true,
+                label: 'SMA Negeri 1 Denpasar',
+                addressLine:
+                    'SMA Negeri 1 Denpasar, Jalan Kamboja, Dangin Puri Kangin, Denpasar Utara, Denpasar, Bali, 80233',
+                provinceId: 51,
+                province: 'BALI',
+                regencyId: null,
+                regency: '',
+                districtId: null,
+                district: '',
+                villageId: null,
+                village: '',
+              ),
+            ],
+            contacts: [],
+          ),
+        );
+
+        await ctrl.loadInitialData('cust-sma-1');
+
+        final loc = ctrl.locations.value.first;
+        expect(loc.provinceId, 51);
+        expect(loc.province, 'BALI');
+        expect(loc.regencyId, 5171);
+        expect(loc.regency, 'KOTA DENPASAR');
+        expect(loc.districtId, 5171010);
+        expect(loc.district, 'Denpasar Utara');
+        expect(loc.villageId, 5171010001);
+        expect(loc.village, 'Dangin Puri Kangin');
+
+        ctrl.dispose();
+      },
+    );
+
+    test('applyMapLocation sets region names and resolves region IDs', () async {
+      final regionRepo = FakeRegionRepository()
+        ..provinces = [const Province(id: 51, name: 'BALI')]
+        ..regencies = [const Regency(id: 5171, name: 'KOTA DENPASAR')]
+        ..districts = [const District(id: 5171010, name: 'Denpasar Utara')]
+        ..villages = [
+          const Village(id: 5171010001, name: 'Dangin Puri Kangin'),
+        ];
+
+      final ctrl = CustomerFormController(repository, regionRepo);
+
+      await ctrl.applyMapLocation(
+        0,
+        -8.65,
+        115.22,
+        'SMA Negeri 1 Denpasar, Jalan Kamboja, Dangin Puri Kangin, Denpasar Utara, Denpasar, Bali, 80233',
+        'Bali',
+        'Denpasar',
+        'Denpasar Utara',
+        'Dangin Puri Kangin',
+      );
+
+      final loc = ctrl.locations.value.first;
+      expect(loc.address, contains('SMA Negeri 1 Denpasar'));
+      expect(loc.latitude, -8.65);
+      expect(loc.longitude, 115.22);
+      expect(loc.provinceId, 51);
+      expect(loc.regencyId, 5171);
+      expect(loc.districtId, 5171010);
+      expect(loc.villageId, 5171010001);
+
+      ctrl.dispose();
+    });
+
+    test(
+      'updatePrimaryLocationSra updates siteRiskIds and customRisks on primary location',
+      () {
+        expect(controller.locations.value.first.siteRiskIds, isEmpty);
+        expect(controller.locations.value.first.customRisks, isEmpty);
+
+        controller.updatePrimaryLocationSra(
+          siteRiskIds: ['sr-1', 'sr-2'],
+          customRisks: ['Sarang Lebah', 'Kabel Terkelupas'],
+        );
+
+        expect(controller.locations.value.first.siteRiskIds, ['sr-1', 'sr-2']);
+        expect(controller.locations.value.first.customRisks, [
+          'Sarang Lebah',
+          'Kabel Terkelupas',
+        ]);
+      },
+    );
+
+    test('updatePrimaryLocationSra does nothing if locations is empty', () {
+      controller.locations.value = [];
+      controller.updatePrimaryLocationSra(
+        siteRiskIds: ['sr-1'],
+        customRisks: ['Hazard'],
+      );
+      expect(controller.locations.value, isEmpty);
+      expect(controller.isPrimaryLocationSraFilled.value, false);
+    });
+
+    test(
+      'isPrimaryLocationSraFilled returns true if master risks or custom risks exist on primary location',
+      () {
+        expect(controller.isPrimaryLocationSraFilled.value, false);
+
+        // Master risk only
+        controller.updatePrimaryLocationSra(
+          siteRiskIds: ['sr-1'],
+          customRisks: [],
+        );
+        expect(controller.isPrimaryLocationSraFilled.value, true);
+
+        // Custom risk only
+        controller.updatePrimaryLocationSra(
+          siteRiskIds: [],
+          customRisks: ['Lantai basah berkala'],
+        );
+        expect(controller.isPrimaryLocationSraFilled.value, true);
+
+        // Both
+        controller.updatePrimaryLocationSra(
+          siteRiskIds: ['sr-1'],
+          customRisks: ['Lantai basah berkala'],
+        );
+        expect(controller.isPrimaryLocationSraFilled.value, true);
+
+        // Empty again
+        controller.updatePrimaryLocationSra(siteRiskIds: [], customRisks: []);
+        expect(controller.isPrimaryLocationSraFilled.value, false);
+      },
+    );
+
+    test(
+      'loadInitialData pre-populates siteRiskIds and customRisks from primary address risks',
+      () async {
+        const customer = Customer(
+          id: 'cust-sra-1',
+          code: 'CUST-001',
+          name: 'Villa Kemangi',
+          initials: 'VK',
+          segmentId: 'seg-1',
+          segment: 'Villa',
+          status: 'active',
+          taxPercentage: 11.0,
+          locations: [
+            CustomerLocation(
+              id: 'addr-001',
+              label: 'Main Villa',
+              addressLine: 'Jl. Kemangi No. 1',
+              isPrimary: true,
+            ),
+            CustomerLocation(
+              id: 'addr-002',
+              label: 'Staff Quarter',
+              addressLine: 'Jl. Kemangi No. 2',
+              isPrimary: false,
+            ),
+          ],
+        );
+        repository.customers.add(customer);
+        siteRiskRepository.addressRisks['cust-sra-1:addr-001'] = [
+          const CustomerAddressRisk(
+            id: 'car-1',
+            siteRiskId: 'sr-wet',
+            name: 'Lantai Basah',
+            isCustom: false,
+          ),
+          const CustomerAddressRisk(
+            id: 'car-2',
+            siteRiskId: 'sr-chem',
+            name: 'Bahan Kimia',
+            isCustom: false,
+          ),
+          const CustomerAddressRisk(
+            id: 'car-3',
+            name: 'Atap Bocor Dekat Panel Listrik',
+            isCustom: true,
+          ),
+        ];
+
+        await controller.loadInitialData('cust-sra-1');
+
+        expect(controller.taxPercentage.value, 11.0);
+        expect(siteRiskRepository.lastCustomerId, 'cust-sra-1');
+        expect(siteRiskRepository.lastAddressId, 'addr-001');
+
+        final primaryLoc = controller.locations.value.first;
+        expect(primaryLoc.siteRiskIds, ['sr-wet', 'sr-chem']);
+        expect(primaryLoc.customRisks, ['Atap Bocor Dekat Panel Listrik']);
+
+        // Secondary location should NOT have primary's risks
+        final secondaryLoc = controller.locations.value[1];
+        expect(secondaryLoc.siteRiskIds, isEmpty);
+        expect(secondaryLoc.customRisks, isEmpty);
+      },
+    );
+
+    test(
+      'loadInitialData handles empty address risks and errors gracefully',
+      () async {
+        const customer = Customer(
+          id: 'cust-sra-2',
+          code: 'CUST-002',
+          name: 'Resto Segar',
+          initials: 'RS',
+          segmentId: 'seg-2',
+          segment: 'F&B',
+          status: 'active',
+          locations: [
+            CustomerLocation(
+              id: 'addr-002',
+              label: 'Resto',
+              addressLine: 'Jl. Segar No. 2',
+              isPrimary: true,
+            ),
+          ],
+        );
+        repository.customers.add(customer);
+
+        // Address risks not populated -> returns empty list
+        await controller.loadInitialData('cust-sra-2');
+
+        expect(controller.locations.value.first.siteRiskIds, isEmpty);
+        expect(controller.locations.value.first.customRisks, isEmpty);
+
+        // When getAddressRisks fails with error
+        siteRiskRepository.failGetAddressRisks = true;
+        await controller.loadInitialData('cust-sra-2');
+        // Controller should still load customer name, code, etc. without throwing
+        expect(controller.name.value, 'Resto Segar');
+        expect(controller.locations.value.first.siteRiskIds, isEmpty);
+        expect(controller.locations.value.first.customRisks, isEmpty);
+      },
+    );
+
+    test(
+      'taxPercentage is populated from customer detail and passed to CreateCustomerInput',
+      () async {
+        expect(controller.taxPercentage.value, 0.0);
+
+        // 1. In submit() during create
+        controller.name.value = 'PT Maju Bersama';
+        controller.code.value = 'CUST-TAX';
+        controller.segmentId.value = 'seg-1';
+        controller.phone.value = '08123456789';
+        controller.taxPercentage.value = 12.0;
+
+        await controller.submit();
+        expect(repository.customers.isNotEmpty, true);
+        final created = repository.customers.firstWhere(
+          (c) => c.name == 'PT Maju Bersama',
+        );
+        expect(created.taxPercentage, 12.0);
+
+        // 2. Populated via loadInitialData and updated on submit
+        const existing = Customer(
+          id: 'cust-tax-edit',
+          code: 'CUST-TAX-EDIT',
+          name: 'CV Makmur',
+          initials: 'CM',
+          segmentId: 'seg-1',
+          segment: 'General',
+          status: 'active',
+          taxPercentage: 11.0,
+          locations: [
+            CustomerLocation(
+              id: 'loc-tax-1',
+              label: 'Kantor',
+              addressLine: 'Jl. Makmur No. 1',
+              isPrimary: true,
+            ),
+          ],
+        );
+        repository.customers.add(existing);
+
+        await controller.loadInitialData('cust-tax-edit');
+        expect(controller.taxPercentage.value, 11.0);
+
+        // Modify taxPercentage and submit
+        controller.taxPercentage.value = 12.5;
+        await controller.submit();
+        expect(repository.lastUpdatedInput?.taxPercentage, 12.5);
+      },
+    );
   });
 }

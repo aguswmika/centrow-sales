@@ -5,6 +5,7 @@ import 'package:centrow_sales/shared/theme/app_radius.dart';
 import 'package:centrow_sales/modules/sales/controllers/pricing_calculator_controller.dart';
 import 'package:centrow_sales/modules/sales/entities/product.dart';
 import 'package:centrow_sales/modules/sales/views/widgets/product_picker_sheet.dart';
+import 'package:centrow_sales/shared/widgets/counter_input.dart';
 import 'pricing_utils.dart';
 
 class PricingWorkerTab extends StatelessWidget {
@@ -41,10 +42,10 @@ class PricingWorkerTab extends StatelessWidget {
                 'Posisi & Peran Teknisi',
                 'Kunjungan',
                 'Menit Awal',
-                'Menit Rutin',
+                'Menit Routine',
                 '',
               ],
-              flexes: const [4, 1, 1, 1],
+              flexes: const [4, 2, 2, 2],
             ),
             for (final row in rows)
               PricingWorkerRowWidget(
@@ -89,92 +90,113 @@ class PricingWorkerRowWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      decoration: const BoxDecoration(
-        color: AppColors.surface,
-        border: Border(bottom: BorderSide(color: AppColors.border)),
-      ),
-      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 10.0),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          Expanded(
-            flex: 4,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 8.0,
-                    vertical: 3.0,
-                  ),
-                  decoration: BoxDecoration(
-                    color: AppColors.brand05,
-                    border: Border.all(color: AppColors.brand10),
-                    borderRadius: AppRadius.borderSm,
-                  ),
-                  child: Text(
-                    row.code,
-                    style: const TextStyle(
-                      fontSize: 11.0,
-                      fontWeight: FontWeight.w600,
-                      color: AppColors.brand,
+    return SignalBuilder(
+      builder: (context) {
+        return Container(
+          decoration: const BoxDecoration(
+            color: AppColors.surface,
+            border: Border(bottom: BorderSide(color: AppColors.border)),
+          ),
+          padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 10.0),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              Expanded(
+                flex: 4,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    if (row.code.isNotEmpty) ...[
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 8.0,
+                          vertical: 3.0,
+                        ),
+                        decoration: BoxDecoration(
+                          color: AppColors.brand05,
+                          border: Border.all(color: AppColors.brand10),
+                          borderRadius: AppRadius.borderSm,
+                        ),
+                        child: Text(
+                          row.code,
+                          style: const TextStyle(
+                            fontSize: 11.0,
+                            fontWeight: FontWeight.w600,
+                            color: AppColors.brand,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 4.0),
+                    ],
+                    Text(
+                      row.title,
+                      style: const TextStyle(
+                        fontSize: 14.0,
+                        fontWeight: FontWeight.w600,
+                        color: AppColors.text,
+                      ),
                     ),
-                  ),
+                  ],
                 ),
-                const SizedBox(height: 4.0),
-                Text(
-                  row.title,
-                  style: const TextStyle(
-                    fontSize: 14.0,
-                    fontWeight: FontWeight.w600,
-                    color: AppColors.text,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(width: 8.0),
-          Expanded(
-            flex: 1,
-            child: buildInput(row.visitFreq.value.toString(), (val) {
-              row.visitFreq.value = double.tryParse(val) ?? 0.0;
-            }, enabled: !isReadOnly),
-          ),
-          const SizedBox(width: 8.0),
-          Expanded(
-            flex: 1,
-            child: buildInput(row.firstVisitMinutes.value.toString(), (val) {
-              row.firstVisitMinutes.value = double.tryParse(val) ?? 0.0;
-            }, enabled: !isReadOnly),
-          ),
-          const SizedBox(width: 8.0),
-          Expanded(
-            flex: 1,
-            child: buildInput(row.routineMinutes.value.toString(), (val) {
-              row.routineMinutes.value = double.tryParse(val) ?? 0.0;
-            }, enabled: !isReadOnly),
-          ),
-          const SizedBox(width: 16.0),
-          if (!isReadOnly)
-            SizedBox(
-              width: 30.0,
-              height: 30.0,
-              child: IconButton(
-                icon: const Icon(
-                  Icons.close_rounded,
-                  color: AppColors.muted,
-                  size: 18.0,
-                ),
-                onPressed: () {
-                  controller.workers.remove(row);
-                },
               ),
-            )
-          else
-            const SizedBox(width: 30.0),
-        ],
-      ),
+              const SizedBox(width: 8.0),
+              Expanded(
+                flex: 2,
+                child: CounterInput(
+                  initialValue: row.visitFreq.value,
+                  min: 1,
+                  enabled: !isReadOnly,
+                  onChanged: (val) {
+                    row.visitFreq.value = val;
+                  },
+                ),
+              ),
+              const SizedBox(width: 8.0),
+              Expanded(
+                flex: 2,
+                child: CounterInput(
+                  initialValue: row.firstVisitMinutes.value,
+                  min: 0,
+                  enabled: !isReadOnly,
+                  onChanged: (val) {
+                    row.firstVisitMinutes.value = val;
+                  },
+                ),
+              ),
+              const SizedBox(width: 8.0),
+              Expanded(
+                flex: 2,
+                child: CounterInput(
+                  initialValue: row.routineMinutes.value,
+                  min: 0,
+                  enabled: !isReadOnly,
+                  onChanged: (val) {
+                    row.routineMinutes.value = val;
+                  },
+                ),
+              ),
+              const SizedBox(width: 8.0),
+              if (!isReadOnly)
+                SizedBox(
+                  width: 30.0,
+                  height: 30.0,
+                  child: IconButton(
+                    icon: const Icon(
+                      Icons.close_rounded,
+                      color: AppColors.muted,
+                      size: 18.0,
+                    ),
+                    onPressed: () {
+                      controller.workers.remove(row);
+                    },
+                  ),
+                )
+              else
+                const SizedBox(width: 30.0),
+            ],
+          ),
+        );
+      },
     );
   }
 }

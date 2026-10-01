@@ -41,6 +41,8 @@ import 'package:centrow_sales/modules/sales/repositories/contract_document_repos
 import 'package:centrow_sales/modules/sales/repositories/contract_addendum_repository.dart';
 import 'package:centrow_sales/modules/sales/controllers/contract_addendum_document_controller.dart';
 import 'package:centrow_sales/modules/sales/repositories/contract_addendum_document_repository.dart';
+import 'package:centrow_sales/modules/sales/repositories/site_risk_repository.dart';
+import 'package:centrow_sales/modules/sales/controllers/site_risk_controller.dart';
 
 final GetIt getIt = GetIt.instance;
 
@@ -104,6 +106,9 @@ Future<void> setupDi({LocalStorage? storage}) async {
   getIt.registerLazySingleton<UomRepository>(
     () => UomRepositoryImpl(getIt<Dio>()),
   );
+  getIt.registerLazySingleton<SiteRiskRepository>(
+    () => SiteRiskRepositoryImpl(getIt<Dio>()),
+  );
 
   // Controllers
   getIt.registerFactory<SplashController>(
@@ -125,6 +130,7 @@ Future<void> setupDi({LocalStorage? storage}) async {
     () => CustomerFormController(
       getIt<CustomerRepository>(),
       getIt<RegionRepository>(),
+      getIt<SiteRiskRepository>(),
     ),
   );
   getIt.registerFactory<ProposalController>(
@@ -190,5 +196,8 @@ Future<void> setupDi({LocalStorage? storage}) async {
     () => ContractAddendumDocumentController(
       getIt<ContractAddendumDocumentRepository>(),
     ),
+  );
+  getIt.registerFactory<SiteRiskController>(
+    () => SiteRiskController(getIt<SiteRiskRepository>()),
   );
 }

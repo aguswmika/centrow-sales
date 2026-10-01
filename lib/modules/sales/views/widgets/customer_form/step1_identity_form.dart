@@ -99,6 +99,31 @@ class Step1IdentityForm extends StatelessWidget {
                   onChanged: (v) => controller.npwp.value = v,
                 ),
                 const SizedBox(height: 16.0),
+                _buildTextField(
+                  label: 'Pajak Pertambahan Nilai (PPN)',
+                  hint: '11',
+                  keyboardType: const TextInputType.numberWithOptions(
+                    decimal: true,
+                  ),
+                  suffix: Text(
+                    '%',
+                    style: GoogleFonts.inter(
+                      fontSize: 14.0,
+                      fontWeight: FontWeight.w600,
+                      color: AppColors.sec,
+                    ),
+                  ),
+                  value: controller.taxPercentage.value > 0
+                      ? (controller.taxPercentage.value % 1 == 0
+                            ? controller.taxPercentage.value.toInt().toString()
+                            : controller.taxPercentage.value.toString())
+                      : '',
+                  onChanged: (v) {
+                    final val = double.tryParse(v.trim()) ?? 0.0;
+                    controller.taxPercentage.value = val;
+                  },
+                ),
+                const SizedBox(height: 16.0),
                 _buildFieldRow(
                   context,
                   left: _buildTextField(
@@ -135,7 +160,7 @@ class Step1IdentityForm extends StatelessWidget {
               title: 'Catatan Internal & Risiko',
               children: [
                 _buildTextField(
-                  label: 'Site Risk Assessment',
+                  label: 'Catatan Risiko Internal',
                   hint:
                       'Catatan kredit, komplain sebelumnya, atau syarat termin khusus…',
                   maxLines: 3,
@@ -328,6 +353,8 @@ class Step1IdentityForm extends StatelessWidget {
     int maxLines = 1,
     TextInputType? keyboardType,
     required ValueChanged<String> onChanged,
+    Widget? suffix,
+    Widget? suffixIcon,
   }) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -375,6 +402,8 @@ class Step1IdentityForm extends StatelessWidget {
               fontSize: 14.0,
               color: AppColors.muted,
             ),
+            suffix: suffix,
+            suffixIcon: suffixIcon,
             contentPadding: EdgeInsets.symmetric(
               horizontal: 14.0,
               vertical: maxLines > 1 ? 12.0 : 10.0,

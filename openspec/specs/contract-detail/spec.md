@@ -22,31 +22,12 @@ The system SHALL allow users to clear or reset the optional first invoice date f
 - **WHEN** user taps the clear button on the "Tanggal Invoice Pertama" field
 - **THEN** the field is cleared and the underlying controller updates `firstInvoiceDate` to null or empty
 
-### Requirement: Display schedule cycle in contract detail visit frequency
-The system SHALL display the contract's schedule cycle in the visit frequency section of the contract detail pane to distinguish between monthly and yearly visit allowances.
+### Requirement: Display contract total visits in contract detail
+The system SHALL display the contract's total visit count in the contract detail pane under "TOTAL KUNJUNGAN" as a total count without cycle suffixes.
 
-#### Scenario: Contract has monthly schedule cycle
-- **WHEN** user views the contract detail pane for a contract whose schedule cycle is Monthly (Bulanan) and has a populated `totalVisits`
-- **THEN** the system displays the label "FREK. KUNJUNGAN (BULANAN)" with the formatted visit count (e.g. "4x / bulan" or "4x")
-
-#### Scenario: Contract has yearly schedule cycle
-- **WHEN** user views the contract detail pane for a contract whose schedule cycle is Yearly (Tahunan) and has a populated `totalVisits`
-- **THEN** the system displays the label "FREK. KUNJUNGAN (TAHUNAN)" with the formatted visit count (e.g. "12x / tahun" or "12x")
-
-#### Scenario: Contract has unknown or unspecified schedule cycle
-- **WHEN** user views the contract detail pane for a contract where `scheduleCycle` is null or unspecified and has a populated `totalVisits`
-- **THEN** the system falls back to displaying "TOTAL KUNJUNGAN" with the visit count (e.g. "12x")
-
-### Requirement: Display schedule cycle in contract category selection
-The system SHALL display the schedule cycle designation when presenting contract categories in the contract creation and editing form.
-
-#### Scenario: Category list item shows schedule cycle
-- **WHEN** user opens the contract category selector in the contract form bottom sheet
-- **THEN** each category option clearly indicates its schedule cycle ("Bulanan" vs "Tahunan")
-
-#### Scenario: Category selected in creation form updates contextual guidance
-- **WHEN** user selects a category in the contract form bottom sheet
-- **THEN** the helper text reflects whether the visit frequency inherited from proposal pricing represents a monthly recurring visit count or a full-term yearly visit count
+#### Scenario: Viewing contract total visits
+- **WHEN** user views a contract detail pane for a contract with a populated `totalVisits`
+- **THEN** the system displays the label "TOTAL KUNJUNGAN" with the formatted visit count (e.g. "12x")
 
 ### Requirement: Display contract addendum history in contract detail
 The system SHALL display an addendum history section or tab within the contract detail pane when viewing an existing contract.
@@ -57,10 +38,10 @@ The system SHALL display an addendum history section or tab within the contract 
 
 #### Scenario: Contract has no addendum history
 - **WHEN** user views the detail pane for a contract with zero addendums
-- **THEN** the addendum section displays an empty state or indicates that no addendums have been created
+- **THEN** the addendum section displays an empty state or indicates that no addendums have been recorded
 
 ### Requirement: Provide addendum creation action for active contracts
-The system SHALL provide an action in the contract detail pane to create an addendum whenever the selected contract is in active status.
+The system SHALL provide an action in the contract detail pane to create an addendum whenever the selected contract is in active status, opening the addendum pricing workflow.
 
 #### Scenario: Active contract displays addendum action
 - **WHEN** user views an active contract (`status == active`) in the detail pane
@@ -72,5 +53,39 @@ The system SHALL provide an action in the contract detail pane to create an adde
 
 #### Scenario: Addendum creation opens form sheet
 - **WHEN** user clicks the create addendum action
-- **THEN** the system opens the addendum bottom sheet preloaded with the contract's current visit count and value
+- **THEN** the system initiates the addendum pricing workflow preloaded with the contract's baseline pricing configuration
+
+### Requirement: Automated contract end date upon proposal conversion
+The system SHALL omit manual end date input when creating a contract from an accepted proposal, relying on server-side derivation from the proposal pricing duration (`contract_months`).
+
+#### Scenario: Creating a contract from an accepted proposal
+- **WHEN** user opens the contract creation form from an accepted proposal
+- **THEN** the system does not present a manual editable end date field and displays helper information that end date is calculated automatically from the proposal pricing duration
+
+#### Scenario: Submitting proposal conversion
+- **WHEN** user submits the proposal conversion form with required fields (category, start date, signed date, payment type, notes, contract template)
+- **THEN** the system dispatches the conversion request omitting `end_date` from the request payload
+
+### Requirement: In-place draft contract editing
+The system SHALL allow editing editable contract fields including optional end date for contracts in draft status, while permanently locking the contract template selection.
+
+#### Scenario: Editing a draft contract
+- **WHEN** user opens the edit form for a contract with `draft` status
+- **THEN** the system presents an editable optional end date field and does not show the contract template selector
+
+#### Scenario: Submitting draft contract updates
+- **WHEN** user submits updates to a draft contract
+- **THEN** the system dispatches the update request with `category_id`, `start_date`, `signed_date`, `payment_type_id`, `notes`, optional `end_date`, and optional `first_invoice_date`, and omits `contract_template_id` from the payload
+
+### Requirement: Display schedule work order type in contract detail
+The system SHALL parse and display the schedule work order type (`1` for Routine, `2` for Station) when viewing a contract's details in the sales app.
+
+#### Scenario: Contract has Routine work order type
+- **WHEN** user views a contract whose current pricing specifies Routine schedule work order type (`1`)
+- **THEN** the contract detail pane displays the work order type badge or label as "Routine"
+
+#### Scenario: Contract has Station work order type
+- **WHEN** user views a contract whose current pricing specifies Station schedule work order type (`2`)
+- **THEN** the contract detail pane displays the work order type badge or label as "Station"
+
 

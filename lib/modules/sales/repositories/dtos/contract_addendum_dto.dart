@@ -1,4 +1,5 @@
 import 'package:centrow_sales/modules/sales/entities/contract_addendum.dart';
+import 'package:centrow_sales/modules/sales/repositories/dtos/pricing_dto.dart';
 
 class ContractAddendumDto {
   final String id;
@@ -108,5 +109,70 @@ class ContractAddendumDto {
     if (reason != null) 'reason': reason,
     if (createdBy != null) 'created_by': createdBy,
     if (createdAt != null) 'created_at': createdAt,
+  };
+}
+
+class CreateContractAddendumRequestDto {
+  final int contractMonths;
+  final int visitFrequency;
+  final int totalVisits;
+  final int markupType;
+  final double markupValue;
+  final double discountAmount;
+  final double taxPercentage;
+  final List<PricingSupplyDto> supplies;
+  final List<PricingWorkerDto> workers;
+  final List<PricingItemDto> items;
+  final String? reason;
+  final int scheduleWorkOrderType;
+
+  const CreateContractAddendumRequestDto({
+    required this.contractMonths,
+    required this.visitFrequency,
+    required this.totalVisits,
+    required this.markupType,
+    required this.markupValue,
+    required this.discountAmount,
+    required this.taxPercentage,
+    required this.supplies,
+    required this.workers,
+    required this.items,
+    this.reason,
+    this.scheduleWorkOrderType = 1,
+  });
+
+  factory CreateContractAddendumRequestDto.fromPricingRequest(
+    CreatePricingRequestDto pricing, {
+    String? reason,
+  }) {
+    return CreateContractAddendumRequestDto(
+      contractMonths: pricing.contractMonths,
+      visitFrequency: pricing.visitFrequency,
+      totalVisits: pricing.totalVisits,
+      markupType: pricing.markupType,
+      markupValue: pricing.markupValue,
+      discountAmount: pricing.discountAmount,
+      taxPercentage: pricing.taxPercentage,
+      supplies: pricing.supplies,
+      workers: pricing.workers,
+      items: pricing.items,
+      reason: reason,
+      scheduleWorkOrderType: pricing.scheduleWorkOrderType,
+    );
+  }
+
+  Map<String, dynamic> toJson() => {
+    'contract_months': contractMonths,
+    'visit_frequency': visitFrequency,
+    'total_visits': totalVisits,
+    'markup_type': markupType,
+    'markup_value': markupValue,
+    'discount_amount': discountAmount,
+    'tax_percentage': taxPercentage,
+    'schedule_work_order_type': scheduleWorkOrderType,
+    'supplies': supplies.map((e) => e.toJson()).toList(),
+    'workers': workers.map((e) => e.toJson()).toList(),
+    'items': items.map((e) => e.toJson()).toList(),
+    if (reason != null && reason!.trim().isNotEmpty) 'reason': reason!.trim(),
   };
 }

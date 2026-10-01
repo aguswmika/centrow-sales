@@ -15,6 +15,8 @@ class CreateLocationInput {
   final double? latitude;
   final double? longitude;
   final bool isPrimary;
+  final List<String> siteRiskIds;
+  final List<String> customRisks;
 
   const CreateLocationInput({
     this.label = '',
@@ -31,6 +33,8 @@ class CreateLocationInput {
     this.latitude,
     this.longitude,
     this.isPrimary = false,
+    this.siteRiskIds = const [],
+    this.customRisks = const [],
   });
 
   CreateLocationInput copyWith({
@@ -48,6 +52,8 @@ class CreateLocationInput {
     double? latitude,
     double? longitude,
     bool? isPrimary,
+    List<String>? siteRiskIds,
+    List<String>? customRisks,
   }) {
     return CreateLocationInput(
       label: label ?? this.label,
@@ -64,6 +70,8 @@ class CreateLocationInput {
       latitude: latitude ?? this.latitude,
       longitude: longitude ?? this.longitude,
       isPrimary: isPrimary ?? this.isPrimary,
+      siteRiskIds: siteRiskIds ?? this.siteRiskIds,
+      customRisks: customRisks ?? this.customRisks,
     );
   }
 
@@ -78,6 +86,8 @@ class CreateLocationInput {
     if (latitude != null) 'latitude': latitude,
     if (longitude != null) 'longitude': longitude,
     'is_primary': isPrimary,
+    if (siteRiskIds.isNotEmpty) 'site_risk_ids': siteRiskIds,
+    if (customRisks.isNotEmpty) 'custom_risks': customRisks,
   };
 
   @override
@@ -98,7 +108,9 @@ class CreateLocationInput {
           areaSize == other.areaSize &&
           latitude == other.latitude &&
           longitude == other.longitude &&
-          isPrimary == other.isPrimary;
+          isPrimary == other.isPrimary &&
+          _listEquals(siteRiskIds, other.siteRiskIds) &&
+          _listEquals(customRisks, other.customRisks);
 
   @override
   int get hashCode => Object.hash(
@@ -116,11 +128,22 @@ class CreateLocationInput {
     latitude,
     longitude,
     isPrimary,
+    Object.hashAll(siteRiskIds),
+    Object.hashAll(customRisks),
   );
 
   @override
   String toString() =>
-      'CreateLocationInput(label: $label, isPrimary: $isPrimary)';
+      'CreateLocationInput(label: $label, isPrimary: $isPrimary, siteRiskIds: $siteRiskIds, customRisks: $customRisks)';
+}
+
+bool _listEquals<T>(List<T> a, List<T> b) {
+  if (identical(a, b)) return true;
+  if (a.length != b.length) return false;
+  for (var i = 0; i < a.length; i++) {
+    if (a[i] != b[i]) return false;
+  }
+  return true;
 }
 
 class CreateContactInput {

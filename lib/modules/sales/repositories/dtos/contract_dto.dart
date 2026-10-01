@@ -116,6 +116,7 @@ class ContractDetailDto {
   final String? notes;
   final String? createdAt;
   final Map<String, dynamic>? sourceProposal;
+  final int? scheduleWorkOrderType;
 
   const ContractDetailDto({
     required this.id,
@@ -143,6 +144,7 @@ class ContractDetailDto {
     this.notes,
     this.createdAt,
     this.sourceProposal,
+    this.scheduleWorkOrderType,
   });
 
   factory ContractDetailDto.fromJson(Map<String, dynamic> json) =>
@@ -173,6 +175,7 @@ class ContractDetailDto {
         createdAt: json['created_at']?.toString(),
         sourceProposal: (json['source_proposal'] as Map?)
             ?.cast<String, dynamic>(),
+        scheduleWorkOrderType: json['schedule_work_order_type'] as int?,
       );
 
   Contract toEntity() {
@@ -202,6 +205,7 @@ class ContractDetailDto {
       createdAt: createdAt,
       sourceProposalId: sp?['id']?.toString(),
       sourceProposalCode: sp?['code']?.toString(),
+      scheduleWorkOrderType: scheduleWorkOrderType,
     );
   }
 }
@@ -321,7 +325,19 @@ class ContractFormRequestDto {
         contractTemplateId: input.contractTemplateId,
       );
 
-  Map<String, dynamic> toJson() => {
+  Map<String, dynamic> toCreateJson() => {
+    'category_id': categoryId,
+    'start_date': startDate,
+    if (firstInvoiceDate != null && firstInvoiceDate!.isNotEmpty)
+      'first_invoice_date': firstInvoiceDate,
+    'signed_date': signedDate,
+    'payment_type_id': paymentTypeId,
+    'notes': notes,
+    if (contractTemplateId != null && contractTemplateId!.isNotEmpty)
+      'contract_template_id': contractTemplateId,
+  };
+
+  Map<String, dynamic> toUpdateJson() => {
     'category_id': categoryId,
     'start_date': startDate,
     if (endDate != null && endDate!.isNotEmpty) 'end_date': endDate,
@@ -330,6 +346,7 @@ class ContractFormRequestDto {
     'signed_date': signedDate,
     'payment_type_id': paymentTypeId,
     'notes': notes,
-    if (contractTemplateId != null) 'contract_template_id': contractTemplateId,
   };
+
+  Map<String, dynamic> toJson() => toCreateJson();
 }

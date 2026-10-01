@@ -6,6 +6,7 @@ class ProductDto {
   final String name;
   final String uomId;
   final String uomCode;
+  final String uomName;
   final double cogs;
   final bool isActive;
 
@@ -15,6 +16,7 @@ class ProductDto {
     required this.name,
     required this.uomId,
     required this.uomCode,
+    this.uomName = '',
     required this.cogs,
     required this.isActive,
   });
@@ -22,7 +24,14 @@ class ProductDto {
   factory ProductDto.fromJson(Map<String, dynamic> json) {
     return ProductDto(
       id: json['id']?.toString() ?? '',
-      code: json['code']?.toString() ?? '',
+      code:
+          (json['code'] ??
+                  json['product_code'] ??
+                  json['productCode'] ??
+                  json['item_code'] ??
+                  json['sku'])
+              ?.toString() ??
+          '',
       name: json['name']?.toString() ?? '',
       uomId: (json['uom_id'] ?? json['uomId'])?.toString() ?? '',
       uomCode:
@@ -30,6 +39,12 @@ class ProductDto {
                   json['uomCode'] ??
                   (json['uom'] is Map ? json['uom']['code'] : null) ??
                   json['uom'])
+              ?.toString() ??
+          '',
+      uomName:
+          (json['uom_name'] ??
+                  json['uomName'] ??
+                  (json['uom'] is Map ? json['uom']['name'] : null))
               ?.toString() ??
           '',
       cogs: (json['cogs'] as num?)?.toDouble() ?? 0.0,
@@ -44,6 +59,7 @@ class ProductDto {
       name: name,
       uomId: uomId,
       uomCode: uomCode,
+      uomName: uomName,
       cogs: cogs,
       isActive: isActive,
       kind: requestedKind,

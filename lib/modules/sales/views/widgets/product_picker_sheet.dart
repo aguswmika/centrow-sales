@@ -270,9 +270,9 @@ class _ProductPickerSheetState extends State<ProductPickerSheet> {
                       ),
                     ),
                   ),
-                if (product.uomCode.isNotEmpty)
+                if (product.uomDisplayName.isNotEmpty)
                   Text(
-                    'Satuan: ${product.uomCode}',
+                    'Satuan: ${product.uomDisplayName}',
                     style: const TextStyle(
                       fontSize: 12.0,
                       color: AppColors.sec,

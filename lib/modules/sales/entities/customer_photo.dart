@@ -6,6 +6,8 @@ class CustomerPhoto {
   final int fileSize;
   final String createdAt;
   final String createdBy;
+  final String title;
+  final String? notes;
 
   const CustomerPhoto({
     required this.id,
@@ -15,6 +17,8 @@ class CustomerPhoto {
     required this.fileSize,
     required this.createdAt,
     required this.createdBy,
+    required this.title,
+    this.notes,
   });
 
   String get sizeLabel {
@@ -38,6 +42,8 @@ class CustomerPhoto {
     int? fileSize,
     String? createdAt,
     String? createdBy,
+    String? title,
+    String? notes,
   }) {
     return CustomerPhoto(
       id: id ?? this.id,
@@ -47,6 +53,8 @@ class CustomerPhoto {
       fileSize: fileSize ?? this.fileSize,
       createdAt: createdAt ?? this.createdAt,
       createdBy: createdBy ?? this.createdBy,
+      title: title ?? this.title,
+      notes: notes ?? this.notes,
     );
   }
 
@@ -61,7 +69,9 @@ class CustomerPhoto {
           mimeType == other.mimeType &&
           fileSize == other.fileSize &&
           createdAt == other.createdAt &&
-          createdBy == other.createdBy;
+          createdBy == other.createdBy &&
+          title == other.title &&
+          notes == other.notes;
 
   @override
   int get hashCode => Object.hash(
@@ -72,9 +82,11 @@ class CustomerPhoto {
     fileSize,
     createdAt,
     createdBy,
+    title,
+    notes,
   );
 
   @override
   String toString() =>
-      'CustomerPhoto(id: $id, originalName: $originalName, mimeType: $mimeType, fileSize: $fileSize)';
+      'CustomerPhoto(id: $id, originalName: $originalName, mimeType: $mimeType, fileSize: $fileSize, title: $title, notes: $notes)';
 }

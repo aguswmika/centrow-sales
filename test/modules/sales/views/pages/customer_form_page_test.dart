@@ -7,10 +7,34 @@ import 'package:centrow_sales/modules/sales/controllers/customer_form_controller
 import 'package:centrow_sales/modules/sales/entities/create_customer_input.dart';
 import 'package:centrow_sales/modules/sales/entities/customer.dart';
 import 'package:centrow_sales/modules/sales/entities/segment.dart';
+import 'package:centrow_sales/modules/sales/entities/site_risk.dart';
 import 'package:centrow_sales/modules/sales/repositories/customer_repository.dart';
+import 'package:centrow_sales/modules/sales/repositories/site_risk_repository.dart';
 import 'package:centrow_sales/modules/sales/views/pages/customer_form_page.dart';
 import 'package:centrow_sales/shared/error/failure.dart';
 import 'package:centrow_sales/shared/result/result.dart';
+
+class FakeSiteRiskRepository implements SiteRiskRepository {
+  @override
+  Future<Result<List<SiteRiskMaster>>> getSiteRiskMasters() async =>
+      const Ok([SiteRiskMaster(id: 'm-1', name: 'Area licin')]);
+
+  @override
+  Future<Result<List<CustomerAddressRisk>>> getAddressRisks({
+    required String customerId,
+    required String addressId,
+  }) async => const Ok([
+    CustomerAddressRisk(id: 'car-1', siteRiskId: 'm-1', name: 'Area licin'),
+  ]);
+
+  @override
+  Future<Result<List<CustomerAddressRisk>>> updateAddressRisks({
+    required String customerId,
+    required String addressId,
+    required List<String> siteRiskIds,
+    required List<String> customRisks,
+  }) async => const Ok([]);
+}
 
 class FakeRegionRepository implements RegionRepository {
   @override
@@ -110,16 +134,23 @@ void main() {
 
     setUp(() {
       repository = FakeCustomerRepository();
-      controller = CustomerFormController(repository);
       if (getIt.isRegistered<RegionRepository>()) {
         getIt.unregister<RegionRepository>();
       }
       getIt.registerSingleton<RegionRepository>(FakeRegionRepository());
+      if (getIt.isRegistered<SiteRiskRepository>()) {
+        getIt.unregister<SiteRiskRepository>();
+      }
+      getIt.registerSingleton<SiteRiskRepository>(FakeSiteRiskRepository());
+      controller = CustomerFormController(repository);
     });
 
     tearDown(() {
       if (getIt.isRegistered<RegionRepository>()) {
         getIt.unregister<RegionRepository>();
+      }
+      if (getIt.isRegistered<SiteRiskRepository>()) {
+        getIt.unregister<SiteRiskRepository>();
       }
     });
 
@@ -182,6 +213,19 @@ void main() {
             districtId: 1,
             villageId: 1,
           ),
+        );
+        await tester.pump();
+
+        // Attempting to advance without SRA stays on Step 2
+        await tester.tap(find.byIcon(Icons.chevron_right).first);
+        await tester.pump();
+        await tester.pump(const Duration(milliseconds: 100));
+        expect(controller.currentStep.value, 2);
+
+        // Populate SRA
+        controller.updatePrimaryLocationSra(
+          siteRiskIds: ['m-1'],
+          customRisks: [],
         );
         await tester.pump();
 
@@ -310,6 +354,7 @@ void main() {
               phone: '+62 811-222-333',
               locations: [
                 CustomerLocation(
+                  id: 'loc-1',
                   label: 'Main Building',
                   addressLine: 'Jl. Raya Nusa Dua',
                   isPrimary: true,
@@ -390,6 +435,7 @@ void main() {
               phone: '+62 811-222-333',
               locations: [
                 CustomerLocation(
+                  id: 'loc-1',
                   label: 'Main Building',
                   addressLine: 'Jl. Raya Nusa Dua',
                   isPrimary: true,

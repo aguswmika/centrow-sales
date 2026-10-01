@@ -48,6 +48,14 @@ class CustomerFormSidebar extends StatelessWidget {
                       controller.primaryLocationSummary.value,
                     ),
                     _buildPreviewRow(
+                      'Site Risk (SRA)',
+                      controller.isPrimaryLocationSraFilled.value
+                          ? 'Terisi'
+                          : 'Wajib diisi',
+                      isStatus: controller.isPrimaryLocationSraFilled.value,
+                      isWarning: !controller.isPrimaryLocationSraFilled.value,
+                    ),
+                    _buildPreviewRow(
                       'PIC Utama',
                       controller.primaryContactName.value,
                     ),
@@ -100,6 +108,10 @@ class CustomerFormSidebar extends StatelessWidget {
                     ),
                     const SizedBox(height: 8.0),
                     _buildGuidanceBullet(
+                      'Site Risk Assessment (SRA) pada titik servis utama wajib dilengkapi.',
+                    ),
+                    const SizedBox(height: 8.0),
+                    _buildGuidanceBullet(
                       'Daftarkan minimal 1 PIC bertindak sebagai Pengambil Keputusan.',
                     ),
                   ],
@@ -145,7 +157,12 @@ class CustomerFormSidebar extends StatelessWidget {
     );
   }
 
-  Widget _buildPreviewRow(String key, String value, {bool isStatus = false}) {
+  Widget _buildPreviewRow(
+    String key,
+    String value, {
+    bool isStatus = false,
+    bool isWarning = false,
+  }) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 4.0),
       child: Row(
@@ -168,7 +185,11 @@ class CustomerFormSidebar extends StatelessWidget {
               style: GoogleFonts.inter(
                 fontSize: 12.0,
                 fontWeight: FontWeight.w600,
-                color: isStatus ? AppColors.ok : AppColors.text,
+                color: isStatus
+                    ? AppColors.ok
+                    : isWarning
+                    ? AppColors.err
+                    : AppColors.text,
               ),
             ),
           ),

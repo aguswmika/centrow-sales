@@ -8,10 +8,9 @@ import 'package:centrow_sales/modules/sales/repositories/dtos/contract_addendum_
 abstract interface class ContractAddendumRepository {
   Future<Result<List<ContractAddendum>>> getAddendums(String contractId);
   Future<Result<ContractAddendum>> createAddendum(
-    String contractId, {
-    required int visitDelta,
-    String? reason,
-  });
+    String contractId,
+    CreateContractAddendumRequestDto request,
+  );
 }
 
 class ContractAddendumRepositoryImpl implements ContractAddendumRepository {
@@ -59,19 +58,13 @@ class ContractAddendumRepositoryImpl implements ContractAddendumRepository {
 
   @override
   Future<Result<ContractAddendum>> createAddendum(
-    String contractId, {
-    required int visitDelta,
-    String? reason,
-  }) async {
+    String contractId,
+    CreateContractAddendumRequestDto request,
+  ) async {
     try {
-      final payload = <String, dynamic>{
-        'visit_delta': visitDelta,
-        if (reason != null && reason.trim().isNotEmpty) 'reason': reason.trim(),
-      };
-
       final response = await _dio.post<dynamic>(
         '/v1/sales/contracts/$contractId/addendums',
-        data: payload,
+        data: request.toJson(),
       );
 
       final dataMap = _extractData(response.data);
@@ -118,7 +111,7 @@ class ContractAddendumRepositoryImpl implements ContractAddendumRepository {
     if (code == 409) {
       return ServerFailure(
         msg ??
-            'Kontrak telah diubah oleh pihak lain. Silakan muat ulang kontrak sebelum mencoba lagi.',
+            'Kontrak telah diubah oleh pengguna lain. Silakan muat ulang dan coba lagi',
         409,
       );
     }

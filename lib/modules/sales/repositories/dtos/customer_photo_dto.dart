@@ -8,6 +8,8 @@ class CustomerPhotoDto {
   final int fileSize;
   final String createdAt;
   final String createdBy;
+  final String title;
+  final String? notes;
 
   const CustomerPhotoDto({
     required this.id,
@@ -17,6 +19,8 @@ class CustomerPhotoDto {
     required this.fileSize,
     required this.createdAt,
     required this.createdBy,
+    required this.title,
+    this.notes,
   });
 
   factory CustomerPhotoDto.fromJson(Map<String, dynamic> json) {
@@ -28,6 +32,8 @@ class CustomerPhotoDto {
       fileSize: (json['file_size'] as num?)?.toInt() ?? 0,
       createdAt: json['created_at']?.toString() ?? '',
       createdBy: json['created_by']?.toString() ?? '',
+      title: json['title']?.toString() ?? '',
+      notes: json['notes']?.toString(),
     );
   }
 
@@ -40,6 +46,8 @@ class CustomerPhotoDto {
       fileSize: fileSize,
       createdAt: createdAt,
       createdBy: createdBy,
+      title: title,
+      notes: notes,
     );
   }
 }

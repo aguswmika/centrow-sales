@@ -36,6 +36,22 @@ class _CounterInputState extends State<CounterInput> {
     _focusNode.addListener(_onFocusChange);
   }
 
+  @override
+  void didUpdateWidget(covariant CounterInput oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.initialValue != oldWidget.initialValue &&
+        widget.initialValue != _value) {
+      _value = widget.initialValue;
+      if (!_focusNode.hasFocus) {
+        final newText = _formatValue(_value);
+        _controller.value = TextEditingValue(
+          text: newText,
+          selection: TextSelection.collapsed(offset: newText.length),
+        );
+      }
+    }
+  }
+
   void _onFocusChange() {
     if (!_focusNode.hasFocus) {
       _clampValue();
@@ -48,7 +64,7 @@ class _CounterInputState extends State<CounterInput> {
     if (clamped < minVal) clamped = minVal;
     if (widget.max != null && clamped > widget.max!) clamped = widget.max!;
 
-    if (clamped != _value) {
+    if (clamped != _value || _controller.text != _formatValue(clamped)) {
       setState(() {
         _value = clamped;
         final newText = _formatValue(_value);
@@ -102,7 +118,7 @@ class _CounterInputState extends State<CounterInput> {
         _CounterButton(
           icon: Icons.remove_rounded,
           color: widget.enabled ? AppColors.err : AppColors.muted,
-          onPressed: widget.enabled ? () => _updateValue(_value - 1) : () {},
+          onPressed: widget.enabled ? () => _updateValue(_value - 1) : null,
         ),
         Expanded(
           child: Container(
@@ -145,7 +161,7 @@ class _CounterInputState extends State<CounterInput> {
         _CounterButton(
           icon: Icons.add_rounded,
           color: widget.enabled ? AppColors.success : AppColors.muted,
-          onPressed: widget.enabled ? () => _updateValue(_value + 1) : () {},
+          onPressed: widget.enabled ? () => _updateValue(_value + 1) : null,
         ),
       ],
     );
@@ -155,7 +171,7 @@ class _CounterInputState extends State<CounterInput> {
 class _CounterButton extends StatelessWidget {
   final IconData icon;
   final Color color;
-  final VoidCallback onPressed;
+  final VoidCallback? onPressed;
 
   const _CounterButton({
     required this.icon,

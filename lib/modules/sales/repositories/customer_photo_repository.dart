@@ -10,7 +10,12 @@ import 'package:centrow_sales/modules/sales/repositories/dtos/customer_photo_dto
 abstract interface class CustomerPhotoRepository {
   Future<Result<List<CustomerPhoto>>> getPhotos(String customerId);
 
-  Future<Result<CustomerPhoto>> uploadPhoto(String customerId, String filePath);
+  Future<Result<CustomerPhoto>> uploadPhoto(
+    String customerId,
+    String filePath, {
+    required String title,
+    String? notes,
+  });
 
   Future<Result<void>> deletePhoto(String customerId, String photoId);
 }
@@ -57,17 +62,24 @@ class CustomerPhotoRepositoryImpl implements CustomerPhotoRepository {
   @override
   Future<Result<CustomerPhoto>> uploadPhoto(
     String customerId,
-    String filePath,
-  ) async {
+    String filePath, {
+    required String title,
+    String? notes,
+  }) async {
     try {
       final compressedPath = await _compressPhoto(filePath);
       final filename = compressedPath.split('/').last;
-      final formData = FormData.fromMap({
+      final map = <String, dynamic>{
         'photo': await MultipartFile.fromFile(
           compressedPath,
           filename: filename,
         ),
-      });
+        'title': title.trim(),
+      };
+      if (notes != null && notes.trim().isNotEmpty) {
+        map['notes'] = notes.trim();
+      }
+      final formData = FormData.fromMap(map);
 
       final response = await _dio.post<dynamic>(
         '/v1/sales/customers/$customerId/photos',

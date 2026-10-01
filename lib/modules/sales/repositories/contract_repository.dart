@@ -86,7 +86,7 @@ class ContractRepositoryImpl implements ContractRepository {
     try {
       final response = await _dio.post<dynamic>(
         '/v1/sales/proposals/$proposalId/contract',
-        data: ContractFormRequestDto.fromInput(input).toJson(),
+        data: ContractFormRequestDto.fromInput(input).toCreateJson(),
       );
       final dataMap = _extractData(response.data);
       if (dataMap == null) {
@@ -110,7 +110,7 @@ class ContractRepositoryImpl implements ContractRepository {
     try {
       final response = await _dio.put<dynamic>(
         '/v1/sales/contracts/$id',
-        data: ContractFormRequestDto.fromInput(input).toJson(),
+        data: ContractFormRequestDto.fromInput(input).toUpdateJson(),
       );
       final dataMap = _extractData(response.data);
       if (dataMap == null) {

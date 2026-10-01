@@ -1,7 +1,7 @@
 abstract final class AppConfig {
   static const String appName = 'Centrow Sales';
   static const String appVersion = '1.0.0';
-  static const bool isProd = false;
+  static const bool isProd = true;
   static const String apiBaseUrl = isProd
       ? 'https://erp.nohama.id/api'
       // : 'http://10.0.2.2:8000/api';

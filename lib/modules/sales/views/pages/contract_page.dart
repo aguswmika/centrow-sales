@@ -16,7 +16,6 @@ import 'package:centrow_sales/modules/sales/entities/contract.dart';
 import 'package:centrow_sales/modules/sales/views/widgets/contract_master_list.dart';
 import 'package:centrow_sales/modules/sales/views/widgets/contract_detail_pane.dart';
 import 'package:centrow_sales/modules/sales/views/widgets/contract_form_bottom_sheet.dart';
-import 'package:centrow_sales/modules/sales/views/widgets/contract_addendum_form_sheet.dart';
 
 class ContractPage extends StatefulWidget {
   final ContractController? controller;
@@ -287,11 +286,10 @@ class _ContractPageState extends State<ContractPage> {
   }
 
   Future<void> _handleAddAddendum(Contract c) async {
-    final result = await showModalBottomSheet<bool>(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (_) => ContractAddendumFormSheet(contract: c),
+    final result = await context.pushNamed<bool>(
+      'contract-addendum-pricing',
+      pathParameters: {'id': c.id},
+      extra: c,
     );
     if (result == true && mounted) {
       showAppToast(context, 'Addendum berhasil dibuat.', isSuccess: true);

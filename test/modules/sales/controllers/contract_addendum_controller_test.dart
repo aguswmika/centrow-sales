@@ -5,6 +5,8 @@ import 'package:centrow_sales/shared/state/ui_state.dart';
 import 'package:centrow_sales/modules/sales/entities/contract_addendum.dart';
 import 'package:centrow_sales/modules/sales/controllers/contract_addendum_controller.dart';
 import 'package:centrow_sales/modules/sales/repositories/contract_addendum_repository.dart';
+import 'package:centrow_sales/modules/sales/repositories/dtos/contract_addendum_dto.dart';
+import 'package:centrow_sales/modules/sales/repositories/dtos/pricing_dto.dart';
 
 class MockContractAddendumRepository implements ContractAddendumRepository {
   Result<List<ContractAddendum>> getAddendumsResult = const Ok([]);
@@ -12,8 +14,7 @@ class MockContractAddendumRepository implements ContractAddendumRepository {
 
   String? lastGetContractId;
   String? lastCreateContractId;
-  int? lastCreateDelta;
-  String? lastCreateReason;
+  CreateContractAddendumRequestDto? lastCreateRequest;
 
   @override
   Future<Result<List<ContractAddendum>>> getAddendums(String contractId) async {
@@ -23,24 +24,22 @@ class MockContractAddendumRepository implements ContractAddendumRepository {
 
   @override
   Future<Result<ContractAddendum>> createAddendum(
-    String contractId, {
-    required int visitDelta,
-    String? reason,
-  }) async {
+    String contractId,
+    CreateContractAddendumRequestDto request,
+  ) async {
     lastCreateContractId = contractId;
-    lastCreateDelta = visitDelta;
-    lastCreateReason = reason;
+    lastCreateRequest = request;
     return createAddendumResult ??
         Ok(
           ContractAddendum(
             id: 'mock-id',
             contractId: contractId,
-            visitDelta: visitDelta,
+            visitDelta: request.totalVisits - 10,
             oldTotalVisits: 10,
-            newTotalVisits: 10 + visitDelta,
+            newTotalVisits: request.totalVisits,
             oldContractValue: 10000000.0,
             newContractValue: 11000000.0,
-            reason: reason,
+            reason: request.reason,
           ),
         );
   }
@@ -111,18 +110,29 @@ void main() {
       expect(failure.message, 'Gagal memuat addendum');
     });
 
+    const sampleRequest = CreateContractAddendumRequestDto(
+      contractMonths: 12,
+      visitFrequency: 2,
+      totalVisits: 24,
+      markupType: 1,
+      markupValue: 10.0,
+      discountAmount: 0.0,
+      taxPercentage: 11.0,
+      supplies: [],
+      workers: [],
+      items: [],
+      reason: 'Penambahan gedung',
+    );
+
     test(
       'createAddendum emits UiSuccess on successful addendum submission',
       () async {
-        final res = await controller.createAddendum(
-          'ctr-1',
-          visitDelta: 3,
-          reason: 'Penambahan gedung',
-        );
+        final res = await controller.createAddendum('ctr-1', sampleRequest);
 
         expect(mockRepo.lastCreateContractId, 'ctr-1');
-        expect(mockRepo.lastCreateDelta, 3);
-        expect(mockRepo.lastCreateReason, 'Penambahan gedung');
+        expect(mockRepo.lastCreateRequest, sampleRequest);
+        expect(mockRepo.lastCreateRequest?.totalVisits, 24);
+        expect(mockRepo.lastCreateRequest?.reason, 'Penambahan gedung');
         expect(res, isA<Ok<ContractAddendum>>());
         expect(
           controller.createState.value,
@@ -134,7 +144,7 @@ void main() {
     test('createAddendum emits UiFailure on error', () async {
       mockRepo.createAddendumResult = const Err(ServerFailure('Conflict', 409));
 
-      final res = await controller.createAddendum('ctr-1', visitDelta: 1);
+      final res = await controller.createAddendum('ctr-1', sampleRequest);
 
       expect(res, isA<Err<ContractAddendum>>());
       expect(controller.createState.value, isA<UiFailure<ContractAddendum>>());
@@ -146,5 +156,36 @@ void main() {
       controller.resetCreateState();
       expect(controller.createState.value, isA<UiInitial<ContractAddendum>>());
     });
+
+    test(
+      'CreateContractAddendumRequestDto.fromPricingRequest copies fields and sets reason',
+      () {
+        const pricing = CreatePricingRequestDto(
+          contractMonths: 6,
+          visitFrequency: 1,
+          totalVisits: 6,
+          markupType: 1,
+          markupValue: 5.0,
+          discountAmount: 10000.0,
+          taxPercentage: 11.0,
+          supplies: [],
+          workers: [],
+          items: [],
+        );
+
+        final req = CreateContractAddendumRequestDto.fromPricingRequest(
+          pricing,
+          reason: 'Alasan penyesuaian',
+        );
+
+        expect(req.contractMonths, 6);
+        expect(req.visitFrequency, 1);
+        expect(req.totalVisits, 6);
+        expect(req.reason, 'Alasan penyesuaian');
+        final json = req.toJson();
+        expect(json['contract_months'], 6);
+        expect(json['reason'], 'Alasan penyesuaian');
+      },
+    );
   });
 }

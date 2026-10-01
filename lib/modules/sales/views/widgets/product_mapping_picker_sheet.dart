@@ -227,9 +227,13 @@ class _ProductMappingPickerSheetState extends State<ProductMappingPickerSheet> {
           const Divider(height: 1.0, color: AppColors.border),
       itemBuilder: (context, index) {
         final mapping = mappings[index];
+        final unitName =
+            (mapping.doseUnitName != null && mapping.doseUnitName!.isNotEmpty)
+            ? mapping.doseUnitName!
+            : mapping.doseUnitCode;
         final doseText = mapping.defaultDose != null
-            ? '${mapping.defaultDose} ${mapping.doseUnitCode}'
-            : '${mapping.doseMinLimit} - ${mapping.doseMaxLimit} ${mapping.doseUnitCode}';
+            ? '${mapping.defaultDose} $unitName'
+            : '${mapping.doseMinLimit} - ${mapping.doseMaxLimit} $unitName';
 
         return ListTile(
           contentPadding: const EdgeInsets.symmetric(
@@ -310,7 +314,7 @@ class _ProductMappingPickerSheetState extends State<ProductMappingPickerSheet> {
                     ),
                   ),
                 ),
-                if (mapping.doseUnitCode.isNotEmpty)
+                if (unitName.isNotEmpty)
                   Text(
                     'Dosis: $doseText',
                     style: const TextStyle(

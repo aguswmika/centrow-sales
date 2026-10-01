@@ -290,7 +290,10 @@ class CustomerDetailPane extends StatelessWidget {
       case 0:
         return CustomerInfoTab(customer: customer);
       case 1:
-        return CustomerLocationsTab(locations: customer.locations);
+        return CustomerLocationsTab(
+          locations: customer.locations,
+          customerId: customer.id,
+        );
       case 2:
         return CustomerContactsTab(contacts: customer.contacts);
       case 3:

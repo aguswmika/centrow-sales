@@ -7,4 +7,5 @@ echo "Watching Flutter project for changes..."
 find "$WATCH_DIR" -type f \
   ! -path "*/.git/*" \
   ! -path "*/build/*" \
+  ! -path "*/openspec/*" \
 | entr -r bash -c 'kill -SIGUSR1 $(pgrep -f "[f]lutter_tool.*run")'

@@ -93,6 +93,7 @@ class Contract {
   final String? createdAt;
   final String? sourceProposalId;
   final String? sourceProposalCode;
+  final int? scheduleWorkOrderType;
 
   const Contract({
     required this.id,
@@ -119,6 +120,7 @@ class Contract {
     this.createdAt,
     this.sourceProposalId,
     this.sourceProposalCode,
+    this.scheduleWorkOrderType,
   });
 
   String get formattedValue => _formatCurrency(contractValue);
@@ -152,6 +154,7 @@ class Contract {
     String? createdAt,
     String? sourceProposalId,
     String? sourceProposalCode,
+    int? scheduleWorkOrderType,
   }) {
     return Contract(
       id: id ?? this.id,
@@ -178,6 +181,8 @@ class Contract {
       createdAt: createdAt ?? this.createdAt,
       sourceProposalId: sourceProposalId ?? this.sourceProposalId,
       sourceProposalCode: sourceProposalCode ?? this.sourceProposalCode,
+      scheduleWorkOrderType:
+          scheduleWorkOrderType ?? this.scheduleWorkOrderType,
     );
   }
 

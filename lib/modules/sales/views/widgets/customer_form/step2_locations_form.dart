@@ -8,6 +8,7 @@ import 'package:centrow_sales/modules/sales/controllers/customer_form_controller
 import 'package:centrow_sales/modules/sales/entities/create_customer_input.dart';
 import 'package:centrow_sales/modules/sales/views/widgets/customer_form/region_picker.dart';
 import 'package:centrow_sales/modules/sales/views/widgets/customer_form/map_picker_dialog.dart';
+import 'package:centrow_sales/modules/sales/views/widgets/customer_form/customer_form_site_risk_sheet.dart';
 
 class Step2LocationsForm extends StatelessWidget {
   final CustomerFormController controller;
@@ -180,7 +181,7 @@ class Step2LocationsForm extends StatelessWidget {
                                   ),
                                 );
                             if (result != null && result is MapLocationResult) {
-                              controller.applyMapLocation(
+                              await controller.applyMapLocation(
                                 index,
                                 result.lat,
                                 result.lng,
@@ -258,7 +259,132 @@ class Step2LocationsForm extends StatelessWidget {
                     ),
                   ],
                 ),
+                if (index == 0 || item.isPrimary) ...[
+                  const SizedBox(height: 16.0),
+                  _buildSraSection(context, item: item),
+                ],
               ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSraSection(
+    BuildContext context, {
+    required CreateLocationInput item,
+  }) {
+    final totalRisks = item.siteRiskIds.length + item.customRisks.length;
+    final hasRisks = totalRisks > 0;
+
+    return Container(
+      padding: const EdgeInsets.all(14.0),
+      decoration: BoxDecoration(
+        color: hasRisks ? AppColors.subtle : const Color(0xFFFEF2F2),
+        borderRadius: AppRadius.borderMd,
+        border: Border.all(
+          color: hasRisks ? AppColors.border : const Color(0xFFFCA5A5),
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Expanded(
+                child: Row(
+                  children: [
+                    Icon(
+                      Icons.shield_outlined,
+                      size: 18.0,
+                      color: hasRisks ? AppColors.brand : AppColors.err,
+                    ),
+                    const SizedBox(width: 8.0),
+                    Flexible(
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Flexible(
+                            child: Text(
+                              'Site Risk Assessment (SRA)',
+                              style: GoogleFonts.plusJakartaSans(
+                                fontSize: 13.5,
+                                fontWeight: FontWeight.w700,
+                                color: AppColors.text,
+                              ),
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                          Text(
+                            ' *',
+                            style: GoogleFonts.plusJakartaSans(
+                              fontSize: 13.5,
+                              fontWeight: FontWeight.w700,
+                              color: AppColors.err,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 8.0),
+              if (!hasRisks)
+                const AppBadge.err(text: 'Wajib diisi')
+              else
+                AppBadge.ok(text: '$totalRisks Risiko Teridentifikasi'),
+            ],
+          ),
+          const SizedBox(height: 6.0),
+          Text(
+            'Penilaian risiko keselamatan kerja untuk titik servis utama pelanggan wajib dilengkapi.',
+            style: GoogleFonts.inter(fontSize: 12.0, color: AppColors.muted),
+          ),
+          const SizedBox(height: 10.0),
+          OutlinedButton.icon(
+            key: const Key('sra_launcher_button'),
+            onPressed: () {
+              showModalBottomSheet<void>(
+                context: context,
+                isScrollControlled: true,
+                backgroundColor: Colors.transparent,
+                builder: (ctx) => CustomerFormSiteRiskSheet(
+                  initialSiteRiskIds: item.siteRiskIds,
+                  initialCustomRisks: item.customRisks,
+                  onApply: (ids, custom) {
+                    controller.updatePrimaryLocationSra(
+                      siteRiskIds: ids,
+                      customRisks: custom,
+                    );
+                  },
+                ),
+              );
+            },
+            icon: const Icon(
+              Icons.assignment_turned_in_outlined,
+              size: 16.0,
+              color: AppColors.brand,
+            ),
+            label: Text(
+              'Atur Penilaian Risiko',
+              style: GoogleFonts.inter(
+                fontSize: 13.0,
+                fontWeight: FontWeight.w600,
+                color: AppColors.brand,
+              ),
+            ),
+            style: OutlinedButton.styleFrom(
+              side: const BorderSide(color: AppColors.brand),
+              shape: const RoundedRectangleBorder(
+                borderRadius: AppRadius.borderMd,
+              ),
+              padding: const EdgeInsets.symmetric(
+                vertical: 10.0,
+                horizontal: 14.0,
+              ),
             ),
           ),
         ],

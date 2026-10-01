@@ -121,14 +121,16 @@ class ContractFormController extends ChangeNotifier {
     if (notes == null || notes!.trim().isEmpty) {
       return const Err(UnknownFailure('Catatan wajib diisi.'));
     }
-    if (endDate != null &&
+    if (isEditMode &&
+        endDate != null &&
         endDate!.isNotEmpty &&
         startDate!.compareTo(endDate!) > 0) {
       return const Err(
         UnknownFailure('Tanggal akhir tidak boleh sebelum tanggal mulai.'),
       );
     }
-    if (!isEditMode && contractTemplateId == null) {
+    if (!isEditMode &&
+        (contractTemplateId == null || contractTemplateId!.isEmpty)) {
       return const Err(UnknownFailure('Template kontrak wajib dipilih.'));
     }
 

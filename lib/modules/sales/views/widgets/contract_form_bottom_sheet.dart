@@ -201,7 +201,7 @@ class _ContractFormBottomSheetState extends State<ContractFormBottomSheet> {
                         ),
                         const SizedBox(height: 4),
                         Text(
-                          '• Nilai kontrak & frekuensi kunjungan disalin otomatis dari kalkulasi harga proposal.\n• Penandatangan disalin otomatis dari kontak Pelanggan dengan peran Penandatangan.',
+                          '• Nilai kontrak & total kunjungan disalin otomatis dari kalkulasi harga proposal.\n• Tanggal selesai dihitung otomatis dari durasi kontrak pada penawaran (tanggal mulai + durasi bulan).\n• Penandatangan disalin otomatis dari kontak Pelanggan dengan peran Penandatangan.',
                           style: AppTypography.caption(color: AppColors.sec),
                         ),
                       ],
@@ -263,20 +263,22 @@ class _ContractFormBottomSheetState extends State<ContractFormBottomSheet> {
                   ),
                   const SizedBox(height: 16),
 
-                  // 3. Tanggal Selesai (optional)
-                  TextFormField(
-                    controller: _endDateCtrl,
-                    readOnly: true,
-                    decoration: const InputDecoration(
-                      labelText: 'Tanggal Selesai',
-                      suffixIcon: Icon(Icons.calendar_today),
+                  // 3. Tanggal Selesai (optional, edit mode only)
+                  if (!isCreateMode) ...[
+                    TextFormField(
+                      controller: _endDateCtrl,
+                      readOnly: true,
+                      decoration: const InputDecoration(
+                        labelText: 'Tanggal Selesai',
+                        suffixIcon: Icon(Icons.calendar_today),
+                      ),
+                      onTap: () => _pickDate(
+                        _endDateCtrl,
+                        (v) => _controller.updateFields(endDate: v),
+                      ),
                     ),
-                    onTap: () => _pickDate(
-                      _endDateCtrl,
-                      (v) => _controller.updateFields(endDate: v),
-                    ),
-                  ),
-                  const SizedBox(height: 16),
+                    const SizedBox(height: 16),
+                  ],
 
                   // 4. Tanggal Penandatanganan *
                   TextFormField(

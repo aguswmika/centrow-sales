@@ -7,7 +7,10 @@ import 'package:centrow_sales/modules/sales/controllers/customer_form_controller
 import 'package:centrow_sales/modules/sales/entities/create_customer_input.dart';
 import 'package:centrow_sales/modules/sales/entities/customer.dart';
 import 'package:centrow_sales/modules/sales/entities/segment.dart';
+import 'package:centrow_sales/modules/sales/entities/site_risk.dart';
 import 'package:centrow_sales/modules/sales/repositories/customer_repository.dart';
+import 'package:centrow_sales/modules/sales/repositories/site_risk_repository.dart';
+import 'package:centrow_sales/modules/sales/views/widgets/customer_form/customer_form_site_risk_sheet.dart';
 import 'package:centrow_sales/modules/sales/views/widgets/customer_form/region_picker.dart';
 import 'package:centrow_sales/modules/sales/views/widgets/customer_form/step2_locations_form.dart';
 import 'package:centrow_sales/shared/result/result.dart';
@@ -96,6 +99,31 @@ class FakeRegionRepository implements RegionRepository {
   ) async => const Ok([Village(id: 5103020003, name: 'Seminyak')]);
 }
 
+class FakeSiteRiskRepository implements SiteRiskRepository {
+  List<SiteRiskMaster> masters = const [
+    SiteRiskMaster(id: 'risk-1', name: 'Area kerja licin'),
+    SiteRiskMaster(id: 'risk-2', name: 'Bekerja di ketinggian'),
+  ];
+
+  @override
+  Future<Result<List<SiteRiskMaster>>> getSiteRiskMasters() async =>
+      Ok(masters);
+
+  @override
+  Future<Result<List<CustomerAddressRisk>>> getAddressRisks({
+    required String customerId,
+    required String addressId,
+  }) async => const Ok([]);
+
+  @override
+  Future<Result<List<CustomerAddressRisk>>> updateAddressRisks({
+    required String customerId,
+    required String addressId,
+    required List<String> siteRiskIds,
+    required List<String> customRisks,
+  }) async => const Ok([]);
+}
+
 void main() {
   group('Step2LocationsForm', () {
     late CustomerFormController controller;
@@ -106,11 +134,19 @@ void main() {
         getIt.unregister<RegionRepository>();
       }
       getIt.registerSingleton<RegionRepository>(FakeRegionRepository());
+
+      if (getIt.isRegistered<SiteRiskRepository>()) {
+        getIt.unregister<SiteRiskRepository>();
+      }
+      getIt.registerSingleton<SiteRiskRepository>(FakeSiteRiskRepository());
     });
 
     tearDown(() {
       if (getIt.isRegistered<RegionRepository>()) {
         getIt.unregister<RegionRepository>();
+      }
+      if (getIt.isRegistered<SiteRiskRepository>()) {
+        getIt.unregister<SiteRiskRepository>();
       }
     });
 
@@ -148,7 +184,9 @@ void main() {
 
       expect(find.byType(RegionPicker), findsOneWidget);
 
-      await tester.tap(find.text('Tambah Alamat / Titik Servis Lain'));
+      final addBtn = find.text('Tambah Alamat / Titik Servis Lain');
+      await tester.ensureVisible(addBtn);
+      await tester.tap(addBtn);
       await tester.pumpAndSettle();
 
       expect(find.byType(RegionPicker), findsNWidgets(2));
@@ -181,5 +219,74 @@ void main() {
       expect(controller.locations.value.first.provinceId, 51);
       expect(controller.locations.value.first.province, 'Bali');
     });
+
+    testWidgets('primary location displays SRA section and badge', (
+      tester,
+    ) async {
+      await tester.pumpWidget(createTestWidget());
+      await tester.pumpAndSettle();
+
+      expect(find.text('Site Risk Assessment (SRA)'), findsOneWidget);
+      expect(find.text('Wajib diisi'), findsOneWidget);
+      expect(find.text('Atur Penilaian Risiko'), findsOneWidget);
+
+      controller.updatePrimaryLocationSra(
+        siteRiskIds: ['risk-1'],
+        customRisks: ['Anjing galak'],
+      );
+      await tester.pumpAndSettle();
+
+      expect(find.text('2 Risiko Teridentifikasi'), findsOneWidget);
+      expect(find.text('Wajib diisi'), findsNothing);
+    });
+
+    testWidgets(
+      'tapping SRA launcher opens CustomerFormSiteRiskSheet and applying updates SRA on controller',
+      (tester) async {
+        await tester.pumpWidget(createTestWidget());
+        await tester.pumpAndSettle();
+
+        final launcherBtn = find.byKey(const Key('sra_launcher_button'));
+        await tester.ensureVisible(launcherBtn);
+        await tester.tap(launcherBtn);
+        await tester.pumpAndSettle();
+
+        expect(find.byType(CustomerFormSiteRiskSheet), findsOneWidget);
+        expect(find.text('Daftar Risiko Standar (Master)'), findsOneWidget);
+
+        // Select a master risk
+        await tester.tap(find.text('Area kerja licin'));
+        await tester.pumpAndSettle();
+
+        // Add a custom risk
+        await tester.enterText(
+          find.widgetWithText(TextField, 'Tambah risiko kustom...'),
+          'Kabel tegangan tinggi',
+        );
+        await tester.tap(find.text('Tambah'));
+        await tester.pumpAndSettle();
+
+        expect(find.text('Kabel tegangan tinggi'), findsOneWidget);
+
+        // Apply
+        final applyBtn = find.byKey(const Key('sra_apply_button'));
+        await tester.tap(applyBtn);
+        await tester.pumpAndSettle();
+
+        // Sheet closed
+        expect(find.byType(CustomerFormSiteRiskSheet), findsNothing);
+
+        // Controller updated
+        expect(
+          controller.locations.value.first.siteRiskIds,
+          contains('risk-1'),
+        );
+        expect(
+          controller.locations.value.first.customRisks,
+          contains('Kabel tegangan tinggi'),
+        );
+        expect(find.text('2 Risiko Teridentifikasi'), findsOneWidget);
+      },
+    );
   });
 }

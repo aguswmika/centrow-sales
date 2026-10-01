@@ -9,13 +9,13 @@ app's customer detail screen.
 ### Requirement: View a customer's survey photos
 The system SHALL display all photos attached to the currently selected
 customer, ordered oldest-first, in a dedicated "Foto" section of the
-customer detail screen.
+customer detail screen, showing each photo thumbnail along with its title and current photo count.
 
 #### Scenario: Customer has photos
 - **WHEN** a rep opens the Foto tab for a customer that has one or more
   survey photos
-- **THEN** the system displays each photo as a thumbnail, oldest first,
-  loaded from the photo's resolved URL
+- **THEN** the system displays each photo as a thumbnail with its title, ordered oldest first,
+  loaded from the photo's resolved URL, along with the total count against the 5-photo limit
 
 #### Scenario: Customer has no photos
 - **WHEN** a rep opens the Foto tab for a customer with zero survey photos
@@ -29,21 +29,24 @@ customer detail screen.
 
 ### Requirement: Add a survey photo
 The system SHALL let a rep attach a new photo to a customer by capturing it
-with the device camera or selecting it from the device gallery, then
-uploading it to the customer's photo collection.
+with the device camera or selecting it from the device gallery, prompting for a mandatory title and optional notes, and then uploading the photo and metadata to the customer's photo collection.
 
 #### Scenario: Rep chooses a photo source
 - **WHEN** a rep taps the add-photo action on the Foto tab
 - **THEN** the system presents a choice between "Ambil Foto" (camera) and
   "Pilih dari Galeri" (gallery)
 
+#### Scenario: Rep enters title and notes
+- **WHEN** a rep selects or captures a photo
+- **THEN** the system displays a confirmation/input dialog showing a preview of the photo with a required "Judul Foto" text field and an optional "Catatan" text field
+
+#### Scenario: Missing or empty title validation
+- **WHEN** a rep attempts to submit the upload with an empty or whitespace-only title
+- **THEN** the system highlights the validation error and prevents the upload request from being sent
+
 #### Scenario: Successful upload
-- **WHEN** a rep selects or captures a supported image (JPEG, PNG, or WEBP)
-  under the server-configured size limit and the upload completes
-  successfully
-- **THEN** the system adds the new photo to the top of the visible list (as
-  the newest, since the list is oldest-first, it appears at the end) without
-  requiring the rep to manually refresh
+- **WHEN** a rep provides a valid non-empty title, optional notes, and confirms upload for a supported image under the size limit
+- **THEN** the system compresses the photo, uploads it with the title and notes, and appends the newly created photo to the visible list without requiring a manual refresh
 
 #### Scenario: Unsupported file type
 - **WHEN** a rep selects a file that the server rejects because it is not
@@ -58,10 +61,8 @@ uploading it to the customer's photo collection.
   large
 
 #### Scenario: Photo limit reached
-- **WHEN** a rep attempts to add a 6th photo to a customer that already has
-  5 photos
-- **THEN** the system shows an inline error explaining the 5-photo limit has
-  been reached and does not attempt the upload request again automatically
+- **WHEN** a customer already has 5 photos attached
+- **THEN** the system disables the add-photo action or warns the rep that the maximum 5 photos limit has been reached
 
 #### Scenario: Upload fails for another reason
 - **WHEN** the upload request fails due to a network error, an
@@ -93,12 +94,11 @@ capture/selection wherever compression reduces its size.
 
 ### Requirement: View a photo full-screen
 The system SHALL let a rep open any thumbnail in a full-screen view with
-pinch-to-zoom, from which the rep can close the view or delete the photo.
+pinch-to-zoom, displaying the photo title, notes, and metadata, and allowing the rep to close the view or delete the photo.
 
 #### Scenario: Open full-screen view
 - **WHEN** a rep taps a photo thumbnail
-- **THEN** the system opens a full-screen view of that photo, supporting
-  pinch-to-zoom
+- **THEN** the system opens a full-screen view of that photo with pinch-to-zoom, displaying the photo's title, notes (if present), and upload timestamp
 
 #### Scenario: Close full-screen view
 - **WHEN** a rep taps the close action while viewing a photo full-screen

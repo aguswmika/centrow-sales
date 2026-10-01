@@ -10,6 +10,7 @@ import 'package:centrow_sales/modules/sales/views/widgets/pricing_calculator_vie
 import 'package:centrow_sales/shared/error/failure.dart';
 import 'package:centrow_sales/shared/result/result.dart';
 import 'package:centrow_sales/shared/widgets/app_button.dart';
+import 'package:centrow_sales/shared/widgets/counter_input.dart';
 
 class MockPricingRepository implements PricingRepository {
   @override
@@ -204,7 +205,7 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.text('MENIT AWAL'), findsOneWidget);
-      expect(find.text('MENIT RUTIN'), findsOneWidget);
+      expect(find.text('MENIT ROUTINE'), findsOneWidget);
       expect(find.text('Tambah Teknisi'), findsOneWidget);
       expect(find.byIcon(Icons.close_rounded), findsOneWidget);
 
@@ -222,6 +223,141 @@ void main() {
         find.widgetWithText(AppButton, 'Lihat Ringkasan'),
       );
       expect(previewButton.onPressed, isNotNull);
+    },
+  );
+
+  testWidgets(
+    'CounterInput is used for supply freq, worker visits/minutes, and pricing item qty/freq',
+    (tester) async {
+      tester.view.physicalSize = const Size(1200, 900);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+
+      populateSampleRows();
+
+      await tester.pumpWidget(createWidget(isReadOnly: false));
+      await tester.pumpAndSettle();
+
+      // Tab 0: Persiapan Bahan & Alat
+      // 4 CounterInputs in chemical row: spkDoseUsage, doseUsage, applicationVolume, freq
+      expect(find.byType(CounterInput), findsNWidgets(4));
+      final supplyRow = controller.supplies.first;
+      expect(supplyRow.freq.value, 2.0);
+
+      // Switch to Tab 1: Tenaga Kerja
+      await tester.tap(find.text('Tenaga Kerja'));
+      await tester.pumpAndSettle();
+
+      // 3 CounterInputs in worker row: visitFreq, firstVisitMinutes, routineMinutes
+      expect(find.byType(CounterInput), findsNWidgets(3));
+      final workerRow = controller.workers.first;
+      expect(workerRow.visitFreq.value, 4.0);
+      expect(workerRow.firstVisitMinutes.value, 180.0);
+      expect(workerRow.routineMinutes.value, 120.0);
+
+      // Switch to Tab 2: Transport & Add-on
+      await tester.tap(find.text('Transport & Add-on'));
+      await tester.pumpAndSettle();
+
+      // 2 CounterInputs in item row: qty, freq
+      expect(find.byType(CounterInput), findsNWidgets(2));
+      final itemRow = controller.items.first;
+      expect(itemRow.qty.value, 4.0);
+      expect(itemRow.freq.value, 1.0);
+    },
+  );
+
+  testWidgets(
+    'PricingItemTab renders formatted price for BBM and editable input for Add-on',
+    (tester) async {
+      tester.view.physicalSize = const Size(1200, 900);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+
+      populateSampleRows();
+      controller.items.add(
+        PricingItemRow(
+          id: 'item-addon',
+          title: 'Extra Disinfection',
+          code: 'ADD-01',
+          kind: 5,
+          initialQty: 1.0,
+          initialFreq: 1.0,
+          initialUnitPrice: 50000.0,
+        ),
+      );
+
+      await tester.pumpWidget(createWidget(isReadOnly: false));
+      await tester.pumpAndSettle();
+
+      // Switch to Tab 2: Transport & Add-on
+      await tester.tap(find.text('Transport & Add-on'));
+      await tester.pumpAndSettle();
+
+      // BBM (kind 3) renders formatted currency 'Rp 25.000'
+      expect(find.text('Rp 25.000'), findsOneWidget);
+
+      // Add-on (kind 5) renders editable TextFormField with initial price
+      expect(find.widgetWithText(TextFormField, '50000'), findsOneWidget);
+    },
+  );
+
+  testWidgets(
+    'PricingItemTab adds custom item via "+ Item Kustom" and allows inline title and price editing',
+    (tester) async {
+      tester.view.physicalSize = const Size(1200, 900);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+
+      populateSampleRows();
+
+      await tester.pumpWidget(createWidget(isReadOnly: false));
+      await tester.pumpAndSettle();
+
+      // Switch to Tab 2: Transport & Add-on
+      await tester.tap(find.text('Transport & Add-on'));
+      await tester.pumpAndSettle();
+
+      // Verify button "+ Item Kustom" exists
+      expect(find.text('Item Kustom'), findsOneWidget);
+
+      // Tap "+ Item Kustom"
+      await tester.tap(find.text('Item Kustom'));
+      await tester.pumpAndSettle();
+
+      expect(controller.items.length, 2);
+      final customRow = controller.items.last;
+      expect(customRow.kind, 0);
+
+      // Verify TextFormField with default title exists
+      final titleFieldFinder = find.widgetWithText(
+        TextFormField,
+        'Item Kustom',
+      );
+      expect(titleFieldFinder, findsOneWidget);
+
+      // Edit title
+      await tester.enterText(titleFieldFinder, 'Sewa Mobil Box');
+      await tester.pumpAndSettle();
+      expect(customRow.title.value, 'Sewa Mobil Box');
+
+      // Edit price
+      final priceFieldFinder = find.widgetWithText(TextFormField, '0');
+      expect(priceFieldFinder, findsOneWidget);
+      await tester.enterText(priceFieldFinder, '350000');
+      await tester.pumpAndSettle();
+      expect(customRow.unitPrice.value, 350000.0);
+
+      // Delete custom item
+      final closeIcons = find.byIcon(Icons.close_rounded);
+      expect(closeIcons, findsNWidgets(2));
+      await tester.tap(closeIcons.last);
+      await tester.pumpAndSettle();
+
+      expect(controller.items.length, 1);
     },
   );
 }

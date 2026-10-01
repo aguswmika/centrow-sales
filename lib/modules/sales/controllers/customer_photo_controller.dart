@@ -33,11 +33,21 @@ class CustomerPhotoController {
     };
   }
 
-  Future<void> addPhoto(String customerId, String filePath) async {
+  Future<void> addPhoto(
+    String customerId,
+    String filePath, {
+    required String title,
+    String? notes,
+  }) async {
     _isUploading.value = true;
     _actionError.value = null;
 
-    final result = await _repository.uploadPhoto(customerId, filePath);
+    final result = await _repository.uploadPhoto(
+      customerId,
+      filePath,
+      title: title,
+      notes: notes,
+    );
     if (_isDisposed) {
       _isUploading.value = false;
       return;

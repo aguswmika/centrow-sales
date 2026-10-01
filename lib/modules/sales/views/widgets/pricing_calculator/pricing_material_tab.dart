@@ -42,13 +42,40 @@ class PricingSupplyTab extends StatelessWidget {
   }
 
   Future<void> _handleAddTool(BuildContext context) async {
+    // Step 1: pick treatment method
+    final method = await showModalBottomSheet<TreatmentMethod>(
+      context: context,
+      isScrollControlled: true,
+      builder: (_) => const TreatmentMethodPickerSheet(),
+    );
+    if (method == null) return;
+    if (!context.mounted) return;
+
+    // Step 2: pick tool product
     final result = await showModalBottomSheet<Product>(
       context: context,
       isScrollControlled: true,
       builder: (_) => const ProductPickerSheet(kind: 2),
     );
     if (result != null && context.mounted) {
-      controller.addRow(result, 2);
+      // Add the row with the method already attached
+      if (controller.supplies.any((m) => m.id == result.id)) return;
+      controller.supplies.add(
+        PricingSupplyRow(
+          id: result.id,
+          title: result.name,
+          code: result.code,
+          uomCode: result.uomCode,
+          uomName: result.uomName.isNotEmpty ? result.uomName : result.uomCode,
+          kind: 2,
+          initialProductMappingId: result.id,
+          initialInstalledUnits: 1,
+          initialTreatmentMethodId: method.id,
+          initialTreatmentMethodName: method.name,
+          initialTreatmentMethodCode: method.code,
+          contractMonthsRef: controller.contractMonths,
+        ),
+      );
     }
   }
 
@@ -67,12 +94,13 @@ class PricingSupplyTab extends StatelessWidget {
               buildTableHeader(
                 [
                   'Bahan Kimia',
-                  'Dosis (unit)',
-                  'Volume Pengaplikasian (unit)',
+                  'Dosis SPK',
+                  'Dosis',
+                  'Volume Pengaplikasian',
                   'Frekuensi',
                   '',
                 ],
-                flexes: const [4, 3, 3, 2],
+                flexes: const [4, 2, 2, 3, 2],
               ),
               for (final row in chemicals)
                 PricingSupplyRowWidget(
@@ -136,10 +164,30 @@ class PricingSupplyRowWidget extends StatelessWidget {
     this.isReadOnly = false,
   });
 
+  String _getDoseUnitDisplayName() {
+    if (row.doseUnitId.value.isNotEmpty) {
+      final matched = controller.uoms.value
+          .where((u) => u.id == row.doseUnitId.value)
+          .firstOrNull;
+      if (matched != null && matched.name.isNotEmpty) return matched.name;
+    }
+    if (row.uomName != null && row.uomName!.isNotEmpty) {
+      return row.uomName!;
+    }
+    final matchedByCode = controller.uoms.value
+        .where((u) => u.code.toLowerCase() == row.uomCode.toLowerCase())
+        .firstOrNull;
+    if (matchedByCode != null && matchedByCode.name.isNotEmpty) {
+      return matchedByCode.name;
+    }
+    return row.uomCode;
+  }
+
   @override
   Widget build(BuildContext context) {
     return SignalBuilder(
       builder: (context) {
+        final doseUnitDisplay = _getDoseUnitDisplayName();
         return Container(
           decoration: const BoxDecoration(
             color: AppColors.surface,
@@ -193,21 +241,83 @@ class PricingSupplyRowWidget extends StatelessWidget {
                               ),
                             if (row.treatmentMethodName.value != null &&
                                 row.treatmentMethodName.value!.isNotEmpty)
-                              Container(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 6.0,
-                                  vertical: 2.0,
+                              // Tappable badge to SWITCH method
+                              InkWell(
+                                onTap: !isReadOnly
+                                    ? () async {
+                                        final method =
+                                            await showModalBottomSheet<
+                                              TreatmentMethod
+                                            >(
+                                              context: context,
+                                              isScrollControlled: true,
+                                              builder: (_) =>
+                                                  const TreatmentMethodPickerSheet(),
+                                            );
+                                        if (method != null) {
+                                          row.treatmentMethodId.value =
+                                              method.id;
+                                          row.treatmentMethodName.value =
+                                              method.name;
+                                          row.treatmentMethodCode.value =
+                                              method.code;
+                                        }
+                                      }
+                                    : null,
+                                child: Container(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 6.0,
+                                    vertical: 2.0,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color: AppColors.subtle,
+                                    border: Border.all(color: AppColors.border),
+                                    borderRadius: AppRadius.borderSm,
+                                  ),
+                                  child: Text(
+                                    row.treatmentMethodName.value!,
+                                    style: const TextStyle(
+                                      fontSize: 11.0,
+                                      color: AppColors.sec,
+                                    ),
+                                  ),
                                 ),
-                                decoration: BoxDecoration(
-                                  color: AppColors.subtle,
-                                  border: Border.all(color: AppColors.border),
-                                  borderRadius: AppRadius.borderSm,
-                                ),
-                                child: Text(
-                                  row.treatmentMethodName.value!,
-                                  style: const TextStyle(
-                                    fontSize: 11.0,
-                                    color: AppColors.sec,
+                              )
+                            else if (!isReadOnly)
+                              // Warning badge: no method selected yet
+                              InkWell(
+                                onTap: () async {
+                                  final method =
+                                      await showModalBottomSheet<
+                                        TreatmentMethod
+                                      >(
+                                        context: context,
+                                        isScrollControlled: true,
+                                        builder: (_) =>
+                                            const TreatmentMethodPickerSheet(),
+                                      );
+                                  if (method != null) {
+                                    row.treatmentMethodId.value = method.id;
+                                    row.treatmentMethodName.value = method.name;
+                                    row.treatmentMethodCode.value = method.code;
+                                  }
+                                },
+                                child: Container(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 6.0,
+                                    vertical: 2.0,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    border: Border.all(color: AppColors.warn),
+                                    borderRadius: AppRadius.borderSm,
+                                  ),
+                                  child: const Text(
+                                    '+ Pilih Metode (Wajib)',
+                                    style: TextStyle(
+                                      fontSize: 10.0,
+                                      color: AppColors.warn,
+                                      fontWeight: FontWeight.w600,
+                                    ),
                                   ),
                                 ),
                               ),
@@ -229,7 +339,36 @@ class PricingSupplyRowWidget extends StatelessWidget {
                   ),
                   const SizedBox(width: 8.0),
                   Expanded(
-                    flex: 3,
+                    flex: 2,
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: CounterInput(
+                            initialValue: row.spkDoseUsage.value,
+                            min: 0.1,
+                            enabled: !isReadOnly,
+                            onChanged: (val) {
+                              row.spkDoseUsage.value = val;
+                            },
+                          ),
+                        ),
+                        if (hasUnitColumn) ...[
+                          const SizedBox(width: 4.0),
+                          Text(
+                            doseUnitDisplay,
+                            style: const TextStyle(
+                              fontSize: 12.0,
+                              fontWeight: FontWeight.w600,
+                              color: AppColors.muted,
+                            ),
+                          ),
+                        ],
+                      ],
+                    ),
+                  ),
+                  const SizedBox(width: 8.0),
+                  Expanded(
+                    flex: 2,
                     child: Row(
                       children: [
                         Expanded(
@@ -246,7 +385,7 @@ class PricingSupplyRowWidget extends StatelessWidget {
                         if (hasUnitColumn) ...[
                           const SizedBox(width: 4.0),
                           Text(
-                            row.uomCode,
+                            doseUnitDisplay,
                             style: const TextStyle(
                               fontSize: 12.0,
                               fontWeight: FontWeight.w600,
@@ -296,7 +435,11 @@ class PricingSupplyRowWidget extends StatelessWidget {
                                   items: items.map((uom) {
                                     return DropdownMenuItem<String>(
                                       value: uom.id,
-                                      child: Text(uom.code),
+                                      child: Text(
+                                        uom.name.isNotEmpty
+                                            ? uom.name
+                                            : uom.code,
+                                      ),
                                     );
                                   }).toList(),
                                   onChanged: isReadOnly
@@ -318,9 +461,14 @@ class PricingSupplyRowWidget extends StatelessWidget {
                   const SizedBox(width: 8.0),
                   Expanded(
                     flex: 2,
-                    child: buildInput(row.freq.value.toString(), (val) {
-                      row.freq.value = double.tryParse(val) ?? 0.0;
-                    }, enabled: !isReadOnly),
+                    child: CounterInput(
+                      initialValue: row.freq.value,
+                      min: 1,
+                      enabled: !isReadOnly,
+                      onChanged: (val) {
+                        row.freq.value = val;
+                      },
+                    ),
                   ),
                   const SizedBox(width: 8.0),
                   if (!isReadOnly)
@@ -468,45 +616,50 @@ class PricingToolRowWidget extends StatelessWidget {
                               ),
                             if (row.treatmentMethodName.value != null &&
                                 row.treatmentMethodName.value!.isNotEmpty)
-                              Container(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 6.0,
-                                  vertical: 2.0,
-                                ),
-                                decoration: BoxDecoration(
-                                  color: AppColors.subtle,
-                                  border: Border.all(color: AppColors.border),
-                                  borderRadius: AppRadius.borderSm,
-                                ),
-                                child: Row(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    Text(
-                                      row.treatmentMethodName.value!,
-                                      style: const TextStyle(
-                                        fontSize: 11.0,
-                                        color: AppColors.sec,
-                                      ),
+                              // Tappable badge to SWITCH method (no close/clear)
+                              InkWell(
+                                onTap: !isReadOnly
+                                    ? () async {
+                                        final method =
+                                            await showModalBottomSheet<
+                                              TreatmentMethod
+                                            >(
+                                              context: context,
+                                              isScrollControlled: true,
+                                              builder: (_) =>
+                                                  const TreatmentMethodPickerSheet(),
+                                            );
+                                        if (method != null) {
+                                          row.treatmentMethodId.value =
+                                              method.id;
+                                          row.treatmentMethodName.value =
+                                              method.name;
+                                          row.treatmentMethodCode.value =
+                                              method.code;
+                                        }
+                                      }
+                                    : null,
+                                child: Container(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 6.0,
+                                    vertical: 2.0,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color: AppColors.subtle,
+                                    border: Border.all(color: AppColors.border),
+                                    borderRadius: AppRadius.borderSm,
+                                  ),
+                                  child: Text(
+                                    row.treatmentMethodName.value!,
+                                    style: const TextStyle(
+                                      fontSize: 11.0,
+                                      color: AppColors.sec,
                                     ),
-                                    if (!isReadOnly) ...[
-                                      const SizedBox(width: 4.0),
-                                      GestureDetector(
-                                        onTap: () {
-                                          row.treatmentMethodId.value = null;
-                                          row.treatmentMethodName.value = null;
-                                          row.treatmentMethodCode.value = null;
-                                        },
-                                        child: const Icon(
-                                          Icons.close,
-                                          size: 12.0,
-                                          color: AppColors.muted,
-                                        ),
-                                      ),
-                                    ],
-                                  ],
+                                  ),
                                 ),
                               )
                             else if (!isReadOnly)
+                              // Warning badge: no method selected yet
                               InkWell(
                                 onTap: () async {
                                   final method =
@@ -530,14 +683,14 @@ class PricingToolRowWidget extends StatelessWidget {
                                     vertical: 2.0,
                                   ),
                                   decoration: BoxDecoration(
-                                    border: Border.all(color: AppColors.brand),
+                                    border: Border.all(color: AppColors.warn),
                                     borderRadius: AppRadius.borderSm,
                                   ),
                                   child: const Text(
-                                    '+ Metode',
+                                    '+ Pilih Metode (Wajib)',
                                     style: TextStyle(
                                       fontSize: 10.0,
-                                      color: AppColors.brand,
+                                      color: AppColors.warn,
                                       fontWeight: FontWeight.w600,
                                     ),
                                   ),
@@ -575,9 +728,14 @@ class PricingToolRowWidget extends StatelessWidget {
                   const SizedBox(width: 8.0),
                   Expanded(
                     flex: 2,
-                    child: buildInput(row.freq.value.toString(), (val) {
-                      row.freq.value = double.tryParse(val) ?? 0.0;
-                    }, enabled: !isReadOnly),
+                    child: CounterInput(
+                      initialValue: row.freq.value,
+                      min: 1,
+                      enabled: !isReadOnly,
+                      onChanged: (val) {
+                        row.freq.value = val;
+                      },
+                    ),
                   ),
                   const SizedBox(width: 8.0),
                   if (!isReadOnly)

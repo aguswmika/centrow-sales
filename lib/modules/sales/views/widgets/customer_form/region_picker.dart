@@ -5,7 +5,7 @@ import 'package:centrow_sales/app/di.dart';
 import 'package:centrow_sales/modules/core/entities/region.dart';
 import 'package:centrow_sales/modules/core/repositories/region_repository.dart';
 import 'package:centrow_sales/modules/sales/controllers/customer_form_controller.dart'
-    show isRegionMatch;
+    show findRegionMatchFromAddress, isRegionMatch, normalizeRegionName;
 import 'package:centrow_sales/modules/sales/entities/create_customer_input.dart';
 import 'package:centrow_sales/shared/theme/app_colors.dart';
 import 'package:centrow_sales/shared/theme/app_radius.dart';
@@ -78,6 +78,10 @@ class _RegionPickerState extends State<RegionPicker> {
           _villages = [];
         });
       }
+    } else if (widget.item.provinceId != null &&
+        _regencies.isEmpty &&
+        !_isLoadingRegencies) {
+      _fetchRegencies(widget.item.provinceId!);
     }
 
     if (widget.item.regencyId != oldWidget.item.regencyId) {
@@ -91,6 +95,11 @@ class _RegionPickerState extends State<RegionPicker> {
           _villages = [];
         });
       }
+    } else if (widget.item.provinceId != null &&
+        widget.item.regencyId != null &&
+        _districts.isEmpty &&
+        !_isLoadingDistricts) {
+      _fetchDistricts(widget.item.provinceId!, widget.item.regencyId!);
     }
 
     if (widget.item.districtId != oldWidget.item.districtId) {
@@ -104,7 +113,34 @@ class _RegionPickerState extends State<RegionPicker> {
           _villages = [];
         });
       }
+    } else if (widget.item.provinceId != null &&
+        widget.item.regencyId != null &&
+        widget.item.districtId != null &&
+        _villages.isEmpty &&
+        !_isLoadingVillages) {
+      _fetchVillages(
+        widget.item.provinceId!,
+        widget.item.regencyId!,
+        widget.item.districtId!,
+      );
     }
+  }
+
+  T? _findBestMatch<T>({
+    required List<T> items,
+    required String Function(T) nameSelector,
+    required String target,
+  }) {
+    if (target.isEmpty) return null;
+    final normTarget = normalizeRegionName(target);
+    final exact = items.firstWhereOrNull(
+      (e) => normalizeRegionName(nameSelector(e)) == normTarget,
+    );
+    if (exact != null) return exact;
+
+    return items.firstWhereOrNull(
+      (e) => isRegionMatch(nameSelector(e), target),
+    );
   }
 
   Future<void> _fetchProvinces() async {
@@ -117,11 +153,18 @@ class _RegionPickerState extends State<RegionPicker> {
       _isLoadingProvinces = false;
       if (result.isOk) {
         _provinces = result.valueOrNull ?? [];
-        if (_currentLocation.provinceId == null &&
-            _currentLocation.province.isNotEmpty) {
-          final matched = _provinces.firstWhereOrNull(
-            (p) => isRegionMatch(p.name, _currentLocation.province),
-          );
+        if (_currentLocation.provinceId == null) {
+          final matched =
+              _findBestMatch(
+                items: _provinces,
+                nameSelector: (p) => p.name,
+                target: _currentLocation.province,
+              ) ??
+              findRegionMatchFromAddress(
+                items: _provinces,
+                nameSelector: (p) => p.name,
+                address: _currentLocation.address,
+              );
           if (matched != null) {
             _updateLocation(
               _currentLocation.copyWith(
@@ -146,11 +189,18 @@ class _RegionPickerState extends State<RegionPicker> {
       _isLoadingRegencies = false;
       if (result.isOk) {
         _regencies = result.valueOrNull ?? [];
-        if (_currentLocation.regencyId == null &&
-            _currentLocation.regency.isNotEmpty) {
-          final matched = _regencies.firstWhereOrNull(
-            (r) => isRegionMatch(r.name, _currentLocation.regency),
-          );
+        if (_currentLocation.regencyId == null) {
+          final matched =
+              _findBestMatch(
+                items: _regencies,
+                nameSelector: (r) => r.name,
+                target: _currentLocation.regency,
+              ) ??
+              findRegionMatchFromAddress(
+                items: _regencies,
+                nameSelector: (r) => r.name,
+                address: _currentLocation.address,
+              );
           if (matched != null) {
             _updateLocation(
               _currentLocation.copyWith(
@@ -159,6 +209,10 @@ class _RegionPickerState extends State<RegionPicker> {
               ),
             );
             _fetchDistricts(provinceId, matched.id);
+          }
+        } else if (_currentLocation.regencyId != null) {
+          if (_districts.isEmpty && !_isLoadingDistricts) {
+            _fetchDistricts(provinceId, _currentLocation.regencyId!);
           }
         }
       }
@@ -175,11 +229,18 @@ class _RegionPickerState extends State<RegionPicker> {
       _isLoadingDistricts = false;
       if (result.isOk) {
         _districts = result.valueOrNull ?? [];
-        if (_currentLocation.districtId == null &&
-            _currentLocation.district.isNotEmpty) {
-          final matched = _districts.firstWhereOrNull(
-            (d) => isRegionMatch(d.name, _currentLocation.district),
-          );
+        if (_currentLocation.districtId == null) {
+          final matched =
+              _findBestMatch(
+                items: _districts,
+                nameSelector: (d) => d.name,
+                target: _currentLocation.district,
+              ) ??
+              findRegionMatchFromAddress(
+                items: _districts,
+                nameSelector: (d) => d.name,
+                address: _currentLocation.address,
+              );
           if (matched != null) {
             _updateLocation(
               _currentLocation.copyWith(
@@ -188,6 +249,10 @@ class _RegionPickerState extends State<RegionPicker> {
               ),
             );
             _fetchVillages(provinceId, regencyId, matched.id);
+          }
+        } else if (_currentLocation.districtId != null) {
+          if (_villages.isEmpty && !_isLoadingVillages) {
+            _fetchVillages(provinceId, regencyId, _currentLocation.districtId!);
           }
         }
       }
@@ -212,11 +277,18 @@ class _RegionPickerState extends State<RegionPicker> {
       _isLoadingVillages = false;
       if (result.isOk) {
         _villages = result.valueOrNull ?? [];
-        if (_currentLocation.villageId == null &&
-            _currentLocation.village.isNotEmpty) {
-          final matched = _villages.firstWhereOrNull(
-            (v) => isRegionMatch(v.name, _currentLocation.village),
-          );
+        if (_currentLocation.villageId == null) {
+          final matched =
+              _findBestMatch(
+                items: _villages,
+                nameSelector: (v) => v.name,
+                target: _currentLocation.village,
+              ) ??
+              findRegionMatchFromAddress(
+                items: _villages,
+                nameSelector: (v) => v.name,
+                address: _currentLocation.address,
+              );
           if (matched != null) {
             _updateLocation(
               _currentLocation.copyWith(
@@ -332,74 +404,140 @@ class _RegionPickerState extends State<RegionPicker> {
     final selectedProvinceId =
         _provinces.any((p) => p.id == _currentLocation.provinceId)
         ? _currentLocation.provinceId
-        : _provinces
-              .firstWhereOrNull(
-                (p) => isRegionMatch(p.name, _currentLocation.province),
-              )
-              ?.id;
+        : (_findBestMatch(
+                items: _provinces,
+                nameSelector: (p) => p.name,
+                target: _currentLocation.province,
+              )?.id ??
+              findRegionMatchFromAddress(
+                items: _provinces,
+                nameSelector: (p) => p.name,
+                address: _currentLocation.address,
+              )?.id);
     final selectedRegencyId =
         _regencies.any((r) => r.id == _currentLocation.regencyId)
         ? _currentLocation.regencyId
-        : _regencies
-              .firstWhereOrNull(
-                (r) => isRegionMatch(r.name, _currentLocation.regency),
-              )
-              ?.id;
+        : (_findBestMatch(
+                items: _regencies,
+                nameSelector: (r) => r.name,
+                target: _currentLocation.regency,
+              )?.id ??
+              findRegionMatchFromAddress(
+                items: _regencies,
+                nameSelector: (r) => r.name,
+                address: _currentLocation.address,
+              )?.id);
     final selectedDistrictId =
         _districts.any((d) => d.id == _currentLocation.districtId)
         ? _currentLocation.districtId
-        : _districts
-              .firstWhereOrNull(
-                (d) => isRegionMatch(d.name, _currentLocation.district),
-              )
-              ?.id;
+        : (_findBestMatch(
+                items: _districts,
+                nameSelector: (d) => d.name,
+                target: _currentLocation.district,
+              )?.id ??
+              findRegionMatchFromAddress(
+                items: _districts,
+                nameSelector: (d) => d.name,
+                address: _currentLocation.address,
+              )?.id);
     final selectedVillageId =
         _villages.any((v) => v.id == _currentLocation.villageId)
         ? _currentLocation.villageId
-        : _villages
-              .firstWhereOrNull(
-                (v) => isRegionMatch(v.name, _currentLocation.village),
-              )
-              ?.id;
+        : (_findBestMatch(
+                items: _villages,
+                nameSelector: (v) => v.name,
+                target: _currentLocation.village,
+              )?.id ??
+              findRegionMatchFromAddress(
+                items: _villages,
+                nameSelector: (v) => v.name,
+                address: _currentLocation.address,
+              )?.id);
+
+    final effectiveProvinceId =
+        selectedProvinceId ?? _currentLocation.provinceId;
+    final effectiveRegencyId = selectedRegencyId ?? _currentLocation.regencyId;
+    final effectiveDistrictId =
+        selectedDistrictId ?? _currentLocation.districtId;
+
+    if (effectiveProvinceId != null &&
+        _regencies.isEmpty &&
+        !_isLoadingRegencies) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted && _regencies.isEmpty && !_isLoadingRegencies) {
+          _fetchRegencies(effectiveProvinceId);
+        }
+      });
+    }
+
+    if (effectiveProvinceId != null &&
+        effectiveRegencyId != null &&
+        _districts.isEmpty &&
+        !_isLoadingDistricts) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted && _districts.isEmpty && !_isLoadingDistricts) {
+          _fetchDistricts(effectiveProvinceId, effectiveRegencyId);
+        }
+      });
+    }
+
+    if (effectiveProvinceId != null &&
+        effectiveRegencyId != null &&
+        effectiveDistrictId != null &&
+        _villages.isEmpty &&
+        !_isLoadingVillages) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted && _villages.isEmpty && !_isLoadingVillages) {
+          _fetchVillages(
+            effectiveProvinceId,
+            effectiveRegencyId,
+            effectiveDistrictId,
+          );
+        }
+      });
+    }
+
+    final hasProvince =
+        effectiveProvinceId != null || _currentLocation.province.isNotEmpty;
+    final hasRegency =
+        effectiveRegencyId != null || _currentLocation.regency.isNotEmpty;
+    final hasDistrict =
+        effectiveDistrictId != null || _currentLocation.district.isNotEmpty;
 
     final isProvinceDisabled = _isLoadingProvinces || _provinces.isEmpty;
     final isRegencyDisabled =
         _isLoadingRegencies ||
-        _currentLocation.provinceId == null ||
+        effectiveProvinceId == null ||
         _regencies.isEmpty;
     final isDistrictDisabled =
-        _isLoadingDistricts ||
-        _currentLocation.regencyId == null ||
-        _districts.isEmpty;
+        _isLoadingDistricts || effectiveRegencyId == null || _districts.isEmpty;
     final isVillageDisabled =
-        _isLoadingVillages ||
-        _currentLocation.districtId == null ||
-        _villages.isEmpty;
+        _isLoadingVillages || effectiveDistrictId == null || _villages.isEmpty;
 
     final provinceHint = _isLoadingProvinces
         ? 'Memuat provinsi...'
-        : (_provinces.isEmpty ? 'Pilih Provinsi' : 'Pilih Provinsi');
+        : 'Pilih Provinsi';
 
-    final regencyHint = _isLoadingRegencies
-        ? 'Memuat kabupaten/kota...'
-        : (widget.item.provinceId == null
-              ? 'Pilih provinsi terlebih dahulu'
+    final regencyHint = !hasProvince
+        ? 'Pilih provinsi terlebih dahulu'
+        : (_isLoadingProvinces || _isLoadingRegencies
+              ? 'Memuat kabupaten/kota...'
               : (_regencies.isEmpty
                     ? 'Tidak ada kabupaten/kota'
                     : 'Pilih Kabupaten / Kota'));
 
-    final districtHint = _isLoadingDistricts
-        ? 'Memuat kecamatan...'
-        : (widget.item.regencyId == null
-              ? 'Pilih kabupaten/kota terlebih dahulu'
+    final districtHint = !hasRegency
+        ? 'Pilih kabupaten/kota terlebih dahulu'
+        : (_isLoadingRegencies || _isLoadingDistricts
+              ? 'Memuat kecamatan...'
               : (_districts.isEmpty
                     ? 'Tidak ada kecamatan'
                     : 'Pilih Kecamatan'));
 
-    final villageHint = _isLoadingVillages
-        ? 'Memuat kelurahan/desa...'
-        : (widget.item.districtId == null
-              ? 'Pilih kecamatan terlebih dahulu'
+    final villageHint = !hasDistrict
+        ? 'Pilih kecamatan terlebih dahulu'
+        : (_isLoadingDistricts || _isLoadingVillages
+              ? 'Memuat kelurahan/desa...'
               : (_villages.isEmpty
                     ? 'Tidak ada kelurahan/desa'
                     : 'Pilih Kelurahan / Desa'));
@@ -601,7 +739,7 @@ class _RegionPickerState extends State<RegionPicker> {
         ),
         const SizedBox(height: 6.0),
         DropdownButtonFormField<T>(
-          key: ValueKey(value),
+          key: ValueKey('${label}_${value}_${items.length}'),
           initialValue: value,
           hint: hint != null
               ? Text(

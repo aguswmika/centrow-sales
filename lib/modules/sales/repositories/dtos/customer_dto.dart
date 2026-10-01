@@ -116,10 +116,25 @@ class CustomerLocationDto {
     this.longitude,
   });
 
+  static int? _parseInt(dynamic val) {
+    if (val == null) return null;
+    if (val is num) return val.toInt();
+    if (val is String) return int.tryParse(val);
+    return null;
+  }
+
   static (int?, String) _parseRegionRef(dynamic raw) {
     if (raw == null) return (null, '');
-    if (raw is Map<String, dynamic>) {
-      final id = (raw['id'] as num?)?.toInt();
+    if (raw is Map) {
+      final rawId = raw['id'];
+      final int? id;
+      if (rawId is num) {
+        id = rawId.toInt();
+      } else if (rawId is String) {
+        id = int.tryParse(rawId);
+      } else {
+        id = null;
+      }
       final name = raw['name']?.toString() ?? '';
       return (id, name);
     }
@@ -130,10 +145,26 @@ class CustomerLocationDto {
   }
 
   factory CustomerLocationDto.fromJson(Map<String, dynamic> json) {
-    final (pId, pName) = _parseRegionRef(json['province']);
-    final (rId, rName) = _parseRegionRef(json['regency']);
-    final (dId, dName) = _parseRegionRef(json['district']);
-    final (vId, vName) = _parseRegionRef(json['village']);
+    final (pId, pName) = _parseRegionRef(
+      json['province'] ?? json['province_name'],
+    );
+    final (rId, rName) = _parseRegionRef(
+      json['regency'] ??
+          json['city'] ??
+          json['regency_name'] ??
+          json['city_name'] ??
+          json['kabupaten'],
+    );
+    final (dId, dName) = _parseRegionRef(
+      json['district'] ?? json['district_name'] ?? json['kecamatan'],
+    );
+    final (vId, vName) = _parseRegionRef(
+      json['village'] ??
+          json['subdistrict'] ??
+          json['village_name'] ??
+          json['kelurahan'] ??
+          json['desa'],
+    );
 
     return CustomerLocationDto(
       id: json['id']?.toString(),
@@ -141,13 +172,25 @@ class CustomerLocationDto {
       isPrimary: json['is_primary'] as bool? ?? false,
       label: json['label']?.toString() ?? '',
       addressLine: json['address_line']?.toString() ?? '',
-      provinceId: pId ?? (json['province_id'] as num?)?.toInt(),
+      provinceId: pId ?? _parseInt(json['province_id']),
       province: pName,
-      regencyId: rId ?? (json['regency_id'] as num?)?.toInt(),
+      regencyId:
+          rId ??
+          _parseInt(json['regency_id']) ??
+          _parseInt(json['city_id']) ??
+          _parseInt(json['kabupaten_id']),
       regency: rName,
-      districtId: dId ?? (json['district_id'] as num?)?.toInt(),
+      districtId:
+          dId ??
+          _parseInt(json['district_id']) ??
+          _parseInt(json['kecamatan_id']),
       district: dName,
-      villageId: vId ?? (json['village_id'] as num?)?.toInt(),
+      villageId:
+          vId ??
+          _parseInt(json['village_id']) ??
+          _parseInt(json['subdistrict_id']) ??
+          _parseInt(json['kelurahan_id']) ??
+          _parseInt(json['desa_id']),
       village: vName,
       areaSize: (json['area_size'] as num?)?.toDouble(),
       latitude: (json['latitude'] as num?)?.toDouble(),
@@ -473,6 +516,8 @@ class CreateCustomerLocationRequestDto {
   final double? areaSize;
   final double? latitude;
   final double? longitude;
+  final List<String>? siteRiskIds;
+  final List<String>? customRisks;
 
   const CreateCustomerLocationRequestDto({
     this.label,
@@ -484,11 +529,21 @@ class CreateCustomerLocationRequestDto {
     this.areaSize,
     this.latitude,
     this.longitude,
+    this.siteRiskIds,
+    this.customRisks,
   });
 
   factory CreateCustomerLocationRequestDto.fromInput(
     CreateLocationInput input,
   ) {
+    final sanitizedCustomRisks = input.customRisks
+        .map((c) => c.trim())
+        .where((c) => c.isNotEmpty)
+        .map((c) => c.length > 255 ? c.substring(0, 255) : c)
+        .toList();
+    final hasRisks =
+        input.siteRiskIds.isNotEmpty || sanitizedCustomRisks.isNotEmpty;
+
     return CreateCustomerLocationRequestDto(
       label: input.label.isNotEmpty ? input.label : null,
       addressLine: input.address.isNotEmpty ? input.address : null,
@@ -499,6 +554,8 @@ class CreateCustomerLocationRequestDto {
       areaSize: input.areaSize,
       latitude: input.latitude,
       longitude: input.longitude,
+      siteRiskIds: hasRisks ? input.siteRiskIds : null,
+      customRisks: hasRisks ? sanitizedCustomRisks : null,
     );
   }
 
@@ -513,6 +570,8 @@ class CreateCustomerLocationRequestDto {
     if (areaSize != null) map['area_size'] = areaSize;
     if (latitude != null) map['latitude'] = latitude;
     if (longitude != null) map['longitude'] = longitude;
+    if (siteRiskIds != null) map['site_risk_ids'] = siteRiskIds;
+    if (customRisks != null) map['custom_risks'] = customRisks;
     return map;
   }
 }

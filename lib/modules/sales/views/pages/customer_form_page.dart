@@ -71,8 +71,31 @@ class _CustomerFormPageState extends State<CustomerFormPage> {
 
   void _handleNextOrSubmit() {
     if (_controller.currentStep.value == 3) {
+      if (!_controller.isPrimaryLocationSraFilled.value) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text(
+              'Site Risk Assessment (SRA) pada titik servis utama wajib diisi.',
+            ),
+            backgroundColor: AppColors.warn,
+          ),
+        );
+        return;
+      }
       _controller.submit();
     } else {
+      final currentStep = _controller.currentStep.value;
+      if (currentStep == 2 && !_controller.isPrimaryLocationSraFilled.value) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text(
+              'Site Risk Assessment (SRA) pada titik servis utama wajib diisi.',
+            ),
+            backgroundColor: AppColors.warn,
+          ),
+        );
+        return;
+      }
       final success = _controller.nextStep();
       if (!success) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -88,6 +111,17 @@ class _CustomerFormPageState extends State<CustomerFormPage> {
   }
 
   void _handleSubmit() {
+    if (!_controller.isPrimaryLocationSraFilled.value) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+            'Site Risk Assessment (SRA) pada titik servis utama wajib diisi.',
+          ),
+          backgroundColor: AppColors.warn,
+        ),
+      );
+      return;
+    }
     _controller.submit();
   }
 

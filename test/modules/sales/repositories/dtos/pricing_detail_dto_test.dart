@@ -56,6 +56,7 @@ void main() {
         'markup_value': 10.0,
         'discount_amount': 0.0,
         'tax_percentage': 11.0,
+        'schedule_work_order_type': 2,
         'supplies': <Map<String, dynamic>>[
           {
             'id': 'sup-1',
@@ -77,6 +78,7 @@ void main() {
 
       final dto = PricingDetailDto.fromJson(json);
       expect(dto.totalVisits, 24);
+      expect(dto.scheduleWorkOrderType, 2);
       expect(dto.supplies.length, 1);
       expect(dto.supplies.first.treatmentMethodId, 'tm-2');
       expect(dto.supplies.first.areaKerja, 'Lobby');
@@ -84,9 +86,36 @@ void main() {
 
       final entity = dto.toEntity();
       expect(entity.totalVisits, 24);
+      expect(entity.scheduleWorkOrderType, 2);
       expect(entity.supplies.length, 1);
       expect(entity.supplies.first.treatmentMethodId, 'tm-2');
       expect(entity.supplies.first.areaKerja, 'Lobby');
     });
+
+    test(
+      'fromJson falls back to scheduleWorkOrderType = 1 when field is absent',
+      () {
+        final json = {
+          'id': 'p-2',
+          'customer_id': 'c-2',
+          'service_id': 's-2',
+          'contract_months': 6,
+          'visit_frequency': 1,
+          'total_visits': 6,
+          'markup_type': 1,
+          'markup_value': 0.0,
+          'discount_amount': 0.0,
+          'tax_percentage': 0.0,
+          'supplies': <Map<String, dynamic>>[],
+          'workers': <Map<String, dynamic>>[],
+          'items': <Map<String, dynamic>>[],
+          // schedule_work_order_type intentionally omitted
+        };
+
+        final dto = PricingDetailDto.fromJson(json);
+        expect(dto.scheduleWorkOrderType, 1);
+        expect(dto.toEntity().scheduleWorkOrderType, 1);
+      },
+    );
   });
 }

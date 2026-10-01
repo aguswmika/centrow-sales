@@ -229,4 +229,60 @@ void main() {
 
     expect(find.text('Pest Control Monthly'), findsOneWidget);
   });
+
+  testWidgets(
+    'Create mode does not render Tanggal Selesai and shows automatic end date helper info',
+    (tester) async {
+      tester.view.physicalSize = const Size(800, 1200);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+
+      await tester.pumpWidget(buildTestWidget());
+      await tester.pumpAndSettle();
+
+      expect(find.text('Buat Kontrak'), findsNWidgets(2));
+      expect(find.text('Ubah Kontrak'), findsNothing);
+      expect(find.text('Tanggal Mulai *'), findsOneWidget);
+      expect(find.text('Tanggal Selesai'), findsNothing);
+      expect(
+        find.textContaining(
+          'Tanggal selesai dihitung otomatis dari durasi kontrak pada penawaran',
+        ),
+        findsOneWidget,
+      );
+    },
+  );
+
+  testWidgets(
+    'Edit mode renders Ubah Kontrak and displays Tanggal Selesai field',
+    (tester) async {
+      tester.view.physicalSize = const Size(800, 1200);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+
+      const contract = Contract(
+        id: 'c-100',
+        code: 'CTR-100',
+        customerId: 'cust-1',
+        customerName: 'PT Maju Terus',
+        serviceId: 'srv-1',
+        serviceName: 'General Pest Control',
+        categoryId: 'cat-monthly',
+        categoryName: 'Pest Control Monthly',
+        status: ContractStatus.draft,
+        startDate: '2026-01-01',
+        endDate: '2026-12-31',
+      );
+
+      await tester.pumpWidget(buildTestWidget(initialContract: contract));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Ubah Kontrak'), findsOneWidget);
+      expect(find.text('Buat Kontrak'), findsNothing);
+      expect(find.text('Tanggal Mulai *'), findsOneWidget);
+      expect(find.text('Tanggal Selesai'), findsOneWidget);
+    },
+  );
 }

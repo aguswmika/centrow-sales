@@ -6,6 +6,7 @@ class CreatePricingRequestDto {
   final double markupValue;
   final double discountAmount;
   final double taxPercentage;
+  final int scheduleWorkOrderType;
   final List<PricingSupplyDto> supplies;
   final List<PricingWorkerDto> workers;
   final List<PricingItemDto> items;
@@ -18,6 +19,7 @@ class CreatePricingRequestDto {
     required this.markupValue,
     required this.discountAmount,
     required this.taxPercentage,
+    this.scheduleWorkOrderType = 1,
     required this.supplies,
     required this.workers,
     required this.items,
@@ -31,6 +33,7 @@ class CreatePricingRequestDto {
     'markup_value': markupValue,
     'discount_amount': discountAmount,
     'tax_percentage': taxPercentage,
+    'schedule_work_order_type': scheduleWorkOrderType,
     'supplies': supplies.map((e) => e.toJson()).toList(),
     'workers': workers.map((e) => e.toJson()).toList(),
     'items': items.map((e) => e.toJson()).toList(),
@@ -53,6 +56,9 @@ class PricingSupplyDto {
   final String? areaKerja;
   final String? note;
   final int? installedUnits;
+  final double? actualDosageUsage;
+
+  double? get spkDoseUsage => actualDosageUsage;
 
   const PricingSupplyDto({
     required this.supplyType,
@@ -70,7 +76,9 @@ class PricingSupplyDto {
     this.areaKerja,
     this.note,
     this.installedUnits,
-  });
+    double? actualDosageUsage,
+    double? spkDoseUsage,
+  }) : actualDosageUsage = actualDosageUsage ?? spkDoseUsage;
 
   Map<String, dynamic> toJson() => {
     'supply_type': supplyType,
@@ -87,6 +95,10 @@ class PricingSupplyDto {
       'dose_unit_id': doseUnitId,
       'application_volume': applicationVolume,
       'application_volume_unit_id': applicationVolumeUnitId,
+      if (actualDosageUsage != null) ...{
+        'actual_dosage_usage': actualDosageUsage,
+        'spk_dose_usage': actualDosageUsage,
+      },
     },
     if (supplyType == 2) ...{
       'product_id': productId,

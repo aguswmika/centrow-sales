@@ -30,17 +30,40 @@ class PricingPage extends StatefulWidget {
 class _PricingPageState extends State<PricingPage> {
   late final ProposalController _controller;
   late final PricingCalculatorController _calcController;
+  late final TextEditingController _contractMonthsCtrl;
+  late final TextEditingController _visitFrequencyCtrl;
+  late final TextEditingController _totalVisitsCtrl;
 
   @override
   void initState() {
     super.initState();
     _controller = getIt<ProposalController>();
     _calcController = getIt<PricingCalculatorController>();
+
+    _contractMonthsCtrl = TextEditingController(
+      text: _calcController.contractMonths.value?.toString() ?? '',
+    );
+    _visitFrequencyCtrl = TextEditingController(
+      text: _calcController.visitFrequency.value?.toString() ?? '',
+    );
+    _totalVisitsCtrl = TextEditingController(
+      text: _calcController.totalVisits.value?.toString() ?? '',
+    );
+
     _controller.loadProposalDetail(widget.proposalId).then((_) {
       final state = _controller.proposalDetailState.value;
       if (state is UiSuccess<Proposal>) {
         if (state.data.hasPricing) {
-          _calcController.loadExistingPricing(widget.proposalId);
+          _calcController.loadExistingPricing(widget.proposalId).then((_) {
+            if (mounted) {
+              _contractMonthsCtrl.text =
+                  _calcController.contractMonths.value?.toString() ?? '';
+              _visitFrequencyCtrl.text =
+                  _calcController.visitFrequency.value?.toString() ?? '';
+              _totalVisitsCtrl.text =
+                  _calcController.totalVisits.value?.toString() ?? '';
+            }
+          });
         }
       }
     });
@@ -49,6 +72,9 @@ class _PricingPageState extends State<PricingPage> {
 
   @override
   void dispose() {
+    _contractMonthsCtrl.dispose();
+    _visitFrequencyCtrl.dispose();
+    _totalVisitsCtrl.dispose();
     _calcController.dispose();
     _controller.dispose();
     super.dispose();
@@ -223,6 +249,14 @@ class _PricingPageState extends State<PricingPage> {
     );
   }
 
+  void _syncTotalVisitsText() {
+    final visits = _calcController.totalVisits.value;
+    final newText = visits?.toString() ?? '';
+    if (_totalVisitsCtrl.text != newText) {
+      _totalVisitsCtrl.text = newText;
+    }
+  }
+
   Widget _buildParamBar(BuildContext context, {bool enabled = true}) {
     return Container(
       color: AppColors.surface,
@@ -232,49 +266,129 @@ class _PricingPageState extends State<PricingPage> {
           Expanded(
             child: _buildParamItem(
               'Durasi Kontrak',
-              _calcController.contractMonths.value?.toString(),
+              controller: _contractMonthsCtrl,
               icon: Icons.calendar_today,
               suffix: 'Bulan',
               keyboardType: TextInputType.number,
               enabled: enabled,
-              onChanged: (val) =>
-                  _calcController.contractMonths.value = int.tryParse(val),
+              onChanged: (val) {
+                _calcController.setContractMonths(int.tryParse(val));
+                _syncTotalVisitsText();
+              },
             ),
           ),
           const SizedBox(width: 16.0),
           Expanded(
             child: _buildParamItem(
               'Frek. Kunjungan',
-              _calcController.visitFrequency.value?.toString(),
+              controller: _visitFrequencyCtrl,
               icon: Icons.refresh,
               suffix: 'Kali',
               keyboardType: TextInputType.number,
               enabled: enabled,
-              onChanged: (val) =>
-                  _calcController.visitFrequency.value = int.tryParse(val),
+              onChanged: (val) {
+                _calcController.setVisitFrequency(int.tryParse(val));
+                _syncTotalVisitsText();
+              },
             ),
           ),
           const SizedBox(width: 16.0),
           Expanded(
             child: _buildParamItem(
               'Total Kunjungan',
-              _calcController.totalVisits.value?.toString(),
+              controller: _totalVisitsCtrl,
               icon: Icons.numbers,
               suffix: 'Kali',
               keyboardType: TextInputType.number,
               enabled: enabled,
-              onChanged: (val) =>
-                  _calcController.totalVisits.value = int.tryParse(val),
+              onChanged: (val) {
+                _calcController.setTotalVisits(int.tryParse(val));
+              },
             ),
+          ),
+          const SizedBox(width: 16.0),
+          SignalBuilder(
+            builder: (context) {
+              final selected = _calcController.scheduleWorkOrderType.value;
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    'Jenis Penjadwalan',
+                    style: TextStyle(
+                      fontSize: 12.0,
+                      fontWeight: FontWeight.w600,
+                      color: AppColors.sec,
+                    ),
+                  ),
+                  const SizedBox(height: 6.0),
+                  Row(
+                    children: [
+                      _buildToggleButton(
+                        label: 'Routine',
+                        value: 1,
+                        selected: selected,
+                        enabled: enabled,
+                        onTap: () =>
+                            _calcController.setScheduleWorkOrderType(1),
+                      ),
+                      const SizedBox(width: 4.0),
+                      _buildToggleButton(
+                        label: 'Station',
+                        value: 2,
+                        selected: selected,
+                        enabled: enabled,
+                        onTap: () =>
+                            _calcController.setScheduleWorkOrderType(2),
+                      ),
+                    ],
+                  ),
+                ],
+              );
+            },
           ),
         ],
       ),
     );
   }
 
+  Widget _buildToggleButton({
+    required String label,
+    required int value,
+    required int selected,
+    required bool enabled,
+    required VoidCallback onTap,
+  }) {
+    final isActive = selected == value;
+    return GestureDetector(
+      onTap: enabled ? onTap : null,
+      child: Container(
+        height: 44.0,
+        padding: const EdgeInsets.symmetric(horizontal: 14.0),
+        decoration: BoxDecoration(
+          color: isActive ? AppColors.brand : AppColors.subtle,
+          border: Border.all(
+            color: isActive ? AppColors.brand : AppColors.border,
+            width: 1.5,
+          ),
+          borderRadius: AppRadius.borderSm,
+        ),
+        alignment: Alignment.center,
+        child: Text(
+          label,
+          style: TextStyle(
+            fontSize: 13.0,
+            fontWeight: FontWeight.w600,
+            color: isActive ? Colors.white : AppColors.muted,
+          ),
+        ),
+      ),
+    );
+  }
+
   Widget _buildParamItem(
-    String label,
-    String? initialValue, {
+    String label, {
+    TextEditingController? controller,
     required IconData icon,
     String? suffix,
     TextInputType keyboardType = TextInputType.text,
@@ -309,7 +423,7 @@ class _PricingPageState extends State<PricingPage> {
               const SizedBox(width: 8.0),
               Expanded(
                 child: TextFormField(
-                  initialValue: initialValue,
+                  controller: controller,
                   keyboardType: keyboardType,
                   enabled: enabled,
                   onChanged: onChanged,

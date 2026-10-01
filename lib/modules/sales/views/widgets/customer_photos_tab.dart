@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:image_picker/image_picker.dart';
@@ -146,6 +148,25 @@ class _CustomerPhotosTabState extends State<CustomerPhotosTab> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+            decoration: const BoxDecoration(
+              color: AppColors.brand10,
+              borderRadius: AppRadius.borderPill,
+              border: Border.fromBorderSide(
+                BorderSide(color: Color(0x331E40AF)),
+              ),
+            ),
+            child: Text(
+              '0/5 Foto',
+              style: GoogleFonts.inter(
+                fontSize: 12,
+                fontWeight: FontWeight.w600,
+                color: AppColors.brand,
+              ),
+            ),
+          ),
+          const SizedBox(height: 16),
           const Icon(Icons.image, size: 56, color: AppColors.muted),
           const SizedBox(height: 16),
           Text(
@@ -182,10 +203,52 @@ class _CustomerPhotosTabState extends State<CustomerPhotosTab> {
   }
 
   Widget _buildPhotoGrid(List<CustomerPhoto> photos) {
+    final isMaxReached = photos.length >= 5;
+
     return SingleChildScrollView(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                'Foto Survey',
+                style: GoogleFonts.inter(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                  color: AppColors.text,
+                ),
+              ),
+              Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 10,
+                  vertical: 4,
+                ),
+                decoration: BoxDecoration(
+                  color: isMaxReached
+                      ? AppColors.err.withValues(alpha: 0.1)
+                      : AppColors.brand10,
+                  borderRadius: AppRadius.borderPill,
+                  border: Border.all(
+                    color: isMaxReached
+                        ? AppColors.err
+                        : const Color(0x331E40AF),
+                    width: 1,
+                  ),
+                ),
+                child: Text(
+                  '${photos.length}/5 Foto',
+                  style: GoogleFonts.inter(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
+                    color: isMaxReached ? AppColors.err : AppColors.brand,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
           GridView.builder(
             shrinkWrap: true,
             physics: const NeverScrollableScrollPhysics(),
@@ -202,12 +265,18 @@ class _CustomerPhotosTabState extends State<CustomerPhotosTab> {
           ),
           const SizedBox(height: 24),
           ElevatedButton.icon(
-            onPressed: _showImageSourceActionSheet,
+            onPressed: isMaxReached ? null : _showImageSourceActionSheet,
             icon: const Icon(Icons.add_a_photo_outlined),
-            label: const Text('Tambah Foto'),
+            label: Text(
+              isMaxReached ? 'Batas Maksimal 5 Foto Tercapai' : 'Tambah Foto',
+            ),
             style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.brand,
-              foregroundColor: Colors.white,
+              backgroundColor: isMaxReached
+                  ? AppColors.subtle
+                  : AppColors.brand,
+              foregroundColor: isMaxReached ? AppColors.muted : Colors.white,
+              disabledBackgroundColor: AppColors.subtle,
+              disabledForegroundColor: AppColors.muted,
               shape: const RoundedRectangleBorder(
                 borderRadius: AppRadius.borderMd,
               ),
@@ -221,12 +290,18 @@ class _CustomerPhotosTabState extends State<CustomerPhotosTab> {
   }
 
   Widget _buildPhotoTile(CustomerPhoto photo) {
+    final displayTitle = photo.title.trim().isNotEmpty
+        ? photo.title.trim()
+        : '(Tanpa Judul)';
+
     return Stack(
       key: ValueKey(photo.id),
       fit: StackFit.expand,
       children: [
         Material(
+          color: Colors.transparent,
           child: InkWell(
+            borderRadius: AppRadius.borderMd,
             onTap: () {
               Navigator.of(context).push<void>(
                 MaterialPageRoute<void>(
@@ -246,18 +321,52 @@ class _CustomerPhotosTabState extends State<CustomerPhotosTab> {
               ),
               child: ClipRRect(
                 borderRadius: AppRadius.borderMd,
-                child: Image.network(
-                  photo.url,
-                  fit: BoxFit.cover,
-                  errorBuilder: (context, error, stackTrace) {
-                    return const Center(
-                      child: Icon(
-                        Icons.broken_image_outlined,
-                        color: AppColors.muted,
-                        size: 32,
+                child: Stack(
+                  fit: StackFit.expand,
+                  children: [
+                    Image.network(
+                      photo.url,
+                      fit: BoxFit.cover,
+                      errorBuilder: (context, error, stackTrace) {
+                        return const Center(
+                          child: Icon(
+                            Icons.broken_image_outlined,
+                            color: AppColors.muted,
+                            size: 32,
+                          ),
+                        );
+                      },
+                    ),
+                    if (displayTitle.isNotEmpty)
+                      Positioned(
+                        left: 0,
+                        right: 0,
+                        bottom: 0,
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 6,
+                            vertical: 4,
+                          ),
+                          decoration: const BoxDecoration(
+                            gradient: LinearGradient(
+                              begin: Alignment.topCenter,
+                              end: Alignment.bottomCenter,
+                              colors: [Colors.transparent, Colors.black87],
+                            ),
+                          ),
+                          child: Text(
+                            displayTitle,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: GoogleFonts.inter(
+                              fontSize: 11,
+                              fontWeight: FontWeight.w600,
+                              color: Colors.white,
+                            ),
+                          ),
+                        ),
                       ),
-                    );
-                  },
+                  ],
                 ),
               ),
             ),
@@ -283,6 +392,17 @@ class _CustomerPhotosTabState extends State<CustomerPhotosTab> {
   }
 
   void _showImageSourceActionSheet() {
+    final state = _controller.photosState.value;
+    if (state is UiSuccess<List<CustomerPhoto>> && state.data.length >= 5) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Maksimal 5 foto telah tercapai'),
+          backgroundColor: AppColors.err,
+        ),
+      );
+      return;
+    }
+
     showModalBottomSheet<void>(
       context: context,
       backgroundColor: AppColors.surface,
@@ -341,13 +461,38 @@ class _CustomerPhotosTabState extends State<CustomerPhotosTab> {
     );
   }
 
+  void _showPhotoUploadSheet(BuildContext context, String filePath) {
+    showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: AppColors.surface,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.only(
+          topLeft: AppRadius.radiusXl,
+          topRight: AppRadius.radiusXl,
+        ),
+      ),
+      builder: (bottomSheetContext) => _PhotoUploadSheet(
+        filePath: filePath,
+        onUpload: (title, notes) {
+          _controller.addPhoto(
+            widget.customerId,
+            filePath,
+            title: title,
+            notes: notes,
+          );
+        },
+      ),
+    );
+  }
+
   Future<void> _pickImageFromCamera() async {
     try {
       final XFile? pickedFile = await _imagePicker.pickImage(
         source: ImageSource.camera,
       );
-      if (pickedFile != null) {
-        await _controller.addPhoto(widget.customerId, pickedFile.path);
+      if (pickedFile != null && mounted) {
+        _showPhotoUploadSheet(context, pickedFile.path);
       }
     } catch (e) {
       if (mounted) {
@@ -363,8 +508,8 @@ class _CustomerPhotosTabState extends State<CustomerPhotosTab> {
       final XFile? pickedFile = await _imagePicker.pickImage(
         source: ImageSource.gallery,
       );
-      if (pickedFile != null) {
-        await _controller.addPhoto(widget.customerId, pickedFile.path);
+      if (pickedFile != null && mounted) {
+        _showPhotoUploadSheet(context, pickedFile.path);
       }
     } catch (e) {
       if (mounted) {
@@ -378,48 +523,288 @@ class _CustomerPhotosTabState extends State<CustomerPhotosTab> {
   void _showDeleteConfirmation(CustomerPhoto photo) {
     showDialog<void>(
       context: context,
-      builder: (context) => AlertDialog(
-        backgroundColor: AppColors.surface,
-        title: Text(
-          'Hapus Foto',
-          style: GoogleFonts.inter(
-            fontSize: 16,
-            fontWeight: FontWeight.w700,
-            color: AppColors.text,
-          ),
-        ),
-        content: Text(
-          'Hapus ${photo.originalName} secara permanen?',
-          style: GoogleFonts.inter(fontSize: 14, color: AppColors.sec),
-        ),
-        actionsPadding: const EdgeInsets.all(16),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: Text(
-              'Batal',
-              style: GoogleFonts.inter(
-                fontSize: 14,
-                fontWeight: FontWeight.w600,
-                color: AppColors.muted,
-              ),
+      builder: (context) {
+        final photoLabel = photo.title.trim().isNotEmpty
+            ? '"${photo.title.trim()}"'
+            : 'foto ini';
+        return AlertDialog(
+          backgroundColor: AppColors.surface,
+          title: Text(
+            'Hapus Foto',
+            style: GoogleFonts.inter(
+              fontSize: 16,
+              fontWeight: FontWeight.w700,
+              color: AppColors.text,
             ),
           ),
-          TextButton(
-            onPressed: () {
-              Navigator.of(context).pop();
-              _controller.deletePhoto(widget.customerId, photo.id);
-            },
-            child: Text(
-              'Hapus',
-              style: GoogleFonts.inter(
-                fontSize: 14,
-                fontWeight: FontWeight.w600,
-                color: AppColors.err,
+          content: Text(
+            'Hapus $photoLabel secara permanen?',
+            style: GoogleFonts.inter(fontSize: 14, color: AppColors.sec),
+          ),
+          actionsPadding: const EdgeInsets.all(16),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: Text(
+                'Batal',
+                style: GoogleFonts.inter(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                  color: AppColors.muted,
+                ),
               ),
             ),
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+                _controller.deletePhoto(widget.customerId, photo.id);
+              },
+              child: Text(
+                'Hapus',
+                style: GoogleFonts.inter(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                  color: AppColors.err,
+                ),
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  }
+}
+
+class _PhotoUploadSheet extends StatefulWidget {
+  final String filePath;
+  final void Function(String title, String? notes) onUpload;
+
+  const _PhotoUploadSheet({required this.filePath, required this.onUpload});
+
+  @override
+  State<_PhotoUploadSheet> createState() => _PhotoUploadSheetState();
+}
+
+class _PhotoUploadSheetState extends State<_PhotoUploadSheet> {
+  final _formKey = GlobalKey<FormState>();
+  late final TextEditingController _titleController;
+  late final TextEditingController _notesController;
+
+  @override
+  void initState() {
+    super.initState();
+    _titleController = TextEditingController();
+    _notesController = TextEditingController();
+  }
+
+  @override
+  void dispose() {
+    _titleController.dispose();
+    _notesController.dispose();
+    super.dispose();
+  }
+
+  void _submit() {
+    if (_formKey.currentState?.validate() ?? false) {
+      final title = _titleController.text.trim();
+      final notes = _notesController.text.trim().isEmpty
+          ? null
+          : _notesController.text.trim();
+      Navigator.of(context).pop();
+      widget.onUpload(title, notes);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: EdgeInsets.only(
+        left: 20,
+        right: 20,
+        top: 16,
+        bottom: MediaQuery.of(context).viewInsets.bottom + 20,
+      ),
+      child: SingleChildScrollView(
+        child: Form(
+          key: _formKey,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Center(
+                child: Container(
+                  width: 40,
+                  height: 4,
+                  decoration: const BoxDecoration(
+                    color: AppColors.border,
+                    borderRadius: AppRadius.borderPill,
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+              Text(
+                'Detail Foto',
+                style: GoogleFonts.inter(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w700,
+                  color: AppColors.text,
+                ),
+              ),
+              const SizedBox(height: 16),
+              ClipRRect(
+                borderRadius: AppRadius.borderMd,
+                child: Image.file(
+                  File(widget.filePath),
+                  height: 180,
+                  width: double.infinity,
+                  fit: BoxFit.cover,
+                  errorBuilder: (context, error, stackTrace) => Container(
+                    height: 180,
+                    color: AppColors.subtle,
+                    child: const Center(
+                      child: Icon(
+                        Icons.broken_image_outlined,
+                        color: AppColors.muted,
+                        size: 40,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+              Text(
+                'Judul Foto',
+                style: GoogleFonts.inter(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w600,
+                  color: AppColors.text,
+                ),
+              ),
+              const SizedBox(height: 6),
+              TextFormField(
+                controller: _titleController,
+                textInputAction: TextInputAction.next,
+                decoration: const InputDecoration(
+                  hintText: 'Masukkan judul foto',
+                  hintStyle: TextStyle(fontSize: 14, color: AppColors.muted),
+                  contentPadding: EdgeInsets.symmetric(
+                    horizontal: 14,
+                    vertical: 12,
+                  ),
+                  border: OutlineInputBorder(
+                    borderRadius: AppRadius.borderMd,
+                    borderSide: BorderSide(color: AppColors.border),
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: AppRadius.borderMd,
+                    borderSide: BorderSide(color: AppColors.border),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: AppRadius.borderMd,
+                    borderSide: BorderSide(color: AppColors.brand, width: 1.5),
+                  ),
+                  errorBorder: OutlineInputBorder(
+                    borderRadius: AppRadius.borderMd,
+                    borderSide: BorderSide(color: AppColors.err),
+                  ),
+                  focusedErrorBorder: OutlineInputBorder(
+                    borderRadius: AppRadius.borderMd,
+                    borderSide: BorderSide(color: AppColors.err, width: 1.5),
+                  ),
+                ),
+                style: GoogleFonts.inter(fontSize: 14, color: AppColors.text),
+                validator: (value) {
+                  if (value == null || value.trim().isEmpty) {
+                    return 'Judul foto wajib diisi';
+                  }
+                  return null;
+                },
+              ),
+              const SizedBox(height: 16),
+              Text(
+                'Catatan (Opsional)',
+                style: GoogleFonts.inter(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w600,
+                  color: AppColors.text,
+                ),
+              ),
+              const SizedBox(height: 6),
+              TextFormField(
+                controller: _notesController,
+                maxLines: 3,
+                textInputAction: TextInputAction.done,
+                decoration: const InputDecoration(
+                  hintText: 'Tambahkan catatan jika diperlukan...',
+                  hintStyle: TextStyle(fontSize: 14, color: AppColors.muted),
+                  contentPadding: EdgeInsets.symmetric(
+                    horizontal: 14,
+                    vertical: 12,
+                  ),
+                  border: OutlineInputBorder(
+                    borderRadius: AppRadius.borderMd,
+                    borderSide: BorderSide(color: AppColors.border),
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: AppRadius.borderMd,
+                    borderSide: BorderSide(color: AppColors.border),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: AppRadius.borderMd,
+                    borderSide: BorderSide(color: AppColors.brand, width: 1.5),
+                  ),
+                ),
+                style: GoogleFonts.inter(fontSize: 14, color: AppColors.text),
+              ),
+              const SizedBox(height: 24),
+              Row(
+                children: [
+                  Expanded(
+                    child: OutlinedButton(
+                      onPressed: () => Navigator.of(context).pop(),
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: AppColors.sec,
+                        side: const BorderSide(color: AppColors.border),
+                        shape: const RoundedRectangleBorder(
+                          borderRadius: AppRadius.borderMd,
+                        ),
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                      ),
+                      child: Text(
+                        'Batal',
+                        style: GoogleFonts.inter(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: ElevatedButton(
+                      onPressed: _submit,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppColors.brand,
+                        foregroundColor: Colors.white,
+                        shape: const RoundedRectangleBorder(
+                          borderRadius: AppRadius.borderMd,
+                        ),
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                      ),
+                      child: Text(
+                        'Unggah',
+                        style: GoogleFonts.inter(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ],
           ),
-        ],
+        ),
       ),
     );
   }
