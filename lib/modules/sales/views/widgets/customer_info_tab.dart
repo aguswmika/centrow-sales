@@ -16,21 +16,6 @@ class CustomerInfoTab extends StatelessWidget {
         customer.status.toLowerCase() == 'active' ||
         customer.status.toLowerCase() == 'aktif';
 
-    final primaryLoc = customer.locations.firstWhere(
-      (l) => l.isPrimary,
-      orElse: () => customer.locations.isNotEmpty
-          ? customer.locations.first
-          : const CustomerLocation(),
-    );
-    final regionParts = [
-      if (primaryLoc.district.isNotEmpty) primaryLoc.district,
-      if (primaryLoc.regency.isNotEmpty) primaryLoc.regency,
-      if (primaryLoc.province.isNotEmpty) primaryLoc.province,
-    ];
-    final regionText = regionParts.isNotEmpty
-        ? regionParts.join(', ')
-        : (customer.regency.isNotEmpty ? customer.regency : '-');
-
     return Container(
       width: double.infinity,
       decoration: BoxDecoration(
@@ -57,8 +42,6 @@ class CustomerInfoTab extends StatelessWidget {
           ),
           _buildDivider(),
           _buildInfoRow('Segmen Usaha', text: customer.segment),
-          _buildDivider(),
-          _buildInfoRow('Wilayah Domisili', text: regionText),
           _buildDivider(),
           _buildInfoRow('Nomor NPWP', text: customer.npwp),
           _buildDivider(),

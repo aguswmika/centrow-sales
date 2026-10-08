@@ -7,6 +7,8 @@ import 'package:centrow_sales/modules/sales/repositories/customer_repository.dar
 import 'package:centrow_sales/shared/error/failure.dart';
 import 'package:centrow_sales/shared/result/result.dart';
 import 'package:centrow_sales/shared/state/ui_state.dart';
+import 'package:centrow_sales/shared/sync/data_sync_event.dart';
+import 'package:centrow_sales/shared/sync/data_sync_service.dart';
 
 class FakeCustomerRepository implements CustomerRepository {
   List<Customer> customers;
@@ -385,5 +387,136 @@ void main() {
       expect(ctrl.segmentsState.value, isA<UiFailure<List<Segment>>>());
       ctrl.dispose();
     });
+  });
+
+  group('CustomerController DataSync', () {
+    late FakeCustomerRepository repository;
+    late DataSyncService syncService;
+    late CustomerController controller;
+
+    setUp(() {
+      repository = FakeCustomerRepository();
+      syncService = DataSyncServiceImpl();
+      controller = CustomerController(repository, syncService);
+    });
+
+    tearDown(() {
+      controller.dispose();
+      syncService.dispose();
+    });
+
+    test(
+      'auto-refreshes customer list when CustomerSyncEvent is received',
+      () async {
+        await controller.loadCustomers();
+        expect(
+          (controller.customersState.value as UiSuccess<List<Customer>>)
+              .data
+              .length,
+          3,
+        );
+
+        // Add customer to repo directly
+        repository.customers.add(
+          const Customer(
+            id: 'c4',
+            code: 'CRM-0100',
+            name: 'New Restaurant',
+            initials: 'NR',
+            segmentId: 'seg-restoran',
+            segment: 'Restoran',
+            status: 'active',
+            regency: 'Denpasar',
+          ),
+        );
+
+        // Emit CustomerSyncEvent
+        syncService.emit(
+          const CustomerSyncEvent('c4', action: SyncAction.created),
+        );
+
+        // Wait for async event loop
+        await Future<void>.delayed(Duration.zero);
+        await Future<void>.delayed(Duration.zero);
+
+        expect(
+          controller.customersState.value,
+          isA<UiSuccess<List<Customer>>>(),
+        );
+        final customers =
+            (controller.customersState.value as UiSuccess<List<Customer>>).data;
+        expect(customers.length, 4);
+        expect(customers.any((c) => c.id == 'c4'), isTrue);
+      },
+    );
+
+    test(
+      'auto-refreshes selected customer detail when CustomerSyncEvent matches selectedCustomerId',
+      () async {
+        await controller.loadCustomers();
+        await controller.selectCustomer('c1');
+        expect(controller.selectedCustomer.value?.name, 'Villa Sari Dewi');
+
+        // Update customer in repository
+        final idx = repository.customers.indexWhere((c) => c.id == 'c1');
+        repository.customers[idx] = repository.customers[idx].copyWith(
+          name: 'Villa Sari Dewi Updated',
+        );
+
+        // Emit event
+        syncService.emit(
+          const CustomerSyncEvent('c1', action: SyncAction.updated),
+        );
+
+        await Future<void>.delayed(Duration.zero);
+        await Future<void>.delayed(Duration.zero);
+
+        expect(
+          controller.selectedCustomer.value?.name,
+          'Villa Sari Dewi Updated',
+        );
+      },
+    );
+
+    test(
+      'does not refresh detail when CustomerSyncEvent has different customerId',
+      () async {
+        await controller.loadCustomers();
+        await controller.selectCustomer('c1');
+
+        // Update c2 in repository
+        final idx = repository.customers.indexWhere((c) => c.id == 'c2');
+        repository.customers[idx] = repository.customers[idx].copyWith(
+          name: 'Grand Hyatt Updated',
+        );
+
+        syncService.emit(
+          const CustomerSyncEvent('c2', action: SyncAction.updated),
+        );
+
+        await Future<void>.delayed(Duration.zero);
+        await Future<void>.delayed(Duration.zero);
+
+        // Selected customer is still c1 with original name
+        expect(controller.selectedCustomerId.value, 'c1');
+        expect(controller.selectedCustomer.value?.name, 'Villa Sari Dewi');
+      },
+    );
+
+    test(
+      'cancels subscription and does not handle events after dispose',
+      () async {
+        await controller.loadCustomers();
+        controller.dispose();
+
+        // Emitting after dispose should not throw
+        expect(
+          () => syncService.emit(
+            const CustomerSyncEvent('c1', action: SyncAction.updated),
+          ),
+          returnsNormally,
+        );
+      },
+    );
   });
 }

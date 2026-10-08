@@ -30,6 +30,7 @@ import 'package:centrow_sales/modules/sales/repositories/pricing_repository.dart
 import 'package:centrow_sales/shared/network/auth_token_holder.dart';
 import 'package:centrow_sales/shared/network/dio_client.dart';
 import 'package:centrow_sales/shared/storage/local_storage.dart';
+import 'package:centrow_sales/shared/sync/data_sync_service.dart';
 import 'package:centrow_sales/app/router.dart';
 import 'package:centrow_sales/modules/sales/controllers/contract_controller.dart';
 import 'package:centrow_sales/modules/sales/controllers/contract_form_controller.dart';
@@ -42,7 +43,6 @@ import 'package:centrow_sales/modules/sales/repositories/contract_addendum_repos
 import 'package:centrow_sales/modules/sales/controllers/contract_addendum_document_controller.dart';
 import 'package:centrow_sales/modules/sales/repositories/contract_addendum_document_repository.dart';
 import 'package:centrow_sales/modules/sales/repositories/site_risk_repository.dart';
-import 'package:centrow_sales/modules/sales/controllers/site_risk_controller.dart';
 
 final GetIt getIt = GetIt.instance;
 
@@ -62,6 +62,9 @@ Future<void> setupDi({LocalStorage? storage}) async {
   AuthTokenHolder.instance.onSessionExpired = () {
     appRouter.go('/login');
   };
+
+  // Services
+  getIt.registerLazySingleton<DataSyncService>(DataSyncServiceImpl.new);
 
   // Network
   getIt.registerLazySingleton<Dio>(createDio);
@@ -121,7 +124,10 @@ Future<void> setupDi({LocalStorage? storage}) async {
     () => SalesDashboardController(getIt<SalesDashboardRepository>()),
   );
   getIt.registerFactory<CustomerController>(
-    () => CustomerController(getIt<CustomerRepository>()),
+    () => CustomerController(
+      getIt<CustomerRepository>(),
+      getIt<DataSyncService>(),
+    ),
   );
   getIt.registerFactory<CustomerPhotoController>(
     () => CustomerPhotoController(getIt<CustomerPhotoRepository>()),
@@ -131,10 +137,14 @@ Future<void> setupDi({LocalStorage? storage}) async {
       getIt<CustomerRepository>(),
       getIt<RegionRepository>(),
       getIt<SiteRiskRepository>(),
+      getIt<DataSyncService>(),
     ),
   );
   getIt.registerFactory<ProposalController>(
-    () => ProposalController(getIt<ProposalRepository>()),
+    () => ProposalController(
+      getIt<ProposalRepository>(),
+      getIt<DataSyncService>(),
+    ),
   );
   getIt.registerFactory<ProposalDocumentController>(
     () => ProposalDocumentController(getIt<ProposalDocumentRepository>()),
@@ -144,6 +154,7 @@ Future<void> setupDi({LocalStorage? storage}) async {
       getIt<ProposalRepository>(),
       getIt<CustomerRepository>(),
       getIt<ServiceRepository>(),
+      getIt<DataSyncService>(),
     ),
   );
   getIt.registerFactory<ProductController>(
@@ -154,6 +165,7 @@ Future<void> setupDi({LocalStorage? storage}) async {
       getIt<PricingRepository>(),
       getIt<UomRepository>(),
       getIt<TreatmentMethodRepository>(),
+      getIt<DataSyncService>(),
     ),
   );
   getIt.registerFactory<ProductMappingController>(
@@ -178,12 +190,16 @@ Future<void> setupDi({LocalStorage? storage}) async {
     () => ContractAddendumDocumentRepositoryImpl(getIt<Dio>()),
   );
   getIt.registerFactory<ContractController>(
-    () => ContractController(getIt<ContractRepository>()),
+    () => ContractController(
+      getIt<ContractRepository>(),
+      getIt<DataSyncService>(),
+    ),
   );
   getIt.registerFactory<ContractFormController>(
     () => ContractFormController(
       getIt<ContractRepository>(),
       getIt<ContractCategoryRepository>(),
+      getIt<DataSyncService>(),
     ),
   );
   getIt.registerFactory<ContractDocumentController>(
@@ -196,8 +212,5 @@ Future<void> setupDi({LocalStorage? storage}) async {
     () => ContractAddendumDocumentController(
       getIt<ContractAddendumDocumentRepository>(),
     ),
-  );
-  getIt.registerFactory<SiteRiskController>(
-    () => SiteRiskController(getIt<SiteRiskRepository>()),
   );
 }

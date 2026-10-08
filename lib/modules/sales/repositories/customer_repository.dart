@@ -1,3 +1,4 @@
+
 import 'package:dio/dio.dart';
 import 'package:centrow_sales/shared/error/failure.dart';
 import 'package:centrow_sales/shared/network/dio_client.dart';
@@ -160,6 +161,7 @@ class CustomerRepositoryImpl implements CustomerRepository {
           ServerFailure('Format respon dari server tidak valid.'),
         );
       }
+
 
       final detailDto = CustomerDetailDto.fromJson(dataMap);
       return Ok(detailDto.toEntity());

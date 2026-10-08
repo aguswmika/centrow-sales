@@ -4,6 +4,9 @@ import 'package:centrow_sales/modules/sales/entities/contract.dart';
 import 'package:centrow_sales/modules/sales/repositories/contract_repository.dart';
 import 'package:centrow_sales/shared/error/failure.dart';
 import 'package:centrow_sales/shared/result/result.dart';
+import 'package:centrow_sales/shared/state/ui_state.dart';
+import 'package:centrow_sales/shared/sync/data_sync_event.dart';
+import 'package:centrow_sales/shared/sync/data_sync_service.dart';
 
 class FakeContractRepository implements ContractRepository {
   List<Contract> contracts = [];
@@ -156,5 +159,142 @@ void main() {
     // Clear search
     controller.setSearchQuery('');
     expect(controller.filteredContracts.value.length, 3);
+  });
+
+  group('ContractController DataSync', () {
+    late FakeContractRepository repo;
+    late DataSyncService syncService;
+    late ContractController controller;
+
+    setUp(() {
+      repo = FakeContractRepository();
+      repo.contracts = List.of(sampleContracts);
+      syncService = DataSyncServiceImpl();
+      controller = ContractController(repo, syncService);
+    });
+
+    tearDown(() {
+      controller.dispose();
+      syncService.dispose();
+    });
+
+    test(
+      'auto-refreshes contract list when ContractSyncEvent is received',
+      () async {
+        await controller.loadContracts();
+        expect(
+          (controller.contractsState.value as UiSuccess<List<Contract>>)
+              .data
+              .length,
+          3,
+        );
+
+        // Add contract directly to repo
+        repo.contracts.add(
+          const Contract(
+            id: 'c4',
+            code: 'CTR-2026-0004',
+            customerId: 'cust4',
+            customerName: 'Ayam Betutu Khas Gilimanuk',
+            serviceId: 'srv4',
+            serviceName: 'Fly Control',
+            categoryId: 'cat1',
+            status: ContractStatus.draft,
+            startDate: '2026-09-10',
+          ),
+        );
+
+        // Emit ContractSyncEvent
+        syncService.emit(
+          const ContractSyncEvent('c4', action: SyncAction.created),
+        );
+
+        // Wait for async event stream
+        await Future<void>.delayed(Duration.zero);
+        await Future<void>.delayed(Duration.zero);
+
+        expect(
+          controller.contractsState.value,
+          isA<UiSuccess<List<Contract>>>(),
+        );
+        final contracts =
+            (controller.contractsState.value as UiSuccess<List<Contract>>).data;
+        expect(contracts.length, 4);
+        expect(contracts.any((c) => c.id == 'c4'), isTrue);
+      },
+    );
+
+    test(
+      'auto-refreshes selected contract detail when ContractSyncEvent matches selectedContractId',
+      () async {
+        await controller.loadContracts();
+        await controller.selectContract('c1');
+        expect(
+          controller.selectedContract.value?.customerName,
+          'Villa Sari Dewi',
+        );
+
+        // Update contract in repository
+        final idx = repo.contracts.indexWhere((c) => c.id == 'c1');
+        repo.contracts[idx] = repo.contracts[idx].copyWith(
+          customerName: 'Villa Sari Dewi Updated',
+        );
+
+        // Emit ContractSyncEvent
+        syncService.emit(
+          const ContractSyncEvent('c1', action: SyncAction.updated),
+        );
+
+        await Future<void>.delayed(Duration.zero);
+        await Future<void>.delayed(Duration.zero);
+
+        expect(
+          controller.selectedContract.value?.customerName,
+          'Villa Sari Dewi Updated',
+        );
+      },
+    );
+
+    test(
+      'does not refresh detail when ContractSyncEvent has different contractId',
+      () async {
+        await controller.loadContracts();
+        await controller.selectContract('c1');
+
+        // Update c2 in repository
+        final idx = repo.contracts.indexWhere((c) => c.id == 'c2');
+        repo.contracts[idx] = repo.contracts[idx].copyWith(
+          customerName: 'Hotel Surya Kuta Updated',
+        );
+
+        syncService.emit(
+          const ContractSyncEvent('c2', action: SyncAction.updated),
+        );
+
+        await Future<void>.delayed(Duration.zero);
+        await Future<void>.delayed(Duration.zero);
+
+        expect(controller.selectedContractId.value, 'c1');
+        expect(
+          controller.selectedContract.value?.customerName,
+          'Villa Sari Dewi',
+        );
+      },
+    );
+
+    test(
+      'cancels subscription and does not handle events after dispose',
+      () async {
+        await controller.loadContracts();
+        controller.dispose();
+
+        expect(
+          () => syncService.emit(
+            const ContractSyncEvent('c1', action: SyncAction.updated),
+          ),
+          returnsNormally,
+        );
+      },
+    );
   });
 }

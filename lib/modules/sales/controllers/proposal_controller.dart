@@ -7,11 +7,36 @@ import 'package:centrow_sales/modules/sales/entities/proposal.dart';
 import 'package:centrow_sales/modules/sales/entities/proposal_status_result.dart';
 import 'package:centrow_sales/modules/sales/entities/update_proposal_input.dart';
 import 'package:centrow_sales/modules/sales/repositories/proposal_repository.dart';
+import 'package:centrow_sales/shared/sync/data_sync_event.dart';
+import 'package:centrow_sales/shared/sync/data_sync_service.dart';
 
 class ProposalController {
   final ProposalRepository _repository;
+  final DataSyncService? _syncService;
+  StreamSubscription<DataSyncEvent>? _syncSubscription;
 
-  ProposalController(this._repository);
+  ProposalController(this._repository, [this._syncService]) {
+    _initSync();
+  }
+
+  void _initSync() {
+    _syncSubscription = _syncService?.events.listen((event) {
+      if (_isDisposed) return;
+      if (event is ProposalSyncEvent) {
+        unawaited(loadProposals(isRefresh: true));
+        if (_selectedProposalId.value.isNotEmpty &&
+            _selectedProposalId.value == event.proposalId) {
+          unawaited(selectProposal(event.proposalId));
+        }
+      } else if (event is PricingSyncEvent) {
+        unawaited(loadProposals(isRefresh: true));
+        if (_selectedProposalId.value.isNotEmpty &&
+            _selectedProposalId.value == event.proposalId) {
+          unawaited(selectProposal(event.proposalId));
+        }
+      }
+    });
+  }
 
   bool isTreatmentQuotaError(Failure failure) {
     if (failure.statusCode == 400) {
@@ -167,6 +192,7 @@ class ProposalController {
       Err(:final failure) => UiFailure(failure),
     };
     if (result is Ok) {
+      _syncService?.emit(ProposalSyncEvent(id, action: SyncAction.updated));
       await loadProposals(); // refresh master list
     }
   }
@@ -208,6 +234,9 @@ class ProposalController {
 
     if (result is Ok<ProposalStatusResult>) {
       _applyStatusResult(result.value);
+      _syncService?.emit(
+        ProposalSyncEvent(result.value.id, action: SyncAction.updated),
+      );
       await loadProposals(isRefresh: true);
     }
     return result;
@@ -278,6 +307,7 @@ class ProposalController {
 
   void dispose() {
     _isDisposed = true;
+    _syncSubscription?.cancel();
     _proposalsState.dispose();
     _proposalDetailState.dispose();
     _actionState.dispose();

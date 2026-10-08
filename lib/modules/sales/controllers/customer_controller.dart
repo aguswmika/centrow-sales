@@ -5,11 +5,30 @@ import 'package:centrow_sales/shared/state/ui_state.dart';
 import 'package:centrow_sales/modules/sales/entities/customer.dart';
 import 'package:centrow_sales/modules/sales/entities/segment.dart';
 import 'package:centrow_sales/modules/sales/repositories/customer_repository.dart';
+import 'package:centrow_sales/shared/sync/data_sync_event.dart';
+import 'package:centrow_sales/shared/sync/data_sync_service.dart';
 
 class CustomerController {
   final CustomerRepository _repository;
+  final DataSyncService? _syncService;
+  StreamSubscription<DataSyncEvent>? _syncSubscription;
 
-  CustomerController(this._repository);
+  CustomerController(this._repository, [this._syncService]) {
+    _initSync();
+  }
+
+  void _initSync() {
+    _syncSubscription = _syncService?.events.listen((event) {
+      if (_isDisposed) return;
+      if (event is CustomerSyncEvent) {
+        unawaited(loadCustomers(isRefresh: true));
+        if (_selectedCustomerId.value.isNotEmpty &&
+            _selectedCustomerId.value == event.customerId) {
+          unawaited(selectCustomer(event.customerId));
+        }
+      }
+    });
+  }
 
   bool _isDisposed = false;
 
@@ -168,6 +187,7 @@ class CustomerController {
 
   void dispose() {
     _isDisposed = true;
+    _syncSubscription?.cancel();
     _segmentsState.dispose();
     _customersState.dispose();
     _customerDetailState.dispose();

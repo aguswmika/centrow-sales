@@ -4,7 +4,6 @@ import 'package:centrow_sales/shared/theme/app_colors.dart';
 import 'package:centrow_sales/shared/theme/app_radius.dart';
 import 'package:centrow_sales/shared/widgets/app_badge.dart';
 import 'package:centrow_sales/modules/sales/entities/customer.dart';
-import 'package:centrow_sales/modules/sales/views/widgets/site_risk_assessment_sheet.dart';
 
 class CustomerLocationsTab extends StatelessWidget {
   final List<CustomerLocation> locations;
@@ -45,20 +44,22 @@ class CustomerLocationsTab extends StatelessWidget {
   }
 
   Widget _buildLocationCard(BuildContext context, CustomerLocation location) {
-    final regionParts = [
-      if (location.village.isNotEmpty) location.village,
-      if (location.district.isNotEmpty) location.district,
-      if (location.regency.isNotEmpty) location.regency,
-      if (location.province.isNotEmpty) location.province,
+    final regionChips = [
+      if (location.district.isNotEmpty)
+        _buildInfoChip(label: 'Kecamatan', value: location.district),
+      if (location.regency.isNotEmpty)
+        _buildInfoChip(label: 'Kab/Kota', value: location.regency),
+      if (location.province.isNotEmpty)
+        _buildInfoChip(label: 'Provinsi', value: location.province),
+      if (location.village.isNotEmpty)
+        _buildInfoChip(label: 'Kel/Desa', value: location.village),
     ];
-    final regionSummary = regionParts.join(', ');
 
     final metaParts = [
       if (location.area.isNotEmpty) location.area,
-      if (regionSummary.isNotEmpty) regionSummary,
       if (location.coords.isNotEmpty) 'GPS: ${location.coords}',
     ];
-    final metaText = metaParts.isNotEmpty ? metaParts.join(' · ') : '-';
+    final metaText = metaParts.join(' · ');
 
     return Container(
       padding: const EdgeInsets.all(16.0),
@@ -126,66 +127,54 @@ class CustomerLocationsTab extends StatelessWidget {
                     color: AppColors.sec,
                   ),
                 ),
-                const SizedBox(height: 4.0),
-                Text(
-                  metaText,
-                  style: GoogleFonts.inter(
-                    fontSize: 12.0,
-                    fontWeight: FontWeight.w500,
-                    color: AppColors.muted,
-                  ),
-                ),
-                const SizedBox(height: 10.0),
-                InkWell(
-                  onTap: () {
-                    showModalBottomSheet<void>(
-                      context: context,
-                      isScrollControlled: true,
-                      backgroundColor: Colors.transparent,
-                      builder: (_) => SiteRiskAssessmentSheet(
-                        customerId: customerId ?? location.customerId ?? '',
-                        location: location,
-                      ),
-                    );
-                  },
-                  borderRadius: AppRadius.borderMd,
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 10.0,
-                      vertical: 6.0,
-                    ),
-                    decoration: BoxDecoration(
-                      color: AppColors.brand05,
-                      borderRadius: AppRadius.borderMd,
-                      border: Border.all(
-                        color: AppColors.brand.withValues(alpha: 0.3),
-                      ),
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        const Icon(
-                          Icons.security_outlined,
-                          size: 14.0,
-                          color: AppColors.brand,
-                        ),
-                        const SizedBox(width: 6.0),
-                        Text(
-                          'Penilaian Risiko (SRA)',
-                          style: GoogleFonts.inter(
-                            fontSize: 12.0,
-                            fontWeight: FontWeight.w600,
-                            color: AppColors.brand,
-                          ),
-                        ),
-                      ],
+                if (regionChips.isNotEmpty) ...[
+                  const SizedBox(height: 8.0),
+                  Wrap(spacing: 8.0, runSpacing: 6.0, children: regionChips),
+                ],
+                if (metaText.isNotEmpty) ...[
+                  const SizedBox(height: 6.0),
+                  Text(
+                    metaText,
+                    style: GoogleFonts.inter(
+                      fontSize: 12.0,
+                      fontWeight: FontWeight.w500,
+                      color: AppColors.muted,
                     ),
                   ),
-                ),
+                ],
               ],
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildInfoChip({required String label, required String value}) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 3.5),
+      decoration: BoxDecoration(
+        color: AppColors.bg,
+        borderRadius: AppRadius.borderSm,
+        border: Border.all(color: AppColors.border, width: 1.0),
+      ),
+      child: RichText(
+        text: TextSpan(
+          style: GoogleFonts.inter(fontSize: 12.0, color: AppColors.muted),
+          children: [
+            TextSpan(
+              text: '$label: ',
+              style: const TextStyle(fontWeight: FontWeight.w500),
+            ),
+            TextSpan(
+              text: value,
+              style: const TextStyle(
+                fontWeight: FontWeight.w600,
+                color: AppColors.text,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

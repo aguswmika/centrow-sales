@@ -2,16 +2,20 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:centrow_sales/modules/sales/controllers/proposal_controller.dart';
 import 'package:centrow_sales/modules/sales/entities/proposal.dart';
 import 'package:centrow_sales/modules/sales/entities/proposal_status_result.dart';
+import 'package:centrow_sales/modules/sales/entities/update_proposal_input.dart';
 import 'package:centrow_sales/modules/sales/repositories/proposal_repository.dart';
 import 'package:centrow_sales/shared/error/failure.dart';
 import 'package:centrow_sales/shared/result/result.dart';
 import 'package:centrow_sales/shared/state/ui_state.dart';
+import 'package:centrow_sales/shared/sync/data_sync_event.dart';
+import 'package:centrow_sales/shared/sync/data_sync_service.dart';
 
 class FakeProposalRepository implements ProposalRepository {
   List<Proposal> proposals;
   bool shouldFailGetProposals = false;
   bool shouldFailGetProposalById = false;
   bool shouldFailStatusTransition = false;
+  bool shouldFailReviseProposal = false;
 
   @override
   Future<Result<Proposal>> createProposal(dynamic input) async {
@@ -25,7 +29,14 @@ class FakeProposalRepository implements ProposalRepository {
 
   @override
   Future<Result<Proposal>> reviseProposal(String id, dynamic input) async {
-    return const Err(ServerFailure('Not implemented'));
+    if (shouldFailReviseProposal) {
+      return const Err(ServerFailure('Gagal merevisi proposal'));
+    }
+    final idx = proposals.indexWhere((p) => p.id == id || p.code == id);
+    if (idx != -1) {
+      return Ok(proposals[idx]);
+    }
+    return const Err(ServerFailure('Proposal tidak ditemukan'));
   }
 
   @override
@@ -601,5 +612,213 @@ void main() {
         },
       );
     });
+  });
+
+  group('ProposalController DataSync', () {
+    late FakeProposalRepository repository;
+    late DataSyncService syncService;
+    late ProposalController controller;
+
+    setUp(() {
+      repository = FakeProposalRepository();
+      syncService = DataSyncServiceImpl();
+      controller = ProposalController(repository, syncService);
+    });
+
+    tearDown(() {
+      controller.dispose();
+      syncService.dispose();
+    });
+
+    test(
+      'auto-refreshes proposal list when ProposalSyncEvent is received',
+      () async {
+        await controller.loadProposals();
+        expect(
+          (controller.proposalsState.value as UiSuccess<List<Proposal>>)
+              .data
+              .length,
+          3,
+        );
+
+        repository.proposals.add(
+          const Proposal(
+            id: 'p4',
+            code: 'PRO-2026-0043',
+            clientName: 'New Client',
+            serviceName: 'Termite Protection',
+            status: ProposalStatus.draft,
+            date: '16 Agt 2026',
+            validUntil: '16 Sep 2026',
+            location: 'Denpasar',
+            version: '1',
+            total: 5000000.0,
+          ),
+        );
+
+        syncService.emit(
+          const ProposalSyncEvent('p4', action: SyncAction.created),
+        );
+        await Future<void>.delayed(Duration.zero);
+        await Future<void>.delayed(Duration.zero);
+
+        expect(
+          (controller.proposalsState.value as UiSuccess<List<Proposal>>)
+              .data
+              .length,
+          4,
+        );
+      },
+    );
+
+    test(
+      'auto-refreshes selected proposal detail when ProposalSyncEvent matches selected proposal',
+      () async {
+        await controller.loadProposals();
+        await controller.selectProposal('p1');
+        expect(controller.selectedProposalId.value, 'p1');
+
+        final idx = repository.proposals.indexWhere((p) => p.id == 'p1');
+        repository.proposals[idx] = repository.proposals[idx].copyWith(
+          clientName: 'Updated Villa Name',
+        );
+
+        syncService.emit(
+          const ProposalSyncEvent('p1', action: SyncAction.updated),
+        );
+        await Future<void>.delayed(Duration.zero);
+        await Future<void>.delayed(Duration.zero);
+
+        expect(
+          (controller.proposalDetailState.value as UiSuccess<Proposal>)
+              .data
+              .clientName,
+          'Updated Villa Name',
+        );
+      },
+    );
+
+    test(
+      'auto-refreshes proposal list when PricingSyncEvent is received',
+      () async {
+        await controller.loadProposals();
+        expect(
+          (controller.proposalsState.value as UiSuccess<List<Proposal>>)
+              .data
+              .length,
+          3,
+        );
+
+        repository.proposals.add(
+          const Proposal(
+            id: 'p5',
+            code: 'PRO-2026-0044',
+            clientName: 'Another Client',
+            serviceName: 'General Pest',
+            status: ProposalStatus.draft,
+            date: '17 Agt 2026',
+            validUntil: '17 Sep 2026',
+            location: 'Sanur',
+            version: '1',
+            total: 3000000.0,
+          ),
+        );
+
+        syncService.emit(const PricingSyncEvent('p5'));
+        await Future<void>.delayed(Duration.zero);
+        await Future<void>.delayed(Duration.zero);
+
+        expect(
+          (controller.proposalsState.value as UiSuccess<List<Proposal>>)
+              .data
+              .length,
+          4,
+        );
+      },
+    );
+
+    test(
+      'auto-refreshes selected proposal detail when PricingSyncEvent matches selected proposal',
+      () async {
+        await controller.loadProposals();
+        await controller.selectProposal('p2');
+        expect(controller.selectedProposalId.value, 'p2');
+
+        final idx = repository.proposals.indexWhere((p) => p.id == 'p2');
+        repository.proposals[idx] = repository.proposals[idx].copyWith(
+          total: 9999999.0,
+        );
+
+        syncService.emit(const PricingSyncEvent('p2'));
+        await Future<void>.delayed(Duration.zero);
+        await Future<void>.delayed(Duration.zero);
+
+        expect(
+          (controller.proposalDetailState.value as UiSuccess<Proposal>)
+              .data
+              .total,
+          9999999.0,
+        );
+      },
+    );
+
+    test(
+      'emits ProposalSyncEvent with updated action when status transition succeeds (sendProposal)',
+      () async {
+        final emittedEvents = <DataSyncEvent>[];
+        final sub = syncService.events.listen(emittedEvents.add);
+
+        await controller.sendProposal('p3');
+        await Future<void>.delayed(Duration.zero);
+
+        expect(emittedEvents.length, 1);
+        final event = emittedEvents.first;
+        expect(event, isA<ProposalSyncEvent>());
+        final propEvent = event as ProposalSyncEvent;
+        expect(propEvent.proposalId, 'p3');
+        expect(propEvent.action, SyncAction.updated);
+
+        await sub.cancel();
+      },
+    );
+
+    test(
+      'emits ProposalSyncEvent with updated action when reviseProposal succeeds',
+      () async {
+        final emittedEvents = <DataSyncEvent>[];
+        final sub = syncService.events.listen(emittedEvents.add);
+
+        await controller.reviseProposal(
+          'p1',
+          const UpdateProposalInput(proposalDate: '2026-09-01'),
+        );
+        await Future<void>.delayed(Duration.zero);
+
+        expect(emittedEvents.length, 1);
+        final event = emittedEvents.first;
+        expect(event, isA<ProposalSyncEvent>());
+        final propEvent = event as ProposalSyncEvent;
+        expect(propEvent.proposalId, 'p1');
+        expect(propEvent.action, SyncAction.updated);
+
+        await sub.cancel();
+      },
+    );
+
+    test(
+      'does not emit ProposalSyncEvent when status transition fails',
+      () async {
+        final emittedEvents = <DataSyncEvent>[];
+        final sub = syncService.events.listen(emittedEvents.add);
+
+        repository.shouldFailStatusTransition = true;
+        await controller.sendProposal('p3');
+        await Future<void>.delayed(Duration.zero);
+
+        expect(emittedEvents, isEmpty);
+
+        await sub.cancel();
+      },
+    );
   });
 }

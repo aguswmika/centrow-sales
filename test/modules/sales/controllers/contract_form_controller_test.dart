@@ -7,6 +7,8 @@ import 'package:centrow_sales/modules/sales/repositories/contract_category_repos
 import 'package:centrow_sales/modules/sales/repositories/contract_repository.dart';
 import 'package:centrow_sales/shared/error/failure.dart';
 import 'package:centrow_sales/shared/result/result.dart';
+import 'package:centrow_sales/shared/sync/data_sync_event.dart';
+import 'package:centrow_sales/shared/sync/data_sync_service.dart';
 
 class MockContractCategoryRepository implements ContractCategoryRepository {
   List<ContractCategory> categories = [];
@@ -292,5 +294,104 @@ void main() {
       expect(mockContractRepo.lastUpdateInput?.endDate, '2026-12-01');
       expect(mockContractRepo.lastUpdateInput?.contractTemplateId, isNull);
     });
+  });
+
+  group('ContractFormController DataSync', () {
+    late MockContractCategoryRepository mockCategoryRepo;
+    late MockContractRepository mockContractRepo;
+    late DataSyncService syncService;
+    late ContractFormController controller;
+
+    setUp(() {
+      mockCategoryRepo = MockContractCategoryRepository();
+      mockContractRepo = MockContractRepository();
+      mockCategoryRepo.categories = [testCategory];
+      syncService = DataSyncServiceImpl();
+      controller = ContractFormController(
+        mockContractRepo,
+        mockCategoryRepo,
+        syncService,
+      );
+    });
+
+    tearDown(() {
+      controller.dispose();
+      syncService.dispose();
+    });
+
+    test(
+      'submit in create mode emits ContractSyncEvent with created action',
+      () async {
+        final emittedEvents = <DataSyncEvent>[];
+        final sub = syncService.events.listen(emittedEvents.add);
+
+        controller.initFromProposal(
+          proposalId: 'prop-10',
+          proposalCode: 'PROP-2026-0010',
+          customerName: 'PT Maju Terus',
+          serviceName: 'Termite Protection',
+        );
+        controller.updateFields(
+          category: testCategory,
+          startDate: '2026-06-01',
+          signedDate: '2026-06-01',
+          notes: 'Catatan kontrak baru',
+        );
+        controller.selectContractTemplate('tmpl-1');
+
+        final res = await controller.submit();
+        await Future<void>.delayed(Duration.zero);
+
+        expect(res.isOk, isTrue);
+        expect(emittedEvents.length, 1);
+        final event = emittedEvents.first;
+        expect(event, isA<ContractSyncEvent>());
+        final contractEvent = event as ContractSyncEvent;
+        expect(contractEvent.contractId, 'ctr-created');
+        expect(contractEvent.proposalId, 'prop-10');
+        expect(contractEvent.action, SyncAction.created);
+
+        await sub.cancel();
+      },
+    );
+
+    test(
+      'submit in edit mode emits ContractSyncEvent with updated action',
+      () async {
+        final emittedEvents = <DataSyncEvent>[];
+        final sub = syncService.events.listen(emittedEvents.add);
+
+        const existing = Contract(
+          id: 'ctr-50',
+          code: 'CTR-2026-0050',
+          customerId: 'cust-1',
+          serviceId: 'srv-1',
+          categoryId: 'cat-1',
+          categoryName: 'Pest Control',
+          status: ContractStatus.draft,
+          startDate: '2026-01-01',
+          signedDate: '2026-01-01',
+          notes: 'Awal',
+        );
+        controller.initFromContract(existing);
+        controller.updateFields(
+          startDate: '2026-06-01',
+          notes: 'Catatan edit',
+        );
+
+        final res = await controller.submit();
+        await Future<void>.delayed(Duration.zero);
+
+        expect(res.isOk, isTrue);
+        expect(emittedEvents.length, 1);
+        final event = emittedEvents.first;
+        expect(event, isA<ContractSyncEvent>());
+        final contractEvent = event as ContractSyncEvent;
+        expect(contractEvent.contractId, 'ctr-50');
+        expect(contractEvent.action, SyncAction.updated);
+
+        await sub.cancel();
+      },
+    );
   });
 }

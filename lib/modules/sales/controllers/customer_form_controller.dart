@@ -11,6 +11,8 @@ import 'package:centrow_sales/modules/sales/entities/segment.dart';
 import 'package:centrow_sales/modules/sales/entities/site_risk.dart';
 import 'package:centrow_sales/modules/sales/repositories/customer_repository.dart';
 import 'package:centrow_sales/modules/sales/repositories/site_risk_repository.dart';
+import 'package:centrow_sales/shared/sync/data_sync_event.dart';
+import 'package:centrow_sales/shared/sync/data_sync_service.dart';
 
 /// Normalizes region names by removing common Indonesian administrative prefixes,
 /// trailing tokens, and punctuation for resilient matching.
@@ -100,6 +102,7 @@ class CustomerFormController {
   final CustomerRepository _repository;
   final RegionRepository _regionRepository;
   final SiteRiskRepository _siteRiskRepository;
+  final DataSyncService? _syncService;
 
   final customerId = signal<String?>(null);
   final isLoadingData = signal<bool>(false);
@@ -149,8 +152,10 @@ class CustomerFormController {
     this._repository, [
     RegionRepository? regionRepository,
     SiteRiskRepository? siteRiskRepository,
+    DataSyncService? syncService,
   ]) : _regionRepository = regionRepository ?? _resolveRegionRepository(),
-       _siteRiskRepository = siteRiskRepository ?? _resolveSiteRiskRepository();
+       _siteRiskRepository = siteRiskRepository ?? _resolveSiteRiskRepository(),
+       _syncService = syncService;
 
   static RegionRepository _resolveRegionRepository() {
     if (getIt.isRegistered<RegionRepository>()) {
@@ -614,12 +619,19 @@ class CustomerFormController {
       contacts: contacts.value.where((c) => c.name.trim().isNotEmpty).toList(),
     );
 
-    final result = customerId.value != null
+    final isEditMode = customerId.value != null;
+    final result = isEditMode
         ? await _repository.updateCustomer(customerId.value!, input)
         : await _repository.createCustomer(input);
     return switch (result) {
       Ok(:final value) => () {
         _submissionState.value = UiSuccess(value);
+        _syncService?.emit(
+          CustomerSyncEvent(
+            value.id,
+            action: isEditMode ? SyncAction.updated : SyncAction.created,
+          ),
+        );
         return value;
       }(),
       Err(:final failure) => () {

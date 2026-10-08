@@ -12,6 +12,8 @@ import 'package:centrow_sales/modules/sales/repositories/dtos/pricing_dto.dart';
 import 'package:centrow_sales/modules/sales/repositories/pricing_repository.dart';
 import 'package:centrow_sales/modules/core/repositories/uom_repository.dart';
 import 'package:centrow_sales/modules/pc/repositories/treatment_method_repository.dart';
+import 'package:centrow_sales/shared/sync/data_sync_event.dart';
+import 'package:centrow_sales/shared/sync/data_sync_service.dart';
 
 class PricingSupplyRow {
   final String id;
@@ -173,11 +175,13 @@ class PricingCalculatorController {
   final PricingRepository _repository;
   final UomRepository? _uomRepository;
   final TreatmentMethodRepository? _treatmentMethodRepository;
+  final DataSyncService? _syncService;
 
   PricingCalculatorController(
     this._repository, [
     this._uomRepository,
     this._treatmentMethodRepository,
+    this._syncService,
   ]);
 
   final uoms = ListSignal<Uom>([]);
@@ -605,6 +609,9 @@ class PricingCalculatorController {
       Ok(:final value) => UiSuccess(value),
       Err(:final failure) => UiFailure(failure),
     };
+    if (result is Ok) {
+      _syncService?.emit(PricingSyncEvent(proposalId));
+    }
   }
 
   void dispose() {

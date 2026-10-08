@@ -1,4 +1,4 @@
-# CLAUDE.md
+# AGENTS
 
 Guidance for AI coding agents working in this repository. Follow these rules when
 generating or modifying code.

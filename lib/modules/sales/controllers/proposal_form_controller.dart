@@ -9,12 +9,15 @@ import 'package:centrow_sales/modules/sales/repositories/customer_repository.dar
 import 'package:centrow_sales/modules/sales/repositories/service_repository.dart';
 import 'package:centrow_sales/shared/error/failure.dart';
 import 'package:centrow_sales/shared/result/result.dart';
+import 'package:centrow_sales/shared/sync/data_sync_event.dart';
+import 'package:centrow_sales/shared/sync/data_sync_service.dart';
 import 'package:flutter/foundation.dart';
 
 class ProposalFormController extends ChangeNotifier {
   final ProposalRepository _proposalRepository;
   final CustomerRepository _customerRepository;
   final ServiceRepository _serviceRepository;
+  final DataSyncService? _syncService;
 
   Customer? selectedCustomer;
   Service? selectedService;
@@ -45,8 +48,9 @@ class ProposalFormController extends ChangeNotifier {
   ProposalFormController(
     this._proposalRepository,
     this._customerRepository,
-    this._serviceRepository,
-  );
+    this._serviceRepository, [
+    this._syncService,
+  ]);
 
   void initForEdit(Proposal proposal) {
     _editId = proposal.id;
@@ -141,7 +145,9 @@ class ProposalFormController extends ChangeNotifier {
       return const Err(UnknownFailure('Field wajib harus diisi'));
     }
 
-    if (isEditMode || isReviseMode) {
+    final Result<Proposal> result;
+    final isUpdate = isEditMode || isReviseMode;
+    if (isUpdate) {
       final input = UpdateProposalInput(
         proposalDate: proposalDate!,
         validUntil: validUntil,
@@ -149,9 +155,10 @@ class ProposalFormController extends ChangeNotifier {
         notes: notes,
       );
       if (isReviseMode) {
-        return await _proposalRepository.reviseProposal(_editId!, input);
+        result = await _proposalRepository.reviseProposal(_editId!, input);
+      } else {
+        result = await _proposalRepository.updateProposal(_editId!, input);
       }
-      return await _proposalRepository.updateProposal(_editId!, input);
     } else {
       if (templateId == null) {
         return const Err(UnknownFailure('Template proposal wajib dipilih.'));
@@ -165,8 +172,20 @@ class ProposalFormController extends ChangeNotifier {
         addressId: addressId,
         notes: notes,
       );
-      return await _proposalRepository.createProposal(input);
+      result = await _proposalRepository.createProposal(input);
     }
+
+    if (result is Ok<Proposal>) {
+      _syncService?.emit(
+        ProposalSyncEvent(
+          result.value.id,
+          customerId: result.value.customerId,
+          action: isUpdate ? SyncAction.updated : SyncAction.created,
+        ),
+      );
+    }
+
+    return result;
   }
 
   void updateFields({

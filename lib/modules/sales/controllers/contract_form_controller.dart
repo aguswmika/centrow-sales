@@ -6,11 +6,19 @@ import 'package:centrow_sales/modules/sales/entities/contract_category.dart';
 import 'package:centrow_sales/modules/sales/repositories/contract_repository.dart';
 import 'package:centrow_sales/modules/sales/repositories/contract_category_repository.dart';
 
+import 'package:centrow_sales/shared/sync/data_sync_event.dart';
+import 'package:centrow_sales/shared/sync/data_sync_service.dart';
+
 class ContractFormController extends ChangeNotifier {
   final ContractRepository _contractRepository;
   final ContractCategoryRepository _categoryRepository;
+  final DataSyncService? _syncService;
 
-  ContractFormController(this._contractRepository, this._categoryRepository);
+  ContractFormController(
+    this._contractRepository,
+    this._categoryRepository, [
+    this._syncService,
+  ]);
 
   String? contractId;
   String? proposalId;
@@ -155,6 +163,15 @@ class ContractFormController extends ChangeNotifier {
       );
       _isSubmitting = false;
       notifyListeners();
+      if (result is Ok) {
+        _syncService?.emit(
+          ContractSyncEvent(
+            contractId!,
+            proposalId: proposalId,
+            action: SyncAction.updated,
+          ),
+        );
+      }
       return switch (result) {
         Ok() => Ok(
           Contract(
@@ -178,6 +195,15 @@ class ContractFormController extends ChangeNotifier {
 
     _isSubmitting = false;
     notifyListeners();
+    if (result is Ok<Contract>) {
+      _syncService?.emit(
+        ContractSyncEvent(
+          result.value.id,
+          proposalId: proposalId,
+          action: SyncAction.created,
+        ),
+      );
+    }
     return result;
   }
 }

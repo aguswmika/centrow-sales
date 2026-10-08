@@ -48,10 +48,7 @@ class _PricingPreviewPageState extends State<PricingPreviewPage> {
             'Kalkulasi berhasil disimpan.',
             isSuccess: true,
           );
-          context.goNamed(
-            'proposals',
-            extra: {'id': widget.proposal.id, 'refresh': true},
-          );
+          context.go('/proposals', extra: widget.proposal.id);
         default:
           break;
       }

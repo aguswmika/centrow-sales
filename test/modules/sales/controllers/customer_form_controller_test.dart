@@ -11,6 +11,8 @@ import 'package:centrow_sales/modules/sales/repositories/site_risk_repository.da
 import 'package:centrow_sales/shared/error/failure.dart';
 import 'package:centrow_sales/shared/result/result.dart';
 import 'package:centrow_sales/shared/state/ui_state.dart';
+import 'package:centrow_sales/shared/sync/data_sync_event.dart';
+import 'package:centrow_sales/shared/sync/data_sync_service.dart';
 
 class FakeSiteRiskRepository implements SiteRiskRepository {
   List<SiteRiskMaster> masters = [];
@@ -1282,5 +1284,114 @@ void main() {
         expect(repository.lastUpdatedInput?.taxPercentage, 12.5);
       },
     );
+  });
+
+  group('CustomerFormController DataSync', () {
+    late FakeCustomerRepository repository;
+    late FakeRegionRepository regionRepo;
+    late FakeSiteRiskRepository siteRiskRepo;
+    late DataSyncService syncService;
+    late CustomerFormController controller;
+
+    setUp(() {
+      repository = FakeCustomerRepository();
+      regionRepo = FakeRegionRepository();
+      siteRiskRepo = FakeSiteRiskRepository();
+      syncService = DataSyncServiceImpl();
+      controller = CustomerFormController(
+        repository,
+        regionRepo,
+        siteRiskRepo,
+        syncService,
+      );
+    });
+
+    tearDown(() {
+      controller.dispose();
+      syncService.dispose();
+    });
+
+    test(
+      'submit emits CustomerSyncEvent with created action on success',
+      () async {
+        final emittedEvents = <DataSyncEvent>[];
+        final sub = syncService.events.listen(emittedEvents.add);
+
+        controller.name.value = 'New Customer';
+        controller.segmentId.value = 'seg-1';
+        controller.phone.value = '+62 812-1234-5678';
+        controller.updateLocation(
+          0,
+          controller.locations.value.first.copyWith(address: 'Jl. Test 123'),
+        );
+        controller.updateContact(
+          0,
+          controller.contacts.value.first.copyWith(
+            name: 'Contact Test',
+            phone: '+62 812-1234-5678',
+          ),
+        );
+
+        final result = await controller.submit();
+        expect(result, isNotNull);
+        expect(controller.submissionState.value, isA<UiSuccess<Customer>>());
+
+        await Future<void>.delayed(Duration.zero);
+        expect(emittedEvents.length, 1);
+        final event = emittedEvents.first;
+        expect(event, isA<CustomerSyncEvent>());
+        final custEvent = event as CustomerSyncEvent;
+        expect(custEvent.customerId, result!.id);
+        expect(custEvent.action, SyncAction.created);
+
+        await sub.cancel();
+      },
+    );
+
+    test(
+      'submit in edit mode emits CustomerSyncEvent with updated action on success',
+      () async {
+        final emittedEvents = <DataSyncEvent>[];
+        final sub = syncService.events.listen(emittedEvents.add);
+
+        controller.customerId.value = 'cust-123';
+        controller.name.value = 'Updated Customer';
+        controller.segmentId.value = 'seg-1';
+        controller.phone.value = '+62 812-1234-5678';
+
+        final result = await controller.submit();
+        expect(result, isNotNull);
+        expect(controller.submissionState.value, isA<UiSuccess<Customer>>());
+
+        await Future<void>.delayed(Duration.zero);
+        expect(emittedEvents.length, 1);
+        final event = emittedEvents.first;
+        expect(event, isA<CustomerSyncEvent>());
+        final custEvent = event as CustomerSyncEvent;
+        expect(custEvent.customerId, 'cust-123');
+        expect(custEvent.action, SyncAction.updated);
+
+        await sub.cancel();
+      },
+    );
+
+    test('submit does not emit CustomerSyncEvent on failure', () async {
+      repository.shouldFailCreate = true;
+      final emittedEvents = <DataSyncEvent>[];
+      final sub = syncService.events.listen(emittedEvents.add);
+
+      controller.name.value = 'Fail Customer';
+      controller.segmentId.value = 'seg-1';
+      controller.phone.value = '+62 812-1234-5678';
+
+      final result = await controller.submit();
+      expect(result, isNull);
+      expect(controller.submissionState.value, isA<UiFailure<Customer>>());
+
+      await Future<void>.delayed(Duration.zero);
+      expect(emittedEvents.isEmpty, isTrue);
+
+      await sub.cancel();
+    });
   });
 }

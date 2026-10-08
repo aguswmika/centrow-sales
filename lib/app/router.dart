@@ -85,17 +85,12 @@ GoRouter createRouter({String? initialLocation}) => GoRouter(
               name: 'proposals',
               builder: (context, state) {
                 final extra = state.extra;
-                String? id;
-                Key? pageKey;
-                if (extra is String) {
-                  id = extra;
-                } else if (extra is Map<String, dynamic>) {
-                  id = extra['id'] as String?;
-                  if (extra['refresh'] == true) {
-                    pageKey = UniqueKey();
-                  }
-                }
-                return ProposalPage(key: pageKey, initialProposalId: id);
+                final id = switch (extra) {
+                  String() => extra,
+                  Map<String, dynamic>() => extra['id'] as String?,
+                  _ => null,
+                };
+                return ProposalPage(initialProposalId: id);
               },
               routes: [
                 GoRoute(

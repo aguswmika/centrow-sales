@@ -1,12 +1,33 @@
+import 'dart:async';
 import 'package:signals/signals.dart';
 import 'package:centrow_sales/shared/result/result.dart';
 import 'package:centrow_sales/shared/state/ui_state.dart';
 import 'package:centrow_sales/modules/sales/entities/contract.dart';
 import 'package:centrow_sales/modules/sales/repositories/contract_repository.dart';
+import 'package:centrow_sales/shared/sync/data_sync_event.dart';
+import 'package:centrow_sales/shared/sync/data_sync_service.dart';
 
 class ContractController {
   final ContractRepository _repository;
-  ContractController(this._repository);
+  final DataSyncService? _syncService;
+  StreamSubscription<DataSyncEvent>? _syncSubscription;
+
+  ContractController(this._repository, [this._syncService]) {
+    _initSync();
+  }
+
+  void _initSync() {
+    _syncSubscription = _syncService?.events.listen((event) {
+      if (_isDisposed) return;
+      if (event is ContractSyncEvent) {
+        unawaited(loadContracts(isRefresh: true));
+        if (_selectedContractId.value.isNotEmpty &&
+            _selectedContractId.value == event.contractId) {
+          unawaited(selectContract(event.contractId));
+        }
+      }
+    });
+  }
 
   bool _isDisposed = false;
 
@@ -211,6 +232,7 @@ class ContractController {
 
   void dispose() {
     _isDisposed = true;
+    _syncSubscription?.cancel();
     _contractsState.dispose();
     _contractDetailState.dispose();
     _actionState.dispose();

@@ -9,6 +9,8 @@ import 'package:centrow_sales/modules/sales/repositories/pricing_repository.dart
 import 'package:centrow_sales/shared/error/failure.dart';
 import 'package:centrow_sales/shared/result/result.dart';
 import 'package:centrow_sales/shared/state/ui_state.dart';
+import 'package:centrow_sales/shared/sync/data_sync_event.dart';
+import 'package:centrow_sales/shared/sync/data_sync_service.dart';
 
 class MockPricingRepository implements PricingRepository {
   CreatePricingRequestDto? lastRequest;
@@ -1124,5 +1126,95 @@ void main() {
         expect(controller.supplies[1].spkDoseUsage.value, 4.0);
       },
     );
+  });
+
+  group('PricingCalculatorController DataSync', () {
+    late MockPricingRepository syncRepo;
+    late DataSyncService syncService;
+    late PricingCalculatorController syncController;
+
+    setUp(() {
+      syncRepo = MockPricingRepository();
+      syncService = DataSyncServiceImpl();
+      syncController = PricingCalculatorController(
+        syncRepo,
+        null,
+        null,
+        syncService,
+      );
+    });
+
+    tearDown(() {
+      syncController.dispose();
+      syncService.dispose();
+    });
+
+    test('emits PricingSyncEvent when submitPricing succeeds', () async {
+      final emittedEvents = <DataSyncEvent>[];
+      final subscription = syncService.events.listen(emittedEvents.add);
+
+      syncController.supplies.add(
+        PricingSupplyRow(
+          id: 'm1',
+          title: 'Chemical',
+          code: 'CHM',
+          uomCode: 'BTL',
+          kind: 1,
+          initialProductMappingId: 'pm-1',
+          initialTreatmentMethodId: 'tm-1',
+          initialDoseUsage: 2.0,
+          initialDoseUnitId: 'uom-ml',
+          initialApplicationVolume: 1.0,
+          initialApplicationVolumeUnitId: 'uom-l',
+          initialFreq: 1.0,
+        ),
+      );
+      syncController.contractMonths.value = 6;
+      syncController.totalVisits.value = 12;
+      syncRepo.response = const Ok(null);
+
+      await syncController.submitPricing('prop-123');
+      await Future<void>.delayed(Duration.zero);
+
+      expect(syncController.submitState.value, isA<UiSuccess<void>>());
+      expect(emittedEvents.length, 1);
+      final event = emittedEvents.first;
+      expect(event, isA<PricingSyncEvent>());
+      expect((event as PricingSyncEvent).proposalId, 'prop-123');
+
+      await subscription.cancel();
+    });
+
+    test('does not emit PricingSyncEvent when submitPricing fails', () async {
+      final emittedEvents = <DataSyncEvent>[];
+      final subscription = syncService.events.listen(emittedEvents.add);
+
+      syncController.supplies.add(
+        PricingSupplyRow(
+          id: 'm1',
+          title: 'Chemical',
+          code: 'CHM',
+          uomCode: 'BTL',
+          kind: 1,
+          initialProductMappingId: 'pm-1',
+          initialTreatmentMethodId: 'tm-1',
+          initialDoseUsage: 2.0,
+          initialDoseUnitId: 'uom-ml',
+          initialApplicationVolume: 1.0,
+          initialApplicationVolumeUnitId: 'uom-l',
+          initialFreq: 1.0,
+        ),
+      );
+      syncController.contractMonths.value = 6;
+      syncController.totalVisits.value = 12;
+      syncRepo.response = const Err(ServerFailure('Failed'));
+
+      await syncController.submitPricing('prop-123');
+
+      expect(syncController.submitState.value, isA<UiFailure<void>>());
+      expect(emittedEvents, isEmpty);
+
+      await subscription.cancel();
+    });
   });
 }
