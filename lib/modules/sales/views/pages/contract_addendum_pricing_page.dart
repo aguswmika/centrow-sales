@@ -12,6 +12,7 @@ import 'package:centrow_sales/modules/sales/views/widgets/pricing_calculator/pri
 import 'package:centrow_sales/modules/sales/views/widgets/pricing_calculator/pricing_worker_tab.dart';
 import 'package:centrow_sales/modules/sales/views/widgets/pricing_calculator/pricing_item_tab.dart';
 import 'package:centrow_sales/modules/sales/views/widgets/pricing_calculator/pricing_settings_card.dart';
+import 'package:centrow_sales/modules/sales/views/widgets/pricing_calculator/pricing_utils.dart';
 import 'package:centrow_sales/shared/result/result.dart';
 import 'package:centrow_sales/shared/state/ui_state.dart';
 import 'package:centrow_sales/shared/theme/app_colors.dart';
@@ -557,6 +558,18 @@ class _AddendumReviewBottomSheetState extends State<AddendumReviewBottomSheet> {
     final newVisits = widget.calcController.totalVisits.value ?? oldVisits;
     final visitDelta = newVisits - oldVisits;
 
+    String? estimatedOfferText;
+    final previewTotal = widget.calcController.previewTotalAmount.value;
+    if (previewTotal != null && previewTotal > 0) {
+      estimatedOfferText = formatRp(previewTotal);
+    } else if (widget.calcController.markupType.value == 3 &&
+        widget.calcController.markupPercent.value > 0) {
+      final dpp = widget.calcController.markupPercent.value;
+      final tax = widget.calcController.taxPercentage.value;
+      final total = dpp + (dpp * tax / 100);
+      estimatedOfferText = formatRp(total);
+    }
+
     return Container(
       decoration: const BoxDecoration(
         color: AppColors.surface,
@@ -612,6 +625,15 @@ class _AddendumReviewBottomSheetState extends State<AddendumReviewBottomSheet> {
                   label: 'Nilai Kontrak Sebelumnya',
                   value: widget.contract.formattedValue,
                 ),
+                if (estimatedOfferText != null) ...[
+                  const Divider(height: 20, color: AppColors.border),
+                  _buildSummaryRow(
+                    label: 'Estimasi Nilai Kontrak Baru',
+                    value: estimatedOfferText,
+                    badge: 'Penawaran',
+                    badgeColor: AppColors.brand,
+                  ),
+                ],
               ],
             ),
           ),

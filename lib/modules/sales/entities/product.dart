@@ -5,7 +5,7 @@ class Product {
   final String uomId;
   final String uomCode;
   final String uomName;
-  final double cogs;
+  final double sellingPrice;
   final bool isActive;
   final int? kind;
 
@@ -16,10 +16,12 @@ class Product {
     required this.uomId,
     required this.uomCode,
     this.uomName = '',
-    required this.cogs,
+    required this.sellingPrice,
     required this.isActive,
     this.kind,
   });
+
+  double get cogs => sellingPrice;
 
   String get uomDisplayName => uomName.isNotEmpty ? uomName : uomCode;
 }

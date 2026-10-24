@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:centrow_sales/shared/theme/app_colors.dart';
 import 'package:centrow_sales/shared/theme/app_radius.dart';
@@ -13,6 +14,109 @@ String formatRp(double amount) {
     (Match m) => '${m[1]}.',
   );
   return isNegative ? '-Rp $formattedInt' : 'Rp $formattedInt';
+}
+
+String formatCurrencyNumber(double amount) {
+  if (amount == 0) return '0';
+  final isNegative = amount < 0;
+  final absAmount = amount.abs();
+  final intPart = absAmount.truncate();
+  final formattedInt = intPart.toString().replaceAllMapped(
+    RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'),
+    (Match m) => '${m[1]}.',
+  );
+  return isNegative ? '-$formattedInt' : formattedInt;
+}
+
+class CurrencyInputFormatter extends TextInputFormatter {
+  @override
+  TextEditingValue formatEditUpdate(
+    TextEditingValue oldValue,
+    TextEditingValue newValue,
+  ) {
+    if (newValue.text.isEmpty) {
+      return const TextEditingValue(
+        text: '',
+        selection: TextSelection.collapsed(offset: 0),
+      );
+    }
+
+    final digitsOnly = newValue.text.replaceAll(RegExp(r'[^\d]'), '');
+    if (digitsOnly.isEmpty) {
+      return const TextEditingValue(
+        text: '',
+        selection: TextSelection.collapsed(offset: 0),
+      );
+    }
+
+    final parsedInt = int.tryParse(digitsOnly);
+    if (parsedInt == null) {
+      return oldValue;
+    }
+    final cleanDigits = parsedInt.toString();
+
+    final textBeforeCursor =
+        newValue.selection.baseOffset >= 0 &&
+            newValue.selection.baseOffset <= newValue.text.length
+        ? newValue.text.substring(0, newValue.selection.baseOffset)
+        : newValue.text;
+    var digitsBeforeCursor = textBeforeCursor
+        .replaceAll(RegExp(r'[^\d]'), '')
+        .length;
+
+    var targetDigits = cleanDigits;
+    if (oldValue.text.length > newValue.text.length) {
+      final oldDigits = oldValue.text.replaceAll(RegExp(r'[^\d]'), '');
+      if (oldDigits == digitsOnly && digitsBeforeCursor > 0) {
+        final adj =
+            digitsOnly.substring(0, digitsBeforeCursor - 1) +
+            digitsOnly.substring(digitsBeforeCursor);
+        if (adj.isEmpty) {
+          return const TextEditingValue(
+            text: '',
+            selection: TextSelection.collapsed(offset: 0),
+          );
+        }
+        final adjInt = int.tryParse(adj) ?? 0;
+        targetDigits = adjInt.toString();
+        digitsBeforeCursor -= 1;
+      }
+    }
+
+    final formatted = _formatThousands(targetDigits);
+
+    var newOffset = 0;
+    var countedDigits = 0;
+    for (var i = 0; i < formatted.length; i++) {
+      if (RegExp(r'\d').hasMatch(formatted[i])) {
+        countedDigits++;
+      }
+      if (countedDigits == digitsBeforeCursor) {
+        newOffset = i + 1;
+        break;
+      }
+    }
+
+    if (digitsBeforeCursor <= 0) {
+      newOffset = 0;
+    } else if (newOffset == 0 || digitsBeforeCursor > targetDigits.length) {
+      newOffset = formatted.length;
+    }
+
+    return TextEditingValue(
+      text: formatted,
+      selection: TextSelection.collapsed(
+        offset: newOffset.clamp(0, formatted.length),
+      ),
+    );
+  }
+
+  static String _formatThousands(String digits) {
+    return digits.replaceAllMapped(
+      RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'),
+      (Match m) => '${m[1]}.',
+    );
+  }
 }
 
 Widget buildTableHeader(
@@ -63,6 +167,7 @@ Widget buildInput(
   String initialValue,
   void Function(String) onChanged, {
   bool enabled = true,
+  Key? key,
 }) {
   return Container(
     height: 40.0,
@@ -74,6 +179,7 @@ Widget buildInput(
       borderRadius: AppRadius.borderSm,
     ),
     child: TextFormField(
+      key: key,
       initialValue: initialValue,
       enabled: enabled,
       textAlign: TextAlign.right,

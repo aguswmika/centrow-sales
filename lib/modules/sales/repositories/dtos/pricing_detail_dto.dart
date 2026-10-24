@@ -293,6 +293,7 @@ class PricingDetailDto {
   final double discountAmount;
   final double taxPercentage;
   final int scheduleWorkOrderType;
+  final double addonCost;
   final List<PricingDetailSupplyDto> supplies;
   final List<PricingDetailWorkerDto> workers;
   final List<PricingDetailItemDto> items;
@@ -311,34 +312,56 @@ class PricingDetailDto {
     required this.discountAmount,
     required this.taxPercentage,
     required this.scheduleWorkOrderType,
+    this.addonCost = 0.0,
     required this.supplies,
     required this.workers,
     required this.items,
   });
 
   factory PricingDetailDto.fromJson(Map<String, dynamic> json) {
-    List<T> parseList<T>(dynamic raw, T Function(Map<String, dynamic>) fn) =>
-        raw == null
-        ? []
-        : (raw as List).cast<Map<String, dynamic>>().map(fn).toList();
+    double toDouble(dynamic val) {
+      if (val == null) return 0.0;
+      if (val is num) return val.toDouble();
+      if (val is String) return double.tryParse(val) ?? 0.0;
+      return 0.0;
+    }
+
+    int toInt(dynamic val, {int defaultValue = 0}) {
+      if (val == null) return defaultValue;
+      if (val is num) return val.toInt();
+      if (val is String) return int.tryParse(val) ?? defaultValue;
+      return defaultValue;
+    }
+
+    List<T> parseList<T>(dynamic raw, T Function(Map<String, dynamic>) fn) {
+      if (raw is! List) return [];
+      return raw
+          .whereType<Map<dynamic, dynamic>>()
+          .map((e) => fn(e.cast<String, dynamic>()))
+          .toList();
+    }
 
     return PricingDetailDto._(
-      id: json['id'] as String,
-      customerId: json['customer_id'] as String,
-      serviceId: json['service_id'] as String,
-      areaSize: (json['area_size'] as num?)?.toDouble(),
+      id: json['id']?.toString() ?? '',
+      customerId: json['customer_id']?.toString() ?? '',
+      serviceId: json['service_id']?.toString() ?? '',
+      areaSize: json['area_size'] == null ? null : toDouble(json['area_size']),
       areaUnitId: json['area_unit_id'] as String?,
-      contractMonths: (json['contract_months'] as num).toInt(),
-      visitFrequency: (json['visit_frequency'] as num).toInt(),
+      contractMonths: toInt(json['contract_months'], defaultValue: 12),
+      visitFrequency: toInt(json['visit_frequency'], defaultValue: 1),
       totalVisits:
           (json['total_visits'] as num?)?.toInt() ??
           (json['visit_frequency'] as num?)?.toInt() ??
           1,
-      markupType: (json['markup_type'] as num).toInt(),
-      markupValue: (json['markup_value'] as num).toDouble(),
-      discountAmount: (json['discount_amount'] as num).toDouble(),
-      taxPercentage: (json['tax_percentage'] as num).toDouble(),
-      scheduleWorkOrderType: json['schedule_work_order_type'] as int? ?? 1,
+      markupType: toInt(json['markup_type'], defaultValue: 3),
+      markupValue: toDouble(json['markup_value']),
+      discountAmount: toDouble(json['discount_amount']),
+      taxPercentage: toDouble(json['tax_percentage']),
+      scheduleWorkOrderType: toInt(
+        json['schedule_work_order_type'],
+        defaultValue: 1,
+      ),
+      addonCost: toDouble(json['addon_cost']),
 
       supplies: parseList(json['supplies'], PricingDetailSupplyDto.fromJson),
       workers: parseList(json['workers'], PricingDetailWorkerDto.fromJson),
@@ -360,6 +383,7 @@ class PricingDetailDto {
     discountAmount: discountAmount,
     taxPercentage: taxPercentage,
     scheduleWorkOrderType: scheduleWorkOrderType,
+    addonCost: addonCost,
     supplies: supplies.map((e) => e.toEntity()).toList(),
     workers: workers.map((e) => e.toEntity()).toList(),
     items: items.map((e) => e.toEntity()).toList(),

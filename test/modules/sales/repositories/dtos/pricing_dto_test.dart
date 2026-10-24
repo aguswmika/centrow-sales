@@ -300,6 +300,33 @@ void main() {
           expect(entity.actualDosageUsage, isNull);
         },
       );
+
+      test('PricingItemDto serializes unit_cost when present', () {
+        const itemWithCost = PricingItemDto(
+          itemType: 2,
+          productId: null,
+          name: 'Custom Service',
+          qty: 1.0,
+          frequency: 2,
+          unitPrice: 500000.0,
+          unitCost: 200000.0,
+        );
+
+        final json = itemWithCost.toJson();
+        expect(json['unit_cost'], 200000.0);
+        expect(json['unit_price'], 500000.0);
+        expect(json.containsKey('product_id'), isFalse);
+
+        const itemWithoutCost = PricingItemDto(
+          itemType: 1,
+          productId: 'p-trans',
+          name: 'Transport',
+          qty: 1.0,
+          frequency: 1,
+        );
+        final jsonWithoutCost = itemWithoutCost.toJson();
+        expect(jsonWithoutCost.containsKey('unit_cost'), isFalse);
+      });
     },
   );
 }

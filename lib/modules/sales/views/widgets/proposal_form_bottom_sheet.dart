@@ -4,6 +4,7 @@ import 'package:centrow_sales/app/di.dart';
 import 'package:centrow_sales/modules/sales/controllers/proposal_form_controller.dart';
 import 'package:centrow_sales/shared/widgets/app_searchable_selector.dart';
 import 'package:centrow_sales/shared/widgets/app_dropdown.dart';
+import 'package:centrow_sales/shared/widgets/app_text_field.dart';
 import 'package:centrow_sales/modules/sales/entities/customer.dart';
 import 'package:centrow_sales/modules/sales/entities/service.dart';
 import 'package:centrow_sales/modules/sales/entities/proposal.dart';
@@ -183,6 +184,7 @@ class _ProposalFormBottomSheetState extends State<ProposalFormBottomSheet> {
                   const SizedBox(height: 24),
                   AppSearchableSelector<Customer>(
                     label: 'Pelanggan',
+                    isRequired: true,
                     enabled:
                         !_controller.isEditMode && !_controller.isReviseMode,
                     helperText: _controller.isReviseMode
@@ -199,6 +201,7 @@ class _ProposalFormBottomSheetState extends State<ProposalFormBottomSheet> {
                   const SizedBox(height: 16),
                   AppSearchableSelector<Service>(
                     label: 'Layanan',
+                    isRequired: true,
                     enabled:
                         !_controller.isEditMode && !_controller.isReviseMode,
                     helperText: _controller.isReviseMode
@@ -255,8 +258,14 @@ class _ProposalFormBottomSheetState extends State<ProposalFormBottomSheet> {
                   ],
                   const SizedBox(height: 16),
                   AppDropdown<String>(
-                    label: 'Lokasi',
+                    label: 'Alamat',
+                    isRequired: true,
                     value: _controller.addressId,
+                    hint: _controller.selectedCustomer == null
+                        ? 'Pilih pelanggan terlebih dahulu'
+                        : (_controller.availableLocations.isEmpty
+                              ? 'Pelanggan belum memiliki alamat'
+                              : 'Pilih alamat…'),
                     items: _controller.availableLocations
                         .map(
                           (l) => DropdownMenuItem(
@@ -275,12 +284,15 @@ class _ProposalFormBottomSheetState extends State<ProposalFormBottomSheet> {
                     },
                   ),
                   const SizedBox(height: 16),
-                  TextFormField(
+                  AppTextField(
                     controller: _dateController,
+                    label: 'Tanggal Proposal',
+                    isRequired: true,
                     readOnly: true,
-                    decoration: const InputDecoration(
-                      labelText: 'Tanggal Proposal',
-                      suffixIcon: Icon(Icons.calendar_today),
+                    suffixIcon: const Icon(
+                      Icons.calendar_today_rounded,
+                      size: 18,
+                      color: AppColors.sec,
                     ),
                     onTap: () => _selectDate(
                       context,
@@ -289,12 +301,14 @@ class _ProposalFormBottomSheetState extends State<ProposalFormBottomSheet> {
                     ),
                   ),
                   const SizedBox(height: 16),
-                  TextFormField(
+                  AppTextField(
                     controller: _validUntilController,
+                    label: 'Berlaku Hingga',
                     readOnly: true,
-                    decoration: const InputDecoration(
-                      labelText: 'Berlaku Hingga',
-                      suffixIcon: Icon(Icons.calendar_today),
+                    suffixIcon: const Icon(
+                      Icons.calendar_today_rounded,
+                      size: 18,
+                      color: AppColors.sec,
                     ),
                     onTap: () => _selectDate(
                       context,
@@ -303,13 +317,11 @@ class _ProposalFormBottomSheetState extends State<ProposalFormBottomSheet> {
                     ),
                   ),
                   const SizedBox(height: 16),
-                  TextFormField(
+                  AppTextField(
                     controller: _notesController,
+                    label: 'Catatan Proposal',
+                    hint: 'Tambahkan catatan proposal (opsional)…',
                     maxLines: 3,
-                    decoration: const InputDecoration(
-                      labelText: 'Catatan Proposal',
-                      alignLabelWithHint: true,
-                    ),
                     onChanged: (val) => _controller.updateFields(notes: val),
                   ),
                   const SizedBox(height: 32),

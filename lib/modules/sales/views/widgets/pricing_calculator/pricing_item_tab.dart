@@ -55,12 +55,16 @@ class PricingItemTab extends StatelessWidget {
                   color: AppColors.subtle,
                   border: Border(bottom: BorderSide(color: AppColors.border)),
                 ),
-                child: Row(
+                child: Wrap(
+                  spacing: 12.0,
+                  runSpacing: 8.0,
                   children: [
                     buildAddBtn('BBM', () => _handleAddItem(context, 3)),
-                    const SizedBox(width: 12.0),
                     buildAddBtn('Add-on', () => _handleAddItem(context, 5)),
-                    const SizedBox(width: 12.0),
+                    buildAddBtn(
+                      'Paket Add-on',
+                      () => _handleAddItem(context, 6),
+                    ),
                     buildAddBtn(
                       'Item Kustom',
                       () => controller.addCustomItem(),
@@ -103,48 +107,113 @@ class PricingItemRowWidget extends StatelessWidget {
               Expanded(
                 flex: 4,
                 child: row.kind == 0
-                    ? Container(
-                        height: 40.0,
-                        decoration: BoxDecoration(
-                          color: !isReadOnly
-                              ? AppColors.subtle
-                              : AppColors.border.withValues(alpha: 0.3),
-                          border: Border.all(
-                            color: AppColors.border,
-                            width: 1.5,
-                          ),
-                          borderRadius: AppRadius.borderSm,
-                        ),
-                        child: TextFormField(
-                          initialValue: row.title.value,
-                          enabled: !isReadOnly,
-                          onChanged: (val) => row.title.value = val,
-                          style: TextStyle(
-                            fontSize: 13.0,
-                            fontWeight: FontWeight.w600,
-                            color: !isReadOnly
-                                ? AppColors.text
-                                : AppColors.muted,
-                          ),
-                          decoration: const InputDecoration(
-                            hintText: 'Nama item kustom...',
-                            hintStyle: TextStyle(
-                              fontSize: 13.0,
-                              color: AppColors.muted,
+                    ? Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Container(
+                            height: 40.0,
+                            decoration: BoxDecoration(
+                              color: !isReadOnly
+                                  ? AppColors.subtle
+                                  : AppColors.border.withValues(alpha: 0.3),
+                              border: Border.all(
+                                color: AppColors.border,
+                                width: 1.5,
+                              ),
+                              borderRadius: AppRadius.borderSm,
                             ),
-                            filled: false,
-                            contentPadding: EdgeInsets.symmetric(
-                              horizontal: 10.0,
-                              vertical: 10.0,
+                            child: TextFormField(
+                              key: const Key('custom_item_title'),
+                              initialValue: row.title.value,
+                              enabled: !isReadOnly,
+                              onChanged: (val) => row.title.value = val,
+                              style: TextStyle(
+                                fontSize: 13.0,
+                                fontWeight: FontWeight.w600,
+                                color: !isReadOnly
+                                    ? AppColors.text
+                                    : AppColors.muted,
+                              ),
+                              decoration: const InputDecoration(
+                                hintText: 'Nama item kustom...',
+                                hintStyle: TextStyle(
+                                  fontSize: 13.0,
+                                  color: AppColors.muted,
+                                ),
+                                filled: false,
+                                contentPadding: EdgeInsets.symmetric(
+                                  horizontal: 10.0,
+                                  vertical: 10.0,
+                                ),
+                                isDense: true,
+                                border: InputBorder.none,
+                                enabledBorder: InputBorder.none,
+                                focusedBorder: InputBorder.none,
+                                errorBorder: InputBorder.none,
+                                disabledBorder: InputBorder.none,
+                              ),
                             ),
-                            isDense: true,
-                            border: InputBorder.none,
-                            enabledBorder: InputBorder.none,
-                            focusedBorder: InputBorder.none,
-                            errorBorder: InputBorder.none,
-                            disabledBorder: InputBorder.none,
                           ),
-                        ),
+                          const SizedBox(height: 4.0),
+                          Container(
+                            height: 32.0,
+                            decoration: BoxDecoration(
+                              color: !isReadOnly
+                                  ? AppColors.subtle
+                                  : AppColors.border.withValues(alpha: 0.3),
+                              border: Border.all(
+                                color: AppColors.border,
+                                width: 1.0,
+                              ),
+                              borderRadius: AppRadius.borderSm,
+                            ),
+                            child: TextFormField(
+                              key: const Key('custom_item_cost'),
+                              initialValue: row.unitCost.value > 0
+                                  ? (row.unitCost.value % 1 == 0
+                                        ? row.unitCost.value.toInt().toString()
+                                        : row.unitCost.value.toString())
+                                  : '',
+                              enabled: !isReadOnly,
+                              keyboardType: TextInputType.number,
+                              onChanged: (val) {
+                                row.unitCost.value =
+                                    double.tryParse(val) ?? 0.0;
+                              },
+                              style: TextStyle(
+                                fontSize: 11.0,
+                                fontWeight: FontWeight.w500,
+                                color: !isReadOnly
+                                    ? AppColors.text
+                                    : AppColors.muted,
+                              ),
+                              decoration: const InputDecoration(
+                                prefixText: 'Modal: Rp ',
+                                prefixStyle: TextStyle(
+                                  fontSize: 11.0,
+                                  color: AppColors.muted,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                                hintText: '0',
+                                hintStyle: TextStyle(
+                                  fontSize: 11.0,
+                                  color: AppColors.muted,
+                                ),
+                                filled: false,
+                                contentPadding: EdgeInsets.symmetric(
+                                  horizontal: 8.0,
+                                  vertical: 6.0,
+                                ),
+                                isDense: true,
+                                border: InputBorder.none,
+                                enabledBorder: InputBorder.none,
+                                focusedBorder: InputBorder.none,
+                                errorBorder: InputBorder.none,
+                                disabledBorder: InputBorder.none,
+                              ),
+                            ),
+                          ),
+                        ],
                       )
                     : Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -218,6 +287,9 @@ class PricingItemRowWidget extends StatelessWidget {
                           row.unitPrice.value = double.tryParse(val) ?? 0.0;
                         },
                         enabled: !isReadOnly,
+                        key: row.kind == 0
+                            ? const Key('custom_item_price')
+                            : null,
                       )
                     : Align(
                         alignment: Alignment.centerRight,

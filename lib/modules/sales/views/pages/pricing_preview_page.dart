@@ -10,6 +10,7 @@ import 'package:centrow_sales/shared/widgets/toast.dart';
 import 'package:centrow_sales/modules/sales/entities/pricing_preview.dart';
 import 'package:centrow_sales/modules/sales/entities/proposal.dart';
 import 'package:centrow_sales/modules/sales/controllers/pricing_calculator_controller.dart';
+import 'package:centrow_sales/modules/sales/views/widgets/pricing_calculator/pricing_settings_card.dart';
 import 'package:centrow_sales/modules/sales/views/widgets/pricing_calculator/pricing_utils.dart';
 
 class PricingPreviewPage extends StatefulWidget {
@@ -32,6 +33,9 @@ class PricingPreviewPage extends StatefulWidget {
 
 class _PricingPreviewPageState extends State<PricingPreviewPage> {
   late final void Function() _cleanupEffect;
+  late final _needsRecalculation = signal<bool>(
+    widget.controller.markupPercent.value <= 0,
+  );
 
   @override
   void initState() {
@@ -57,17 +61,27 @@ class _PricingPreviewPageState extends State<PricingPreviewPage> {
 
   @override
   void dispose() {
+    _needsRecalculation.dispose();
     _cleanupEffect();
     super.dispose();
   }
 
+  Future<void> _onRecalculate() async {
+    if (widget.controller.markupPercent.value <= 0) {
+      final msg = widget.controller.markupType.value == 1
+          ? 'Persentase penawaran wajib diisi (> 0).'
+          : 'Nilai penawaran wajib diisi (> 0).';
+      showAppToast(context, msg, isError: true);
+      return;
+    }
+    await widget.controller.previewPricing(widget.proposal.id);
+    if (widget.controller.previewState.value is UiSuccess) {
+      _needsRecalculation.value = false;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    final p = widget.preview;
-    final pricePerMonth = widget.contractMonths > 0
-        ? p.totalAmount / widget.contractMonths
-        : 0.0;
-
     return Scaffold(
       backgroundColor: AppColors.bg,
       body: SafeArea(
@@ -75,87 +89,130 @@ class _PricingPreviewPageState extends State<PricingPreviewPage> {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             _buildHeader(context),
+            SignalBuilder(
+              builder: (context) {
+                if (widget.controller.previewState.value is UiLoading) {
+                  return const LinearProgressIndicator(
+                    backgroundColor: Colors.transparent,
+                    valueColor: AlwaysStoppedAnimation<Color>(AppColors.brand),
+                  );
+                }
+                return const SizedBox.shrink();
+              },
+            ),
             Expanded(
               child: SingleChildScrollView(
                 padding: const EdgeInsets.all(16.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    _buildSection('Biaya Pokok (COGS)', [
-                      buildSumRow('Bahan & Alat', formatRp(p.suppliesCost)),
-                      buildSumRow('Tenaga Kerja', formatRp(p.workerCost)),
-                      buildSumRow('BBM / Transport', formatRp(p.fuelCost)),
-                      const Divider(height: 16.0, color: AppColors.border),
-                      buildSumRow(
-                        'Total COGS',
-                        formatRp(p.totalCogs),
-                        bold: true,
-                      ),
-                    ]),
-                    if (p.supplies.isNotEmpty) ...[
-                      const SizedBox(height: 12.0),
-                      _buildSection('Rincian Bahan & Alat', [
-                        for (final s in p.supplies)
-                          buildSumRow(s.name, formatRp(s.lineTotal)),
-                      ]),
-                    ],
-                    if (p.workers.isNotEmpty) ...[
-                      const SizedBox(height: 12.0),
-                      _buildSection('Rincian Tenaga Kerja', [
-                        for (final w in p.workers)
-                          buildSumRow(w.name, formatRp(w.lineTotal)),
-                      ]),
-                    ],
-                    if (p.items.isNotEmpty) ...[
-                      const SizedBox(height: 12.0),
-                      _buildSection('Rincian Transport & Add-on', [
-                        for (final i in p.items)
-                          buildSumRow(i.name, formatRp(i.lineTotal)),
-                      ]),
-                    ],
-                    const SizedBox(height: 12.0),
-                    _buildSection('Harga & Margin', [
-                      buildSumRow(
-                        'Harga Pokok Layanan',
-                        formatRp(p.servicePrice),
-                        semiBold: true,
-                      ),
-                      buildSumRow('Add-on / Ekstra', formatRp(p.addonAmount)),
-                      if (p.discountAmount > 0)
-                        buildSumRow(
-                          'Diskon Khusus',
-                          '-${formatRp(p.discountAmount)}',
+                child: SignalBuilder(
+                  builder: (context) {
+                    final previewState = widget.controller.previewState.value;
+                    final p = switch (previewState) {
+                      UiSuccess(:final data) => data,
+                      _ => widget.preview,
+                    };
+                    final pricePerMonth = widget.contractMonths > 0
+                        ? p.totalAmount / widget.contractMonths
+                        : 0.0;
+                    final isReadOnly = !widget.proposal.status.canEditPricing;
+
+                    return Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        _buildSection('Biaya Pokok', [
+                          buildSumRow('Bahan & Alat', formatRp(p.suppliesCost)),
+                          buildSumRow('Tenaga Kerja', formatRp(p.workerCost)),
+                          buildSumRow('BBM / Transport', formatRp(p.fuelCost)),
+                          buildSumRow('Biaya Add-on', formatRp(p.addonCost)),
+                          const Divider(height: 16.0, color: AppColors.border),
+                          buildSumRow(
+                            'Total Biaya',
+                            formatRp(p.totalCost),
+                            bold: true,
+                          ),
+                        ]),
+                        if (p.supplies.isNotEmpty) ...[
+                          const SizedBox(height: 12.0),
+                          _buildSection('Rincian Bahan & Alat', [
+                            for (final s in p.supplies)
+                              buildSumRow(s.name, formatRp(s.lineTotal)),
+                          ]),
+                        ],
+                        if (p.workers.isNotEmpty) ...[
+                          const SizedBox(height: 12.0),
+                          _buildSection('Rincian Tenaga Kerja', [
+                            for (final w in p.workers)
+                              buildSumRow(w.name, formatRp(w.lineTotal)),
+                          ]),
+                        ],
+                        if (p.items.isNotEmpty) ...[
+                          const SizedBox(height: 12.0),
+                          _buildSection('Rincian Transport & Add-on', [
+                            for (final i in p.items)
+                              buildSumRow(i.name, formatRp(i.lineTotal)),
+                          ]),
+                        ],
+                        const SizedBox(height: 12.0),
+                        PricingSettingsCard(
+                          controller: widget.controller,
+                          isReadOnly: isReadOnly,
+                          onChanged: () {
+                            _needsRecalculation.value = true;
+                          },
                         ),
-                      const Divider(height: 16.0, color: AppColors.border),
-                      buildSumRow(
-                        'Subtotal (DPP)',
-                        formatRp(p.subtotal),
-                        semiBold: true,
-                      ),
-                      buildSumRow(
-                        'PPN (${p.taxPercentage.toStringAsFixed(1)}%)',
-                        formatRp(p.taxAmount),
-                      ),
-                      const Divider(height: 16.0, color: AppColors.border),
-                      buildSumRow(
-                        'Total Nilai Proposal',
-                        formatRp(p.totalAmount),
-                        bold: true,
-                      ),
-                    ]),
-                    const SizedBox(height: 12.0),
-                    _buildSection('Metrik Margin & Unit Rate', [
-                      buildSumRow(
-                        'Margin %',
-                        '${p.marginPercent.toStringAsFixed(1)}%',
-                        semiBold: true,
-                      ),
-                      buildSumRow('Nominal Margin', formatRp(p.marginAmount)),
-                      const Divider(height: 16.0, color: AppColors.border),
-                      buildSumRow('Harga per Bulan', formatRp(pricePerMonth)),
-                    ]),
-                    const SizedBox(height: 32.0),
-                  ],
+                        const SizedBox(height: 12.0),
+                        _buildSection('Penawaran & Nilai Kontrak', [
+                          buildSumRow(
+                            'Subtotal Penawaran (DPP)',
+                            formatRp(p.subtotal),
+                            semiBold: true,
+                          ),
+                          buildSumRow(
+                            '• Pokok Layanan',
+                            formatRp(p.servicePrice),
+                          ),
+                          if (p.addonAmount > 0)
+                            buildSumRow(
+                              '• Add-on (Termasuk)',
+                              formatRp(p.addonAmount),
+                            ),
+                          if (p.discountAmount > 0)
+                            buildSumRow(
+                              'Diskon Khusus',
+                              '-${formatRp(p.discountAmount)}',
+                            ),
+                          const Divider(height: 16.0, color: AppColors.border),
+                          buildSumRow(
+                            'PPN (${p.taxPercentage.toStringAsFixed(1)}%)',
+                            formatRp(p.taxAmount),
+                          ),
+                          const Divider(height: 16.0, color: AppColors.border),
+                          buildSumRow(
+                            'Total Penawaran',
+                            formatRp(p.totalAmount),
+                            bold: true,
+                          ),
+                        ]),
+                        const SizedBox(height: 12.0),
+                        _buildSection('Metrik Margin & Unit Rate', [
+                          buildSumRow(
+                            'Margin %',
+                            '${p.marginPercent.toStringAsFixed(1)}%',
+                            semiBold: true,
+                          ),
+                          buildSumRow(
+                            'Nominal Margin',
+                            formatRp(p.marginAmount),
+                          ),
+                          const Divider(height: 16.0, color: AppColors.border),
+                          buildSumRow(
+                            'Harga per Bulan',
+                            formatRp(pricePerMonth),
+                          ),
+                        ]),
+                        const SizedBox(height: 32.0),
+                      ],
+                    );
+                  },
                 ),
               ),
             ),
@@ -227,6 +284,7 @@ class _PricingPreviewPageState extends State<PricingPreviewPage> {
   }
 
   Widget _buildBottomBar() {
+    final isReadOnly = !widget.proposal.status.canEditPricing;
     return Container(
       padding: const EdgeInsets.all(16.0),
       decoration: const BoxDecoration(
@@ -245,12 +303,29 @@ class _PricingPreviewPageState extends State<PricingPreviewPage> {
           Expanded(
             child: SignalBuilder(
               builder: (context) {
-                final isLoading =
+                final isSubmitting =
                     widget.controller.submitState.value is UiLoading;
+                final isPreviewLoading =
+                    widget.controller.previewState.value is UiLoading;
+                final isBusy = isSubmitting || isPreviewLoading;
+
+                if (_needsRecalculation.value) {
+                  return AppButton(
+                    text: 'Kalkulasi Ulang',
+                    icon: const Icon(
+                      Icons.refresh,
+                      size: 18,
+                      color: Colors.white,
+                    ),
+                    isLoading: isPreviewLoading,
+                    onPressed: (isBusy || isReadOnly) ? null : _onRecalculate,
+                  );
+                }
+
                 return AppButton(
                   text: 'Konfirmasi & Simpan',
-                  isLoading: isLoading,
-                  onPressed: isLoading
+                  isLoading: isSubmitting,
+                  onPressed: (isBusy || isReadOnly)
                       ? null
                       : () =>
                             widget.controller.submitPricing(widget.proposal.id),

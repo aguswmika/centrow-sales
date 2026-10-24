@@ -11,7 +11,8 @@ class PricingPreview {
   final double suppliesCost;
   final double workerCost;
   final double fuelCost;
-  final double totalCogs;
+  final double addonCost;
+  final double totalCost;
   final double servicePrice;
   final double addonAmount;
   final double discountAmount;
@@ -31,7 +32,8 @@ class PricingPreview {
     required this.suppliesCost,
     required this.workerCost,
     required this.fuelCost,
-    required this.totalCogs,
+    this.addonCost = 0.0,
+    required this.totalCost,
     required this.servicePrice,
     required this.addonAmount,
     required this.discountAmount,
@@ -45,4 +47,6 @@ class PricingPreview {
     required this.workers,
     required this.items,
   });
+
+  double get totalCogs => totalCost;
 }

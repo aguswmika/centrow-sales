@@ -374,10 +374,7 @@ void main() {
           notes: 'Awal',
         );
         controller.initFromContract(existing);
-        controller.updateFields(
-          startDate: '2026-06-01',
-          notes: 'Catatan edit',
-        );
+        controller.updateFields(startDate: '2026-06-01', notes: 'Catatan edit');
 
         final res = await controller.submit();
         await Future<void>.delayed(Duration.zero);

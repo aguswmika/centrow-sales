@@ -3,6 +3,10 @@ import 'package:flutter/material.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 import 'dart:convert';
 import 'webview_tiptap_editor.dart';
+import 'richtext_image_gallery_sheet.dart';
+import 'package:centrow_sales/modules/sales/entities/richtext_image.dart';
+import 'package:centrow_sales/shared/theme/app_colors.dart';
+import 'package:centrow_sales/shared/theme/app_radius.dart';
 import 'package:centrow_sales/modules/sales/entities/document_placeholder.dart';
 
 class CustomTiptapToolbar extends StatefulWidget {
@@ -63,6 +67,26 @@ class _CustomTiptapToolbarState extends State<CustomTiptapToolbar> {
     if (url != null && url.isNotEmpty) {
       await _exec('setLink', {'href': url});
     }
+  }
+
+  Future<void> _handleImageInsert(BuildContext context) async {
+    await showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: AppColors.surface,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.only(
+          topLeft: AppRadius.radiusXl,
+          topRight: AppRadius.radiusXl,
+        ),
+      ),
+      builder: (sheetContext) => RichtextImageGallerySheet(
+        onSelected: (RichtextImage image) {
+          Navigator.of(sheetContext).pop();
+          _exec('setImage', {'src': image.url, 'alt': image.originalName});
+        },
+      ),
+    );
   }
 
   String _getCurrentBlockType() {
@@ -202,28 +226,91 @@ class _CustomTiptapToolbarState extends State<CustomTiptapToolbar> {
                 isActive: state.isActive['link'] == true,
                 onPressed: () => _handleLinkInsert(context),
               ),
+              _ToolbarButton(
+                icon: Icons.image_outlined,
+                tooltip: 'Gambar',
+                isActive: false,
+                onPressed: () => _handleImageInsert(context),
+              ),
+              if (state.isActive['image'] == true) ...[
+                _ToolbarDivider(),
+                for (final percent in const [25, 50, 75, 100])
+                  _ToolbarButton(
+                    label: '$percent%',
+                    tooltip: 'Lebar gambar $percent%',
+                    isActive: false,
+                    onPressed: () => widget.controller.runJavaScript(
+                      'window.setImageWidth($percent);',
+                    ),
+                  ),
+                _ToolbarButton(
+                  label: '−',
+                  tooltip: 'Kurangi lebar gambar',
+                  isActive: false,
+                  onPressed: () => widget.controller.runJavaScript(
+                    'window.adjustImageWidth(-10);',
+                  ),
+                ),
+                _ToolbarButton(
+                  label: '+',
+                  tooltip: 'Tambah lebar gambar',
+                  isActive: false,
+                  onPressed: () => widget.controller.runJavaScript(
+                    'window.adjustImageWidth(10);',
+                  ),
+                ),
+                _ToolbarDivider(),
+                _ToolbarButton(
+                  icon: Icons.format_align_left,
+                  tooltip: 'Rata kiri gambar',
+                  isActive: state.isActive['imageLeft'] == true,
+                  onPressed: () => widget.controller.runJavaScript(
+                    "window.setImageAlign('left');",
+                  ),
+                ),
+                _ToolbarButton(
+                  icon: Icons.format_align_center,
+                  tooltip: 'Rata tengah gambar',
+                  isActive: state.isActive['imageCenter'] == true,
+                  onPressed: () => widget.controller.runJavaScript(
+                    "window.setImageAlign('center');",
+                  ),
+                ),
+                _ToolbarButton(
+                  icon: Icons.format_align_right,
+                  tooltip: 'Rata kanan gambar',
+                  isActive: state.isActive['imageRight'] == true,
+                  onPressed: () => widget.controller.runJavaScript(
+                    "window.setImageAlign('right');",
+                  ),
+                ),
+              ],
 
-              _ToolbarDivider(),
+              // Paragraph alignment is hidden while an image is selected; the
+              // image alignment buttons above take its place.
+              if (state.isActive['image'] != true) ...[
+                _ToolbarDivider(),
 
-              // Alignments
-              _ToolbarButton(
-                icon: Icons.format_align_left,
-                tooltip: 'Align Left',
-                isActive: state.isActive['left'] == true,
-                onPressed: () => _exec('setTextAlign', 'left'),
-              ),
-              _ToolbarButton(
-                icon: Icons.format_align_center,
-                tooltip: 'Align Center',
-                isActive: state.isActive['center'] == true,
-                onPressed: () => _exec('setTextAlign', 'center'),
-              ),
-              _ToolbarButton(
-                icon: Icons.format_align_right,
-                tooltip: 'Align Right',
-                isActive: state.isActive['right'] == true,
-                onPressed: () => _exec('setTextAlign', 'right'),
-              ),
+                // Alignments
+                _ToolbarButton(
+                  icon: Icons.format_align_left,
+                  tooltip: 'Align Left',
+                  isActive: state.isActive['left'] == true,
+                  onPressed: () => _exec('setTextAlign', 'left'),
+                ),
+                _ToolbarButton(
+                  icon: Icons.format_align_center,
+                  tooltip: 'Align Center',
+                  isActive: state.isActive['center'] == true,
+                  onPressed: () => _exec('setTextAlign', 'center'),
+                ),
+                _ToolbarButton(
+                  icon: Icons.format_align_right,
+                  tooltip: 'Align Right',
+                  isActive: state.isActive['right'] == true,
+                  onPressed: () => _exec('setTextAlign', 'right'),
+                ),
+              ],
 
               _ToolbarDivider(),
 
@@ -343,21 +430,26 @@ class _CustomTiptapToolbarState extends State<CustomTiptapToolbar> {
 }
 
 class _ToolbarButton extends StatelessWidget {
-  final IconData icon;
+  final IconData? icon;
+  final String? label;
   final String tooltip;
   final bool isActive;
   final VoidCallback onPressed;
 
   const _ToolbarButton({
-    required this.icon,
+    this.icon,
+    this.label,
     required this.tooltip,
     required this.isActive,
     required this.onPressed,
-  });
+  }) : assert(icon != null || label != null);
 
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
+    final color = isActive
+        ? colorScheme.onPrimaryContainer
+        : colorScheme.onSurfaceVariant;
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 2),
@@ -372,12 +464,17 @@ class _ToolbarButton extends StatelessWidget {
             child: SizedBox(
               width: 36,
               height: 36,
-              child: Icon(
-                icon,
-                size: 20,
-                color: isActive
-                    ? colorScheme.onPrimaryContainer
-                    : colorScheme.onSurfaceVariant,
+              child: Center(
+                child: label != null
+                    ? Text(
+                        label!,
+                        style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w600,
+                          color: color,
+                        ),
+                      )
+                    : Icon(icon, size: 20, color: color),
               ),
             ),
           ),

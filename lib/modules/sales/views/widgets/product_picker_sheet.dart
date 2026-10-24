@@ -52,6 +52,25 @@ class _ProductPickerSheetState extends State<ProductPickerSheet> {
     );
   }
 
+  String get _sheetTitle {
+    switch (widget.kind) {
+      case 1:
+        return 'Pilih Tenaga Kerja';
+      case 2:
+        return 'Pilih Bahan & Alat';
+      case 3:
+        return 'Pilih BBM / Transport';
+      case 4:
+        return 'Pilih Sewa Mesin';
+      case 5:
+        return 'Pilih Add-on';
+      case 6:
+        return 'Pilih Paket Add-on';
+      default:
+        return 'Pilih Produk / Komponen';
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Material(
@@ -93,7 +112,7 @@ class _ProductPickerSheetState extends State<ProductPickerSheet> {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text(
-                    'Pilih Produk / Tenaga Kerja / BBM',
+                    _sheetTitle,
                     style: GoogleFonts.plusJakartaSans(
                       fontSize: 16.0,
                       fontWeight: FontWeight.w700,
@@ -278,9 +297,9 @@ class _ProductPickerSheetState extends State<ProductPickerSheet> {
                       color: AppColors.sec,
                     ),
                   ),
-                if (product.cogs > 0)
+                if (product.sellingPrice > 0)
                   Text(
-                    '• COGS: Rp ${_formatNumber(product.cogs)}',
+                    '• Harga Jual: Rp ${_formatNumber(product.sellingPrice)}',
                     style: const TextStyle(
                       fontSize: 12.0,
                       fontWeight: FontWeight.w600,

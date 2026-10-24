@@ -156,6 +156,7 @@ void main() {
         final sub = syncService.events.listen(emittedEvents.add);
 
         controller.customerId = 'cust-1';
+        controller.addressId = 'loc-1';
         controller.serviceId = 'srv-1';
         controller.proposalDate = '2026-09-01';
         controller.templateId = 'tmpl-1';
@@ -193,6 +194,7 @@ void main() {
           date: '2026-09-01',
           validUntil: '2026-10-01',
           location: 'Location 1',
+          addressId: 'loc-1',
           version: '1',
           total: 1000000.0,
         );
@@ -232,6 +234,7 @@ void main() {
           date: '2026-09-01',
           validUntil: '2026-10-01',
           location: 'Location 1',
+          addressId: 'loc-1',
           version: '1',
           total: 1000000.0,
         );
@@ -262,6 +265,7 @@ void main() {
 
         proposalRepo.response = const Err(ServerFailure('Failed'));
         controller.customerId = 'cust-1';
+        controller.addressId = 'loc-1';
         controller.serviceId = 'srv-1';
         controller.proposalDate = '2026-09-01';
         controller.templateId = 'tmpl-1';
@@ -275,5 +279,42 @@ void main() {
         await sub.cancel();
       },
     );
+
+    test('submit returns error when required fields are missing', () async {
+      // All missing
+      final result1 = await controller.submit();
+      expect(result1.isErr, isTrue);
+      expect(
+        (result1 as Err).failure.message,
+        'Pelanggan, Layanan, Alamat, Tanggal Proposal wajib diisi.',
+      );
+
+      // Customer filled, but addressId cleared, others missing
+      controller.customerId = 'cust-1';
+      controller.addressId = null;
+      final result2 = await controller.submit();
+      expect(result2.isErr, isTrue);
+      expect(
+        (result2 as Err).failure.message,
+        'Layanan, Alamat, Tanggal Proposal wajib diisi.',
+      );
+
+      // Service filled, address missing
+      controller.serviceId = 'srv-1';
+      controller.proposalDate = '2026-10-19';
+      controller.addressId = null;
+      final result3 = await controller.submit();
+      expect(result3.isErr, isTrue);
+      expect((result3 as Err).failure.message, 'Alamat wajib diisi.');
+
+      // Address filled, template missing in create mode
+      controller.addressId = 'loc-1';
+      final result4 = await controller.submit();
+      expect(result4.isErr, isTrue);
+      expect(
+        (result4 as Err).failure.message,
+        'Template proposal wajib dipilih.',
+      );
+    });
   });
 }

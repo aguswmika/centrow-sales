@@ -1,5 +1,12 @@
 import 'package:centrow_sales/modules/sales/entities/pricing_preview.dart';
 
+double _toDouble(dynamic val) {
+  if (val == null) return 0.0;
+  if (val is num) return val.toDouble();
+  if (val is String) return double.tryParse(val) ?? 0.0;
+  return 0.0;
+}
+
 class PricingLineDto {
   final String name;
   final double lineTotal;
@@ -7,8 +14,8 @@ class PricingLineDto {
   PricingLineDto({required this.name, required this.lineTotal});
 
   factory PricingLineDto.fromJson(Map<String, dynamic> j) => PricingLineDto(
-    name: (j['name'] ?? j['position_name'] ?? '') as String,
-    lineTotal: (j['line_total'] as num).toDouble(),
+    name: (j['name'] ?? j['position_name'] ?? j['title'] ?? '').toString(),
+    lineTotal: _toDouble(j['line_total'] ?? j['total'] ?? j['amount']),
   );
 
   PricingPreviewLine toEntity() =>
@@ -19,7 +26,8 @@ class PricingPreviewDto {
   final double suppliesCost;
   final double workerCost;
   final double fuelCost;
-  final double totalCogs;
+  final double addonCost;
+  final double totalCost;
   final double servicePrice;
   final double addonAmount;
   final double discountAmount;
@@ -37,7 +45,8 @@ class PricingPreviewDto {
     required this.suppliesCost,
     required this.workerCost,
     required this.fuelCost,
-    required this.totalCogs,
+    this.addonCost = 0.0,
+    required this.totalCost,
     required this.servicePrice,
     required this.addonAmount,
     required this.discountAmount,
@@ -53,27 +62,36 @@ class PricingPreviewDto {
   });
 
   factory PricingPreviewDto.fromJson(Map<String, dynamic> json) {
-    List<PricingLineDto> parseLines(dynamic raw) => raw == null
-        ? []
-        : (raw as List)
-              .cast<Map<String, dynamic>>()
-              .map(PricingLineDto.fromJson)
-              .toList();
+    List<PricingLineDto> parseLines(dynamic raw) {
+      if (raw is! List) return [];
+      return raw
+          .whereType<Map<dynamic, dynamic>>()
+          .map((e) => PricingLineDto.fromJson(e.cast<String, dynamic>()))
+          .toList();
+    }
 
     return PricingPreviewDto._(
-      suppliesCost: (json['supplies_cost'] as num).toDouble(),
-      workerCost: (json['worker_cost'] as num).toDouble(),
-      fuelCost: (json['fuel_cost'] as num).toDouble(),
-      totalCogs: (json['total_cogs'] as num).toDouble(),
-      servicePrice: (json['service_price'] as num).toDouble(),
-      addonAmount: (json['addon_amount'] as num).toDouble(),
-      discountAmount: (json['discount_amount'] as num).toDouble(),
-      subtotal: (json['subtotal'] as num).toDouble(),
-      taxPercentage: (json['tax_percentage'] as num).toDouble(),
-      taxAmount: (json['tax_amount'] as num).toDouble(),
-      totalAmount: (json['total_amount'] as num).toDouble(),
-      marginAmount: (json['margin_amount'] as num).toDouble(),
-      marginPercent: (json['margin_percent'] as num).toDouble(),
+      suppliesCost: _toDouble(json['supplies_cost'] ?? json['suppliesCost']),
+      workerCost: _toDouble(json['worker_cost'] ?? json['workerCost']),
+      fuelCost: _toDouble(json['fuel_cost'] ?? json['fuelCost']),
+      addonCost: _toDouble(json['addon_cost'] ?? json['addonCost']),
+      totalCost: _toDouble(
+        json['total_cost'] ??
+            json['totalCost'] ??
+            json['total_cogs'] ??
+            json['totalCogs'],
+      ),
+      servicePrice: _toDouble(json['service_price'] ?? json['servicePrice']),
+      addonAmount: _toDouble(json['addon_amount'] ?? json['addonAmount']),
+      discountAmount: _toDouble(
+        json['discount_amount'] ?? json['discountAmount'],
+      ),
+      subtotal: _toDouble(json['subtotal']),
+      taxPercentage: _toDouble(json['tax_percentage'] ?? json['taxPercentage']),
+      taxAmount: _toDouble(json['tax_amount'] ?? json['taxAmount']),
+      totalAmount: _toDouble(json['total_amount'] ?? json['totalAmount']),
+      marginAmount: _toDouble(json['margin_amount'] ?? json['marginAmount']),
+      marginPercent: _toDouble(json['margin_percent'] ?? json['marginPercent']),
       supplies: parseLines(json['supplies']),
       workers: parseLines(json['workers']),
       items: parseLines(json['items']),
@@ -84,7 +102,8 @@ class PricingPreviewDto {
     suppliesCost: suppliesCost,
     workerCost: workerCost,
     fuelCost: fuelCost,
-    totalCogs: totalCogs,
+    addonCost: addonCost,
+    totalCost: totalCost,
     servicePrice: servicePrice,
     addonAmount: addonAmount,
     discountAmount: discountAmount,

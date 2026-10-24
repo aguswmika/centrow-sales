@@ -7,7 +7,7 @@ class ProductDto {
   final String uomId;
   final String uomCode;
   final String uomName;
-  final double cogs;
+  final double sellingPrice;
   final bool isActive;
 
   const ProductDto({
@@ -17,7 +17,7 @@ class ProductDto {
     required this.uomId,
     required this.uomCode,
     this.uomName = '',
-    required this.cogs,
+    required this.sellingPrice,
     required this.isActive,
   });
 
@@ -47,7 +47,11 @@ class ProductDto {
                   (json['uom'] is Map ? json['uom']['name'] : null))
               ?.toString() ??
           '',
-      cogs: (json['cogs'] as num?)?.toDouble() ?? 0.0,
+      sellingPrice:
+          ((json['selling_price'] ?? json['sellingPrice'] ?? json['cogs'])
+                  as num?)
+              ?.toDouble() ??
+          0.0,
       isActive: (json['is_active'] ?? json['isActive']) as bool? ?? true,
     );
   }
@@ -60,7 +64,7 @@ class ProductDto {
       uomId: uomId,
       uomCode: uomCode,
       uomName: uomName,
-      cogs: cogs,
+      sellingPrice: sellingPrice,
       isActive: isActive,
       kind: requestedKind,
     );

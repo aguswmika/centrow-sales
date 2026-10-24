@@ -88,12 +88,27 @@ class _AppSearchableSelectorState<T> extends State<AppSearchableSelector<T>> {
       mainAxisSize: MainAxisSize.min,
       children: [
         if (widget.label != null) ...[
-          Text(
-            widget.label!,
-            style: AppTypography.bodySm(
-              color: AppColors.sec,
-              fontWeight: FontWeight.w600,
-            ),
+          Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                widget.label!,
+                style: AppTypography.bodySm(
+                  color: AppColors.sec,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              if (widget.isRequired) ...[
+                const SizedBox(width: 2),
+                Text(
+                  '*',
+                  style: AppTypography.bodySm(
+                    color: AppColors.err,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ],
+            ],
           ),
           const SizedBox(height: AppSpacing.labelGap),
         ],

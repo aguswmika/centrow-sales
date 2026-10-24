@@ -5,7 +5,7 @@ plugins {
 }
 
 android {
-    namespace = "id.centrow.sales.centrow_sales"
+    namespace = "id.centrow.sales"
     compileSdk = flutter.compileSdkVersion
     ndkVersion = flutter.ndkVersion
 
@@ -16,7 +16,7 @@ android {
 
     defaultConfig {
         // TODO: Specify your own unique Application ID (https://developer.android.com/studio/build/application-id.html).
-        applicationId = "id.centrow.sales.centrow_sales"
+        applicationId = "id.centrow.sales"
         // You can update the following values to match your application needs.
         // For more information, see: https://flutter.dev/to/review-gradle-config.
         minSdk = flutter.minSdkVersion

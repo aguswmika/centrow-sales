@@ -12,7 +12,6 @@ import 'pricing_calculator/pricing_tabs.dart';
 import 'pricing_calculator/pricing_material_tab.dart';
 import 'pricing_calculator/pricing_worker_tab.dart';
 import 'pricing_calculator/pricing_item_tab.dart';
-import 'pricing_calculator/pricing_settings_card.dart';
 
 class PricingCalculatorView extends StatefulWidget {
   final Proposal proposal;
@@ -76,14 +75,7 @@ class _PricingCalculatorViewState extends State<PricingCalculatorView> {
                           ),
                         ],
                       ),
-                      Padding(
-                        padding: const EdgeInsets.all(16.0),
-                        child: PricingSettingsCard(
-                          controller: widget.calculatorController,
-                          isReadOnly: _isReadOnly,
-                        ),
-                      ),
-                      const SizedBox(height: 32.0),
+                      const SizedBox(height: 24.0),
                     ],
                   ),
                 ),

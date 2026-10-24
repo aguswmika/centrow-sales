@@ -117,5 +117,43 @@ void main() {
         expect(dto.toEntity().scheduleWorkOrderType, 1);
       },
     );
+
+    test('fromJson and toEntity include addon_cost and item unit_cost', () {
+      final json = {
+        'id': 'p-3',
+        'customer_id': 'c-3',
+        'service_id': 's-3',
+        'contract_months': 12,
+        'visit_frequency': 1,
+        'total_visits': 12,
+        'markup_type': 3,
+        'markup_value': 1000000.0,
+        'discount_amount': 0.0,
+        'tax_percentage': 11.0,
+        'addon_cost': 250000.0,
+        'supplies': <Map<String, dynamic>>[],
+        'workers': <Map<String, dynamic>>[],
+        'items': <Map<String, dynamic>>[
+          {
+            'id': 'item-1',
+            'item_type': 2,
+            'name': 'Custom Addon',
+            'qty': 1,
+            'frequency': 1,
+            'unit_cost': 250000.0,
+            'unit_price': 500000.0,
+            'line_total': 500000.0,
+          },
+        ],
+      };
+
+      final dto = PricingDetailDto.fromJson(json);
+      expect(dto.addonCost, 250000.0);
+      expect(dto.items.first.unitCost, 250000.0);
+
+      final entity = dto.toEntity();
+      expect(entity.addonCost, 250000.0);
+      expect(entity.items.first.unitCost, 250000.0);
+    });
   });
 }

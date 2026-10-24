@@ -1,0 +1,21 @@
+{
+  "name": "tiptap-bundle",
+  "private": true,
+  "description": "Builds assets/js/tiptap.bundle.js (exposes window.Tiptap) for WebviewTiptapEditor",
+  "scripts": {
+    "build": "esbuild entry.js --bundle --minify --format=iife --outfile=../../assets/js/tiptap.bundle.js"
+  },
+  "dependencies": {
+    "@tiptap/core": "^3.28.0",
+    "@tiptap/extension-image": "^3.29.2",
+    "@tiptap/extension-link": "^3.28.0",
+    "@tiptap/extension-table": "^3.29.2",
+    "@tiptap/extension-text-align": "^3.28.0",
+    "@tiptap/extension-underline": "^3.28.0",
+    "@tiptap/pm": "^3.28.0",
+    "@tiptap/starter-kit": "^3.28.0"
+  },
+  "devDependencies": {
+    "esbuild": "^0.25.0"
+  }
+}

@@ -148,6 +148,7 @@ class PricingItemRow {
   final Signal<double> qty;
   final Signal<double> freq;
   final Signal<double> unitPrice;
+  final Signal<double> unitCost;
 
   PricingItemRow({
     required this.id,
@@ -158,16 +159,19 @@ class PricingItemRow {
     double initialQty = 1.0,
     double initialFreq = 1.0,
     double initialUnitPrice = 0.0,
+    double initialUnitCost = 0.0,
   }) : title = signal(title ?? initialTitle ?? ''),
        qty = signal(initialQty),
        freq = signal(initialFreq),
-       unitPrice = signal(initialUnitPrice);
+       unitPrice = signal(initialUnitPrice),
+       unitCost = signal(initialUnitCost);
 
   void dispose() {
     title.dispose();
     qty.dispose();
     freq.dispose();
     unitPrice.dispose();
+    unitCost.dispose();
   }
 }
 
@@ -194,10 +198,22 @@ class PricingCalculatorController {
     uomState.value = switch (result) {
       Ok(:final value) => () {
         uoms.value = value;
+        _applyDefaultVolumeUnits();
         return UiSuccess(value);
       }(),
       Err(:final failure) => UiFailure(failure),
     };
+  }
+
+  /// Persists the first UOM as the application volume unit on chemical rows
+  /// that have none, so the value shown in the dropdown is the one submitted.
+  void _applyDefaultVolumeUnits() {
+    if (uoms.isEmpty) return;
+    for (final row in supplies) {
+      if (row.kind == 1 && row.applicationVolumeUnitId.value.isEmpty) {
+        row.applicationVolumeUnitId.value = uoms.first.id;
+      }
+    }
   }
 
   final treatmentMethods = ListSignal<TreatmentMethod>([]);
@@ -227,13 +243,21 @@ class PricingCalculatorController {
   final totalVisits = signal<int?>(null);
 
   final markupPercent = signal<double>(0.0);
-  final markupType = signal<int>(1); // 1=percent, 2=nominal, 3=target price
+  final markupType = signal<int>(
+    3,
+  ); // 3=Nilai Tetap Penawaran (Rp), 1=Persentase (%)
   final discountAmount = signal<double>(0.0);
+
+  /// Calculated nominal offer (subtotal before tax) from latest preview response
+  final previewSubtotal = signal<double?>(null);
+
+  /// Calculated total nominal offer (including tax) from latest preview response
+  final previewTotalAmount = signal<double?>(null);
 
   /// Default PPN rate in percent, used until the user overrides it.
   static const double defaultTaxPercentage = 0.0;
 
-  /// Tax (PPN) rate in percent, editable from the COGS card.
+  /// Tax (PPN) rate in percent, editable from the cost card.
   final taxPercentage = signal<double>(defaultTaxPercentage);
 
   final previewState = signal<UiState<PricingPreview>>(const UiInitial());
@@ -295,6 +319,7 @@ class PricingCalculatorController {
         contractMonthsRef: contractMonths,
       ),
     );
+    _applyDefaultVolumeUnits();
   }
 
   void addRow(Product product, int expectedKind) {
@@ -326,10 +351,10 @@ class PricingCalculatorController {
           title: product.name,
           code: product.code,
           kind: expectedKind,
-          initialHourlyRate: product.cogs,
+          initialHourlyRate: product.sellingPrice,
         ),
       );
-    } else if (expectedKind == 3 || expectedKind == 5) {
+    } else if (expectedKind == 3 || expectedKind == 5 || expectedKind == 6) {
       if (items.any((i) => i.id == product.id)) return;
       items.add(
         PricingItemRow(
@@ -337,7 +362,8 @@ class PricingCalculatorController {
           title: product.name,
           code: product.code,
           kind: expectedKind,
-          initialUnitPrice: product.cogs,
+          initialUnitPrice: product.sellingPrice,
+          initialUnitCost: product.sellingPrice,
         ),
       );
     }
@@ -346,6 +372,7 @@ class PricingCalculatorController {
   void addCustomItem({
     String defaultTitle = 'Item Kustom',
     double initialPrice = 0.0,
+    double initialCost = 0.0,
   }) {
     final uniqueId = 'custom_${DateTime.now().microsecondsSinceEpoch}';
     items.add(
@@ -355,6 +382,7 @@ class PricingCalculatorController {
         code: '',
         kind: 0,
         initialUnitPrice: initialPrice,
+        initialUnitCost: initialCost,
       ),
     );
   }
@@ -365,7 +393,7 @@ class PricingCalculatorController {
     return workerFreq;
   }
 
-  String? validateInputs() {
+  String? validateInputs({bool requireMarkup = true}) {
     final tv = totalVisits.value;
     if (tv == null || tv <= 0) {
       return 'Total kunjungan harus lebih dari 0.';
@@ -410,11 +438,18 @@ class PricingCalculatorController {
         return 'Nama item kustom tidak boleh kosong.';
       }
     }
+
+    if (requireMarkup && markupPercent.value <= 0) {
+      return markupType.value == 1
+          ? 'Persentase penawaran wajib diisi (> 0).'
+          : 'Nilai penawaran wajib diisi (> 0).';
+    }
+
     return null;
   }
 
   bool _validateInputs({required bool setOnPreview}) {
-    final err = validateInputs();
+    final err = validateInputs(requireMarkup: !setOnPreview);
     if (err != null) {
       final failure = UnknownFailure(err);
       if (setOnPreview) {
@@ -473,12 +508,17 @@ class PricingCalculatorController {
     final itemDtos = items
         .map(
           (i) => PricingItemDto(
-            itemType: (i.kind == 5 || i.kind == 0) ? 2 : 1,
+            itemType: (i.kind == 5 || i.kind == 6 || i.kind == 0) ? 2 : 1,
             productId: i.kind == 0 ? null : (i.id.isNotEmpty ? i.id : null),
             name: i.title.value,
             qty: i.qty.value,
             frequency: i.freq.value.round(),
-            unitPrice: (i.kind == 5 || i.kind == 0) ? i.unitPrice.value : null,
+            unitPrice: (i.kind == 5 || i.kind == 6 || i.kind == 0)
+                ? i.unitPrice.value
+                : null,
+            unitCost: (i.kind == 0 && i.unitCost.value > 0)
+                ? i.unitCost.value
+                : null,
           ),
         )
         .toList();
@@ -487,9 +527,9 @@ class PricingCalculatorController {
       contractMonths: contractMonths.value ?? 12,
       visitFrequency: visitFrequency.value ?? 1,
       totalVisits: totalVisits.value ?? 1,
-      markupType: markupType.value,
+      markupType: markupType.value == 2 ? 3 : markupType.value,
       markupValue: markupPercent.value,
-      discountAmount: discountAmount.value,
+      discountAmount: 0.0,
       taxPercentage: taxPercentage.value,
       scheduleWorkOrderType: _scheduleWorkOrderType.value,
       supplies: supplyDtos,
@@ -504,6 +544,10 @@ class PricingCalculatorController {
     if (!_validateInputs(setOnPreview: true)) return;
     previewState.value = const UiLoading();
     final result = await _repository.previewPricing(proposalId, buildRequest());
+    if (result is Ok<PricingPreview>) {
+      previewSubtotal.value = result.value.subtotal;
+      previewTotalAmount.value = result.value.totalAmount;
+    }
     previewState.value = switch (result) {
       Ok(:final value) => UiSuccess(value),
       Err(:final failure) => UiFailure(failure),
@@ -519,7 +563,7 @@ class PricingCalculatorController {
       contractMonths.value = data.contractMonths;
       visitFrequency.value = data.visitFrequency;
       totalVisits.value = data.totalVisits;
-      markupType.value = data.markupType;
+      markupType.value = data.markupType == 2 ? 3 : data.markupType;
       markupPercent.value = data.markupValue;
       discountAmount.value = data.discountAmount;
       taxPercentage.value = data.taxPercentage;
@@ -588,6 +632,7 @@ class PricingCalculatorController {
             initialUnitPrice: (i.unitPrice != null && i.unitPrice! > 0)
                 ? i.unitPrice!
                 : (i.unitCost > 0 ? i.unitCost : 0.0),
+            initialUnitCost: i.unitCost > 0 ? i.unitCost : 0.0,
           ),
         );
       }
@@ -638,6 +683,8 @@ class PricingCalculatorController {
     discountAmount.dispose();
     taxPercentage.dispose();
     _scheduleWorkOrderType.dispose();
+    previewSubtotal.dispose();
+    previewTotalAmount.dispose();
     previewState.dispose();
     submitState.dispose();
     existingPricingState.dispose();

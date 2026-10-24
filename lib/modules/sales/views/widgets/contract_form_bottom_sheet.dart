@@ -211,7 +211,7 @@ class _ContractFormBottomSheetState extends State<ContractFormBottomSheet> {
 
                   // 1. Kategori Kontrak *
                   AppSearchableSelector<ContractCategory>(
-                    label: 'Kategori Kontrak *',
+                    label: 'Kategori Kontrak',
                     hint: 'Pilih kategori…',
                     value: _controller.selectedCategory,
                     onSearch: _controller.searchCategories,

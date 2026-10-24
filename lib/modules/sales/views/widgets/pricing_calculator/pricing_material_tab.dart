@@ -100,7 +100,7 @@ class PricingSupplyTab extends StatelessWidget {
                   'Frekuensi',
                   '',
                 ],
-                flexes: const [4, 2, 2, 3, 2],
+                flexes: const [4, 3, 3, 3, 2],
               ),
               for (final row in chemicals)
                 PricingSupplyRowWidget(
@@ -339,7 +339,7 @@ class PricingSupplyRowWidget extends StatelessWidget {
                   ),
                   const SizedBox(width: 8.0),
                   Expanded(
-                    flex: 2,
+                    flex: 3,
                     child: Row(
                       children: [
                         Expanded(
@@ -368,7 +368,7 @@ class PricingSupplyRowWidget extends StatelessWidget {
                   ),
                   const SizedBox(width: 8.0),
                   Expanded(
-                    flex: 2,
+                    flex: 3,
                     child: Row(
                       children: [
                         Expanded(

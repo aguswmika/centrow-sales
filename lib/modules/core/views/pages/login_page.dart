@@ -1,3 +1,4 @@
+import 'package:centrow_sales/shared/config/app_config.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
@@ -284,7 +285,7 @@ class _LoginPageState extends State<LoginPage> {
         const SizedBox(width: 6.0),
         Flexible(
           child: Text(
-            'v1.0.0',
+            AppConfig.appVersion,
             style: GoogleFonts.inter(
               fontSize: 11.5,
               fontWeight: FontWeight.w500,

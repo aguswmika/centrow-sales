@@ -90,6 +90,7 @@ class ProposalFormController extends ChangeNotifier {
   Future<void> _loadCustomerLocations() async {
     if (_customerId == null) {
       availableLocations = [];
+      addressId = null;
       notifyListeners();
       return;
     }
@@ -97,6 +98,18 @@ class ProposalFormController extends ChangeNotifier {
     if (result.isOk) {
       selectedCustomer = result.valueOrNull;
       availableLocations = result.valueOrNull!.locations;
+      if (addressId == null ||
+          !availableLocations.any((l) => l.id == addressId)) {
+        final primaryLoc = availableLocations
+            .where((l) => l.isPrimary)
+            .cast<CustomerLocation?>()
+            .firstWhere((_) => true, orElse: () => null);
+        addressId =
+            primaryLoc?.id ??
+            (availableLocations.isNotEmpty
+                ? availableLocations.first.id
+                : null);
+      }
       notifyListeners();
     }
   }
@@ -141,8 +154,22 @@ class ProposalFormController extends ChangeNotifier {
   }
 
   Future<Result<Proposal>> submit() async {
-    if (_customerId == null || serviceId == null || proposalDate == null) {
-      return const Err(UnknownFailure('Field wajib harus diisi'));
+    final missingFields = <String>[];
+    if (_customerId == null || _customerId!.isEmpty) {
+      missingFields.add('Pelanggan');
+    }
+    if (serviceId == null || serviceId!.isEmpty) {
+      missingFields.add('Layanan');
+    }
+    if (addressId == null || addressId!.isEmpty) {
+      missingFields.add('Alamat');
+    }
+    if (proposalDate == null || proposalDate!.trim().isEmpty) {
+      missingFields.add('Tanggal Proposal');
+    }
+
+    if (missingFields.isNotEmpty) {
+      return Err(UnknownFailure('${missingFields.join(', ')} wajib diisi.'));
     }
 
     final Result<Proposal> result;
@@ -198,6 +225,7 @@ class ProposalFormController extends ChangeNotifier {
   }) {
     if (customer != null) {
       selectedCustomer = customer;
+      this.addressId = null;
       customerId = customer.id; // triggers location load
     }
     if (service != null) {

@@ -128,6 +128,7 @@ class PricingDetail {
   final double discountAmount;
   final double taxPercentage;
   final int scheduleWorkOrderType;
+  final double addonCost;
 
   final List<PricingDetailSupply> supplies;
   final List<PricingDetailWorker> workers;
@@ -147,6 +148,7 @@ class PricingDetail {
     required this.discountAmount,
     required this.taxPercentage,
     this.scheduleWorkOrderType = 1,
+    this.addonCost = 0.0,
     required this.supplies,
     required this.workers,
     required this.items,
@@ -166,6 +168,7 @@ class PricingDetail {
     double? discountAmount,
     double? taxPercentage,
     int? scheduleWorkOrderType,
+    double? addonCost,
     List<PricingDetailSupply>? supplies,
     List<PricingDetailWorker>? workers,
     List<PricingDetailItem>? items,
@@ -185,6 +188,7 @@ class PricingDetail {
       taxPercentage: taxPercentage ?? this.taxPercentage,
       scheduleWorkOrderType:
           scheduleWorkOrderType ?? this.scheduleWorkOrderType,
+      addonCost: addonCost ?? this.addonCost,
       supplies: supplies ?? this.supplies,
       workers: workers ?? this.workers,
       items: items ?? this.items,

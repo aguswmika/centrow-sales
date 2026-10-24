@@ -10,6 +10,7 @@ import 'package:centrow_sales/modules/sales/repositories/sales_dashboard_reposit
 import 'package:centrow_sales/modules/sales/controllers/customer_controller.dart';
 import 'package:centrow_sales/modules/sales/controllers/customer_form_controller.dart';
 import 'package:centrow_sales/modules/sales/controllers/customer_photo_controller.dart';
+import 'package:centrow_sales/modules/sales/controllers/richtext_image_controller.dart';
 import 'package:centrow_sales/modules/sales/controllers/proposal_controller.dart';
 import 'package:centrow_sales/modules/sales/controllers/proposal_document_controller.dart';
 import 'package:centrow_sales/modules/sales/controllers/proposal_form_controller.dart';
@@ -17,6 +18,7 @@ import 'package:centrow_sales/modules/sales/controllers/product_controller.dart'
 import 'package:centrow_sales/modules/sales/controllers/pricing_calculator_controller.dart';
 import 'package:centrow_sales/modules/sales/repositories/customer_repository.dart';
 import 'package:centrow_sales/modules/sales/repositories/customer_photo_repository.dart';
+import 'package:centrow_sales/modules/sales/repositories/richtext_image_repository.dart';
 import 'package:centrow_sales/modules/sales/repositories/proposal_repository.dart';
 import 'package:centrow_sales/modules/sales/repositories/proposal_document_repository.dart';
 import 'package:centrow_sales/modules/sales/repositories/service_repository.dart';
@@ -85,6 +87,9 @@ Future<void> setupDi({LocalStorage? storage}) async {
   getIt.registerLazySingleton<CustomerPhotoRepository>(
     () => CustomerPhotoRepositoryImpl(getIt<Dio>()),
   );
+  getIt.registerLazySingleton<RichtextImageRepository>(
+    () => RichtextImageRepositoryImpl(getIt<Dio>()),
+  );
   getIt.registerLazySingleton<ProposalRepository>(
     () => ProposalRepositoryImpl(getIt<Dio>()),
   );
@@ -131,6 +136,9 @@ Future<void> setupDi({LocalStorage? storage}) async {
   );
   getIt.registerFactory<CustomerPhotoController>(
     () => CustomerPhotoController(getIt<CustomerPhotoRepository>()),
+  );
+  getIt.registerFactory<RichtextImageController>(
+    () => RichtextImageController(getIt<RichtextImageRepository>()),
   );
   getIt.registerFactory<CustomerFormController>(
     () => CustomerFormController(

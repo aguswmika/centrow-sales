@@ -45,7 +45,7 @@ class MockPricingRepository implements PricingRepository {
             suppliesCost: 0,
             workerCost: 0,
             fuelCost: 0,
-            totalCogs: 0,
+            totalCost: 0,
             servicePrice: 0,
             addonAmount: 0,
             discountAmount: 0,
@@ -183,7 +183,7 @@ void main() {
           name: 'Chemical 1',
           uomId: 'u1',
           uomCode: 'BTL',
-          cogs: 50000.0,
+          sellingPrice: 50000.0,
           isActive: true,
           kind: 1,
         );
@@ -194,7 +194,7 @@ void main() {
           name: 'Tool 1',
           uomId: 'u2',
           uomCode: 'UNIT',
-          cogs: 75000.0,
+          sellingPrice: 75000.0,
           isActive: true,
           kind: 2,
         );
@@ -205,7 +205,7 @@ void main() {
           name: 'Transport 1',
           uomId: 'u3',
           uomCode: 'KM',
-          cogs: 20000.0,
+          sellingPrice: 20000.0,
           isActive: true,
           kind: 3,
         );
@@ -216,7 +216,7 @@ void main() {
           name: 'Technician 1',
           uomId: 'u4',
           uomCode: 'JAM',
-          cogs: 100000.0,
+          sellingPrice: 100000.0,
           isActive: true,
           kind: 4,
         );
@@ -227,7 +227,7 @@ void main() {
           name: 'Addon 1',
           uomId: 'u5',
           uomCode: 'UNIT',
-          cogs: 30000.0,
+          sellingPrice: 30000.0,
           isActive: true,
           kind: 5,
         );
@@ -320,7 +320,7 @@ void main() {
         name: 'Chemical 1',
         uomId: 'u1',
         uomCode: 'BTL',
-        cogs: 50000.0,
+        sellingPrice: 50000.0,
         isActive: true,
         kind: 1,
       );
@@ -379,7 +379,7 @@ void main() {
         name: 'Chemical 1',
         uomId: 'u1',
         uomCode: 'BTL',
-        cogs: 50000.0,
+        sellingPrice: 50000.0,
         isActive: true,
         kind: 1,
       );
@@ -389,7 +389,7 @@ void main() {
         name: 'Tool 1',
         uomId: 'u2',
         uomCode: 'UNIT',
-        cogs: 75000.0,
+        sellingPrice: 75000.0,
         isActive: true,
         kind: 2,
       );
@@ -410,7 +410,7 @@ void main() {
         name: 'Transport 1',
         uomId: 'u3',
         uomCode: 'KM',
-        cogs: 20000.0,
+        sellingPrice: 20000.0,
         isActive: true,
         kind: 3,
       );
@@ -420,7 +420,7 @@ void main() {
         name: 'Addon 1',
         uomId: 'u5',
         uomCode: 'UNIT',
-        cogs: 30000.0,
+        sellingPrice: 30000.0,
         isActive: true,
         kind: 5,
       );
@@ -451,6 +451,7 @@ void main() {
 
     test('validateInputs rejects custom items with empty title', () {
       controller.totalVisits.value = 10;
+      controller.markupPercent.value = 1000000.0;
       controller.addCustomItem(defaultTitle: '   ', initialPrice: 10000.0);
 
       expect(
@@ -469,7 +470,7 @@ void main() {
         name: 'Technician 1',
         uomId: 'u4',
         uomCode: 'JAM',
-        cogs: 100000.0,
+        sellingPrice: 100000.0,
         isActive: true,
         kind: 4,
       );
@@ -510,7 +511,7 @@ void main() {
       expect(repository.lastRequest, isNotNull);
       expect(repository.lastRequest!.contractMonths, 6);
       expect(repository.lastRequest!.totalVisits, 12);
-      expect(repository.lastRequest!.markupType, 1);
+      expect(repository.lastRequest!.markupType, 3);
       expect(repository.lastRequest!.markupValue, 15.0);
       expect(repository.lastRequest!.taxPercentage, 5.0);
       expect(repository.lastRequest!.supplies.length, 1);
@@ -527,6 +528,7 @@ void main() {
 
     test('updates submitState to UiFailure when repository fails', () async {
       controller.totalVisits.value = 12;
+      controller.markupPercent.value = 1000000.0;
       repository.response = const Err(ServerFailure('Server Error'));
 
       await controller.submitPricing('prop-1');
@@ -538,6 +540,7 @@ void main() {
       'validates worker minutes are non-negative on preview and submit',
       () async {
         controller.totalVisits.value = 12;
+        controller.markupPercent.value = 1000000.0;
         controller.workers.add(
           PricingWorkerRow(
             id: 'w-1',
@@ -568,6 +571,7 @@ void main() {
 
     test('builds request with worker minutes on submit and preview', () async {
       controller.totalVisits.value = 12;
+      controller.markupPercent.value = 1000000.0;
       controller.workers.add(
         PricingWorkerRow(
           id: 'w-1',
@@ -744,6 +748,7 @@ void main() {
         controller.contractMonths.value = 12;
         controller.visitFrequency.value = 4;
         controller.totalVisits.value = 48;
+        controller.markupPercent.value = 1000000.0;
 
         controller.supplies.add(
           PricingSupplyRow(
@@ -778,6 +783,7 @@ void main() {
         controller.contractMonths.value = 12;
         controller.visitFrequency.value = 4;
         controller.totalVisits.value = 48;
+        controller.markupPercent.value = 1000000.0;
 
         controller.supplies.add(
           PricingSupplyRow(
@@ -952,6 +958,7 @@ void main() {
 
     test('validateInputs requires treatmentMethodId for all supply lines', () {
       controller.totalVisits.value = 10;
+      controller.markupPercent.value = 1000000.0;
       final chemRow = PricingSupplyRow(
         id: 'chem-1',
         title: 'Chemical 1',
@@ -997,6 +1004,7 @@ void main() {
       'validateInputs requires positive spkDoseUsage for chemical lines',
       () {
         controller.totalVisits.value = 10;
+        controller.markupPercent.value = 1000000.0;
         final chemRow = PricingSupplyRow(
           id: 'chem-1',
           title: 'Chemical 1',
@@ -1171,6 +1179,7 @@ void main() {
       );
       syncController.contractMonths.value = 6;
       syncController.totalVisits.value = 12;
+      syncController.markupPercent.value = 1000000.0;
       syncRepo.response = const Ok(null);
 
       await syncController.submitPricing('prop-123');
@@ -1207,6 +1216,7 @@ void main() {
       );
       syncController.contractMonths.value = 6;
       syncController.totalVisits.value = 12;
+      syncController.markupPercent.value = 1000000.0;
       syncRepo.response = const Err(ServerFailure('Failed'));
 
       await syncController.submitPricing('prop-123');
@@ -1215,6 +1225,153 @@ void main() {
       expect(emittedEvents, isEmpty);
 
       await subscription.cancel();
+    });
+  });
+
+  group('Offer-Based Pricing and Add-on Updates', () {
+    test('markupType defaults to 3 (Nilai Tetap)', () {
+      expect(controller.markupType.value, 3);
+    });
+
+    test('loadExistingPricing migrates legacy markup_type: 2 to 3', () async {
+      const legacyDetail = PricingDetail(
+        id: 'p-legacy',
+        customerId: 'c-1',
+        serviceId: 's-1',
+        contractMonths: 12,
+        visitFrequency: 4,
+        totalVisits: 48,
+        markupType: 2, // Legacy Nominal
+        markupValue: 500000.0,
+        discountAmount: 0.0,
+        taxPercentage: 11.0,
+        scheduleWorkOrderType: 1,
+        supplies: [],
+        workers: [],
+        items: [],
+      );
+
+      repository.detailResponse = const Ok(legacyDetail);
+
+      await controller.loadExistingPricing('prop-legacy');
+
+      expect(controller.markupType.value, 3);
+      expect(controller.markupPercent.value, 500000.0);
+
+      final req = controller.buildRequest();
+      expect(req.markupType, 3);
+      expect(req.markupValue, 500000.0);
+      expect(req.discountAmount, 0.0);
+    });
+
+    test(
+      'buildRequest serializes unit_cost for custom items when greater than zero',
+      () {
+        controller.contractMonths.value = 6;
+        controller.totalVisits.value = 6;
+        controller.markupType.value = 1;
+
+        controller.addCustomItem(
+          defaultTitle: 'Layanan Tambahan',
+          initialPrice: 500000.0,
+          initialCost: 200000.0,
+        );
+
+        final req = controller.buildRequest();
+        expect(req.items.length, 1);
+        final itemDto = req.items.first;
+        expect(itemDto.itemType, 2);
+        expect(itemDto.productId, isNull);
+        expect(itemDto.name, 'Layanan Tambahan');
+        expect(itemDto.unitPrice, 500000.0);
+        expect(itemDto.unitCost, 200000.0);
+      },
+    );
+
+    test('validation fails when markupPercent is zero or negative', () async {
+      controller.totalVisits.value = 12;
+      controller.markupPercent.value = 0.0;
+      controller.markupType.value = 3;
+
+      await controller.submitPricing('prop-1');
+      expect(controller.submitState.value, isA<UiFailure<void>>());
+      var failure = controller.submitState.value as UiFailure<void>;
+      expect(failure.failure.message, 'Nilai penawaran wajib diisi (> 0).');
+
+      controller.markupType.value = 1;
+      await controller.submitPricing('prop-1');
+      expect(controller.submitState.value, isA<UiFailure<void>>());
+      failure = controller.submitState.value as UiFailure<void>;
+      expect(
+        failure.failure.message,
+        'Persentase penawaran wajib diisi (> 0).',
+      );
+
+      controller.markupPercent.value = 15.0;
+      expect(controller.validateInputs(), isNull);
+    });
+
+    test(
+      'previewPricing updates previewSubtotal and previewTotalAmount on success',
+      () async {
+        controller.totalVisits.value = 12;
+        controller.markupPercent.value = 500000.0;
+
+        repository.previewResponse = const Ok(
+          PricingPreview(
+            suppliesCost: 100000.0,
+            workerCost: 50000.0,
+            fuelCost: 20000.0,
+            addonCost: 30000.0,
+            totalCost: 200000.0,
+            servicePrice: 400000.0,
+            addonAmount: 100000.0,
+            discountAmount: 0.0,
+            subtotal: 500000.0,
+            taxPercentage: 11.0,
+            taxAmount: 55000.0,
+            totalAmount: 555000.0,
+            marginAmount: 300000.0,
+            marginPercent: 60.0,
+            supplies: [],
+            workers: [],
+            items: [],
+          ),
+        );
+
+        await controller.previewPricing('prop-test');
+
+        expect(controller.previewSubtotal.value, 500000.0);
+        expect(controller.previewTotalAmount.value, 555000.0);
+      },
+    );
+
+    test('addRow supports expectedKind == 6 (Add-on Paket)', () {
+      const packageProduct = Product(
+        id: 'prod-pkg',
+        code: 'PKG-01',
+        name: 'Paket Sanitasi',
+        uomId: 'u-1',
+        uomCode: 'PKT',
+        sellingPrice: 350000.0,
+        isActive: true,
+        kind: 6,
+      );
+
+      controller.addRow(packageProduct, 6);
+
+      expect(controller.items.length, 1);
+      final item = controller.items.first;
+      expect(item.id, 'prod-pkg');
+      expect(item.kind, 6);
+      expect(item.title.value, 'Paket Sanitasi');
+      expect(item.unitPrice.value, 350000.0);
+      expect(item.unitCost.value, 350000.0);
+
+      final req = controller.buildRequest();
+      expect(req.items.length, 1);
+      expect(req.items.first.itemType, 2);
+      expect(req.items.first.productId, 'prod-pkg');
     });
   });
 }

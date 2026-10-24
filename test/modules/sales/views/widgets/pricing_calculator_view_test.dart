@@ -36,7 +36,7 @@ class MockPricingRepository implements PricingRepository {
         suppliesCost: 0,
         workerCost: 0,
         fuelCost: 0,
-        totalCogs: 0,
+        totalCost: 0,
         servicePrice: 0,
         addonAmount: 0,
         discountAmount: 0,
@@ -345,11 +345,18 @@ void main() {
       expect(customRow.title.value, 'Sewa Mobil Box');
 
       // Edit price
-      final priceFieldFinder = find.widgetWithText(TextFormField, '0');
+      final priceFieldFinder = find.byKey(const Key('custom_item_price'));
       expect(priceFieldFinder, findsOneWidget);
       await tester.enterText(priceFieldFinder, '350000');
       await tester.pumpAndSettle();
       expect(customRow.unitPrice.value, 350000.0);
+
+      // Edit cost (unitCost / modal)
+      final costFieldFinder = find.byKey(const Key('custom_item_cost'));
+      expect(costFieldFinder, findsOneWidget);
+      await tester.enterText(costFieldFinder, '200000');
+      await tester.pumpAndSettle();
+      expect(customRow.unitCost.value, 200000.0);
 
       // Delete custom item
       final closeIcons = find.byIcon(Icons.close_rounded);

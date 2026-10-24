@@ -16,7 +16,11 @@ The system SHALL allow authorized sales representatives to create a contract add
 - **THEN** the system rejects the operation and displays an error indicating that addendums can only be applied to active contracts
 
 ### Requirement: Validate contract addendum input
-The system SHALL validate addendum pricing input according to shared pricing upsert rules, ensuring total visits is strictly greater than zero and required line fields are valid, without enforcing visit delta non-zero or scheduled visit floor restrictions.
+The system SHALL validate addendum pricing input according to shared pricing upsert rules, ensuring total visits is strictly greater than zero, all supply lines have required treatment methods assigned, chemical supply lines have a positive SPK dose (`spk_dose_usage > 0`), and required line fields are valid, without enforcing visit delta non-zero or scheduled visit floor restrictions.
+
+#### Scenario: Addendum requires treatment method on all supplies and SPK dose on chemicals
+- **WHEN** user attempts to submit a contract addendum where any supply line lacks a treatment method or any chemical line has non-positive `spk_dose_usage`
+- **THEN** the system blocks the submission and indicates which required supply field must be corrected
 
 #### Scenario: Visit delta is zero
 - **WHEN** an addendum submission produces no net change in total visits (`visit_delta == 0`)

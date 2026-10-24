@@ -105,6 +105,9 @@ class _WebviewTiptapEditorState extends State<WebviewTiptapEditor> {
     pre code { background-color: transparent; padding: 0; font-size: inherit; color: inherit; }
     a { color: #2563eb; text-decoration: none; cursor: pointer; }
     a:hover { text-decoration: underline; }
+    img { max-width: 100%; height: auto; }
+    img[data-align="center"] { display: block; margin-left: auto; margin-right: auto; }
+    img[data-align="right"] { display: block; margin-left: auto; margin-right: 0; }
 
     table {
       border-collapse: collapse;
@@ -129,10 +132,11 @@ class _WebviewTiptapEditorState extends State<WebviewTiptapEditor> {
   <div id="editor"></div>
 
   <script>
-    const { Editor, StarterKit, Table, TableRow, TableCell, TableHeader, TextAlign, Underline, Link } = window.Tiptap;
+    const { Editor, StarterKit, Table, TableRow, TableCell, TableHeader, TextAlign, Underline, Link, Image } = window.Tiptap;
 
     const sendStateToFlutter = (editor) => {
       if (window.FlutterChannel) {
+        const imageAlign = editor.isActive('image') ? (editor.getAttributes('image').align || 'left') : null;
         const state = {
           json: editor.getJSON(),
           isActive: {
@@ -156,6 +160,10 @@ class _WebviewTiptapEditorState extends State<WebviewTiptapEditor> {
             center: editor.isActive({ textAlign: 'center' }),
             right: editor.isActive({ textAlign: 'right' }),
             table: editor.isActive('table'),
+            image: editor.isActive('image'),
+            imageLeft: imageAlign === 'left',
+            imageCenter: imageAlign === 'center',
+            imageRight: imageAlign === 'right',
           }
         };
         window.FlutterChannel.postMessage(JSON.stringify(state));
@@ -173,7 +181,19 @@ class _WebviewTiptapEditorState extends State<WebviewTiptapEditor> {
         TableCell,
         TextAlign.configure({ types: ['heading', 'paragraph'] }),
         Underline,
-        Link.configure({ openOnClick: false })
+        Link.configure({ openOnClick: false }),
+        Image.extend({
+          addAttributes() {
+            return {
+              ...this.parent?.(),
+              align: {
+                default: 'left',
+                parseHTML: el => el.getAttribute('data-align') || 'left',
+                renderHTML: attrs => ({ 'data-align': attrs.align }),
+              },
+            };
+          },
+        }).configure({ allowBase64: false })
       ],
       content: {},
       onUpdate: ({ editor }) => {
@@ -200,6 +220,38 @@ class _WebviewTiptapEditorState extends State<WebviewTiptapEditor> {
       if (window.editor) {
         window.editor.setEditable(editable);
       }
+    };
+
+    window.setImageWidth = function(percent) {
+      const containerWidth = document.querySelector('#editor').clientWidth;
+      const px = Math.max(50, Math.round((percent / 100) * containerWidth));
+      window.editor.chain().focus().updateAttributes('image', { width: px, height: null }).run();
+    };
+
+    window.adjustImageWidth = function(deltaPercent) {
+      const editor = window.editor;
+      const maxWidth = document.querySelector('#editor').clientWidth;
+      const sel = editor.state.selection;
+      const selectedIsImage = !!(sel.node && sel.node.type.name === 'image');
+      let imgEl = null;
+      const dom = editor.view.nodeDOM(sel.from);
+      if (dom && dom.tagName === 'IMG') {
+        imgEl = dom;
+      } else {
+        imgEl = document.querySelector('img.ProseMirror-selectednode');
+      }
+      if (!selectedIsImage && !imgEl) return;
+      let current = selectedIsImage ? sel.node.attrs.width : null;
+      if (current === null || current === undefined || current === '') {
+        current = imgEl ? imgEl.getBoundingClientRect().width : maxWidth;
+      }
+      const next = Math.round(Math.max(50, Math.min(maxWidth, Number(current) + (deltaPercent / 100) * maxWidth)));
+      editor.chain().focus().updateAttributes('image', { width: next, height: null }).run();
+    };
+
+    window.setImageAlign = function(align) {
+      if (align !== 'left' && align !== 'center' && align !== 'right') return;
+      window.editor.chain().focus().updateAttributes('image', { align: align }).run();
     };
 
     window.execCmd = function(cmd, argsStr) {

@@ -42,44 +42,6 @@ The system SHALL retrieve recorded site risk items for a customer's specific add
 - **WHEN** the server responds with HTTP 403 due to missing `sales.customer.risk.view` permission
 - **THEN** the system displays a permission-denied error message
 
-### Requirement: Save customer address site risks with full replace
-The system SHALL save the complete site risk assessment for an address via `PUT /api/v1/sales/customers/:id/addresses/:address_id/risks`, replacing previous items with selected master risk IDs (`site_risk_ids`) and custom hazard strings (`custom_risks`).
-
-#### Scenario: Successfully update address site risks
-- **WHEN** the sales rep selects master hazards, enters custom hazards, and submits the assessment
-- **THEN** the system sends the full replace payload to the server, updates local state with the returned list, and confirms successful save
-
-#### Scenario: Clear all recorded site risks
-- **WHEN** the sales rep unticks all master hazards, removes all custom hazards, and saves
-- **THEN** the system sends empty arrays (`site_risk_ids: []`, `custom_risks: []`) and clears the address's recorded risks
-
-#### Scenario: Retain previously recorded deleted master items
-- **WHEN** an address previously had a master risk item that was subsequently deleted from the master list, and the rep leaves it selected
-- **THEN** the system retains its `site_risk_id` in the submission, allowing the server to preserve the recorded item and name
-
-#### Scenario: Client-side validation of custom risks
-- **WHEN** the sales rep enters a custom hazard that is empty or whitespace-only
-- **THEN** the system trims whitespace, rejects or ignores empty items, and validates that hazard names do not exceed 255 characters before submission
-
-#### Scenario: Server rejects invalid input
-- **WHEN** the server returns HTTP 400 due to validation failure
-- **THEN** the system displays the server validation error message and keeps the editor open so the rep can make corrections
-
-#### Scenario: Rep lacks permission to edit address risks
-- **WHEN** the server returns HTTP 403 due to missing `sales.customer.risk.edit` permission
-- **THEN** the system displays an unauthorized error message and prevents changes from being applied locally
-
-### Requirement: Present site risk assessment on customer locations
-The system SHALL display site risk status and indicators on customer service locations within the customer detail view, allowing reps to initiate assessment.
-
-#### Scenario: View location risk indicator
-- **WHEN** the rep views the customer locations list
-- **THEN** each location displays an indicator or button reflecting its Site Risk Assessment status (e.g. number of identified risks or unassessed status)
-
-#### Scenario: Launch site risk assessment editor
-- **WHEN** the rep taps on the risk assessment action for an address
-- **THEN** the system displays the assessment interface showing master checklist items pre-ticked according to recorded risks, alongside existing custom hazards and an input field to add new custom hazards
-
 ### Requirement: Capture site risk assessment during customer creation and update
 The system SHALL serialize selected master site risk IDs (`site_risk_ids`) and manual hazard names (`custom_risks`) within the primary location (`locations[0]`) when creating a customer via `POST /api/v1/sales/customers` or updating a customer via `PUT /api/v1/sales/customers/:id`.
 
