@@ -1,0 +1,458 @@
+/*
+ * Rich text paged layout: sheet chrome and per-profile typography.
+ *
+ * Source of truth: centrow web/app/components/ui/richtext-page
+ * centrow-sales copies this file. Copy, do not edit downstream.
+ *
+ * Typography mirrors the PDF stylesheets below. Only metric-affecting
+ * properties are mirrored (font family, size, weight, style, line height,
+ * letter spacing, text transform, text alignment, margins, padding, border
+ * widths and styles, list indentation). Colours are design tokens and never
+ * change pagination, so colour-only rules from the templates are not ported.
+ *
+ *   pkg/contractpdf/assets/base.gohtml        base_css block, shared by theme-1..5
+ *   pkg/contractpdf/assets/template_1.gohtml  theme-1 (.content overrides)
+ *   pkg/contractpdf/assets/template_2.gohtml  theme-2 (.content overrides)
+ *   pkg/contractpdf/assets/template_3.gohtml  theme-3 (.content overrides)
+ *   pkg/contractpdf/assets/template_4.gohtml  theme-4 (.content overrides)
+ *   pkg/contractpdf/assets/template_5.gohtml  theme-5 (.content overrides)
+ *   pkg/richtext/html.go                      WrapPrintDocument stylesheet (plain profile),
+ *                                             plus Chromium UA defaults for the elements
+ *                                             that stylesheet leaves unstyled
+ *
+ * Cover, header, footer, @page and page-break-* rules are not mirrored.
+ * Page breaks are computed by the pagination extension, not by CSS.
+ */
+
+/* ── Sheet chrome ─────────────────────────────────────────────────────── */
+
+.rt-paged {
+  --rt-margin-top: 0px;
+  --rt-margin-right: 0px;
+  --rt-margin-bottom: 0px;
+  --rt-margin-left: 0px;
+
+  background: var(--color-page);
+  overflow-x: auto;
+  padding: 24px;
+  display: flex;
+  /* The sheet centres itself with auto margins. Auto margins fall back to the
+     start edge when the sheet is wider than the viewport, so horizontal scroll
+     still reaches the left side. */
+  justify-content: flex-start;
+}
+
+.rt-paged .ProseMirror {
+  width: 210mm;
+  box-sizing: border-box;
+  flex: none;
+  margin: 0 auto;
+  background: var(--color-surface);
+  box-shadow: var(--shadow-ds-md);
+  outline: none;
+  /* Bottom padding is 0: the trailing .rt-page-end widget supplies the last
+     sheet's filler and bottom margin, so the margin is not counted twice. */
+  padding: var(--rt-margin-top) var(--rt-margin-right) 0 var(--rt-margin-left);
+  position: relative;
+}
+
+/* ── Page break widgets (view-only decorations, never stored) ─────────── */
+
+.rt-page-break,
+.rt-page-break--inline,
+.rt-page-end {
+  display: block;
+  margin-left: calc(-1 * var(--rt-margin-left));
+  margin-right: calc(-1 * var(--rt-margin-right));
+  user-select: none;
+  pointer-events: none;
+}
+
+/* Inside a paragraph: the wrapper must not add line-box height of its own.
+   Heights come from the explicit child heights; .rt-page-number resets its font. */
+.rt-page-break--inline {
+  line-height: 0;
+  font-size: 0;
+}
+
+.rt-page-filler {
+  display: block;
+}
+
+/* Bottom margin of the sheet that ends here; holds the page number. */
+.rt-page-footer {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  box-sizing: border-box;
+  height: var(--rt-margin-bottom);
+  padding: 0 var(--rt-margin-right) 0 var(--rt-margin-left);
+}
+
+/* Grey strip between two sheets. Its background is the page colour, so it
+   visually cuts the white sheet. */
+.rt-page-gap {
+  display: block;
+  height: 24px;
+  background: var(--color-page);
+}
+
+/* Top margin of the sheet that starts here. */
+.rt-page-header-space {
+  display: block;
+  height: var(--rt-margin-top);
+}
+
+.rt-page-number {
+  font-family: var(--font-sans);
+  font-size: 10px;
+  font-weight: 400;
+  line-height: 1;
+  color: var(--color-secondary);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  user-select: none;
+}
+
+/* ── Editor affordances: zero height impact ───────────────────────────── */
+
+/* Table column resize handle: absolutely positioned so it never adds height. */
+.rt-paged .ProseMirror .column-resize-handle {
+  position: absolute;
+}
+
+/* Image resize handle: absolute so it never adds height when shown. Without
+   top or left offsets it keeps its static position. */
+.rt-paged .ProseMirror [data-resize-handle] {
+  position: absolute;
+}
+
+/* Selected node outline. Uses outline, not border: a border reset would remove
+   the hr top border or the blockquote left border and change the measured
+   height. Nodes that have a resize wrapper already get their outline from
+   main.css, so they are excluded here to avoid a double ring. */
+.rt-paged .ProseMirror .ProseMirror-selectednode:not(:has(> [data-resize-wrapper])) {
+  outline: 2px solid var(--color-brand-500);
+  outline-offset: 0;
+}
+
+/* table-layout: fixed is kept from main.css. Column widths come from the
+   colwidth attributes of the resizable table, so auto layout would change them.
+   This differs from the PDF's auto layout. */
+.rt-paged .ProseMirror table {
+  table-layout: fixed;
+}
+
+/* ── Typography: theme-1..5 (base.gohtml base_css) ────────────────────── */
+
+.rt-paged:is([data-profile^="theme-"]) .ProseMirror {
+  font-family: "Helvetica Neue", Arial, "Segoe UI", Roboto, sans-serif;
+  font-size: 10.5pt;
+  line-height: 1.62;
+}
+
+.rt-paged:is([data-profile^="theme-"]) .ProseMirror > *:first-child {
+  margin-top: 0;
+}
+
+.rt-paged:is([data-profile^="theme-"]) .ProseMirror h1 {
+  font-size: 18pt;
+  font-weight: 700;
+  line-height: 1.25;
+  letter-spacing: -0.01em;
+  margin: 0 0 0.5em;
+}
+
+.rt-paged:is([data-profile^="theme-"]) .ProseMirror h2 {
+  font-size: 12.5pt;
+  font-weight: 700;
+  line-height: 1.3;
+  margin: 1.7em 0 0.5em;
+}
+
+.rt-paged:is([data-profile^="theme-"]) .ProseMirror h3 {
+  font-size: 10.5pt;
+  font-weight: 700;
+  line-height: inherit;
+  margin: 1.3em 0 0.35em;
+}
+
+.rt-paged:is([data-profile^="theme-"]) .ProseMirror :is(h4, h5, h6) {
+  font-size: 9.5pt;
+  font-weight: 700;
+  line-height: inherit;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin: 1.1em 0 0.3em;
+}
+
+.rt-paged:is([data-profile^="theme-"]) .ProseMirror p {
+  margin: 0 0 0.62em;
+  line-height: inherit;
+}
+
+.rt-paged:is([data-profile^="theme-"]) .ProseMirror :is(ul, ol) {
+  margin: 0.3em 0 0.8em;
+  padding-left: 6.5mm;
+}
+
+.rt-paged:is([data-profile^="theme-"]) .ProseMirror li {
+  margin: 0.18em 0;
+  padding-left: 1mm;
+  line-height: inherit;
+}
+
+.rt-paged:is([data-profile^="theme-"]) .ProseMirror blockquote {
+  margin: 1em 0;
+  padding: 0.15em 0 0.15em 7mm;
+  border-left: 2px solid var(--color-border-strong);
+  font-style: italic;
+}
+
+.rt-paged:is([data-profile^="theme-"]) .ProseMirror code {
+  font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  font-size: 0.88em;
+  padding: 0.05em 0.3em;
+}
+
+.rt-paged:is([data-profile^="theme-"]) .ProseMirror pre {
+  margin: 1em 0;
+  padding: 4mm;
+  border: 1px solid var(--color-border-default);
+  font-size: 9pt;
+  line-height: inherit;
+}
+
+.rt-paged:is([data-profile^="theme-"]) .ProseMirror pre code {
+  padding: 0;
+}
+
+.rt-paged:is([data-profile^="theme-"]) .ProseMirror hr {
+  border: 0;
+  border-top: 1px solid var(--color-border-default);
+  margin: 1.6em 0;
+}
+
+.rt-paged:is([data-profile^="theme-"]) .ProseMirror table {
+  margin: 1em 0;
+  font-size: 9.5pt;
+  border-collapse: collapse;
+  width: 100%;
+}
+
+.rt-paged:is([data-profile^="theme-"]) .ProseMirror th {
+  text-align: left;
+  font-weight: 700;
+  font-size: 8.5pt;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  border: 0;
+  border-bottom: 1.5px solid var(--color-primary);
+  padding: 6px 9px;
+  vertical-align: top;
+}
+
+.rt-paged:is([data-profile^="theme-"]) .ProseMirror td {
+  border: 0;
+  border-bottom: 1px solid var(--color-border-default);
+  padding: 6px 9px;
+  vertical-align: top;
+}
+
+.rt-paged:is([data-profile^="theme-"]) .ProseMirror tr:last-child td {
+  border-bottom: 1.5px solid var(--color-primary);
+}
+
+/* theme-1 Klasik: Georgia body, justified text, ruled h2, italic h3 */
+.rt-paged[data-profile="theme-1"] .ProseMirror {
+  font-family: Georgia, "Times New Roman", serif;
+  text-align: justify;
+}
+
+.rt-paged[data-profile="theme-1"] .ProseMirror h2 {
+  border-bottom: 1px solid var(--color-border-default);
+  padding-bottom: 0.25em;
+  letter-spacing: 0.01em;
+}
+
+.rt-paged[data-profile="theme-1"] .ProseMirror h3 {
+  font-style: italic;
+  font-weight: 400;
+  font-size: 11.5pt;
+}
+
+/* theme-2 Modern: short accent rule under every h2 (adds 2px plus margin) */
+.rt-paged[data-profile="theme-2"] .ProseMirror h2::after {
+  content: "";
+  display: block;
+  width: 14mm;
+  border-top: 2px solid var(--color-brand-500);
+  margin-top: 0.35em;
+}
+
+/* theme-3 Korporat: heavier h2 rule, taller blockquote padding */
+.rt-paged[data-profile="theme-3"] .ProseMirror h2 {
+  border-bottom: 2px solid var(--color-brand-500);
+  padding-bottom: 0.22em;
+}
+
+.rt-paged[data-profile="theme-3"] .ProseMirror blockquote {
+  padding-top: 0.5em;
+  padding-bottom: 0.5em;
+}
+
+/* theme-4 Minimalis: hairline rules, no uppercase table heads, no side border */
+.rt-paged[data-profile="theme-4"] .ProseMirror h2 {
+  font-size: 12pt;
+  font-weight: 600;
+  border-top: 1px solid var(--color-border-default);
+  padding-top: 0.55em;
+  margin-top: 2.1em;
+}
+
+.rt-paged[data-profile="theme-4"] .ProseMirror h3 {
+  font-weight: 600;
+}
+
+.rt-paged[data-profile="theme-4"] .ProseMirror th {
+  border-bottom: 1px solid var(--color-primary);
+  text-transform: none;
+  letter-spacing: 0;
+  font-size: 9pt;
+}
+
+.rt-paged[data-profile="theme-4"] .ProseMirror tr:last-child td {
+  border-bottom: 1px solid var(--color-primary);
+}
+
+.rt-paged[data-profile="theme-4"] .ProseMirror blockquote {
+  border-left: 0;
+  border-top: 1px solid var(--color-border-default);
+  border-bottom: 1px solid var(--color-border-default);
+  padding: 0.6em 0;
+  font-style: normal;
+}
+
+/* theme-5 Elegan: Georgia headings and quotes, Helvetica body (as template_5) */
+.rt-paged[data-profile="theme-5"] .ProseMirror :is(h1, h2, h3) {
+  font-family: Georgia, "Times New Roman", serif;
+}
+
+.rt-paged[data-profile="theme-5"] .ProseMirror h2 {
+  border-bottom: 1px solid var(--color-border-default);
+  padding-bottom: 0.24em;
+}
+
+.rt-paged[data-profile="theme-5"] .ProseMirror h3 {
+  font-style: italic;
+  font-weight: 400;
+}
+
+.rt-paged[data-profile="theme-5"] .ProseMirror blockquote {
+  font-family: Georgia, serif;
+}
+
+/* ── Typography: plain (WrapPrintDocument, addendum and HR documents) ── */
+
+/* Headings use Chromium UA sizes and margins where WrapPrintDocument sets only
+   the h1-h3 margins. The PDF renders these, so the editor must match them. */
+.rt-paged[data-profile="plain"] .ProseMirror {
+  font-family: -apple-system, "Segoe UI", Roboto, sans-serif;
+  font-size: 12pt;
+  line-height: 1.5;
+}
+
+.rt-paged[data-profile="plain"] .ProseMirror h1 {
+  font-size: 2em;
+  font-weight: 700;
+  line-height: 1.5;
+  margin: 0.6em 0 0.3em;
+}
+
+.rt-paged[data-profile="plain"] .ProseMirror h2 {
+  font-size: 1.5em;
+  font-weight: 700;
+  line-height: 1.5;
+  margin: 0.6em 0 0.3em;
+}
+
+.rt-paged[data-profile="plain"] .ProseMirror h3 {
+  font-size: 1.17em;
+  font-weight: 700;
+  line-height: 1.5;
+  margin: 0.6em 0 0.3em;
+}
+
+.rt-paged[data-profile="plain"] .ProseMirror h4 {
+  font-size: 1em;
+  font-weight: 700;
+  line-height: 1.5;
+  margin: 1.33em 0;
+}
+
+.rt-paged[data-profile="plain"] .ProseMirror h5 {
+  font-size: 0.83em;
+  font-weight: 700;
+  line-height: 1.5;
+  margin: 1.67em 0;
+}
+
+.rt-paged[data-profile="plain"] .ProseMirror h6 {
+  font-size: 0.67em;
+  font-weight: 700;
+  line-height: 1.5;
+  margin: 2.33em 0;
+}
+
+.rt-paged[data-profile="plain"] .ProseMirror p {
+  margin: 0.4em 0;
+  line-height: 1.5;
+}
+
+.rt-paged[data-profile="plain"] .ProseMirror :is(ul, ol) {
+  margin: 1em 0;
+  padding-left: 40px;
+}
+
+.rt-paged[data-profile="plain"] .ProseMirror li {
+  margin: 0;
+}
+
+.rt-paged[data-profile="plain"] .ProseMirror blockquote {
+  margin: 1em 40px;
+  padding: 0;
+  border-left: 0;
+  font-style: normal;
+}
+
+.rt-paged[data-profile="plain"] .ProseMirror pre {
+  margin: 1em 0;
+  padding: 0;
+}
+
+.rt-paged[data-profile="plain"] .ProseMirror code {
+  padding: 0;
+}
+
+.rt-paged[data-profile="plain"] .ProseMirror hr {
+  margin: 0.5em auto;
+  border: 0;
+  border-top: 1px solid var(--color-border-default);
+}
+
+.rt-paged[data-profile="plain"] .ProseMirror table {
+  margin: 0;
+  border-collapse: collapse;
+  width: 100%;
+}
+
+.rt-paged[data-profile="plain"] .ProseMirror th,
+.rt-paged[data-profile="plain"] .ProseMirror td {
+  border: 1px solid var(--color-border-strong);
+  padding: 4px 8px;
+  text-align: left;
+}
+
+.rt-paged[data-profile="plain"] .ProseMirror th {
+  font-weight: 700;
+}

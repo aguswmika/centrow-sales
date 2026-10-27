@@ -25,6 +25,7 @@ class ProposalDocumentDto {
   final String title;
   final String source;
   final Map<String, dynamic> content;
+  final int theme;
   final List<ProposalPlaceholderDto> placeholders;
   final String? updatedAt;
 
@@ -35,6 +36,7 @@ class ProposalDocumentDto {
     required this.title,
     required this.source,
     required this.content,
+    this.theme = 1,
     required this.placeholders,
     this.updatedAt,
   });
@@ -56,6 +58,7 @@ class ProposalDocumentDto {
       content: (json['content'] is Map)
           ? (json['content'] as Map).cast<String, dynamic>()
           : <String, dynamic>{},
+      theme: (json['theme'] as num?)?.toInt() ?? 1,
       placeholders: placeholdersList,
       updatedAt: json['updated_at'] as String?,
     );
@@ -69,6 +72,7 @@ class ProposalDocumentDto {
       title: title,
       source: source,
       content: content,
+      theme: theme,
       placeholders: placeholders.map((e) => e.toEntity()).toList(),
       updatedAt: updatedAt != null
           ? DateTime.tryParse(updatedAt!)?.toLocal()

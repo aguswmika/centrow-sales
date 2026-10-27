@@ -10,6 +10,7 @@ class ProposalDocument {
   final String title;
   final String source;
   final Map<String, dynamic> content;
+  final int theme;
   final List<ProposalPlaceholder> placeholders;
   final DateTime? updatedAt;
 
@@ -20,6 +21,7 @@ class ProposalDocument {
     required this.title,
     required this.source,
     required this.content,
+    this.theme = 1,
     required this.placeholders,
     this.updatedAt,
   });

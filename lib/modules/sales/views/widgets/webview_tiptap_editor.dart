@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:webview_flutter/webview_flutter.dart';
+import 'package:webview_flutter_android/webview_flutter_android.dart';
 
 class TiptapState {
   final Map<String, dynamic> json;
@@ -23,12 +24,16 @@ class WebviewTiptapEditor extends StatefulWidget {
   final void Function(WebViewController)? onControllerCreated;
   final bool isEditable;
 
+  /// Tema PDF dokumen (1–5) untuk tata letak halaman. `null` = gaya polos (addendum).
+  final int? theme;
+
   const WebviewTiptapEditor({
     super.key,
     required this.initialJson,
     this.onStateChange,
     this.onControllerCreated,
     this.isEditable = true,
+    this.theme,
   });
 
   @override
@@ -72,6 +77,14 @@ class _WebviewTiptapEditorState extends State<WebviewTiptapEditor> {
         ),
       );
 
+    // Halaman A4 dirender selebar kertas lalu di-zoom-out agar pas layar; Android
+    // hanya menghormati meta viewport lebar bila wide viewport diaktifkan. Pinch zoom
+    // sudah aktif bawaan (Android: built-in zoom; iOS: user-scalable di meta viewport).
+    final platform = _controller.platform;
+    if (platform is AndroidWebViewController) {
+      platform.setUseWideViewPort(true);
+    }
+
     _loadHtml();
   }
 
@@ -85,54 +98,52 @@ class _WebviewTiptapEditorState extends State<WebviewTiptapEditor> {
 
   Future<void> _loadHtml() async {
     final jsBundle = await rootBundle.loadString('assets/js/tiptap.bundle.js');
+    final pageLayout = widget.theme == null
+        ? "{ profile: 'plain' }"
+        : "{ profile: 'theme', theme: ${widget.theme} }";
     final htmlContent =
         '''
 <!DOCTYPE html>
 <html>
 <head>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <script>$jsBundle</script>
+  <!-- Lebar A4 (794px) + padding kanvas 2x24px; WebView menskalakan agar pas layar, pinch zoom aktif. -->
+  <meta name="viewport" content="width=842, user-scalable=yes" />
   <style>
-    body { margin: 0; padding: 16px; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; font-size: 14px; line-height: 1.6; color: #1e293b; background-color: #ffffff; }
-    .tiptap { outline: none; min-height: 100vh; }
-    p { margin-top: 0; margin-bottom: 0.75em; }
-    h1, h2, h3, h4, h5, h6 { margin-top: 1em; margin-bottom: 0.5em; line-height: 1.2; font-weight: 700; }
-    h1 { font-size: 2em; } h2 { font-size: 1.5em; } h3 { font-size: 1.17em; }
-    ul, ol { padding-left: 1.5em; margin-bottom: 0.75em; }
-    blockquote { border-left: 3px solid #cbd5e1; margin: 0; padding-left: 1rem; color: #64748b; }
-    pre { background: #0f172a; color: #f8fafc; padding: 0.75rem 1rem; border-radius: 0.5rem; margin-bottom: 0.75em; overflow-x: auto; font-family: monospace; }
-    code { font-family: monospace; background-color: #f1f5f9; padding: 0.2em 0.4em; border-radius: 3px; font-size: 85%; }
-    pre code { background-color: transparent; padding: 0; font-size: inherit; color: inherit; }
-    a { color: #2563eb; text-decoration: none; cursor: pointer; }
-    a:hover { text-decoration: underline; }
+    /* Token yang dipakai page.css (nilai dari centrow web/app/main.css). */
+    :root {
+      --font-sans: "Inter", system-ui, -apple-system, sans-serif;
+      --color-page: #F8F8F5;
+      --color-surface: #FFFFFF;
+      --color-primary: #181A19;
+      --color-secondary: #5A5D5A;
+      --color-brand-500: #1E40AF;
+      --color-border-default: #E4E5DF;
+      --color-border-strong: #CBD5E1;
+      --shadow-ds-md: 0 2px 8px rgba(0, 0, 0, 0.06), 0 1px 3px rgba(0, 0, 0, 0.04);
+    }
+    html, body { margin: 0; padding: 0; background: var(--color-page); color: var(--color-primary); }
+    #editor { display: contents; }
+    .rt-paged { min-height: 100vh; box-sizing: border-box; }
+    .ProseMirror { outline: none; }
+    a { color: var(--color-brand-500); text-decoration: none; cursor: pointer; }
     img { max-width: 100%; height: auto; }
     img[data-align="center"] { display: block; margin-left: auto; margin-right: auto; }
     img[data-align="right"] { display: block; margin-left: auto; margin-right: 0; }
-
-    table {
-      border-collapse: collapse;
-      table-layout: fixed;
-      width: 100%;
-      margin: 0;
-      overflow: hidden;
-      margin-bottom: 0.75em;
-    }
-    table td, table th {
-      min-width: 1em;
-      border: 1px solid #cbd5e1;
-      padding: 3px 5px;
-      vertical-align: top;
-      box-sizing: border-box;
-      position: relative;
-    }
-    table th { font-weight: bold; text-align: left; background-color: #f8fafc; }
+    table td, table th { min-width: 1em; vertical-align: top; box-sizing: border-box; position: relative; }
   </style>
+  <script>$jsBundle</script>
 </head>
 <body>
-  <div id="editor"></div>
+  <div id="paged" class="rt-paged"><div id="editor"></div></div>
 
   <script>
-    const { Editor, StarterKit, Table, TableRow, TableCell, TableHeader, TextAlign, Underline, Link, Image } = window.Tiptap;
+    const { Editor, StarterKit, Table, TableRow, TableCell, TableHeader, TextAlign, Underline, Link, Image, PagePagination, resolvePageProfile, contentWidthPx } = window.Tiptap;
+
+    let pageProfile = resolvePageProfile($pageLayout);
+    document.querySelector('#paged').setAttribute('data-profile', pageProfile.id);
+
+    // Lebar area konten A4 (tanpa margin halaman); dasar preset lebar gambar.
+    const editorContentWidth = () => contentWidthPx(pageProfile);
 
     const sendStateToFlutter = (editor) => {
       if (window.FlutterChannel) {
@@ -193,7 +204,8 @@ class _WebviewTiptapEditorState extends State<WebviewTiptapEditor> {
               },
             };
           },
-        }).configure({ allowBase64: false })
+        }).configure({ allowBase64: false }),
+        PagePagination.configure({ profile: pageProfile.id })
       ],
       content: {},
       onUpdate: ({ editor }) => {
@@ -223,14 +235,14 @@ class _WebviewTiptapEditorState extends State<WebviewTiptapEditor> {
     };
 
     window.setImageWidth = function(percent) {
-      const containerWidth = document.querySelector('#editor').clientWidth;
+      const containerWidth = editorContentWidth();
       const px = Math.max(50, Math.round((percent / 100) * containerWidth));
       window.editor.chain().focus().updateAttributes('image', { width: px, height: null }).run();
     };
 
     window.adjustImageWidth = function(deltaPercent) {
       const editor = window.editor;
-      const maxWidth = document.querySelector('#editor').clientWidth;
+      const maxWidth = editorContentWidth();
       const sel = editor.state.selection;
       const selectedIsImage = !!(sel.node && sel.node.type.name === 'image');
       let imgEl = null;
@@ -247,6 +259,12 @@ class _WebviewTiptapEditorState extends State<WebviewTiptapEditor> {
       }
       const next = Math.round(Math.max(50, Math.min(maxWidth, Number(current) + (deltaPercent / 100) * maxWidth)));
       editor.chain().focus().updateAttributes('image', { width: next, height: null }).run();
+    };
+
+    window.setPageLayout = function(layout) {
+      pageProfile = resolvePageProfile(layout);
+      document.querySelector('#paged').setAttribute('data-profile', pageProfile.id);
+      window.editor.commands.setPageProfile(pageProfile.id);
     };
 
     window.setImageAlign = function(align) {

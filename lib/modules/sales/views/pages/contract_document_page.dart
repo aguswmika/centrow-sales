@@ -233,6 +233,7 @@ class _ContractDocumentPageState extends State<ContractDocumentPage> {
                 child: WebviewTiptapEditor(
                   initialJson: doc.content,
                   isEditable: canEditDocument,
+                  theme: doc.theme,
                   onStateChange: (state) {
                     if (mounted) {
                       setState(() {
