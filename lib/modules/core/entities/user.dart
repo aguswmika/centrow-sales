@@ -2,7 +2,7 @@ import 'package:flutter/foundation.dart';
 
 class User {
   final String id;
-  final String tenantId;
+  final String branchId;
   final String name;
   final String email;
   final List<String> roles;
@@ -15,7 +15,7 @@ class User {
 
   const User({
     required this.id,
-    this.tenantId = '',
+    this.branchId = '',
     required this.name,
     required this.email,
     this.roles = const [],
@@ -47,7 +47,7 @@ class User {
 
   User copyWith({
     String? id,
-    String? tenantId,
+    String? branchId,
     String? name,
     String? email,
     List<String>? roles,
@@ -60,7 +60,7 @@ class User {
   }) {
     return User(
       id: id ?? this.id,
-      tenantId: tenantId ?? this.tenantId,
+      branchId: branchId ?? this.branchId,
       name: name ?? this.name,
       email: email ?? this.email,
       roles: roles ?? (role != null ? [role] : this.roles),
@@ -75,7 +75,7 @@ class User {
 
   @override
   String toString() {
-    return 'User(id: $id, tenantId: $tenantId, name: $name, email: $email, roles: $roles, position: $position, department: $department, token: $token, refreshToken: $refreshToken)';
+    return 'User(id: $id, branchId: $branchId, name: $name, email: $email, roles: $roles, position: $position, department: $department, token: $token, refreshToken: $refreshToken)';
   }
 
   @override
@@ -83,7 +83,7 @@ class User {
     if (identical(this, other)) return true;
     return other is User &&
         other.id == id &&
-        other.tenantId == tenantId &&
+        other.branchId == branchId &&
         other.name == name &&
         other.email == email &&
         listEquals(other.roles, roles) &&
@@ -97,7 +97,7 @@ class User {
   int get hashCode {
     return Object.hash(
       id,
-      tenantId,
+      branchId,
       name,
       email,
       Object.hashAll(roles),

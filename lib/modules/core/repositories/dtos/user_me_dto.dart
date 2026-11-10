@@ -3,7 +3,7 @@ import 'package:centrow_sales/modules/core/entities/user.dart';
 
 class UserMeDto {
   final String id;
-  final String tenantId;
+  final String branchId;
   final String name;
   final String email;
   final List<String> roles;
@@ -12,7 +12,7 @@ class UserMeDto {
 
   const UserMeDto({
     required this.id,
-    required this.tenantId,
+    required this.branchId,
     required this.name,
     required this.email,
     this.roles = const [],
@@ -32,7 +32,7 @@ class UserMeDto {
 
     return UserMeDto(
       id: data['id']?.toString() ?? '',
-      tenantId: data['tenant_id']?.toString() ?? '',
+      branchId: (data['branch_id'] ?? data['tenant_id'])?.toString() ?? '',
       name: data['name']?.toString() ?? '',
       email: data['email']?.toString() ?? '',
       roles: parsedRoles,
@@ -44,7 +44,7 @@ class UserMeDto {
   Map<String, dynamic> toJson() {
     return {
       'id': id,
-      'tenant_id': tenantId,
+      'branch_id': branchId,
       'name': name,
       'email': email,
       'roles': roles,
@@ -56,7 +56,7 @@ class UserMeDto {
   User toEntity([String token = '']) {
     return User(
       id: id,
-      tenantId: tenantId,
+      branchId: branchId,
       name: name,
       email: email,
       roles: roles,
@@ -71,7 +71,7 @@ class UserMeDto {
     if (identical(this, other)) return true;
     return other is UserMeDto &&
         other.id == id &&
-        other.tenantId == tenantId &&
+        other.branchId == branchId &&
         other.name == name &&
         other.email == email &&
         listEquals(other.roles, roles) &&
@@ -83,7 +83,7 @@ class UserMeDto {
   int get hashCode {
     return Object.hash(
       id,
-      tenantId,
+      branchId,
       name,
       email,
       Object.hashAll(roles),
@@ -94,6 +94,6 @@ class UserMeDto {
 
   @override
   String toString() {
-    return 'UserMeDto(id: $id, tenantId: $tenantId, name: $name, email: $email, roles: $roles, position: $position, department: $department)';
+    return 'UserMeDto(id: $id, branchId: $branchId, name: $name, email: $email, roles: $roles, position: $position, department: $department)';
   }
 }

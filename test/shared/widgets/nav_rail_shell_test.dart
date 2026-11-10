@@ -6,7 +6,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:centrow_sales/app/app.dart';
 import 'package:centrow_sales/app/di.dart';
 import 'package:centrow_sales/app/router.dart';
-import 'package:centrow_sales/modules/core/entities/tenant.dart';
+import 'package:centrow_sales/modules/core/entities/branch.dart';
 import 'package:centrow_sales/modules/core/entities/user.dart';
 import 'package:centrow_sales/modules/core/repositories/auth_repository.dart';
 import 'package:centrow_sales/shared/network/auth_token_holder.dart';
@@ -26,15 +26,15 @@ class _MockAuthRepo implements AuthRepository {
   Future<Result<void>> logout(String refreshToken) async =>
       throw UnimplementedError();
   @override
-  Future<Result<List<Tenant>>> getPublicTenants() async {
-    return const Ok([Tenant(id: 't1', name: 'Cabang Bali', slug: 'bali')]);
+  Future<Result<List<Branch>>> getPublicBranches() async {
+    return const Ok([Branch(id: 't1', name: 'Cabang Bali', slug: 'bali')]);
   }
 
   @override
   Future<Result<User>> login({
     required String email,
     required String password,
-    required String tenantId,
+    required String branchId,
   }) async {
     return const Ok(
       User(

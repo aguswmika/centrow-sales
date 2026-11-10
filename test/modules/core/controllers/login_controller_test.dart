@@ -1,7 +1,7 @@
 import 'package:centrow_sales/modules/core/repositories/dtos/token_dto.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:centrow_sales/modules/core/controllers/login_controller.dart';
-import 'package:centrow_sales/modules/core/entities/tenant.dart';
+import 'package:centrow_sales/modules/core/entities/branch.dart';
 import 'package:centrow_sales/modules/core/entities/user.dart';
 import 'package:centrow_sales/modules/core/repositories/auth_repository.dart';
 import 'package:centrow_sales/shared/network/auth_token_holder.dart';
@@ -15,17 +15,18 @@ class MockAuthRepository implements AuthRepository {
   @override
   Future<Result<void>> logout(String refreshToken) async =>
       throw UnimplementedError();
-  late Result<List<Tenant>> publicTenantsResult;
+  late Result<List<Branch>> publicBranchesResult;
   late Result<User> loginResult;
 
   @override
-  Future<Result<List<Tenant>>> getPublicTenants() async => publicTenantsResult;
+  Future<Result<List<Branch>>> getPublicBranches() async =>
+      publicBranchesResult;
 
   @override
   Future<Result<User>> login({
     required String email,
     required String password,
-    required String tenantId,
+    required String branchId,
   }) async => loginResult;
 
   @override
@@ -47,17 +48,17 @@ void main() {
     controller.dispose();
   });
 
-  test('loadTenants updates state and selects first tenant', () async {
-    const tenants = [
-      Tenant(id: 't-1', name: 'Branch 1', slug: 'branch-1'),
-      Tenant(id: 't-2', name: 'Branch 2', slug: 'branch-2'),
+  test('loadBranches updates state and selects first branch', () async {
+    const branches = [
+      Branch(id: 't-1', name: 'Branch 1', slug: 'branch-1'),
+      Branch(id: 't-2', name: 'Branch 2', slug: 'branch-2'),
     ];
-    mockAuthRepository.publicTenantsResult = const Ok(tenants);
+    mockAuthRepository.publicBranchesResult = const Ok(branches);
 
-    await controller.loadTenants();
+    await controller.loadBranches();
 
-    expect(controller.tenantsState.value, isA<UiSuccess<List<Tenant>>>());
-    expect(controller.selectedTenantId.value, 't-1');
+    expect(controller.branchesState.value, isA<UiSuccess<List<Branch>>>());
+    expect(controller.selectedBranchId.value, 't-1');
   });
 
   test(
@@ -65,7 +66,7 @@ void main() {
     () async {
       controller.setEmail('test@nohama.id');
       controller.setPassword('password123');
-      controller.selectTenant('tenant_1');
+      controller.selectBranch('branch_1');
 
       const user = User(
         id: '1',

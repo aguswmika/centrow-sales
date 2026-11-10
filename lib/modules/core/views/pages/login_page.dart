@@ -13,7 +13,7 @@ import 'package:centrow_sales/shared/widgets/app_dropdown.dart';
 import 'package:centrow_sales/shared/widgets/app_text_field.dart';
 import 'package:centrow_sales/shared/widgets/toast.dart';
 import 'package:centrow_sales/modules/core/controllers/login_controller.dart';
-import 'package:centrow_sales/modules/core/entities/tenant.dart';
+import 'package:centrow_sales/modules/core/entities/branch.dart';
 import 'package:centrow_sales/modules/core/entities/user.dart';
 
 class LoginPage extends StatefulWidget {
@@ -33,15 +33,15 @@ class _LoginPageState extends State<LoginPage> {
   void initState() {
     super.initState();
     _controller = widget.controller ?? getIt<LoginController>();
-    _controller.loadTenants();
+    _controller.loadBranches();
 
     _cleanupEffect = effect(() {
       final state = _controller.state.value;
-      final tenantsState = _controller.tenantsState.value;
+      final branchesState = _controller.branchesState.value;
       if (!mounted) return;
 
-      switch (tenantsState) {
-        case UiFailure<List<Tenant>>(:final failure):
+      switch (branchesState) {
+        case UiFailure<List<Branch>>(:final failure):
           showAppToast(
             context,
             'Gagal memuat cabang: ${failure.message}',
@@ -206,10 +206,10 @@ class _LoginPageState extends State<LoginPage> {
               const SizedBox(height: 16.0),
               SignalBuilder(
                 builder: (BuildContext context) {
-                  final tenantsState = _controller.tenantsState.value;
-                  final selectedTenantId = _controller.selectedTenantId.value;
+                  final branchesState = _controller.branchesState.value;
+                  final selectedBranchId = _controller.selectedBranchId.value;
 
-                  return switch (tenantsState) {
+                  return switch (branchesState) {
                     UiLoading() => const AppDropdown<String>(
                       label: 'Cabang',
                       value: null,
@@ -220,8 +220,8 @@ class _LoginPageState extends State<LoginPage> {
                     ),
                     UiSuccess(:final data) => AppDropdown<String>(
                       label: 'Cabang',
-                      value: data.any((t) => t.id == selectedTenantId)
-                          ? selectedTenantId
+                      value: data.any((t) => t.id == selectedBranchId)
+                          ? selectedBranchId
                           : (data.isNotEmpty ? data.first.id : null),
                       items: data
                           .map(
@@ -232,7 +232,7 @@ class _LoginPageState extends State<LoginPage> {
                           )
                           .toList(),
                       onChanged: (val) =>
-                          val != null ? _controller.selectTenant(val) : null,
+                          val != null ? _controller.selectBranch(val) : null,
                     ),
                     UiFailure() => const AppDropdown<String>(
                       label: 'Cabang',

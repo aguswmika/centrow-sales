@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:centrow_sales/modules/core/controllers/login_controller.dart';
-import 'package:centrow_sales/modules/core/entities/tenant.dart';
+import 'package:centrow_sales/modules/core/entities/branch.dart';
 import 'package:centrow_sales/modules/core/entities/user.dart';
 import 'package:centrow_sales/modules/core/repositories/auth_repository.dart';
 import 'package:centrow_sales/modules/core/views/pages/login_page.dart';
@@ -11,9 +11,9 @@ import 'package:centrow_sales/shared/result/result.dart';
 import 'package:centrow_sales/shared/error/failure.dart';
 import 'package:centrow_sales/shared/widgets/app_button.dart';
 
-const List<Tenant> sampleTenants = [
-  Tenant(id: 't-1', name: 'Main Branch', slug: 'main-branch'),
-  Tenant(id: 't-2', name: 'Bandung Branch', slug: 'bandung-branch'),
+const List<Branch> sampleBranches = [
+  Branch(id: 't-1', name: 'Main Branch', slug: 'main-branch'),
+  Branch(id: 't-2', name: 'Bandung Branch', slug: 'bandung-branch'),
 ];
 
 class MockAuthRepository implements AuthRepository {
@@ -23,21 +23,21 @@ class MockAuthRepository implements AuthRepository {
   @override
   Future<Result<void>> logout(String refreshToken) async =>
       throw UnimplementedError();
-  List<Tenant>? tenants;
+  List<Branch>? branches;
   User? user;
   Failure? failure;
   bool loginCalled = false;
 
   @override
-  Future<Result<List<Tenant>>> getPublicTenants() async {
-    return Ok(tenants ?? sampleTenants);
+  Future<Result<List<Branch>>> getPublicBranches() async {
+    return Ok(branches ?? sampleBranches);
   }
 
   @override
   Future<Result<User>> login({
     required String email,
     required String password,
-    required String tenantId,
+    required String branchId,
   }) async {
     loginCalled = true;
     if (failure != null) return Err(failure!);
@@ -202,14 +202,14 @@ void main() {
     );
   });
 
-  testWidgets('Tenant load failure triggers error toast', (tester) async {
+  testWidgets('Branch load failure triggers error toast', (tester) async {
     final failMockRepo = MockAuthRepository();
-    // Simulate failing getPublicTenants
+    // Simulate failing getPublicBranches
     final failController = LoginController(failMockRepo);
-    failMockRepo.tenants = null;
+    failMockRepo.branches = null;
 
-    // We create custom repo that returns failure for tenants
-    final customRepo = _FailingTenantsAuthRepository();
+    // We create custom repo that returns failure for branches
+    final customRepo = _FailingBranchesAuthRepository();
     final c = LoginController(customRepo);
 
     await tester.pumpWidget(wrap(LoginPage(controller: c)));
@@ -221,7 +221,7 @@ void main() {
   });
 }
 
-class _FailingTenantsAuthRepository implements AuthRepository {
+class _FailingBranchesAuthRepository implements AuthRepository {
   @override
   Future<Result<TokenDto>> refreshToken(String refreshToken) async =>
       throw UnimplementedError();
@@ -229,7 +229,7 @@ class _FailingTenantsAuthRepository implements AuthRepository {
   Future<Result<void>> logout(String refreshToken) async =>
       throw UnimplementedError();
   @override
-  Future<Result<List<Tenant>>> getPublicTenants() async {
+  Future<Result<List<Branch>>> getPublicBranches() async {
     return const Err(ServerFailure('Server error'));
   }
 
@@ -237,7 +237,7 @@ class _FailingTenantsAuthRepository implements AuthRepository {
   Future<Result<User>> login({
     required String email,
     required String password,
-    required String tenantId,
+    required String branchId,
   }) async {
     return const Err(ServerFailure('Server error'));
   }

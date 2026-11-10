@@ -5,8 +5,6 @@ import 'package:centrow_sales/modules/core/controllers/login_controller.dart';
 import 'package:centrow_sales/modules/core/controllers/splash_controller.dart';
 import 'package:centrow_sales/modules/core/repositories/auth_repository.dart';
 import 'package:centrow_sales/modules/core/repositories/region_repository.dart';
-import 'package:centrow_sales/modules/sales/controllers/sales_dashboard_controller.dart';
-import 'package:centrow_sales/modules/sales/repositories/sales_dashboard_repository.dart';
 import 'package:centrow_sales/modules/sales/controllers/customer_controller.dart';
 import 'package:centrow_sales/modules/sales/controllers/customer_form_controller.dart';
 import 'package:centrow_sales/modules/sales/controllers/customer_photo_controller.dart';
@@ -78,9 +76,6 @@ Future<void> setupDi({LocalStorage? storage}) async {
   getIt.registerLazySingleton<RegionRepository>(
     () => RegionRepositoryImpl(getIt<Dio>()),
   );
-  getIt.registerLazySingleton<SalesDashboardRepository>(
-    () => SalesDashboardRepositoryImpl(getIt<Dio>()),
-  );
   getIt.registerLazySingleton<CustomerRepository>(
     () => CustomerRepositoryImpl(getIt<Dio>()),
   );
@@ -124,9 +119,6 @@ Future<void> setupDi({LocalStorage? storage}) async {
   );
   getIt.registerFactory<LoginController>(
     () => LoginController(getIt<AuthRepository>()),
-  );
-  getIt.registerFactory<SalesDashboardController>(
-    () => SalesDashboardController(getIt<SalesDashboardRepository>()),
   );
   getIt.registerFactory<CustomerController>(
     () => CustomerController(

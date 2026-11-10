@@ -3,20 +3,20 @@ import 'package:centrow_sales/shared/error/failure.dart';
 import 'package:centrow_sales/shared/network/auth_token_holder.dart';
 import 'package:centrow_sales/shared/network/dio_client.dart';
 import 'package:centrow_sales/shared/result/result.dart';
-import 'package:centrow_sales/modules/core/entities/tenant.dart';
+import 'package:centrow_sales/modules/core/entities/branch.dart';
 import 'package:centrow_sales/modules/core/entities/user.dart';
 import 'package:centrow_sales/modules/core/repositories/dtos/auth_dto.dart';
 import 'package:centrow_sales/modules/core/repositories/dtos/login_request_dto.dart';
-import 'package:centrow_sales/modules/core/repositories/dtos/tenant_dto.dart';
+import 'package:centrow_sales/modules/core/repositories/dtos/branch_dto.dart';
 import 'package:centrow_sales/modules/core/repositories/dtos/token_dto.dart';
 import 'package:centrow_sales/modules/core/repositories/dtos/user_me_dto.dart';
 
 abstract interface class AuthRepository {
-  Future<Result<List<Tenant>>> getPublicTenants();
+  Future<Result<List<Branch>>> getPublicBranches();
   Future<Result<User>> login({
     required String email,
     required String password,
-    required String tenantId,
+    required String branchId,
   });
   Future<Result<User>> getMe();
   Future<Result<TokenDto>> refreshToken(String refreshToken);
@@ -29,9 +29,9 @@ class AuthRepositoryImpl implements AuthRepository {
   AuthRepositoryImpl(this._dio);
 
   @override
-  Future<Result<List<Tenant>>> getPublicTenants() async {
+  Future<Result<List<Branch>>> getPublicBranches() async {
     try {
-      final response = await _dio.get<dynamic>('/v1/tenants');
+      final response = await _dio.get<dynamic>('/v1/branches');
       final dynamic responseData = response.data;
       final List<dynamic> data;
       if (responseData is Map) {
@@ -42,14 +42,14 @@ class AuthRepositoryImpl implements AuthRepository {
         data = [];
       }
 
-      final tenants = data
+      final branches = data
           .map(
-            (e) => TenantDto.fromJson(
+            (e) => BranchDto.fromJson(
               (e as Map).cast<String, dynamic>(),
             ).toEntity(),
           )
           .toList();
-      return Ok(tenants);
+      return Ok(branches);
     } on DioException catch (e) {
       return Err(mapDioException(e));
     } catch (e) {
@@ -61,13 +61,13 @@ class AuthRepositoryImpl implements AuthRepository {
   Future<Result<User>> login({
     required String email,
     required String password,
-    required String tenantId,
+    required String branchId,
   }) async {
     try {
       final requestDto = LoginRequestDto(
         email: email,
         password: password,
-        tenantId: tenantId,
+        branchId: branchId,
       );
 
       final response = await _dio.post<dynamic>(

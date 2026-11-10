@@ -94,7 +94,7 @@ void main() {
 
       const user = User(
         id: 'user_123',
-        tenantId: 'tenant_456',
+        branchId: 'branch_456',
         name: 'Jane Doe',
         email: 'jane@example.com',
         roles: ['sales'],

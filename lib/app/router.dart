@@ -25,7 +25,6 @@ GoRouter createRouter({String? initialLocation}) => GoRouter(
     final hasToken = AuthTokenHolder.instance.hasToken;
     final isSplash = state.matchedLocation == '/splash';
     final isLoggingIn = state.matchedLocation == '/login';
-    final isDashboard = state.matchedLocation == '/dashboard';
 
     if (isSplash) {
       return null;
@@ -34,7 +33,7 @@ GoRouter createRouter({String? initialLocation}) => GoRouter(
     if (!hasToken && !isLoggingIn) {
       return '/login';
     }
-    if (hasToken && (isLoggingIn || isDashboard)) {
+    if (hasToken && isLoggingIn) {
       return '/customers';
     }
     return null;

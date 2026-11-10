@@ -2,7 +2,7 @@ import 'dart:convert';
 import 'dart:typed_data';
 import 'package:dio/dio.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:centrow_sales/modules/core/entities/tenant.dart';
+import 'package:centrow_sales/modules/core/entities/branch.dart';
 import 'package:centrow_sales/modules/core/entities/user.dart';
 import 'package:centrow_sales/modules/core/repositories/auth_repository.dart';
 import 'package:centrow_sales/shared/error/failure.dart';
@@ -43,10 +43,10 @@ void main() {
     repository = AuthRepositoryImpl(dio);
   });
 
-  group('AuthRepositoryImpl - getPublicTenants', () {
-    test('returns List<Tenant> on 200 OK', () async {
+  group('AuthRepositoryImpl - getPublicBranches', () {
+    test('returns List<Branch> on 200 OK', () async {
       mockAdapter.handler = (options) {
-        expect(options.path, '/v1/tenants');
+        expect(options.path, '/v1/branches');
         final body = jsonEncode({
           'data': [
             {
@@ -72,12 +72,12 @@ void main() {
         );
       };
 
-      final result = await repository.getPublicTenants();
-      expect(result, isA<Ok<List<Tenant>>>());
-      final tenants = (result as Ok<List<Tenant>>).value;
-      expect(tenants.length, 2);
-      expect(tenants[0].name, 'Main Branch');
-      expect(tenants[1].slug, 'bandung-branch');
+      final result = await repository.getPublicBranches();
+      expect(result, isA<Ok<List<Branch>>>());
+      final branches = (result as Ok<List<Branch>>).value;
+      expect(branches.length, 2);
+      expect(branches[0].name, 'Main Branch');
+      expect(branches[1].slug, 'bandung-branch');
     });
 
     test('returns NetworkFailure on connection error', () async {
@@ -88,9 +88,9 @@ void main() {
         );
       };
 
-      final result = await repository.getPublicTenants();
-      expect(result, isA<Err<List<Tenant>>>());
-      final failure = (result as Err<List<Tenant>>).failure;
+      final result = await repository.getPublicBranches();
+      expect(result, isA<Err<List<Branch>>>());
+      final failure = (result as Err<List<Branch>>).failure;
       expect(failure, isA<NetworkFailure>());
     });
   });
@@ -98,7 +98,7 @@ void main() {
   group('AuthRepositoryImpl - login', () {
     const email = 'sales@example.com';
     const password = 'secretPassword123';
-    const tenantId = '8e4c1393-cdfb-4987-b842-a6653875435c';
+    const branchId = '8e4c1393-cdfb-4987-b842-a6653875435c';
 
     test('returns User on 200 OK', () async {
       mockAdapter.handler = (options) {
@@ -106,7 +106,7 @@ void main() {
         expect(options.data, {
           'email': email,
           'password': password,
-          'tenant_id': tenantId,
+          'branch_id': branchId,
         });
 
         final body = jsonEncode({
@@ -136,7 +136,7 @@ void main() {
       final result = await repository.login(
         email: email,
         password: password,
-        tenantId: tenantId,
+        branchId: branchId,
       );
 
       expect(result, isA<Ok<User>>());
@@ -169,7 +169,7 @@ void main() {
       final result = await repository.login(
         email: 'invalid-email',
         password: password,
-        tenantId: tenantId,
+        branchId: branchId,
       );
 
       expect(result, isA<Err<User>>());
@@ -199,7 +199,7 @@ void main() {
       final result = await repository.login(
         email: email,
         password: 'wrongpassword',
-        tenantId: tenantId,
+        branchId: branchId,
       );
 
       expect(result, isA<Err<User>>());
@@ -229,7 +229,7 @@ void main() {
       final result = await repository.login(
         email: 'admin@example.com',
         password: password,
-        tenantId: tenantId,
+        branchId: branchId,
       );
 
       expect(result, isA<Err<User>>());
@@ -259,7 +259,7 @@ void main() {
       final result = await repository.login(
         email: email,
         password: password,
-        tenantId: tenantId,
+        branchId: branchId,
       );
 
       expect(result, isA<Err<User>>());
@@ -278,7 +278,7 @@ void main() {
         final body = jsonEncode({
           'data': {
             'id': '5d3611bb-d413-4d03-95dc-57f1d1de572a',
-            'tenant_id': '8e4c1393-cdfb-4987-b842-a6653875435c',
+            'branch_id': '8e4c1393-cdfb-4987-b842-a6653875435c',
             'name': 'Jane Doe',
             'email': 'sales@example.com',
             'roles': ['sales'],
@@ -302,7 +302,7 @@ void main() {
       expect(result, isA<Ok<User>>());
       final user = (result as Ok<User>).value;
       expect(user.id, '5d3611bb-d413-4d03-95dc-57f1d1de572a');
-      expect(user.tenantId, '8e4c1393-cdfb-4987-b842-a6653875435c');
+      expect(user.branchId, '8e4c1393-cdfb-4987-b842-a6653875435c');
       expect(user.name, 'Jane Doe');
       expect(user.email, 'sales@example.com');
       expect(user.roles, ['sales']);

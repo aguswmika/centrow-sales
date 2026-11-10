@@ -1,6 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:centrow_sales/modules/core/controllers/splash_controller.dart';
-import 'package:centrow_sales/modules/core/entities/tenant.dart';
+import 'package:centrow_sales/modules/core/entities/branch.dart';
 import 'package:centrow_sales/modules/core/entities/user.dart';
 import 'package:centrow_sales/modules/core/repositories/auth_repository.dart';
 import 'package:centrow_sales/modules/core/repositories/dtos/token_dto.dart';
@@ -55,13 +55,14 @@ class MockAuthRepository implements AuthRepository {
   }
 
   @override
-  Future<Result<List<Tenant>>> getPublicTenants() => throw UnimplementedError();
+  Future<Result<List<Branch>>> getPublicBranches() =>
+      throw UnimplementedError();
 
   @override
   Future<Result<User>> login({
     required String email,
     required String password,
-    required String tenantId,
+    required String branchId,
   }) => throw UnimplementedError();
 
   @override

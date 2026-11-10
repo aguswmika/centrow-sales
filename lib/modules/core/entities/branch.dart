@@ -1,12 +1,12 @@
-class Tenant {
+class Branch {
   final String id;
   final String name;
   final String slug;
 
-  const Tenant({required this.id, required this.name, required this.slug});
+  const Branch({required this.id, required this.name, required this.slug});
 
-  Tenant copyWith({String? id, String? name, String? slug}) {
-    return Tenant(
+  Branch copyWith({String? id, String? name, String? slug}) {
+    return Branch(
       id: id ?? this.id,
       name: name ?? this.name,
       slug: slug ?? this.slug,
@@ -16,7 +16,7 @@ class Tenant {
   @override
   bool operator ==(Object other) {
     if (identical(this, other)) return true;
-    return other is Tenant &&
+    return other is Branch &&
         other.id == id &&
         other.name == name &&
         other.slug == slug;
@@ -26,5 +26,5 @@ class Tenant {
   int get hashCode => Object.hash(id, name, slug);
 
   @override
-  String toString() => 'Tenant(id: $id, name: $name, slug: $slug)';
+  String toString() => 'Branch(id: $id, name: $name, slug: $slug)';
 }

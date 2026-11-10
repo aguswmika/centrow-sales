@@ -6,7 +6,7 @@ void main() {
     test('constructs with all fields and properties', () {
       const user = User(
         id: 'u-1',
-        tenantId: 't-1',
+        branchId: 't-1',
         name: 'Jane Doe',
         email: 'jane@example.com',
         roles: ['sales', 'admin'],
@@ -16,7 +16,7 @@ void main() {
       );
 
       expect(user.id, 'u-1');
-      expect(user.tenantId, 't-1');
+      expect(user.branchId, 't-1');
       expect(user.name, 'Jane Doe');
       expect(user.email, 'jane@example.com');
       expect(user.roles, ['sales', 'admin']);
@@ -69,7 +69,7 @@ void main() {
     test('copyWith updates fields appropriately', () {
       const user = User(
         id: 'u-1',
-        tenantId: 't-1',
+        branchId: 't-1',
         name: 'Jane Doe',
         email: 'jane@example.com',
         roles: ['sales'],
@@ -89,7 +89,7 @@ void main() {
       expect(updated.role, 'manager');
       expect(updated.position, 'Sales Manager');
       expect(updated.id, 'u-1');
-      expect(updated.tenantId, 't-1');
+      expect(updated.branchId, 't-1');
       expect(updated.email, 'jane@example.com');
       expect(updated.token, 'token-abc');
     });
@@ -97,7 +97,7 @@ void main() {
     test('equality and hashCode', () {
       const user1 = User(
         id: 'u-1',
-        tenantId: 't-1',
+        branchId: 't-1',
         name: 'Jane Doe',
         email: 'jane@example.com',
         roles: ['sales'],
@@ -108,7 +108,7 @@ void main() {
 
       const user2 = User(
         id: 'u-1',
-        tenantId: 't-1',
+        branchId: 't-1',
         name: 'Jane Doe',
         email: 'jane@example.com',
         roles: ['sales'],
@@ -119,7 +119,7 @@ void main() {
 
       const user3 = User(
         id: 'u-2',
-        tenantId: 't-1',
+        branchId: 't-1',
         name: 'Jane Doe',
         email: 'jane@example.com',
         roles: ['sales'],
