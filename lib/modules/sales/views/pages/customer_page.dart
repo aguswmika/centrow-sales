@@ -44,23 +44,45 @@ class _CustomerPageState extends State<CustomerPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.bg,
-      body: SafeArea(
-        child: SignalBuilder(
-          builder: (context) {
-            final state = _controller.customersState.value;
+      body: Column(
+        children: [
+          ColoredBox(
+            color: AppColors.surface,
+            child: SizedBox(
+              height: MediaQuery.paddingOf(context).top,
+              width: double.infinity,
+            ),
+          ),
+          Expanded(
+            child: SafeArea(
+              top: false,
+              bottom: false,
+              child: SignalBuilder(
+                builder: (context) {
+                  final state = _controller.customersState.value;
 
-            return switch (state) {
-              UiInitial() || UiLoading() => const Center(
-                child: CircularProgressIndicator(color: AppColors.brand),
+                  return switch (state) {
+                    UiInitial() || UiLoading() => const Center(
+                      child: CircularProgressIndicator(color: AppColors.brand),
+                    ),
+                    UiFailure(:final failure) => ErrorView(
+                      message: failure.message,
+                      onRetry: _controller.loadCustomers,
+                    ),
+                    UiSuccess() => _buildSplitContent(context),
+                  };
+                },
               ),
-              UiFailure(:final failure) => ErrorView(
-                message: failure.message,
-                onRetry: _controller.loadCustomers,
-              ),
-              UiSuccess() => _buildSplitContent(context),
-            };
-          },
-        ),
+            ),
+          ),
+          ColoredBox(
+            color: AppColors.surface,
+            child: SizedBox(
+              height: MediaQuery.paddingOf(context).bottom,
+              width: double.infinity,
+            ),
+          ),
+        ],
       ),
     );
   }

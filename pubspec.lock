@@ -331,6 +331,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.4.8"
+  flutter_painter_v2:
+    dependency: "direct main"
+    description:
+      name: flutter_painter_v2
+      sha256: a9e07d39f7d2d1821b0df46ea273f3ff4ac81d185d660c508cb67b6d9e09df02
+      url: "https://pub.dev"
+    source: hosted
+    version: "2.1.1"
   flutter_plugin_android_lifecycle:
     dependency: transitive
     description:

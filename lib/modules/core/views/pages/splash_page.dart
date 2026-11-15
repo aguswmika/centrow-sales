@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:signals/signals_flutter.dart';
@@ -43,66 +44,46 @@ class _SplashPageState extends State<SplashPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.text,
+      backgroundColor: AppColors.bg,
       body: Center(
         child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
+          mainAxisSize: MainAxisSize.min,
           children: [
-            const Spacer(),
-            Container(
-              width: 96.0,
-              height: 96.0,
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(24.0),
-                boxShadow: const [
-                  BoxShadow(
-                    color: Color(0x33000000),
-                    blurRadius: 16.0,
-                    offset: Offset(0, 6),
-                  ),
-                ],
-              ),
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(24.0),
-                child: Image.asset(
-                  'assets/img/app_icon_full.png',
-                  width: 96.0,
-                  height: 96.0,
-                  fit: BoxFit.contain,
-                ),
-              ),
+            SvgPicture.asset(
+              'assets/img/logo_filled.svg',
+              width: 72.0,
+              height: 72.0,
             ),
-            const SizedBox(height: 20.0),
+            const SizedBox(height: 12.0),
             Text(
               'Centrow Sales',
               style: GoogleFonts.plusJakartaSans(
-                fontSize: 26.0,
+                fontSize: 24.0,
                 fontWeight: FontWeight.w800,
-                color: Colors.white,
-                letterSpacing: -0.5,
+                color: AppColors.text,
+                letterSpacing: -0.72,
+                height: 1.2,
               ),
             ),
-            const SizedBox(height: 8.0),
+            const SizedBox(height: 4.0),
             Text(
               'ERP',
-              style: GoogleFonts.plusJakartaSans(
-                fontSize: 14.0,
+              style: GoogleFonts.inter(
+                fontSize: 12.0,
                 fontWeight: FontWeight.w500,
-                color: Colors.white.withAlpha(204),
+                color: AppColors.textMuted,
+                height: 1.5,
               ),
             ),
-            const Spacer(),
-            SizedBox(
+            const SizedBox(height: 20.0),
+            const SizedBox(
               width: 24.0,
               height: 24.0,
               child: CircularProgressIndicator(
-                strokeWidth: 2.5,
-                valueColor: AlwaysStoppedAnimation<Color>(
-                  Colors.white.withAlpha(204),
-                ),
+                strokeWidth: 2.0,
+                valueColor: AlwaysStoppedAnimation<Color>(AppColors.brand),
               ),
             ),
-            const SizedBox(height: 48.0),
           ],
         ),
       ),

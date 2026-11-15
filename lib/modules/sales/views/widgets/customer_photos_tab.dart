@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -11,6 +12,7 @@ import 'package:centrow_sales/shared/theme/app_radius.dart';
 import 'package:centrow_sales/shared/widgets/error_view.dart';
 import 'package:centrow_sales/modules/sales/controllers/customer_photo_controller.dart';
 import 'package:centrow_sales/modules/sales/entities/customer_photo.dart';
+import 'package:centrow_sales/modules/sales/views/pages/customer_layout_editor_page.dart';
 import 'package:centrow_sales/modules/sales/views/widgets/customer_photo_viewer.dart';
 
 class CustomerPhotosTab extends StatefulWidget {
@@ -197,7 +199,23 @@ class _CustomerPhotosTabState extends State<CustomerPhotosTab> {
               padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
             ),
           ),
+          const SizedBox(height: 12),
+          _buildLayoutButton(),
         ],
+      ),
+    );
+  }
+
+  Widget _buildLayoutButton({bool disabled = false}) {
+    return OutlinedButton.icon(
+      onPressed: disabled ? null : _openLayoutEditor,
+      icon: const Icon(Icons.draw_outlined),
+      label: const Text('Gambar Layout'),
+      style: OutlinedButton.styleFrom(
+        foregroundColor: AppColors.brand,
+        side: BorderSide(color: disabled ? AppColors.border : AppColors.brand),
+        shape: const RoundedRectangleBorder(borderRadius: AppRadius.borderMd),
+        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
       ),
     );
   }
@@ -283,6 +301,8 @@ class _CustomerPhotosTabState extends State<CustomerPhotosTab> {
               padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
             ),
           ),
+          const SizedBox(height: 12),
+          _buildLayoutButton(disabled: isMaxReached),
           const SizedBox(height: 16),
         ],
       ),
@@ -461,7 +481,46 @@ class _CustomerPhotosTabState extends State<CustomerPhotosTab> {
     );
   }
 
-  void _showPhotoUploadSheet(BuildContext context, String filePath) {
+  Future<void> _openLayoutEditor() async {
+    final state = _controller.photosState.value;
+    if (state is UiSuccess<List<CustomerPhoto>> && state.data.length >= 5) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Maksimal 5 foto telah tercapai'),
+          backgroundColor: AppColors.err,
+        ),
+      );
+      return;
+    }
+
+    final bytes = await Navigator.of(context).push<Uint8List>(
+      MaterialPageRoute<Uint8List>(
+        fullscreenDialog: true,
+        builder: (_) => const CustomerLayoutEditorPage(),
+      ),
+    );
+    if (bytes == null || !mounted) return;
+
+    try {
+      final file = File(
+        '${Directory.systemTemp.path}/layout_${DateTime.now().millisecondsSinceEpoch}.png',
+      );
+      await file.writeAsBytes(bytes, flush: true);
+      if (!mounted) return;
+      _showPhotoUploadSheet(context, file.path, titlePrefix: 'Layout: ');
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Error: $e')));
+    }
+  }
+
+  void _showPhotoUploadSheet(
+    BuildContext context,
+    String filePath, {
+    String titlePrefix = '',
+  }) {
     showModalBottomSheet<void>(
       context: context,
       isScrollControlled: true,
@@ -478,7 +537,7 @@ class _CustomerPhotosTabState extends State<CustomerPhotosTab> {
           _controller.addPhoto(
             widget.customerId,
             filePath,
-            title: title,
+            title: '$titlePrefix$title',
             notes: notes,
           );
         },
