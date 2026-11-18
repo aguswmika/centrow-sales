@@ -111,7 +111,11 @@ class PricingDetailSupplyDto {
         (j['frequency'] as num).toInt(),
         (j['unit_cost'] as num).toDouble(),
         (j['line_total'] as num).toDouble(),
-        j['treatment_method_id'] as String?,
+        (j['treatment_method_id'] ??
+                (j['treatment_method'] is Map
+                    ? j['treatment_method']['id']
+                    : null))
+            ?.toString(),
         (j['treatment_method_code'] ??
                 (j['treatment_method'] is Map
                     ? j['treatment_method']['code']
@@ -231,6 +235,8 @@ class PricingDetailItemDto {
   final double unitCost;
   final double? unitPrice;
   final double lineTotal;
+  final double? actualQty;
+  final int addonKind;
 
   PricingDetailItemDto._(
     this.id,
@@ -243,6 +249,8 @@ class PricingDetailItemDto {
     this.unitCost,
     this.unitPrice,
     this.lineTotal,
+    this.actualQty,
+    this.addonKind,
   );
 
   factory PricingDetailItemDto.fromJson(Map<String, dynamic> j) =>
@@ -263,6 +271,8 @@ class PricingDetailItemDto {
         (j['unit_cost'] as num).toDouble(),
         j['unit_price'] == null ? null : (j['unit_price'] as num).toDouble(),
         (j['line_total'] as num).toDouble(),
+        j['actual_qty'] == null ? null : (j['actual_qty'] as num).toDouble(),
+        (j['addon_kind'] as num?)?.toInt() ?? 0,
       );
 
   PricingDetailItem toEntity() => PricingDetailItem(
@@ -276,6 +286,8 @@ class PricingDetailItemDto {
     unitCost: unitCost,
     unitPrice: unitPrice,
     lineTotal: lineTotal,
+    actualQty: actualQty,
+    addonKind: addonKind,
   );
 }
 

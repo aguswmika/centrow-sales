@@ -3,21 +3,14 @@ import 'package:centrow_sales/shared/error/failure.dart';
 import 'package:centrow_sales/shared/network/auth_token_holder.dart';
 import 'package:centrow_sales/shared/network/dio_client.dart';
 import 'package:centrow_sales/shared/result/result.dart';
-import 'package:centrow_sales/modules/core/entities/branch.dart';
 import 'package:centrow_sales/modules/core/entities/user.dart';
 import 'package:centrow_sales/modules/core/repositories/dtos/auth_dto.dart';
 import 'package:centrow_sales/modules/core/repositories/dtos/login_request_dto.dart';
-import 'package:centrow_sales/modules/core/repositories/dtos/branch_dto.dart';
 import 'package:centrow_sales/modules/core/repositories/dtos/token_dto.dart';
 import 'package:centrow_sales/modules/core/repositories/dtos/user_me_dto.dart';
 
 abstract interface class AuthRepository {
-  Future<Result<List<Branch>>> getPublicBranches();
-  Future<Result<User>> login({
-    required String email,
-    required String password,
-    required String branchId,
-  });
+  Future<Result<User>> login({required String email, required String password});
   Future<Result<User>> getMe();
   Future<Result<TokenDto>> refreshToken(String refreshToken);
   Future<Result<void>> logout(String refreshToken);
@@ -29,46 +22,12 @@ class AuthRepositoryImpl implements AuthRepository {
   AuthRepositoryImpl(this._dio);
 
   @override
-  Future<Result<List<Branch>>> getPublicBranches() async {
-    try {
-      final response = await _dio.get<dynamic>('/v1/branches');
-      final dynamic responseData = response.data;
-      final List<dynamic> data;
-      if (responseData is Map) {
-        data = (responseData['data'] as List<dynamic>?) ?? [];
-      } else if (responseData is List) {
-        data = responseData;
-      } else {
-        data = [];
-      }
-
-      final branches = data
-          .map(
-            (e) => BranchDto.fromJson(
-              (e as Map).cast<String, dynamic>(),
-            ).toEntity(),
-          )
-          .toList();
-      return Ok(branches);
-    } on DioException catch (e) {
-      return Err(mapDioException(e));
-    } catch (e) {
-      return Err(UnknownFailure(e.toString()));
-    }
-  }
-
-  @override
   Future<Result<User>> login({
     required String email,
     required String password,
-    required String branchId,
   }) async {
     try {
-      final requestDto = LoginRequestDto(
-        email: email,
-        password: password,
-        branchId: branchId,
-      );
+      final requestDto = LoginRequestDto(email: email, password: password);
 
       final response = await _dio.post<dynamic>(
         '/v1/auth/login',
@@ -106,8 +65,12 @@ class AuthRepositoryImpl implements AuthRepository {
           ),
         );
       } else if (statusCode == 403) {
-        return const Err(
-          ServerFailure('Akun ini tidak memiliki akses ke aplikasi ini.', 403),
+        return Err(
+          ServerFailure(
+            (e.response?.data?['message'] as String?) ??
+                'Akun ini tidak memiliki akses ke aplikasi ini.',
+            403,
+          ),
         );
       } else if (statusCode == 500) {
         return Err(

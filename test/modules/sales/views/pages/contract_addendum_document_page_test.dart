@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 // ignore: depend_on_referenced_packages
@@ -10,12 +11,33 @@ import 'package:centrow_sales/shared/widgets/error_view.dart';
 import 'package:centrow_sales/modules/sales/controllers/contract_addendum_document_controller.dart';
 import 'package:centrow_sales/modules/sales/entities/addendum_template.dart';
 import 'package:centrow_sales/modules/sales/entities/contract_addendum_document.dart';
+import 'package:centrow_sales/modules/sales/entities/document_placeholder.dart';
 import 'package:centrow_sales/modules/sales/repositories/contract_addendum_document_repository.dart';
 import 'package:centrow_sales/modules/sales/views/pages/contract_addendum_document_page.dart';
+import 'package:centrow_sales/modules/sales/views/widgets/custom_tiptap_toolbar.dart';
 import 'package:centrow_sales/modules/sales/views/widgets/webview_tiptap_editor.dart';
 
 class FakePlatformWebViewController extends PlatformWebViewController {
-  FakePlatformWebViewController(super.params) : super.implementation();
+  FakePlatformWebViewController(super.params) : super.implementation() {
+    latest = this;
+  }
+
+  static FakePlatformWebViewController? latest;
+
+  JavaScriptChannelParams? javaScriptChannel;
+  FakePlatformNavigationDelegate? navigationDelegate;
+
+  /// Simulates the webview page finishing loading.
+  void finishPage() {
+    navigationDelegate?.onPageFinished?.call('about:blank');
+  }
+
+  /// Simulates a message posted from the tiptap JS side to FlutterChannel.
+  void postMessage(Map<String, dynamic> data) {
+    javaScriptChannel?.onMessageReceived(
+      JavaScriptMessage(message: jsonEncode(data)),
+    );
+  }
 
   @override
   Future<void> setJavaScriptMode(JavaScriptMode javaScriptMode) async {}
@@ -26,12 +48,16 @@ class FakePlatformWebViewController extends PlatformWebViewController {
   @override
   Future<void> addJavaScriptChannel(
     JavaScriptChannelParams javaScriptChannelParams,
-  ) async {}
+  ) async {
+    javaScriptChannel = javaScriptChannelParams;
+  }
 
   @override
   Future<void> setPlatformNavigationDelegate(
     PlatformNavigationDelegate handler,
-  ) async {}
+  ) async {
+    navigationDelegate = handler as FakePlatformNavigationDelegate;
+  }
 
   @override
   Future<void> loadHtmlString(String html, {String? baseUrl}) async {}
@@ -50,8 +76,12 @@ class FakePlatformWebViewWidget extends PlatformWebViewWidget {
 class FakePlatformNavigationDelegate extends PlatformNavigationDelegate {
   FakePlatformNavigationDelegate(super.params) : super.implementation();
 
+  PageEventCallback? onPageFinished;
+
   @override
-  Future<void> setOnPageFinished(PageEventCallback onPageFinished) async {}
+  Future<void> setOnPageFinished(PageEventCallback onPageFinished) async {
+    this.onPageFinished = onPageFinished;
+  }
 }
 
 class FakeWebViewPlatform extends WebViewPlatform {
@@ -422,4 +452,55 @@ void main() {
 
     expect(find.text('Dokumen Addendum'), findsOneWidget);
   });
+
+  testWidgets(
+    'Toolbar receives placeholders from the loaded addendum document',
+    (tester) async {
+      mockRepo.getDocumentFn = (id, {templateId}) async => Ok(
+        ContractAddendumDocument(
+          documentId: 'doc-1',
+          addendumId: id,
+          templateId: 'tmpl-abc',
+          title: 'Addendum Contract',
+          source: 'template',
+          content: const <String, dynamic>{
+            'type': 'doc',
+            'content': <dynamic>[],
+          },
+          placeholders: const [
+            DocumentPlaceholder(tag: '{date}', label: 'Tanggal Addendum'),
+            DocumentPlaceholder(
+              tag: '{contract_number}',
+              label: 'Nomor Kontrak',
+            ),
+          ],
+        ),
+      );
+
+      await tester.pumpWidget(buildTestableWidget());
+      await tester.pump();
+
+      // Editor reports page load and tiptap state so the toolbar is shown.
+      final platformController = FakePlatformWebViewController.latest!;
+      platformController.finishPage();
+      await tester.pump();
+      platformController.postMessage({
+        'json': {'type': 'doc', 'content': <dynamic>[]},
+        'isActive': <String, bool>{},
+      });
+      await tester.pump();
+
+      final toolbar = tester.widget<CustomTiptapToolbar>(
+        find.byType(CustomTiptapToolbar),
+      );
+      expect(toolbar.placeholders.map((p) => p.tag).toList(), [
+        '{date}',
+        '{contract_number}',
+      ]);
+      expect(toolbar.placeholders.map((p) => p.label).toList(), [
+        'Tanggal Addendum',
+        'Nomor Kontrak',
+      ]);
+    },
+  );
 }

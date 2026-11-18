@@ -137,6 +137,7 @@ class PricingItemDto {
   final int frequency;
   final double? unitPrice;
   final double? unitCost;
+  final double? actualQty;
 
   const PricingItemDto({
     required this.itemType,
@@ -146,6 +147,7 @@ class PricingItemDto {
     required this.frequency,
     this.unitPrice,
     this.unitCost,
+    this.actualQty,
   });
 
   Map<String, dynamic> toJson() => {
@@ -156,5 +158,6 @@ class PricingItemDto {
     'frequency': frequency,
     if (unitPrice != null) 'unit_price': unitPrice,
     if (unitCost != null) 'unit_cost': unitCost,
+    if (actualQty != null) 'actual_qty': actualQty,
   };
 }

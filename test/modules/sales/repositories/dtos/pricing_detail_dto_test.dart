@@ -155,5 +155,106 @@ void main() {
       expect(entity.addonCost, 250000.0);
       expect(entity.items.first.unitCost, 250000.0);
     });
+
+    test('item parses actual_qty and addon_kind when present', () {
+      final json = _pricingJsonWithItems([
+        {
+          'id': 'item-2',
+          'item_type': 2,
+          'product_id': 'prod-2',
+          'name': 'Paket Add-on',
+          'qty': 1,
+          'frequency': 1,
+          'unit_cost': 100000.0,
+          'unit_price': 200000.0,
+          'line_total': 200000.0,
+          'actual_qty': 3,
+          'addon_kind': 6,
+        },
+      ]);
+
+      final item = PricingDetailDto.fromJson(json).items.first;
+      expect(item.actualQty, 3.0);
+      expect(item.addonKind, 6);
+
+      final entity = PricingDetailDto.fromJson(json).toEntity().items.first;
+      expect(entity.actualQty, 3.0);
+      expect(entity.addonKind, 6);
+    });
+
+    test('item without actual_qty and addon_kind falls back to null and 0', () {
+      final json = _pricingJsonWithItems([
+        {
+          'id': 'item-3',
+          'item_type': 2,
+          'product_id': 'prod-3',
+          'name': 'Add-on',
+          'qty': 2,
+          'frequency': 1,
+          'unit_cost': 10000.0,
+          'line_total': 20000.0,
+        },
+      ]);
+
+      final item = PricingDetailDto.fromJson(json).items.first;
+      expect(item.actualQty, isNull);
+      expect(item.addonKind, 0);
+
+      final entity = PricingDetailDto.fromJson(json).toEntity().items.first;
+      expect(entity.actualQty, isNull);
+      expect(entity.addonKind, 0);
+    });
+
+    test(
+      'supply with only treatment_method_id keeps the id; treatment_method object supplies id too',
+      () {
+        final idOnly = PricingDetailSupplyDto.fromJson({
+          'id': 'sup-a',
+          'supply_type': 1,
+          'name': 'Chemical',
+          'uom_code': 'LTR',
+          'qty': 1,
+          'frequency': 1,
+          'unit_cost': 1.0,
+          'line_total': 1.0,
+          'treatment_method_id': 'tm-9',
+        });
+        expect(idOnly.treatmentMethodId, 'tm-9');
+        expect(idOnly.treatmentMethodName, isNull);
+        expect(idOnly.treatmentMethodCode, isNull);
+
+        final withObject = PricingDetailSupplyDto.fromJson({
+          'id': 'sup-b',
+          'supply_type': 1,
+          'name': 'Chemical',
+          'uom_code': 'LTR',
+          'qty': 1,
+          'frequency': 1,
+          'unit_cost': 1.0,
+          'line_total': 1.0,
+          'treatment_method': {'id': 'tm-10', 'code': 'CF', 'name': 'Cold Fog'},
+        });
+        expect(withObject.treatmentMethodId, 'tm-10');
+        expect(withObject.treatmentMethodCode, 'CF');
+        expect(withObject.treatmentMethodName, 'Cold Fog');
+      },
+    );
   });
 }
+
+Map<String, dynamic> _pricingJsonWithItems(List<Map<String, dynamic>> items) =>
+    {
+      'id': 'p-items',
+      'customer_id': 'c-items',
+      'service_id': 's-items',
+      'contract_months': 12,
+      'visit_frequency': 1,
+      'total_visits': 12,
+      'markup_type': 1,
+      'markup_value': 0.0,
+      'discount_amount': 0.0,
+      'tax_percentage': 11.0,
+      'supplies': <Map<String, dynamic>>[],
+      'workers': <Map<String, dynamic>>[],
+      'items': items,
+    };

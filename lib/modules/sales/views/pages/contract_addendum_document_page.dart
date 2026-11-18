@@ -254,7 +254,7 @@ class _ContractAddendumDocumentPageState
               CustomTiptapToolbar(
                 controller: _webViewController!,
                 state: _tiptapState!,
-                placeholders: const [],
+                placeholders: doc.placeholders,
               ),
               const Divider(
                 height: 1,

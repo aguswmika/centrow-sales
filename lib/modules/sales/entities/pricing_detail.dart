@@ -99,6 +99,8 @@ class PricingDetailItem {
   final double unitCost;
   final double? unitPrice;
   final double lineTotal;
+  final double? actualQty; // SPK quantity actually delivered (actual_qty)
+  final int addonKind; // 0 = none, 5 = add-on, 6 = package add-on
 
   const PricingDetailItem({
     required this.id,
@@ -111,6 +113,8 @@ class PricingDetailItem {
     required this.unitCost,
     this.unitPrice,
     required this.lineTotal,
+    this.actualQty,
+    this.addonKind = 0,
   });
 }
 

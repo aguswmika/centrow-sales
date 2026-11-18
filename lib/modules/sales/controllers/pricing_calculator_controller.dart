@@ -146,6 +146,9 @@ class PricingItemRow {
   final int kind;
 
   final Signal<double> qty;
+
+  /// SPK quantity (actual delivered), sent as `actual_qty`. Never affects prices.
+  final Signal<int> spkQty;
   final Signal<double> freq;
   final Signal<double> unitPrice;
   final Signal<double> unitCost;
@@ -157,11 +160,13 @@ class PricingItemRow {
     required this.code,
     required this.kind,
     double initialQty = 1.0,
+    int? initialSpkQty,
     double initialFreq = 1.0,
     double initialUnitPrice = 0.0,
     double initialUnitCost = 0.0,
   }) : title = signal(title ?? initialTitle ?? ''),
        qty = signal(initialQty),
+       spkQty = signal(initialSpkQty ?? initialQty.round()),
        freq = signal(initialFreq),
        unitPrice = signal(initialUnitPrice),
        unitCost = signal(initialUnitCost);
@@ -169,6 +174,7 @@ class PricingItemRow {
   void dispose() {
     title.dispose();
     qty.dispose();
+    spkQty.dispose();
     freq.dispose();
     unitPrice.dispose();
     unitCost.dispose();
@@ -228,11 +234,39 @@ class PricingCalculatorController {
     treatmentMethodState.value = switch (result) {
       Ok(:final value) => () {
         treatmentMethods.value = value;
+        _fillTreatmentMethodLabels();
         return UiSuccess(value);
       }(),
       Err(:final failure) => UiFailure(failure),
     };
   }
+
+  /// Fills the name and code of supply rows that carry only a treatment
+  /// method id (e.g. restored from a server that returns no method object),
+  /// by looking the id up in the loaded treatment methods.
+  void _fillTreatmentMethodLabels() {
+    if (treatmentMethods.isEmpty) return;
+    for (final row in supplies) {
+      final id = row.treatmentMethodId.value;
+      if (id == null || id.isEmpty) continue;
+      final hasName = (row.treatmentMethodName.value ?? '').isNotEmpty;
+      if (hasName) continue;
+      for (final method in treatmentMethods) {
+        if (method.id == id) {
+          row.treatmentMethodName.value = method.name;
+          row.treatmentMethodCode.value = method.code;
+          break;
+        }
+      }
+    }
+  }
+
+  bool get _hasSupplyWithoutMethodName => supplies.any((row) {
+    final id = row.treatmentMethodId.value;
+    return id != null &&
+        id.isNotEmpty &&
+        (row.treatmentMethodName.value ?? '').isEmpty;
+  });
 
   final supplies = ListSignal<PricingSupplyRow>([]);
   final workers = ListSignal<PricingWorkerRow>([]);
@@ -437,6 +471,9 @@ class PricingCalculatorController {
       if (item.kind == 0 && item.title.value.trim().isEmpty) {
         return 'Nama item kustom tidak boleh kosong.';
       }
+      if (item.spkQty.value < 1) {
+        return 'Jumlah SPK untuk ${item.title.value} minimal 1.';
+      }
     }
 
     if (requireMarkup && markupPercent.value <= 0) {
@@ -519,6 +556,7 @@ class PricingCalculatorController {
             unitCost: (i.kind == 0 && i.unitCost.value > 0)
                 ? i.unitCost.value
                 : null,
+            actualQty: i.spkQty.value.toDouble(),
           ),
         )
         .toList();
@@ -620,7 +658,12 @@ class PricingCalculatorController {
       for (final i in data.items) {
         final isCustom =
             i.itemType == 2 && (i.productId == null || i.productId!.isEmpty);
-        final itemKind = isCustom ? 0 : (i.itemType == 2 ? 5 : 3);
+        // Add-on lines keep the kind the server stored (5 or 6); a product
+        // line without a valid addon_kind falls back to plain add-on.
+        final addonKind = (i.addonKind == 5 || i.addonKind == 6)
+            ? i.addonKind
+            : 5;
+        final itemKind = isCustom ? 0 : (i.itemType == 2 ? addonKind : 3);
         items.add(
           PricingItemRow(
             id: i.productId ?? i.id,
@@ -628,6 +671,7 @@ class PricingCalculatorController {
             code: i.code,
             kind: itemKind,
             initialQty: i.qty,
+            initialSpkQty: (i.actualQty ?? i.qty).round(),
             initialFreq: i.frequency.toDouble(),
             initialUnitPrice: (i.unitPrice != null && i.unitPrice! > 0)
                 ? i.unitPrice!
@@ -642,6 +686,16 @@ class PricingCalculatorController {
       Ok(:final value) => UiSuccess(value),
       Err(:final failure) => UiFailure(failure),
     };
+
+    // The server may return only the method id; resolve the name from the
+    // method list so the badge shows it instead of a generic label.
+    if (result is Ok && _hasSupplyWithoutMethodName) {
+      if (treatmentMethods.isEmpty) {
+        await loadTreatmentMethods();
+      } else {
+        _fillTreatmentMethodLabels();
+      }
+    }
   }
 
   Future<void> submitPricing(String proposalId) async {

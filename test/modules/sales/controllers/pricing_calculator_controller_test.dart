@@ -602,6 +602,80 @@ void main() {
     });
   });
 
+  group('PricingCalculatorController - SPK quantity on items', () {
+    test('spkQty starts at qty unless initialSpkQty is given', () {
+      final fallback = PricingItemRow(
+        id: 'i-1',
+        code: '',
+        kind: 5,
+        initialQty: 2.0,
+      );
+      expect(fallback.spkQty.value, 2);
+      fallback.dispose();
+
+      final explicit = PricingItemRow(
+        id: 'i-2',
+        code: '',
+        kind: 5,
+        initialQty: 1.0,
+        initialSpkQty: 3,
+      );
+      expect(explicit.spkQty.value, 3);
+      explicit.dispose();
+    });
+
+    test('buildRequest sends qty and actual_qty for every item', () {
+      controller.items.add(
+        PricingItemRow(
+          id: 'addon-1',
+          title: 'Add On A',
+          code: '',
+          kind: 5,
+          initialQty: 1.0,
+          initialSpkQty: 3,
+          initialUnitPrice: 100000.0,
+        ),
+      );
+      controller.items.add(
+        PricingItemRow(
+          id: 'custom_1',
+          title: 'Item Kustom',
+          code: '',
+          kind: 0,
+          initialQty: 2.0,
+          initialUnitPrice: 50000.0,
+        ),
+      );
+
+      final items = controller.buildRequest().items;
+      expect(items.length, 2);
+      expect(items[0].qty, 1.0);
+      expect(items[0].toJson()['actual_qty'], 3.0);
+      expect(items[1].qty, 2.0);
+      expect(items[1].toJson()['actual_qty'], 2.0);
+    });
+
+    test('validateInputs rejects item SPK quantity below 1', () {
+      controller.totalVisits.value = 12;
+      controller.items.add(
+        PricingItemRow(
+          id: 'addon-2',
+          title: 'Add On B',
+          code: '',
+          kind: 5,
+          initialQty: 1.0,
+          initialSpkQty: 0,
+        ),
+      );
+
+      final error = controller.validateInputs(requireMarkup: false);
+      expect(error, contains('Jumlah SPK'));
+
+      controller.items.first.spkQty.value = 1;
+      expect(controller.validateInputs(requireMarkup: false), isNull);
+    });
+  });
+
   group('PricingCalculatorController - loadExistingPricing', () {
     test(
       'loads existing pricing worker minutes into PricingWorkerRow',
@@ -954,6 +1028,108 @@ void main() {
       expect(restored.title.value, 'Biaya Fogging Khusus');
       expect(restored.unitPrice.value, 150000.0);
       expect(restored.qty.value, 2.0);
+    });
+
+    PricingDetail detailWithItem(PricingDetailItem item) => PricingDetail(
+      id: 'price-item',
+      customerId: 'cust-1',
+      serviceId: 'srv-1',
+      contractMonths: 12,
+      visitFrequency: 1,
+      totalVisits: 12,
+      markupType: 1,
+      markupValue: 10.0,
+      discountAmount: 0.0,
+      taxPercentage: 0.0,
+      supplies: const [],
+      workers: const [],
+      items: [item],
+    );
+
+    test('loadExistingPricing restores addon_kind 6 as package row', () async {
+      repository.detailResponse = Ok(
+        detailWithItem(
+          const PricingDetailItem(
+            id: 'item-pkg',
+            itemType: 2,
+            productId: 'prod-pkg',
+            code: 'PKG',
+            name: 'Paket Fogging',
+            qty: 1.0,
+            frequency: 1,
+            unitCost: 100000.0,
+            unitPrice: 200000.0,
+            lineTotal: 200000.0,
+            actualQty: 3.0,
+            addonKind: 6,
+          ),
+        ),
+      );
+
+      await controller.loadExistingPricing('prop-pkg');
+
+      final restored = controller.items.first;
+      expect(restored.kind, 6);
+      expect(restored.spkQty.value, 3);
+      expect(restored.unitPrice.value, 200000.0);
+
+      final dto = controller.buildRequest().items.first;
+      expect(dto.itemType, 2);
+      expect(dto.productId, 'prod-pkg');
+      expect(dto.unitPrice, 200000.0);
+      expect(dto.toJson()['actual_qty'], 3.0);
+    });
+
+    test(
+      'loadExistingPricing restores product add-on without addon_kind as kind 5',
+      () async {
+        repository.detailResponse = Ok(
+          detailWithItem(
+            const PricingDetailItem(
+              id: 'item-addon',
+              itemType: 2,
+              productId: 'prod-addon',
+              name: 'Add On Legacy',
+              qty: 1.0,
+              frequency: 1,
+              unitCost: 0.0,
+              unitPrice: 50000.0,
+              lineTotal: 50000.0,
+            ),
+          ),
+        );
+
+        await controller.loadExistingPricing('prop-legacy');
+
+        final restored = controller.items.first;
+        expect(restored.kind, 5);
+        expect(restored.spkQty.value, 1);
+      },
+    );
+
+    test('loadExistingPricing restores item_type 1 as kind 3', () async {
+      repository.detailResponse = Ok(
+        detailWithItem(
+          const PricingDetailItem(
+            id: 'item-bbm',
+            itemType: 1,
+            productId: 'prod-bbm',
+            name: 'Bahan Bakar',
+            qty: 2.0,
+            frequency: 1,
+            unitCost: 0.0,
+            lineTotal: 0.0,
+            actualQty: 4.0,
+            addonKind: 6,
+          ),
+        ),
+      );
+
+      await controller.loadExistingPricing('prop-bbm');
+
+      final restored = controller.items.first;
+      expect(restored.kind, 3);
+      expect(restored.spkQty.value, 4);
     });
 
     test('validateInputs requires treatmentMethodId for all supply lines', () {

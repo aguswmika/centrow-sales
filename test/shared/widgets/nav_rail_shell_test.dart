@@ -6,7 +6,6 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:centrow_sales/app/app.dart';
 import 'package:centrow_sales/app/di.dart';
 import 'package:centrow_sales/app/router.dart';
-import 'package:centrow_sales/modules/core/entities/branch.dart';
 import 'package:centrow_sales/modules/core/entities/user.dart';
 import 'package:centrow_sales/modules/core/repositories/auth_repository.dart';
 import 'package:centrow_sales/shared/network/auth_token_holder.dart';
@@ -26,15 +25,9 @@ class _MockAuthRepo implements AuthRepository {
   Future<Result<void>> logout(String refreshToken) async =>
       throw UnimplementedError();
   @override
-  Future<Result<List<Branch>>> getPublicBranches() async {
-    return const Ok([Branch(id: 't1', name: 'Cabang Bali', slug: 'bali')]);
-  }
-
-  @override
   Future<Result<User>> login({
     required String email,
     required String password,
-    required String branchId,
   }) async {
     return const Ok(
       User(
@@ -145,6 +138,37 @@ void main() {
     AuthTokenHolder.instance.clear();
     getIt.reset();
   });
+
+  for (final isTablet in [true, false]) {
+    testWidgets('NavRailShell removes system-bar insets from the page '
+        '(${isTablet ? 'tablet' : 'mobile'})', (tester) async {
+      tester.view.physicalSize = isTablet
+          ? const Size(1200, 800)
+          : const Size(400, 800);
+      tester.view.devicePixelRatio = 1.0;
+      tester.view.padding = const FakeViewPadding(top: 24, bottom: 20);
+      addTearDown(tester.view.reset);
+
+      EdgeInsets? seen;
+      await tester.pumpWidget(
+        MaterialApp(
+          home: NavRailShell(
+            child: Builder(
+              builder: (context) {
+                seen = MediaQuery.paddingOf(context);
+                return const SizedBox.expand();
+              },
+            ),
+          ),
+        ),
+      );
+
+      // The shell draws the top band itself, so the page sees no top inset
+      // and its own SafeArea cannot add a second one.
+      expect(seen!.top, 0);
+      if (isTablet) expect(seen!.bottom, 0);
+    });
+  }
 
   testWidgets('NavRailShell switches tabs on tablet navigation rail', (
     tester,
@@ -290,6 +314,73 @@ void main() {
       expect(find.text('Centrow Sales'), findsOneWidget);
     },
   );
+
+  testWidgets('User menu shows company and branch name below email', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(1200, 900);
+    tester.view.devicePixelRatio = 1.0;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+
+    await AuthTokenHolder.instance.saveToken('valid_token_123');
+    await AuthTokenHolder.instance.saveUser(
+      const User(
+        id: 'u1',
+        name: 'Sales Executive',
+        email: 'sales@centrow.id',
+        role: 'Sales',
+        branch: 'Main Branch',
+        token: 'valid_token_123',
+        companyName: 'PT Nohama',
+        branchName: 'Kupang',
+      ),
+    );
+    final router = createRouter(initialLocation: '/customers');
+    await tester.pumpWidget(CentrowSalesApp(routerConfig: router));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byType(PopupMenuButton<String>));
+    await tester.pumpAndSettle();
+
+    expect(find.text('PT Nohama'), findsOneWidget);
+    expect(find.text('Kupang'), findsOneWidget);
+    final emailY = tester.getTopLeft(find.text('sales@centrow.id')).dy;
+    expect(tester.getTopLeft(find.text('PT Nohama')).dy, greaterThan(emailY));
+    expect(
+      tester.getTopLeft(find.text('Kupang')).dy,
+      greaterThan(tester.getTopLeft(find.text('PT Nohama')).dy),
+    );
+  });
+
+  testWidgets('User menu shows "-" when company and branch names are empty', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(1200, 900);
+    tester.view.devicePixelRatio = 1.0;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+
+    await AuthTokenHolder.instance.saveToken('valid_token_123');
+    await AuthTokenHolder.instance.saveUser(
+      const User(
+        id: 'u1',
+        name: 'Sales Executive',
+        email: 'sales@centrow.id',
+        role: 'Sales',
+        branch: 'Main Branch',
+        token: 'valid_token_123',
+      ),
+    );
+    final router = createRouter(initialLocation: '/customers');
+    await tester.pumpWidget(CentrowSalesApp(routerConfig: router));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byType(PopupMenuButton<String>));
+    await tester.pumpAndSettle();
+
+    expect(find.text('-'), findsNWidgets(2));
+  });
 
   testWidgets(
     'NavRailShell respects top safe area padding to prevent status bar overlap',

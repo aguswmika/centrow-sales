@@ -327,6 +327,31 @@ void main() {
         final jsonWithoutCost = itemWithoutCost.toJson();
         expect(jsonWithoutCost.containsKey('unit_cost'), isFalse);
       });
+
+      test('PricingItemDto sends actual_qty separately from qty', () {
+        const item = PricingItemDto(
+          itemType: 2,
+          productId: 'p-addon',
+          name: 'Add On',
+          qty: 1.0,
+          frequency: 1,
+          unitPrice: 100000.0,
+          actualQty: 3.0,
+        );
+
+        final json = item.toJson();
+        expect(json['qty'], 1.0);
+        expect(json['actual_qty'], 3.0);
+
+        const itemWithoutActual = PricingItemDto(
+          itemType: 1,
+          productId: 'p-trans',
+          name: 'Transport',
+          qty: 2.0,
+          frequency: 1,
+        );
+        expect(itemWithoutActual.toJson().containsKey('actual_qty'), isFalse);
+      });
     },
   );
 }

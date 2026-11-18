@@ -150,6 +150,12 @@ class PricingSupplyTab extends StatelessWidget {
   }
 }
 
+String _treatmentMethodLabel(String? name, String? code) {
+  if (name != null && name.isNotEmpty) return name;
+  if (code != null && code.isNotEmpty) return code;
+  return 'Metode terpilih';
+}
+
 class PricingSupplyRowWidget extends StatelessWidget {
   final PricingSupplyRow row;
   final PricingCalculatorController controller;
@@ -239,8 +245,8 @@ class PricingSupplyRowWidget extends StatelessWidget {
                                   ),
                                 ),
                               ),
-                            if (row.treatmentMethodName.value != null &&
-                                row.treatmentMethodName.value!.isNotEmpty)
+                            if (row.treatmentMethodId.value != null &&
+                                row.treatmentMethodId.value!.isNotEmpty)
                               // Tappable badge to SWITCH method
                               InkWell(
                                 onTap: !isReadOnly
@@ -275,7 +281,10 @@ class PricingSupplyRowWidget extends StatelessWidget {
                                     borderRadius: AppRadius.borderSm,
                                   ),
                                   child: Text(
-                                    row.treatmentMethodName.value!,
+                                    _treatmentMethodLabel(
+                                      row.treatmentMethodName.value,
+                                      row.treatmentMethodCode.value,
+                                    ),
                                     style: const TextStyle(
                                       fontSize: 11.0,
                                       color: AppColors.sec,
@@ -614,8 +623,8 @@ class PricingToolRowWidget extends StatelessWidget {
                                   ),
                                 ),
                               ),
-                            if (row.treatmentMethodName.value != null &&
-                                row.treatmentMethodName.value!.isNotEmpty)
+                            if (row.treatmentMethodId.value != null &&
+                                row.treatmentMethodId.value!.isNotEmpty)
                               // Tappable badge to SWITCH method (no close/clear)
                               InkWell(
                                 onTap: !isReadOnly
@@ -650,7 +659,10 @@ class PricingToolRowWidget extends StatelessWidget {
                                     borderRadius: AppRadius.borderSm,
                                   ),
                                   child: Text(
-                                    row.treatmentMethodName.value!,
+                                    _treatmentMethodLabel(
+                                      row.treatmentMethodName.value,
+                                      row.treatmentMethodCode.value,
+                                    ),
                                     style: const TextStyle(
                                       fontSize: 11.0,
                                       color: AppColors.sec,

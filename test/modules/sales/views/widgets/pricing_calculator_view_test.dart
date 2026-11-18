@@ -167,9 +167,12 @@ void main() {
       await tester.tap(find.text('Transport & Add-on'));
       await tester.pumpAndSettle();
 
-      // Verify 'BBM' and 'Add-on' are NOT present
-      expect(find.text('BBM'), findsNothing);
-      expect(find.text('Add-on'), findsNothing);
+      // Verify the renamed add buttons are NOT present
+      expect(find.text('Bahan Bakar'), findsNothing);
+      expect(find.text('Add On'), findsNothing);
+      expect(find.text('Add On (Paket)'), findsNothing);
+      // Verify the SPK quantity column header is still shown (header text is uppercased)
+      expect(find.text('JUMLAH SPK'), findsOneWidget);
       // Verify delete button icon Icons.close_rounded is NOT present
       expect(find.byIcon(Icons.close_rounded), findsNothing);
 
@@ -213,8 +216,9 @@ void main() {
       await tester.tap(find.text('Transport & Add-on'));
       await tester.pumpAndSettle();
 
-      expect(find.text('BBM'), findsOneWidget);
-      expect(find.text('Add-on'), findsOneWidget);
+      expect(find.text('Bahan Bakar'), findsOneWidget);
+      expect(find.text('Add On'), findsOneWidget);
+      expect(find.text('Add On (Paket)'), findsOneWidget);
       expect(find.byIcon(Icons.close_rounded), findsOneWidget);
 
       // Bottom action button displays 'Lihat Ringkasan' and is enabled
@@ -260,10 +264,11 @@ void main() {
       await tester.tap(find.text('Transport & Add-on'));
       await tester.pumpAndSettle();
 
-      // 2 CounterInputs in item row: qty, freq
-      expect(find.byType(CounterInput), findsNWidgets(2));
+      // 3 CounterInputs in item row: qty, spk qty, freq
+      expect(find.byType(CounterInput), findsNWidgets(3));
       final itemRow = controller.items.first;
       expect(itemRow.qty.value, 4.0);
+      expect(itemRow.spkQty.value, 4);
       expect(itemRow.freq.value, 1.0);
     },
   );

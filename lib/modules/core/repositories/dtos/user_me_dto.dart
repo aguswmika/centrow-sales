@@ -9,6 +9,9 @@ class UserMeDto {
   final List<String> roles;
   final String position;
   final String department;
+  final String branchName;
+  final String companyId;
+  final String companyName;
 
   const UserMeDto({
     required this.id,
@@ -18,6 +21,9 @@ class UserMeDto {
     this.roles = const [],
     this.position = '',
     this.department = '',
+    this.branchName = '',
+    this.companyId = '',
+    this.companyName = '',
   });
 
   factory UserMeDto.fromJson(Map<String, dynamic> json) {
@@ -30,9 +36,18 @@ class UserMeDto {
       parsedRoles = const [];
     }
 
+    final branchObj = data['branch'] is Map ? data['branch'] as Map : null;
+    final companyObj = data['company'] is Map ? data['company'] as Map : null;
+
     return UserMeDto(
       id: data['id']?.toString() ?? '',
-      branchId: (data['branch_id'] ?? data['tenant_id'])?.toString() ?? '',
+      branchId:
+          (branchObj?['id'] ?? data['branch_id'] ?? data['tenant_id'])
+              ?.toString() ??
+          '',
+      branchName: branchObj?['name']?.toString() ?? '',
+      companyId: companyObj?['id']?.toString() ?? '',
+      companyName: companyObj?['name']?.toString() ?? '',
       name: data['name']?.toString() ?? '',
       email: data['email']?.toString() ?? '',
       roles: parsedRoles,
@@ -62,6 +77,9 @@ class UserMeDto {
       roles: roles,
       position: position,
       department: department,
+      branchName: branchName,
+      companyId: companyId,
+      companyName: companyName,
       token: token,
     );
   }

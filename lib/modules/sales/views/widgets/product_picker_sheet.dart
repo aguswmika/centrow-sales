@@ -59,13 +59,13 @@ class _ProductPickerSheetState extends State<ProductPickerSheet> {
       case 2:
         return 'Pilih Bahan & Alat';
       case 3:
-        return 'Pilih BBM / Transport';
+        return 'Pilih Bahan Bakar';
       case 4:
         return 'Pilih Sewa Mesin';
       case 5:
-        return 'Pilih Add-on';
+        return 'Pilih Add On';
       case 6:
-        return 'Pilih Paket Add-on';
+        return 'Pilih Add On (Paket)';
       default:
         return 'Pilih Produk / Komponen';
     }

@@ -1,25 +1,17 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:centrow_sales/modules/core/repositories/dtos/auth_dto.dart';
 import 'package:centrow_sales/modules/core/repositories/dtos/login_request_dto.dart';
-import 'package:centrow_sales/modules/core/repositories/dtos/branch_dto.dart';
 import 'package:centrow_sales/modules/core/repositories/dtos/user_me_dto.dart';
 
 void main() {
   group('DTO Tests', () {
-    test('BranchDto serialization', () {
-      final json = {'id': '1', 'name': 'Test', 'slug': 'test'};
-      final dto = BranchDto.fromJson(json);
-      expect(dto.id, '1');
-      expect(dto.toJson(), json);
-    });
-
     test('AuthDto nested structure and toEntity', () {
       final json = {
         'user': {
           'id': 'u1',
           'name': 'User',
           'email': 'a@b.com',
-          'role': 'admin',
+          'role': 'super_admin',
           'branch': 'b1',
         },
         'token': 'abc',
@@ -32,21 +24,16 @@ void main() {
       expect(user.id, 'u1');
       expect(user.name, 'User');
       expect(user.email, 'a@b.com');
-      expect(user.role, 'admin');
-      expect(user.roles, ['admin']);
+      expect(user.role, 'super_admin');
+      expect(user.roles, ['super_admin']);
       expect(user.branch, 'b1');
       expect(user.token, 'abc');
     });
 
     test('LoginRequestDto serialization', () {
-      const dto = LoginRequestDto(
-        email: 'a@b.com',
-        password: 'password',
-        branchId: 't1',
-      );
+      const dto = LoginRequestDto(email: 'a@b.com', password: 'password');
       final json = dto.toJson();
-      expect(json['email'], 'a@b.com');
-      expect(json['branch_id'], 't1');
+      expect(json, {'email': 'a@b.com', 'password': 'password'});
     });
 
     test(
@@ -120,6 +107,73 @@ void main() {
       expect(outJson['roles'], dto.roles);
       expect(outJson['position'], dto.position);
       expect(outJson['department'], dto.department);
+    });
+
+    test('AuthDto reads branch and company maps from API form', () {
+      final dto = AuthDto.fromJson({
+        'data': {
+          'token': 't',
+          'user': {'id': '1', 'name': 'A', 'email': 'a@b.c'},
+          'branch': {'id': 'b1', 'name': 'Bali'},
+          'company': {'id': 'c1', 'name': 'Centrow'},
+        },
+      });
+      final user = dto.toEntity();
+      expect(user.branchId, 'b1');
+      expect(user.branchName, 'Bali');
+      expect(user.companyId, 'c1');
+      expect(user.companyName, 'Centrow');
+    });
+
+    test('AuthDto reads flat stored form', () {
+      final dto = AuthDto.fromJson({
+        'id': '1',
+        'name': 'A',
+        'email': 'a@b.c',
+        'branch_id': 'b1',
+        'branch_name': 'Bali',
+        'company_id': 'c1',
+        'company_name': 'Centrow',
+        'token': 't',
+      });
+      expect(dto.branchId, 'b1');
+      expect(dto.branchName, 'Bali');
+      expect(dto.companyId, 'c1');
+      expect(dto.companyName, 'Centrow');
+      expect(AuthDto.fromJson(dto.toJson()).companyName, 'Centrow');
+    });
+
+    test('AuthDto defaults to empty when branch/company absent', () {
+      final user = AuthDto.fromJson({
+        'data': {
+          'token': 't',
+          'user': {'id': '1', 'branch': 'Bali'},
+        },
+      }).toEntity();
+      expect(user.branch, 'Bali');
+      expect(user.branchId, '');
+      expect(user.branchName, '');
+      expect(user.companyId, '');
+      expect(user.companyName, '');
+    });
+
+    test('UserMeDto parses branch and company objects', () {
+      final user = UserMeDto.fromJson({
+        'data': {
+          'id': '1',
+          'name': 'A',
+          'branch': {'id': 'b1', 'name': 'Bali'},
+          'company': {'id': 'c1', 'name': 'Centrow'},
+        },
+      }).toEntity('t');
+      expect(user.branchId, 'b1');
+      expect(user.branchName, 'Bali');
+      expect(user.companyId, 'c1');
+      expect(user.companyName, 'Centrow');
+
+      final bare = UserMeDto.fromJson({'id': '2'}).toEntity();
+      expect(bare.branchName, '');
+      expect(bare.companyId, '');
     });
   });
 }

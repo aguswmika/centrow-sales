@@ -2,7 +2,6 @@ import 'dart:convert';
 import 'dart:typed_data';
 import 'package:dio/dio.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:centrow_sales/modules/core/entities/branch.dart';
 import 'package:centrow_sales/modules/core/entities/user.dart';
 import 'package:centrow_sales/modules/core/repositories/auth_repository.dart';
 import 'package:centrow_sales/shared/error/failure.dart';
@@ -43,71 +42,14 @@ void main() {
     repository = AuthRepositoryImpl(dio);
   });
 
-  group('AuthRepositoryImpl - getPublicBranches', () {
-    test('returns List<Branch> on 200 OK', () async {
-      mockAdapter.handler = (options) {
-        expect(options.path, '/v1/branches');
-        final body = jsonEncode({
-          'data': [
-            {
-              'id': '8e4c1393-cdfb-4987-b842-a6653875435c',
-              'name': 'Main Branch',
-              'slug': 'main-branch',
-            },
-            {
-              'id': '04b541f8-6f4c-4053-92f8-6cbb68be4a7f',
-              'name': 'Bandung Branch',
-              'slug': 'bandung-branch',
-            },
-          ],
-          'is_error': false,
-          'http_status': 200,
-        });
-        return ResponseBody.fromString(
-          body,
-          200,
-          headers: {
-            Headers.contentTypeHeader: [Headers.jsonContentType],
-          },
-        );
-      };
-
-      final result = await repository.getPublicBranches();
-      expect(result, isA<Ok<List<Branch>>>());
-      final branches = (result as Ok<List<Branch>>).value;
-      expect(branches.length, 2);
-      expect(branches[0].name, 'Main Branch');
-      expect(branches[1].slug, 'bandung-branch');
-    });
-
-    test('returns NetworkFailure on connection error', () async {
-      mockAdapter.handler = (options) {
-        throw DioException(
-          requestOptions: options,
-          type: DioExceptionType.connectionError,
-        );
-      };
-
-      final result = await repository.getPublicBranches();
-      expect(result, isA<Err<List<Branch>>>());
-      final failure = (result as Err<List<Branch>>).failure;
-      expect(failure, isA<NetworkFailure>());
-    });
-  });
-
   group('AuthRepositoryImpl - login', () {
     const email = 'sales@example.com';
     const password = 'secretPassword123';
-    const branchId = '8e4c1393-cdfb-4987-b842-a6653875435c';
 
     test('returns User on 200 OK', () async {
       mockAdapter.handler = (options) {
         expect(options.path, '/v1/auth/login');
-        expect(options.data, {
-          'email': email,
-          'password': password,
-          'branch_id': branchId,
-        });
+        expect(options.data, {'email': email, 'password': password});
 
         final body = jsonEncode({
           'data': {
@@ -133,11 +75,7 @@ void main() {
         );
       };
 
-      final result = await repository.login(
-        email: email,
-        password: password,
-        branchId: branchId,
-      );
+      final result = await repository.login(email: email, password: password);
 
       expect(result, isA<Ok<User>>());
       final user = (result as Ok<User>).value;
@@ -169,7 +107,6 @@ void main() {
       final result = await repository.login(
         email: 'invalid-email',
         password: password,
-        branchId: branchId,
       );
 
       expect(result, isA<Err<User>>());
@@ -199,7 +136,6 @@ void main() {
       final result = await repository.login(
         email: email,
         password: 'wrongpassword',
-        branchId: branchId,
       );
 
       expect(result, isA<Err<User>>());
@@ -229,12 +165,33 @@ void main() {
       final result = await repository.login(
         email: 'admin@example.com',
         password: password,
-        branchId: branchId,
       );
 
       expect(result, isA<Err<User>>());
       final failure = (result as Err<User>).failure;
       expect(failure, isA<ServerFailure>());
+      expect(failure.statusCode, 403);
+      expect(failure.message, 'Akun ini tidak memiliki akses ke aplikasi ini');
+    });
+
+    test('returns default message on 403 without server message', () async {
+      mockAdapter.handler = (options) {
+        return ResponseBody.fromString(
+          jsonEncode({'data': null, 'is_error': true, 'http_status': 403}),
+          403,
+          headers: {
+            Headers.contentTypeHeader: [Headers.jsonContentType],
+          },
+        );
+      };
+
+      final result = await repository.login(
+        email: 'admin@example.com',
+        password: password,
+      );
+
+      expect(result, isA<Err<User>>());
+      final failure = (result as Err<User>).failure;
       expect(failure.statusCode, 403);
       expect(failure.message, 'Akun ini tidak memiliki akses ke aplikasi ini.');
     });
@@ -256,11 +213,7 @@ void main() {
         );
       };
 
-      final result = await repository.login(
-        email: email,
-        password: password,
-        branchId: branchId,
-      );
+      final result = await repository.login(email: email, password: password);
 
       expect(result, isA<Err<User>>());
       final failure = (result as Err<User>).failure;

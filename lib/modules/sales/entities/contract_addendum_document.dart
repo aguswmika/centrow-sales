@@ -1,3 +1,5 @@
+import 'package:centrow_sales/modules/sales/entities/document_placeholder.dart';
+
 class ContractAddendumDocument {
   final String? documentId;
   final String addendumId;
@@ -6,6 +8,7 @@ class ContractAddendumDocument {
   final String source; // "template" or "document"
   final Map<String, dynamic> content;
   final String? updatedAt;
+  final List<DocumentPlaceholder> placeholders;
 
   const ContractAddendumDocument({
     this.documentId,
@@ -15,6 +18,7 @@ class ContractAddendumDocument {
     required this.source,
     required this.content,
     this.updatedAt,
+    this.placeholders = const [],
   });
 
   bool get isSaved => source == 'document' || documentId != null;

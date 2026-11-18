@@ -9,7 +9,7 @@ void main() {
         branchId: 't-1',
         name: 'Jane Doe',
         email: 'jane@example.com',
-        roles: ['sales', 'admin'],
+        roles: ['sales', 'super_admin'],
         position: 'Sales Executive',
         department: 'Sales',
         token: 'token-abc',
@@ -19,7 +19,7 @@ void main() {
       expect(user.branchId, 't-1');
       expect(user.name, 'Jane Doe');
       expect(user.email, 'jane@example.com');
-      expect(user.roles, ['sales', 'admin']);
+      expect(user.roles, ['sales', 'super_admin']);
       expect(user.role, 'sales');
       expect(user.position, 'Sales Executive');
       expect(user.department, 'Sales');

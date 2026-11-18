@@ -9,11 +9,9 @@ import 'package:centrow_sales/shared/config/app_assets.dart';
 import 'package:centrow_sales/shared/state/ui_state.dart';
 import 'package:centrow_sales/shared/theme/app_colors.dart';
 import 'package:centrow_sales/shared/widgets/app_button.dart';
-import 'package:centrow_sales/shared/widgets/app_dropdown.dart';
 import 'package:centrow_sales/shared/widgets/app_text_field.dart';
 import 'package:centrow_sales/shared/widgets/toast.dart';
 import 'package:centrow_sales/modules/core/controllers/login_controller.dart';
-import 'package:centrow_sales/modules/core/entities/branch.dart';
 import 'package:centrow_sales/modules/core/entities/user.dart';
 
 class LoginPage extends StatefulWidget {
@@ -33,23 +31,10 @@ class _LoginPageState extends State<LoginPage> {
   void initState() {
     super.initState();
     _controller = widget.controller ?? getIt<LoginController>();
-    _controller.loadBranches();
 
     _cleanupEffect = effect(() {
       final state = _controller.state.value;
-      final branchesState = _controller.branchesState.value;
       if (!mounted) return;
-
-      switch (branchesState) {
-        case UiFailure<List<Branch>>(:final failure):
-          showAppToast(
-            context,
-            'Gagal memuat cabang: ${failure.message}',
-            isError: true,
-          );
-        default:
-          break;
-      }
 
       switch (state) {
         case UiFailure<User>(:final failure):
@@ -202,56 +187,6 @@ class _LoginPageState extends State<LoginPage> {
                 textInputAction: TextInputAction.done,
                 onChanged: _controller.setPassword,
                 onSubmitted: (_) => _controller.submitLogin(),
-              ),
-              const SizedBox(height: 16.0),
-              SignalBuilder(
-                builder: (BuildContext context) {
-                  final branchesState = _controller.branchesState.value;
-                  final selectedBranchId = _controller.selectedBranchId.value;
-
-                  return switch (branchesState) {
-                    UiLoading() => const AppDropdown<String>(
-                      label: 'Cabang',
-                      value: null,
-                      items: [],
-                      hint: 'Memuat cabang...',
-                      enabled: false,
-                      onChanged: null,
-                    ),
-                    UiSuccess(:final data) => AppDropdown<String>(
-                      label: 'Cabang',
-                      value: data.any((t) => t.id == selectedBranchId)
-                          ? selectedBranchId
-                          : (data.isNotEmpty ? data.first.id : null),
-                      items: data
-                          .map(
-                            (t) => DropdownMenuItem<String>(
-                              value: t.id,
-                              child: Text(t.name),
-                            ),
-                          )
-                          .toList(),
-                      onChanged: (val) =>
-                          val != null ? _controller.selectBranch(val) : null,
-                    ),
-                    UiFailure() => const AppDropdown<String>(
-                      label: 'Cabang',
-                      value: null,
-                      items: [],
-                      hint: 'Cabang tidak tersedia',
-                      enabled: false,
-                      onChanged: null,
-                    ),
-                    _ => const AppDropdown<String>(
-                      label: 'Cabang',
-                      value: null,
-                      items: [],
-                      hint: 'Tidak ada cabang tersedia',
-                      enabled: false,
-                      onChanged: null,
-                    ),
-                  };
-                },
               ),
               const SizedBox(height: 22.0),
               AppButton(

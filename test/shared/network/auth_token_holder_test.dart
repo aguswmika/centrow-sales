@@ -116,6 +116,31 @@ void main() {
       expect(AuthTokenHolder.instance.userInitials, '');
     });
 
+    test('saveUser persists branch and company and restores them', () async {
+      const user = User(
+        id: 'u1',
+        name: 'Jane Doe',
+        email: 'jane@example.com',
+        role: 'sales',
+        branchId: 'b1',
+        branchName: 'Bali',
+        companyId: 'c1',
+        companyName: 'Centrow',
+        token: 't',
+      );
+      // Let the un-awaited clear() from setUp finish before writing.
+      await Future<void>.delayed(Duration.zero);
+      await AuthTokenHolder.instance.saveUser(user);
+      AuthTokenHolder.instance.currentUser = null;
+      AuthTokenHolder.instance.initFromStorage(storage);
+
+      final restored = AuthTokenHolder.instance.currentUser!;
+      expect(restored.branchId, 'b1');
+      expect(restored.branchName, 'Bali');
+      expect(restored.companyId, 'c1');
+      expect(restored.companyName, 'Centrow');
+    });
+
     test(
       'handleSessionExpired clears token, currentUser, storage, and calls onSessionExpired',
       () async {

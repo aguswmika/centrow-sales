@@ -142,6 +142,35 @@ class _NavRailShellState extends State<NavRailShell> {
     );
   }
 
+  /// Hosts the page with one consistent system-bar treatment: a `surface`
+  /// band for the status bar (and the gesture bar on tablets, where there is
+  /// no bottom navigation). The inset is then removed from the page's
+  /// `MediaQuery`, so a page's own `SafeArea` does not add it a second time.
+  Widget _buildContent(BuildContext context, {required bool isTablet}) {
+    final padding = MediaQuery.paddingOf(context);
+    return Column(
+      children: [
+        ColoredBox(
+          color: AppColors.surface,
+          child: SizedBox(height: padding.top, width: double.infinity),
+        ),
+        Expanded(
+          child: MediaQuery.removePadding(
+            context: context,
+            removeTop: true,
+            removeBottom: isTablet,
+            child: widget.child,
+          ),
+        ),
+        if (isTablet)
+          ColoredBox(
+            color: AppColors.surface,
+            child: SizedBox(height: padding.bottom, width: double.infinity),
+          ),
+      ],
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final isTablet = MediaQuery.sizeOf(context).width >= 720;
@@ -157,10 +186,10 @@ class _NavRailShellState extends State<NavRailShell> {
                   thickness: 1.5,
                   color: AppColors.border,
                 ),
-                Expanded(child: widget.child),
+                Expanded(child: _buildContent(context, isTablet: true)),
               ],
             )
-          : widget.child,
+          : _buildContent(context, isTablet: false),
       bottomNavigationBar: isTablet ? null : _buildBottomNav(context),
     );
   }
@@ -244,6 +273,12 @@ class _NavRailShellState extends State<NavRailShell> {
                   final email = (user?.email.isNotEmpty == true)
                       ? user!.email
                       : '-';
+                  final companyName = (user?.companyName.isNotEmpty == true)
+                      ? user!.companyName
+                      : '-';
+                  final branchName = (user?.branchName.isNotEmpty == true)
+                      ? user!.branchName
+                      : '-';
                   final role = (user?.role.isNotEmpty == true)
                       ? user!.role
                       : (user?.roles.isNotEmpty == true
@@ -267,6 +302,22 @@ class _NavRailShellState extends State<NavRailShell> {
                           const SizedBox(height: 2.0),
                           Text(
                             email,
+                            style: GoogleFonts.inter(
+                              fontSize: 11.5,
+                              color: AppColors.muted,
+                            ),
+                          ),
+                          const SizedBox(height: 2.0),
+                          Text(
+                            companyName,
+                            style: GoogleFonts.inter(
+                              fontSize: 11.5,
+                              color: AppColors.muted,
+                            ),
+                          ),
+                          const SizedBox(height: 2.0),
+                          Text(
+                            branchName,
                             style: GoogleFonts.inter(
                               fontSize: 11.5,
                               color: AppColors.muted,

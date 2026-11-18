@@ -2,7 +2,6 @@ import 'package:signals/signals.dart';
 import 'package:centrow_sales/shared/network/auth_token_holder.dart';
 import 'package:centrow_sales/shared/result/result.dart';
 import 'package:centrow_sales/shared/state/ui_state.dart';
-import 'package:centrow_sales/modules/core/entities/branch.dart';
 import 'package:centrow_sales/modules/core/entities/user.dart';
 import 'package:centrow_sales/modules/core/repositories/auth_repository.dart';
 
@@ -11,16 +10,12 @@ class LoginController {
 
   LoginController(this._repository);
 
-  final _branchesState = signal<UiState<List<Branch>>>(const UiInitial());
   final _loginState = signal<UiState<User>>(const UiInitial());
-  final _selectedBranchId = signal<String>('');
   final _email = signal<String>('');
   final _password = signal<String>('');
   final _obscurePassword = signal<bool>(true);
 
-  ReadonlySignal<UiState<List<Branch>>> get branchesState => _branchesState;
   ReadonlySignal<UiState<User>> get state => _loginState;
-  ReadonlySignal<String> get selectedBranchId => _selectedBranchId;
   ReadonlySignal<String> get email => _email;
   ReadonlySignal<String> get password => _password;
   ReadonlySignal<bool> get obscurePassword => _obscurePassword;
@@ -31,32 +26,8 @@ class LoginController {
 
   late final ReadonlySignal<bool> isValid = computed(
     () =>
-        emailRegex.hasMatch(_email.value.trim()) &&
-        _selectedBranchId.value.isNotEmpty,
+        emailRegex.hasMatch(_email.value.trim()) && _password.value.isNotEmpty,
   );
-
-  Future<void> loadBranches() async {
-    _branchesState.value = const UiLoading();
-    final result = await _repository.getPublicBranches();
-    _branchesState.value = switch (result) {
-      Ok(:final value) => UiSuccess(value),
-      Err(:final failure) => UiFailure(failure),
-    };
-
-    if (result is Ok) {
-      final branches = result.valueOrNull ?? [];
-      if (branches.isNotEmpty && _selectedBranchId.value.isEmpty) {
-        _selectedBranchId.value = branches.first.id;
-      }
-    } else {
-      // Fallback selection if failed, perhaps clear or keep existing
-      _selectedBranchId.value = '';
-    }
-  }
-
-  void selectBranch(String branchId) {
-    _selectedBranchId.value = branchId;
-  }
 
   void setEmail(String value) {
     _email.value = value;
@@ -75,7 +46,6 @@ class LoginController {
     final result = await _repository.login(
       email: _email.value.trim(),
       password: _password.value,
-      branchId: _selectedBranchId.value,
     );
     if (result is Ok<User>) {
       await AuthTokenHolder.instance.saveToken(
@@ -103,9 +73,7 @@ class LoginController {
   }
 
   void dispose() {
-    _branchesState.dispose();
     _loginState.dispose();
-    _selectedBranchId.dispose();
     _email.dispose();
     _password.dispose();
     _obscurePassword.dispose();

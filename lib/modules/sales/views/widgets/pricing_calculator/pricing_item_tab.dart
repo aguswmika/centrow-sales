@@ -38,8 +38,15 @@ class PricingItemTab extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             buildTableHeader(
-              ['Komponen & Jenis Biaya', 'Jumlah', 'Frekuensi', 'Harga', ''],
-              flexes: const [4, 2, 2, 3],
+              [
+                'Komponen & Jenis Biaya',
+                'Jumlah',
+                'Jumlah SPK',
+                'Frekuensi',
+                'Harga',
+                '',
+              ],
+              flexes: const [3, 2, 2, 2, 3],
             ),
             for (final row in rows)
               PricingItemRowWidget(
@@ -59,10 +66,13 @@ class PricingItemTab extends StatelessWidget {
                   spacing: 12.0,
                   runSpacing: 8.0,
                   children: [
-                    buildAddBtn('BBM', () => _handleAddItem(context, 3)),
-                    buildAddBtn('Add-on', () => _handleAddItem(context, 5)),
                     buildAddBtn(
-                      'Paket Add-on',
+                      'Bahan Bakar',
+                      () => _handleAddItem(context, 3),
+                    ),
+                    buildAddBtn('Add On', () => _handleAddItem(context, 5)),
+                    buildAddBtn(
+                      'Add On (Paket)',
                       () => _handleAddItem(context, 6),
                     ),
                     buildAddBtn(
@@ -260,6 +270,18 @@ class PricingItemRowWidget extends StatelessWidget {
                   enabled: !isReadOnly,
                   onChanged: (val) {
                     row.qty.value = val;
+                  },
+                ),
+              ),
+              const SizedBox(width: 8.0),
+              Expanded(
+                flex: 2,
+                child: CounterInput(
+                  initialValue: row.spkQty.value.toDouble(),
+                  min: 1,
+                  enabled: !isReadOnly,
+                  onChanged: (val) {
+                    if (val >= 1) row.spkQty.value = val.toInt();
                   },
                 ),
               ),

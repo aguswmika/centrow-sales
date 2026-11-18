@@ -1,4 +1,5 @@
 import 'package:centrow_sales/modules/sales/entities/contract_addendum_document.dart';
+import 'package:centrow_sales/modules/sales/repositories/dtos/contract_document_dto.dart';
 
 class ContractAddendumDocumentDto {
   final String? documentId;
@@ -8,6 +9,7 @@ class ContractAddendumDocumentDto {
   final String source;
   final Map<String, dynamic> content;
   final String? updatedAt;
+  final List<ContractPlaceholderDto> placeholders;
 
   const ContractAddendumDocumentDto({
     this.documentId,
@@ -17,9 +19,22 @@ class ContractAddendumDocumentDto {
     required this.source,
     required this.content,
     this.updatedAt,
+    this.placeholders = const [],
   });
 
   factory ContractAddendumDocumentDto.fromJson(Map<String, dynamic> json) {
+    final rawPlaceholders = json['placeholders'];
+    final placeholders = rawPlaceholders is List
+        ? rawPlaceholders
+              .whereType<Map<dynamic, dynamic>>()
+              .map(
+                (item) => ContractPlaceholderDto.fromJson(
+                  item.cast<String, dynamic>(),
+                ),
+              )
+              .toList()
+        : <ContractPlaceholderDto>[];
+
     return ContractAddendumDocumentDto(
       documentId: json['document_id'] as String?,
       addendumId: json['addendum_id']?.toString() ?? '',
@@ -30,6 +45,7 @@ class ContractAddendumDocumentDto {
           ? (json['content'] as Map).cast<String, dynamic>()
           : <String, dynamic>{},
       updatedAt: json['updated_at'] as String?,
+      placeholders: placeholders,
     );
   }
 
@@ -42,6 +58,7 @@ class ContractAddendumDocumentDto {
       source: source,
       content: content,
       updatedAt: updatedAt,
+      placeholders: placeholders.map((e) => e.toEntity()).toList(),
     );
   }
 

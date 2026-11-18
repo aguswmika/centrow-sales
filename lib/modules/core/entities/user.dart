@@ -11,6 +11,9 @@ class User {
   final String token;
   final String refreshToken;
   final String branch;
+  final String branchName;
+  final String companyId;
+  final String companyName;
   final String? _legacyRole;
 
   const User({
@@ -25,6 +28,9 @@ class User {
     this.refreshToken = '',
     String? role,
     this.branch = '',
+    this.branchName = '',
+    this.companyId = '',
+    this.companyName = '',
   }) : _legacyRole = role;
 
   String get role => roles.isNotEmpty ? roles.first : (_legacyRole ?? '');
@@ -57,6 +63,9 @@ class User {
     String? refreshToken,
     String? role,
     String? branch,
+    String? branchName,
+    String? companyId,
+    String? companyName,
   }) {
     return User(
       id: id ?? this.id,
@@ -70,12 +79,15 @@ class User {
       refreshToken: refreshToken ?? this.refreshToken,
       role: role ?? _legacyRole,
       branch: branch ?? this.branch,
+      branchName: branchName ?? this.branchName,
+      companyId: companyId ?? this.companyId,
+      companyName: companyName ?? this.companyName,
     );
   }
 
   @override
   String toString() {
-    return 'User(id: $id, branchId: $branchId, name: $name, email: $email, roles: $roles, position: $position, department: $department, token: $token, refreshToken: $refreshToken)';
+    return 'User(id: $id, branchId: $branchId, name: $name, email: $email, roles: $roles, position: $position, department: $department, token: $token, refreshToken: $refreshToken, branchName: $branchName, companyId: $companyId, companyName: $companyName)';
   }
 
   @override
@@ -90,7 +102,10 @@ class User {
         other.position == position &&
         other.department == department &&
         other.token == token &&
-        other.refreshToken == refreshToken;
+        other.refreshToken == refreshToken &&
+        other.branchName == branchName &&
+        other.companyId == companyId &&
+        other.companyName == companyName;
   }
 
   @override
@@ -105,6 +120,9 @@ class User {
       department,
       token,
       refreshToken,
+      branchName,
+      companyId,
+      companyName,
     );
   }
 }

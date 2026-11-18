@@ -1,5 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:centrow_sales/modules/sales/entities/contract_addendum_document.dart';
+import 'package:centrow_sales/modules/sales/entities/document_placeholder.dart';
 import 'package:centrow_sales/modules/sales/repositories/dtos/contract_addendum_document_dto.dart';
 
 void main() {
@@ -96,6 +97,78 @@ void main() {
       expect(entity.source, testSource);
       expect(entity.content, testContent);
       expect(entity.updatedAt, testUpdatedAt);
+    });
+
+    test('fromJson parses placeholders list', () {
+      final json = {
+        'document_id': null,
+        'addendum_id': testAddendumId,
+        'template_id': testTemplateId,
+        'title': testTitle,
+        'source': 'template',
+        'content': testContent,
+        'placeholders': [
+          {'tag': '{date}', 'label': 'Tanggal Addendum'},
+          {'tag': '{contract_number}', 'label': 'Nomor Kontrak'},
+        ],
+      };
+
+      final dto = ContractAddendumDocumentDto.fromJson(json);
+
+      expect(dto.placeholders.length, 2);
+      expect(dto.placeholders.first.tag, '{date}');
+      expect(dto.placeholders.first.label, 'Tanggal Addendum');
+      expect(dto.placeholders.last.tag, '{contract_number}');
+      expect(dto.placeholders.last.label, 'Nomor Kontrak');
+    });
+
+    test('fromJson defaults placeholders to empty when key is missing', () {
+      final json = {
+        'addendum_id': testAddendumId,
+        'template_id': testTemplateId,
+        'title': testTitle,
+        'source': 'template',
+        'content': testContent,
+      };
+
+      final dto = ContractAddendumDocumentDto.fromJson(json);
+
+      expect(dto.placeholders, isEmpty);
+    });
+
+    test('fromJson defaults placeholders to empty when value is null', () {
+      final json = {
+        'addendum_id': testAddendumId,
+        'template_id': testTemplateId,
+        'title': testTitle,
+        'source': 'template',
+        'content': testContent,
+        'placeholders': null,
+      };
+
+      final dto = ContractAddendumDocumentDto.fromJson(json);
+
+      expect(dto.placeholders, isEmpty);
+    });
+
+    test('toEntity maps placeholders to DocumentPlaceholder entities', () {
+      final dto = ContractAddendumDocumentDto.fromJson({
+        'addendum_id': testAddendumId,
+        'template_id': testTemplateId,
+        'title': testTitle,
+        'source': 'template',
+        'content': testContent,
+        'placeholders': [
+          {'tag': '{date}', 'label': 'Tanggal Addendum'},
+        ],
+      });
+
+      final entity = dto.toEntity();
+
+      expect(entity.placeholders.length, 1);
+      expect(entity.placeholders.first, isA<DocumentPlaceholder>());
+      expect(entity.placeholders.first.tag, '{date}');
+      expect(entity.placeholders.first.label, 'Tanggal Addendum');
     });
 
     test('toJson serializes to Map correctly', () {

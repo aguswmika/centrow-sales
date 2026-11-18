@@ -1,7 +1,6 @@
 import 'package:centrow_sales/modules/core/repositories/dtos/token_dto.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:centrow_sales/modules/core/controllers/login_controller.dart';
-import 'package:centrow_sales/modules/core/entities/branch.dart';
 import 'package:centrow_sales/modules/core/entities/user.dart';
 import 'package:centrow_sales/modules/core/repositories/auth_repository.dart';
 import 'package:centrow_sales/shared/network/auth_token_holder.dart';
@@ -15,18 +14,12 @@ class MockAuthRepository implements AuthRepository {
   @override
   Future<Result<void>> logout(String refreshToken) async =>
       throw UnimplementedError();
-  late Result<List<Branch>> publicBranchesResult;
   late Result<User> loginResult;
-
-  @override
-  Future<Result<List<Branch>>> getPublicBranches() async =>
-      publicBranchesResult;
 
   @override
   Future<Result<User>> login({
     required String email,
     required String password,
-    required String branchId,
   }) async => loginResult;
 
   @override
@@ -48,17 +41,14 @@ void main() {
     controller.dispose();
   });
 
-  test('loadBranches updates state and selects first branch', () async {
-    const branches = [
-      Branch(id: 't-1', name: 'Branch 1', slug: 'branch-1'),
-      Branch(id: 't-2', name: 'Branch 2', slug: 'branch-2'),
-    ];
-    mockAuthRepository.publicBranchesResult = const Ok(branches);
-
-    await controller.loadBranches();
-
-    expect(controller.branchesState.value, isA<UiSuccess<List<Branch>>>());
-    expect(controller.selectedBranchId.value, 't-1');
+  test('isValid requires valid email and non-empty password', () {
+    expect(controller.isValid.value, isFalse);
+    controller.setEmail('test@nohama.id');
+    expect(controller.isValid.value, isFalse);
+    controller.setPassword('password123');
+    expect(controller.isValid.value, isTrue);
+    controller.setEmail('not-an-email');
+    expect(controller.isValid.value, isFalse);
   });
 
   test(
@@ -66,7 +56,6 @@ void main() {
     () async {
       controller.setEmail('test@nohama.id');
       controller.setPassword('password123');
-      controller.selectBranch('branch_1');
 
       const user = User(
         id: '1',

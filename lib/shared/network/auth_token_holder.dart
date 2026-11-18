@@ -76,6 +76,10 @@ class AuthTokenHolder {
         'email': newUser.email,
         'role': newUser.role,
         'branch': newUser.branch,
+        'branch_id': newUser.branchId,
+        'branch_name': newUser.branchName,
+        'company_id': newUser.companyId,
+        'company_name': newUser.companyName,
         'token': newUser.token,
         'refresh_token': newUser.refreshToken,
       };
