@@ -27,10 +27,7 @@ PricingSupplyRow _chemicalRow({
   );
 }
 
-Future<void> _pumpMaterialTab(
-  WidgetTester tester,
-  PricingSupplyRow row,
-) async {
+Future<void> _pumpMaterialTab(WidgetTester tester, PricingSupplyRow row) async {
   tester.view.physicalSize = const Size(1200, 900);
   tester.view.devicePixelRatio = 1.0;
   addTearDown(tester.view.resetPhysicalSize);
@@ -57,33 +54,29 @@ void main() {
   testWidgets(
     'row restored with method id only shows "Metode terpilih" badge',
     (tester) async {
-      await _pumpMaterialTab(
-        tester,
-        _chemicalRow(treatmentMethodId: 'tm-1'),
-      );
+      await _pumpMaterialTab(tester, _chemicalRow(treatmentMethodId: 'tm-1'));
 
       expect(find.text('Metode terpilih'), findsOneWidget);
       expect(find.text(warningLabel), findsNothing);
     },
   );
 
-  testWidgets(
-    'row restored with method name shows name badge and no warning',
-    (tester) async {
-      await _pumpMaterialTab(
-        tester,
-        _chemicalRow(
-          treatmentMethodId: 'tm-1',
-          treatmentMethodName: 'Cold Fog',
-          treatmentMethodCode: 'CF',
-        ),
-      );
+  testWidgets('row restored with method name shows name badge and no warning', (
+    tester,
+  ) async {
+    await _pumpMaterialTab(
+      tester,
+      _chemicalRow(
+        treatmentMethodId: 'tm-1',
+        treatmentMethodName: 'Cold Fog',
+        treatmentMethodCode: 'CF',
+      ),
+    );
 
-      expect(find.text('Cold Fog'), findsOneWidget);
-      expect(find.text('Metode terpilih'), findsNothing);
-      expect(find.text(warningLabel), findsNothing);
-    },
-  );
+    expect(find.text('Cold Fog'), findsOneWidget);
+    expect(find.text('Metode terpilih'), findsNothing);
+    expect(find.text(warningLabel), findsNothing);
+  });
 
   testWidgets('row with method id and only code shows code badge', (
     tester,

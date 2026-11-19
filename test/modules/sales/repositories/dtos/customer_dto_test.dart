@@ -279,7 +279,6 @@ void main() {
         'phone_alt': '+62-361-123-4568',
         'email': 'info@villabali.example.com',
         'scan_code': 'VC-550e8400-e29b',
-        'risk_notes': 'Risk note',
         'notes': 'Operational note',
         'active_proposals_count': 1,
         'active_contracts_count': 0,

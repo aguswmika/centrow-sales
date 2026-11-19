@@ -61,79 +61,77 @@ class PricingDetailSupplyDto {
     this.actualDosageUsage,
   );
 
-  factory PricingDetailSupplyDto.fromJson(Map<String, dynamic> j) =>
-      PricingDetailSupplyDto._(
-        j['id'] as String,
-        (j['supply_type'] as num).toInt(),
-        j['product_id'] as String?,
-        j['product_mapping_id'] as String?,
-        (j['code'] ??
-                    j['product_code'] ??
-                    j['productCode'] ??
-                    j['item_code'] ??
-                    (j['product'] is Map ? j['product']['code'] : null))
-                ?.toString() ??
-            '',
-        j['name'] as String,
-        j['uom_code'] as String? ??
-            (j['uom'] is Map ? j['uom']['code']?.toString() : null) ??
-            '',
-        (j['uom_name'] ?? (j['uom'] is Map ? j['uom']['name'] : null))
-                ?.toString() ??
-            '',
-        (j['qty'] as num).toDouble(),
-        j['dose_usage'] == null ? null : (j['dose_usage'] as num).toDouble(),
-        (j['dose_unit_id'] as String?) ?? '',
-        (j['dose_unit_code'] ??
-                    (j['dose_unit'] is Map ? j['dose_unit']['code'] : null))
-                ?.toString() ??
-            '',
-        (j['dose_unit_name'] ??
-                    (j['dose_unit'] is Map ? j['dose_unit']['name'] : null))
-                ?.toString() ??
-            '',
-        j['application_volume'] == null
-            ? null
-            : (j['application_volume'] as num).toDouble(),
-        (j['application_volume_unit_id'] as String?) ?? '',
-        (j['application_volume_unit_code'] ??
-                    (j['application_volume_unit'] is Map
-                        ? j['application_volume_unit']['code']
-                        : null))
-                ?.toString() ??
-            '',
-        (j['application_volume_unit_name'] ??
-                    (j['application_volume_unit'] is Map
-                        ? j['application_volume_unit']['name']
-                        : null))
-                ?.toString() ??
-            '',
-        (j['frequency'] as num).toInt(),
-        (j['unit_cost'] as num).toDouble(),
-        (j['line_total'] as num).toDouble(),
-        (j['treatment_method_id'] ??
-                (j['treatment_method'] is Map
-                    ? j['treatment_method']['id']
+  factory PricingDetailSupplyDto.fromJson(
+    Map<String, dynamic> j,
+  ) => PricingDetailSupplyDto._(
+    j['id'] as String,
+    (j['supply_type'] as num).toInt(),
+    j['product_id'] as String?,
+    j['product_mapping_id'] as String?,
+    (j['code'] ??
+                j['product_code'] ??
+                j['productCode'] ??
+                j['item_code'] ??
+                (j['product'] is Map ? j['product']['code'] : null))
+            ?.toString() ??
+        '',
+    j['name'] as String,
+    j['uom_code'] as String? ??
+        (j['uom'] is Map ? j['uom']['code']?.toString() : null) ??
+        '',
+    (j['uom_name'] ?? (j['uom'] is Map ? j['uom']['name'] : null))
+            ?.toString() ??
+        '',
+    (j['qty'] as num).toDouble(),
+    j['dose_usage'] == null ? null : (j['dose_usage'] as num).toDouble(),
+    (j['dose_unit_id'] as String?) ?? '',
+    (j['dose_unit_code'] ??
+                (j['dose_unit'] is Map ? j['dose_unit']['code'] : null))
+            ?.toString() ??
+        '',
+    (j['dose_unit_name'] ??
+                (j['dose_unit'] is Map ? j['dose_unit']['name'] : null))
+            ?.toString() ??
+        '',
+    j['application_volume'] == null
+        ? null
+        : (j['application_volume'] as num).toDouble(),
+    (j['application_volume_unit_id'] as String?) ?? '',
+    (j['application_volume_unit_code'] ??
+                (j['application_volume_unit'] is Map
+                    ? j['application_volume_unit']['code']
                     : null))
-            ?.toString(),
-        (j['treatment_method_code'] ??
-                (j['treatment_method'] is Map
-                    ? j['treatment_method']['code']
+            ?.toString() ??
+        '',
+    (j['application_volume_unit_name'] ??
+                (j['application_volume_unit'] is Map
+                    ? j['application_volume_unit']['name']
                     : null))
-            ?.toString(),
-        (j['treatment_method_name'] ??
-                (j['treatment_method'] is Map
-                    ? j['treatment_method']['name']
-                    : null))
-            ?.toString(),
-        j['area_kerja'] as String?,
-        j['note'] as String?,
-        (j['installed_units'] as num?)?.toInt(),
-        (j['actual_dosage_usage'] ?? j['spk_dose_usage']) == null
-            ? null
-            : ((j['actual_dosage_usage'] ?? j['spk_dose_usage']) as num)
-                  .toDouble(),
-      );
+            ?.toString() ??
+        '',
+    (j['frequency'] as num).toInt(),
+    (j['unit_cost'] as num).toDouble(),
+    (j['line_total'] as num).toDouble(),
+    (j['treatment_method_id'] ??
+            (j['treatment_method'] is Map ? j['treatment_method']['id'] : null))
+        ?.toString(),
+    (j['treatment_method_code'] ??
+            (j['treatment_method'] is Map
+                ? j['treatment_method']['code']
+                : null))
+        ?.toString(),
+    (j['treatment_method_name'] ??
+            (j['treatment_method'] is Map
+                ? j['treatment_method']['name']
+                : null))
+        ?.toString(),
+    j['area_kerja'] as String?,
+    j['note'] as String?,
+    (j['installed_units'] as num?)?.toInt(),
+    (j['actual_dosage_usage'] ?? j['spk_dose_usage']) == null
+        ? null
+        : ((j['actual_dosage_usage'] ?? j['spk_dose_usage']) as num).toDouble(),
+  );
 
   PricingDetailSupply toEntity() => PricingDetailSupply(
     id: id,

@@ -36,7 +36,6 @@ class FakeCustomerRepository implements CustomerRepository {
               phoneAlt: '+62-361-123-4568',
               email: 'info@villabali.example.com',
               scanCode: 'VC-550e8400',
-              riskNotes: 'Monitor payment patterns closely',
               notes: 'Preferred vendor for group bookings',
               activeProposalsCount: 2,
               activeContractsCount: 0,

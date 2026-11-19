@@ -88,15 +88,20 @@ void main() {
       );
     }
 
-    testWidgets('renders Catatan Risiko Internal label in section 3', (
-      tester,
-    ) async {
-      await tester.pumpWidget(createTestWidget());
-      await tester.pumpAndSettle();
+    testWidgets(
+      'renders Catatan Operasional label in section 3 without risk notes',
+      (tester) async {
+        await tester.pumpWidget(createTestWidget());
+        await tester.pumpAndSettle();
 
-      expect(find.text('Catatan Risiko Internal'), findsOneWidget);
-      expect(find.text('Site Risk Assessment'), findsNothing);
-    });
+        expect(
+          find.text('Catatan Operasional & Akses Layanan'),
+          findsOneWidget,
+        );
+        expect(find.text('Catatan Risiko Internal'), findsNothing);
+        expect(find.text('Site Risk Assessment'), findsNothing);
+      },
+    );
 
     testWidgets(
       'Pajak Pertambahan Nilai (PPN) input updates controller.taxPercentage.value',
@@ -130,30 +135,6 @@ void main() {
         expect(controller.taxPercentage.value, 0.0);
       },
     );
-
-    testWidgets('Catatan Risiko Internal binds to controller.riskNotes.value', (
-      tester,
-    ) async {
-      await tester.pumpWidget(createTestWidget());
-      await tester.pumpAndSettle();
-
-      final riskNotesFinder = find.descendant(
-        of: find
-            .ancestor(
-              of: find.text('Catatan Risiko Internal'),
-              matching: find.byType(Column),
-            )
-            .first,
-        matching: find.byType(TextFormField),
-      );
-
-      await tester.enterText(
-        riskNotesFinder,
-        'Catatan risiko pembayaran macet',
-      );
-      await tester.pumpAndSettle();
-      expect(controller.riskNotes.value, 'Catatan risiko pembayaran macet');
-    });
 
     testWidgets('displays initial tax percentage when non-zero', (
       tester,

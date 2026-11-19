@@ -135,6 +135,9 @@ class _CustomerFormPageState extends State<CustomerFormPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.bg,
+      // NavRailShell's Scaffold already shrinks its body for the keyboard;
+      // resizing here too would count the inset twice and squeeze the topbar.
+      resizeToAvoidBottomInset: false,
       body: SafeArea(
         child: SignalBuilder(
           builder: (context) {

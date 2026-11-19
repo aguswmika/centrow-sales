@@ -456,3 +456,31 @@
 .rt-paged[data-profile="plain"] .ProseMirror th {
   font-weight: 700;
 }
+
+/* ── Layout table: table[data-layout] (node attr layout = true) ───────── */
+
+/* The layout table looks plain: border colour and header fill and text colour
+   are hidden. The header keeps its bold weight and capitalisation from the
+   profile, and only loses its fill and colour. Border-width, padding, column
+   widths and table-layout stay as the profile sets them, so the table keeps its
+   height and page breaks. Selectors repeat the profile prefix and add
+   table[data-layout] so they out-rank the profile rules above, including
+   tr:last-child td. */
+
+.rt-paged[data-profile="plain"] .ProseMirror table[data-layout] th,
+.rt-paged[data-profile="plain"] .ProseMirror table[data-layout] td,
+.rt-paged:is([data-profile^="theme-"]) .ProseMirror table[data-layout] th,
+.rt-paged:is([data-profile^="theme-"]) .ProseMirror table[data-layout] td {
+  border-color: transparent;
+}
+
+.rt-paged[data-profile="plain"] .ProseMirror table[data-layout] th,
+.rt-paged:is([data-profile^="theme-"]) .ProseMirror table[data-layout] th {
+  background: none;
+  color: inherit;
+}
+
+.rt-paged[data-profile="plain"] .ProseMirror table[data-layout] tr:last-child td,
+.rt-paged:is([data-profile^="theme-"]) .ProseMirror table[data-layout] tr:last-child td {
+  border-color: transparent;
+}

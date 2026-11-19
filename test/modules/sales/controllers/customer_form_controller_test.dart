@@ -131,7 +131,6 @@ class FakeCustomerRepository implements CustomerRepository {
       phoneAlt: input.phoneAlt,
       email: input.email,
       taxPercentage: input.taxPercentage,
-      riskNotes: input.riskNotes,
       notes: input.notes,
       locations: input.locations
           .map(
@@ -185,7 +184,6 @@ class FakeCustomerRepository implements CustomerRepository {
       phoneAlt: input.phoneAlt,
       email: input.email,
       taxPercentage: input.taxPercentage,
-      riskNotes: input.riskNotes,
       notes: input.notes,
       locations: input.locations
           .map(
@@ -266,7 +264,6 @@ void main() {
       expect(controller.phoneAlt.value, '');
       expect(controller.email.value, '');
       expect(controller.taxPercentage.value, 0.0);
-      expect(controller.riskNotes.value, '');
       expect(controller.notes.value, '');
 
       expect(controller.locations.value.length, 1);
@@ -521,7 +518,6 @@ void main() {
           phone: '+62 811 2233 4455',
           phoneAlt: '+62 811 2233 4456',
           email: 'info@grandhotelbali.com',
-          riskNotes: 'VIP client, high volume',
           notes: 'Annual contract renewal every January',
           locations: [
             CustomerLocation(
@@ -589,7 +585,6 @@ void main() {
         expect(controller.phoneAlt.value, '+62 811 2233 4456');
         expect(controller.email.value, 'info@grandhotelbali.com');
         expect(controller.taxPercentage.value, 0.0);
-        expect(controller.riskNotes.value, 'VIP client, high volume');
         expect(controller.notes.value, 'Annual contract renewal every January');
 
         // Verify locations mapped correctly

@@ -346,7 +346,6 @@ class CustomerDetailDto {
   final String email;
   final String scanCode;
   final double taxPercentage;
-  final String riskNotes;
   final String notes;
   final int activeProposalsCount;
   final int activeContractsCount;
@@ -370,7 +369,6 @@ class CustomerDetailDto {
     required this.email,
     required this.scanCode,
     required this.taxPercentage,
-    required this.riskNotes,
     required this.notes,
     required this.activeProposalsCount,
     required this.activeContractsCount,
@@ -400,7 +398,6 @@ class CustomerDetailDto {
       email: json['email']?.toString() ?? '',
       scanCode: json['scan_code']?.toString() ?? '',
       taxPercentage: (json['tax_percentage'] as num?)?.toDouble() ?? 0,
-      riskNotes: json['risk_notes']?.toString() ?? '',
       notes: json['notes']?.toString() ?? '',
       activeProposalsCount:
           (json['active_proposals_count'] as num?)?.toInt() ?? 0,
@@ -446,7 +443,6 @@ class CustomerDetailDto {
       email: email,
       scanCode: scanCode,
       taxPercentage: taxPercentage,
-      riskNotes: riskNotes,
       notes: notes,
       activeProposalsCount: activeProposalsCount,
       activeContractsCount: activeContractsCount,
@@ -626,7 +622,6 @@ class CreateCustomerRequestDto {
   final String? phone;
   final String? phoneAlt;
   final double? taxPercentage;
-  final String? riskNotes;
   final String? notes;
   final List<CreateCustomerLocationRequestDto> locations;
   final List<CreateCustomerContactRequestDto> contacts;
@@ -640,7 +635,6 @@ class CreateCustomerRequestDto {
     this.phone,
     this.phoneAlt,
     this.taxPercentage,
-    this.riskNotes,
     this.notes,
     this.locations = const [],
     this.contacts = const [],
@@ -656,7 +650,6 @@ class CreateCustomerRequestDto {
       phone: input.phone.isNotEmpty ? input.phone : null,
       phoneAlt: input.phoneAlt.isNotEmpty ? input.phoneAlt : null,
       taxPercentage: input.taxPercentage > 0 ? input.taxPercentage : null,
-      riskNotes: input.riskNotes.isNotEmpty ? input.riskNotes : null,
       notes: input.notes.isNotEmpty ? input.notes : null,
       locations: input.locations
           .map((l) => CreateCustomerLocationRequestDto.fromInput(l))
@@ -676,7 +669,6 @@ class CreateCustomerRequestDto {
     if (phone != null) map['phone'] = phone;
     if (phoneAlt != null) map['phone_alt'] = phoneAlt;
     if (taxPercentage != null) map['tax_percentage'] = taxPercentage;
-    if (riskNotes != null) map['risk_notes'] = riskNotes;
     if (notes != null) map['notes'] = notes;
     if (locations.isNotEmpty) {
       map['locations'] = locations.map((l) => l.toJson()).toList();
@@ -697,7 +689,6 @@ class UpdateCustomerRequestDto {
   final String? phone;
   final String? phoneAlt;
   final double? taxPercentage;
-  final String? riskNotes;
   final String? notes;
   final List<CreateCustomerLocationRequestDto> locations;
   final List<CreateCustomerContactRequestDto> contacts;
@@ -711,7 +702,6 @@ class UpdateCustomerRequestDto {
     this.phone,
     this.phoneAlt,
     this.taxPercentage,
-    this.riskNotes,
     this.notes,
     this.locations = const [],
     this.contacts = const [],
@@ -727,7 +717,6 @@ class UpdateCustomerRequestDto {
       phone: input.phone.isNotEmpty ? input.phone : null,
       phoneAlt: input.phoneAlt.isNotEmpty ? input.phoneAlt : null,
       taxPercentage: input.taxPercentage > 0 ? input.taxPercentage : null,
-      riskNotes: input.riskNotes.isNotEmpty ? input.riskNotes : null,
       notes: input.notes.isNotEmpty ? input.notes : null,
       locations: input.locations
           .map((l) => CreateCustomerLocationRequestDto.fromInput(l))
@@ -747,7 +736,6 @@ class UpdateCustomerRequestDto {
     if (phone != null) map['phone'] = phone;
     if (phoneAlt != null) map['phone_alt'] = phoneAlt;
     if (taxPercentage != null) map['tax_percentage'] = taxPercentage;
-    if (riskNotes != null) map['risk_notes'] = riskNotes;
     if (notes != null) map['notes'] = notes;
     if (locations.isNotEmpty) {
       map['locations'] = locations.map((l) => l.toJson()).toList();

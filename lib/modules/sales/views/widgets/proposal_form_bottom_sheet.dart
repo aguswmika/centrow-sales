@@ -88,270 +88,280 @@ class _ProposalFormBottomSheetState extends State<ProposalFormBottomSheet> {
 
   @override
   Widget build(BuildContext context) {
-    return Material(
-      color: AppColors.surface,
-      borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
-      clipBehavior: Clip.antiAlias,
-      child: Container(
-        constraints: BoxConstraints(
-          maxHeight: MediaQuery.of(context).size.height * 0.9,
-        ),
-        child: ListenableBuilder(
-          listenable: _controller,
-          builder: (context, child) {
-            final bool isCreateMode =
-                !_controller.isEditMode && !_controller.isReviseMode;
-            final bool templatesUnavailable =
-                isCreateMode &&
-                _controller.selectedService != null &&
-                !_controller.isLoadingTemplates &&
-                _controller.availableTemplates.isEmpty;
-            final bool canSubmit =
-                !isCreateMode ||
-                (!_controller.isLoadingTemplates && !templatesUnavailable);
+    final keyboardInset = MediaQuery.viewInsetsOf(context).bottom;
+    final availableHeight = MediaQuery.sizeOf(context).height - keyboardInset;
+    // Lift the whole sheet above the keyboard and size it to what is left, so
+    // the scroll view shrinks and keeps the focused field visible.
+    return Padding(
+      padding: EdgeInsets.only(bottom: keyboardInset),
+      child: Material(
+        color: AppColors.surface,
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+        clipBehavior: Clip.antiAlias,
+        child: Container(
+          constraints: BoxConstraints(maxHeight: availableHeight * 0.9),
+          child: ListenableBuilder(
+            listenable: _controller,
+            builder: (context, child) {
+              final bool isCreateMode =
+                  !_controller.isEditMode && !_controller.isReviseMode;
+              final bool templatesUnavailable =
+                  isCreateMode &&
+                  _controller.selectedService != null &&
+                  !_controller.isLoadingTemplates &&
+                  _controller.availableTemplates.isEmpty;
+              final bool canSubmit =
+                  !isCreateMode ||
+                  (!_controller.isLoadingTemplates && !templatesUnavailable);
 
-            return SingleChildScrollView(
-              padding: EdgeInsets.only(
-                bottom: MediaQuery.of(context).viewInsets.bottom + 24.0,
-                left: 24.0,
-                right: 24.0,
-                top: 12.0,
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  Center(
-                    child: Container(
-                      width: 40,
-                      height: 4,
-                      decoration: BoxDecoration(
-                        color: AppColors.borderStrong,
-                        borderRadius: BorderRadius.circular(2),
+              return SingleChildScrollView(
+                padding: const EdgeInsets.only(
+                  bottom: 24.0,
+                  left: 24.0,
+                  right: 24.0,
+                  top: 12.0,
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    Center(
+                      child: Container(
+                        width: 40,
+                        height: 4,
+                        decoration: BoxDecoration(
+                          color: AppColors.borderStrong,
+                          borderRadius: BorderRadius.circular(2),
+                        ),
                       ),
                     ),
-                  ),
-                  const SizedBox(height: 16),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(
-                        _controller.isReviseMode
-                            ? 'Revisi Proposal'
-                            : (_controller.isEditMode
-                                  ? 'Ubah Proposal'
-                                  : 'Buat Proposal Baru'),
-                        style: AppTypography.heading2(),
-                      ),
-                      IconButton(
-                        icon: const Icon(
-                          Icons.close_rounded,
-                          color: AppColors.sec,
-                        ),
-                        onPressed: () => context.pop(),
-                      ),
-                    ],
-                  ),
-                  if (_controller.isReviseMode) ...[
                     const SizedBox(height: 16),
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 14.0,
-                        vertical: 10.0,
-                      ),
-                      decoration: BoxDecoration(
-                        color: AppColors.subtle,
-                        borderRadius: AppRadius.borderMd,
-                        border: Border.all(color: AppColors.border),
-                      ),
-                      child: Row(
-                        children: [
-                          const Icon(
-                            Icons.info_outline,
-                            size: 18,
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          _controller.isReviseMode
+                              ? 'Revisi Proposal'
+                              : (_controller.isEditMode
+                                    ? 'Ubah Proposal'
+                                    : 'Buat Proposal Baru'),
+                          style: AppTypography.heading2(),
+                        ),
+                        IconButton(
+                          icon: const Icon(
+                            Icons.close_rounded,
                             color: AppColors.sec,
                           ),
-                          const SizedBox(width: 10),
-                          Expanded(
-                            child: Text(
-                              'Revisi akan membuat versi baru proposal. Pelanggan dan Layanan tidak dapat diubah.',
-                              style: AppTypography.bodySm(color: AppColors.sec),
-                            ),
-                          ),
-                        ],
-                      ),
+                          onPressed: () => context.pop(),
+                        ),
+                      ],
                     ),
-                  ],
-                  const SizedBox(height: 24),
-                  AppSearchableSelector<Customer>(
-                    label: 'Pelanggan',
-                    isRequired: true,
-                    enabled:
-                        !_controller.isEditMode && !_controller.isReviseMode,
-                    helperText: _controller.isReviseMode
-                        ? 'Terkunci pada mode revisi'
-                        : (_controller.isEditMode
-                              ? 'Terkunci pada mode ubah'
-                              : null),
-                    value: _controller.selectedCustomer,
-                    onSearch: _controller.searchCustomers,
-                    itemAsString: (c) =>
-                        c.code.isNotEmpty ? '[${c.code}] ${c.name}' : c.name,
-                    onChanged: (c) => _controller.updateFields(customer: c),
-                  ),
-                  const SizedBox(height: 16),
-                  AppSearchableSelector<Service>(
-                    label: 'Layanan',
-                    isRequired: true,
-                    enabled:
-                        !_controller.isEditMode && !_controller.isReviseMode,
-                    helperText: _controller.isReviseMode
-                        ? 'Terkunci pada mode revisi'
-                        : (_controller.isEditMode
-                              ? 'Terkunci pada mode ubah'
-                              : null),
-                    value: _controller.selectedService,
-                    onSearch: _controller.searchServices,
-                    itemAsString: (s) =>
-                        s.code.isNotEmpty ? '[${s.code}] ${s.name}' : s.name,
-                    onChanged: (s) => _controller.updateFields(service: s),
-                  ),
-                  if (isCreateMode && _controller.selectedService != null) ...[
-                    const SizedBox(height: 16),
-                    if (_controller.isLoadingTemplates)
-                      Row(
-                        children: [
-                          const SizedBox(
-                            width: 16,
-                            height: 16,
-                            child: CircularProgressIndicator(strokeWidth: 2),
-                          ),
-                          const SizedBox(width: 8),
-                          Text(
-                            'Memuat template proposal…',
-                            style: AppTypography.bodySm(color: AppColors.sec),
-                          ),
-                        ],
-                      )
-                    else if (_controller.availableTemplates.isNotEmpty)
-                      AppDropdown<String>(
-                        label: 'Template Proposal',
-                        isRequired: true,
-                        value: _controller.templateId,
-                        items: _controller.availableTemplates
-                            .map(
-                              (t) => DropdownMenuItem(
-                                value: t.value,
-                                child: Text(
-                                  t.label,
-                                  overflow: TextOverflow.ellipsis,
+                    if (_controller.isReviseMode) ...[
+                      const SizedBox(height: 16),
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 14.0,
+                          vertical: 10.0,
+                        ),
+                        decoration: BoxDecoration(
+                          color: AppColors.subtle,
+                          borderRadius: AppRadius.borderMd,
+                          border: Border.all(color: AppColors.border),
+                        ),
+                        child: Row(
+                          children: [
+                            const Icon(
+                              Icons.info_outline,
+                              size: 18,
+                              color: AppColors.sec,
+                            ),
+                            const SizedBox(width: 10),
+                            Expanded(
+                              child: Text(
+                                'Revisi akan membuat versi baru proposal. Pelanggan dan Layanan tidak dapat diubah.',
+                                style: AppTypography.bodySm(
+                                  color: AppColors.sec,
                                 ),
                               ),
-                            )
-                            .toList(),
-                        onChanged: (val) => _controller.selectTemplate(val),
-                      )
-                    else
-                      Text(
-                        'Template proposal tidak tersedia untuk layanan ini',
-                        style: AppTypography.bodySm(color: AppColors.err),
-                      ),
-                  ],
-                  const SizedBox(height: 16),
-                  AppDropdown<String>(
-                    label: 'Alamat',
-                    isRequired: true,
-                    value: _controller.addressId,
-                    hint: _controller.selectedCustomer == null
-                        ? 'Pilih pelanggan terlebih dahulu'
-                        : (_controller.availableLocations.isEmpty
-                              ? 'Pelanggan belum memiliki alamat'
-                              : 'Pilih alamat…'),
-                    items: _controller.availableLocations
-                        .map(
-                          (l) => DropdownMenuItem(
-                            value: l.id,
-                            child: Text(
-                              l.label.isNotEmpty
-                                  ? '${l.label} - ${l.address}'
-                                  : l.address,
-                              overflow: TextOverflow.ellipsis,
                             ),
-                          ),
-                        )
-                        .toList(),
-                    onChanged: (val) {
-                      _controller.updateFields(addressId: val);
-                    },
-                  ),
-                  const SizedBox(height: 16),
-                  AppTextField(
-                    controller: _dateController,
-                    label: 'Tanggal Proposal',
-                    isRequired: true,
-                    readOnly: true,
-                    suffixIcon: const Icon(
-                      Icons.calendar_today_rounded,
-                      size: 18,
-                      color: AppColors.sec,
-                    ),
-                    onTap: () => _selectDate(
-                      context,
-                      _dateController,
-                      (val) => _controller.updateFields(proposalDate: val),
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                  AppTextField(
-                    controller: _validUntilController,
-                    label: 'Berlaku Hingga',
-                    readOnly: true,
-                    suffixIcon: const Icon(
-                      Icons.calendar_today_rounded,
-                      size: 18,
-                      color: AppColors.sec,
-                    ),
-                    onTap: () => _selectDate(
-                      context,
-                      _validUntilController,
-                      (val) => _controller.updateFields(validUntil: val),
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                  AppTextField(
-                    controller: _notesController,
-                    label: 'Catatan Proposal',
-                    hint: 'Tambahkan catatan proposal (opsional)…',
-                    maxLines: 3,
-                    onChanged: (val) => _controller.updateFields(notes: val),
-                  ),
-                  const SizedBox(height: 32),
-                  ElevatedButton(
-                    onPressed: !canSubmit
-                        ? null
-                        : () async {
-                            final result = await _controller.submit();
-                            if (result.isOk && context.mounted) {
-                              context.pop(result.valueOrNull);
-                            } else if (result.isErr && context.mounted) {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(
-                                  content: Text(result.failureOrNull!.message),
-                                ),
-                              );
-                            }
-                          },
-                    child: Text(
-                      _controller.isReviseMode
-                          ? 'Simpan Revisi'
+                          ],
+                        ),
+                      ),
+                    ],
+                    const SizedBox(height: 24),
+                    AppSearchableSelector<Customer>(
+                      label: 'Pelanggan',
+                      isRequired: true,
+                      enabled:
+                          !_controller.isEditMode && !_controller.isReviseMode,
+                      helperText: _controller.isReviseMode
+                          ? 'Terkunci pada mode revisi'
                           : (_controller.isEditMode
-                                ? 'Simpan Perubahan'
-                                : 'Buat Proposal'),
+                                ? 'Terkunci pada mode ubah'
+                                : null),
+                      value: _controller.selectedCustomer,
+                      onSearch: _controller.searchCustomers,
+                      itemAsString: (c) =>
+                          c.code.isNotEmpty ? '[${c.code}] ${c.name}' : c.name,
+                      onChanged: (c) => _controller.updateFields(customer: c),
                     ),
-                  ),
-                ],
-              ),
-            );
-          },
+                    const SizedBox(height: 16),
+                    AppSearchableSelector<Service>(
+                      label: 'Layanan',
+                      isRequired: true,
+                      enabled:
+                          !_controller.isEditMode && !_controller.isReviseMode,
+                      helperText: _controller.isReviseMode
+                          ? 'Terkunci pada mode revisi'
+                          : (_controller.isEditMode
+                                ? 'Terkunci pada mode ubah'
+                                : null),
+                      value: _controller.selectedService,
+                      onSearch: _controller.searchServices,
+                      itemAsString: (s) =>
+                          s.code.isNotEmpty ? '[${s.code}] ${s.name}' : s.name,
+                      onChanged: (s) => _controller.updateFields(service: s),
+                    ),
+                    if (isCreateMode &&
+                        _controller.selectedService != null) ...[
+                      const SizedBox(height: 16),
+                      if (_controller.isLoadingTemplates)
+                        Row(
+                          children: [
+                            const SizedBox(
+                              width: 16,
+                              height: 16,
+                              child: CircularProgressIndicator(strokeWidth: 2),
+                            ),
+                            const SizedBox(width: 8),
+                            Text(
+                              'Memuat template proposal…',
+                              style: AppTypography.bodySm(color: AppColors.sec),
+                            ),
+                          ],
+                        )
+                      else if (_controller.availableTemplates.isNotEmpty)
+                        AppDropdown<String>(
+                          label: 'Template Proposal',
+                          isRequired: true,
+                          value: _controller.templateId,
+                          items: _controller.availableTemplates
+                              .map(
+                                (t) => DropdownMenuItem(
+                                  value: t.value,
+                                  child: Text(
+                                    t.label,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ),
+                              )
+                              .toList(),
+                          onChanged: (val) => _controller.selectTemplate(val),
+                        )
+                      else
+                        Text(
+                          'Template proposal tidak tersedia untuk layanan ini',
+                          style: AppTypography.bodySm(color: AppColors.err),
+                        ),
+                    ],
+                    const SizedBox(height: 16),
+                    AppDropdown<String>(
+                      label: 'Alamat',
+                      isRequired: true,
+                      value: _controller.addressId,
+                      hint: _controller.selectedCustomer == null
+                          ? 'Pilih pelanggan terlebih dahulu'
+                          : (_controller.availableLocations.isEmpty
+                                ? 'Pelanggan belum memiliki alamat'
+                                : 'Pilih alamat…'),
+                      items: _controller.availableLocations
+                          .map(
+                            (l) => DropdownMenuItem(
+                              value: l.id,
+                              child: Text(
+                                l.label.isNotEmpty
+                                    ? '${l.label} - ${l.address}'
+                                    : l.address,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                          )
+                          .toList(),
+                      onChanged: (val) {
+                        _controller.updateFields(addressId: val);
+                      },
+                    ),
+                    const SizedBox(height: 16),
+                    AppTextField(
+                      controller: _dateController,
+                      label: 'Tanggal Proposal',
+                      isRequired: true,
+                      readOnly: true,
+                      suffixIcon: const Icon(
+                        Icons.calendar_today_rounded,
+                        size: 18,
+                        color: AppColors.sec,
+                      ),
+                      onTap: () => _selectDate(
+                        context,
+                        _dateController,
+                        (val) => _controller.updateFields(proposalDate: val),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    AppTextField(
+                      controller: _validUntilController,
+                      label: 'Berlaku Hingga',
+                      readOnly: true,
+                      suffixIcon: const Icon(
+                        Icons.calendar_today_rounded,
+                        size: 18,
+                        color: AppColors.sec,
+                      ),
+                      onTap: () => _selectDate(
+                        context,
+                        _validUntilController,
+                        (val) => _controller.updateFields(validUntil: val),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    AppTextField(
+                      controller: _notesController,
+                      label: 'Catatan Proposal',
+                      hint: 'Tambahkan catatan proposal (opsional)…',
+                      maxLines: 3,
+                      onChanged: (val) => _controller.updateFields(notes: val),
+                    ),
+                    const SizedBox(height: 32),
+                    ElevatedButton(
+                      onPressed: !canSubmit
+                          ? null
+                          : () async {
+                              final result = await _controller.submit();
+                              if (result.isOk && context.mounted) {
+                                context.pop(result.valueOrNull);
+                              } else if (result.isErr && context.mounted) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: Text(
+                                      result.failureOrNull!.message,
+                                    ),
+                                  ),
+                                );
+                              }
+                            },
+                      child: Text(
+                        _controller.isReviseMode
+                            ? 'Simpan Revisi'
+                            : (_controller.isEditMode
+                                  ? 'Simpan Perubahan'
+                                  : 'Buat Proposal'),
+                      ),
+                    ),
+                  ],
+                ),
+              );
+            },
+          ),
         ),
       ),
     );

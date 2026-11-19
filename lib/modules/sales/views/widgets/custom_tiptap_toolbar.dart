@@ -404,6 +404,14 @@ class _CustomTiptapToolbarState extends State<CustomTiptapToolbar> {
                   isActive: false,
                   onPressed: () => _exec('deleteTable'),
                 ),
+                _ToolbarButton(
+                  icon: Icons.border_clear,
+                  tooltip: 'Tabel layout (tanpa border)',
+                  isActive: state.isActive['tableLayout'] == true,
+                  onPressed: () => widget.controller.runJavaScript(
+                    'window.toggleTableLayout();',
+                  ),
+                ),
               ],
 
               _ToolbarDivider(),

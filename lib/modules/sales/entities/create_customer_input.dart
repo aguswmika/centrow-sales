@@ -226,7 +226,6 @@ class CreateCustomerInput {
   final String phoneAlt;
   final String email;
   final double taxPercentage;
-  final String riskNotes;
   final String notes;
   final List<CreateLocationInput> locations;
   final List<CreateContactInput> contacts;
@@ -242,7 +241,6 @@ class CreateCustomerInput {
     this.phoneAlt = '',
     this.email = '',
     this.taxPercentage = 0,
-    this.riskNotes = '',
     this.notes = '',
     this.locations = const [],
     this.contacts = const [],
@@ -259,7 +257,6 @@ class CreateCustomerInput {
     String? phoneAlt,
     String? email,
     double? taxPercentage,
-    String? riskNotes,
     String? notes,
     List<CreateLocationInput>? locations,
     List<CreateContactInput>? contacts,
@@ -275,7 +272,6 @@ class CreateCustomerInput {
       phoneAlt: phoneAlt ?? this.phoneAlt,
       email: email ?? this.email,
       taxPercentage: taxPercentage ?? this.taxPercentage,
-      riskNotes: riskNotes ?? this.riskNotes,
       notes: notes ?? this.notes,
       locations: locations ?? this.locations,
       contacts: contacts ?? this.contacts,
@@ -291,7 +287,6 @@ class CreateCustomerInput {
     'phone': phone,
     'phone_alt': phoneAlt,
     'email': email,
-    'risk_notes': riskNotes,
     'notes': notes,
     'locations': locations.map((l) => l.toJson()).toList(),
     'contacts': contacts.map((c) => c.toJson()).toList(),
@@ -311,7 +306,6 @@ class CreateCustomerInput {
           phone == other.phone &&
           phoneAlt == other.phoneAlt &&
           email == other.email &&
-          riskNotes == other.riskNotes &&
           notes == other.notes;
 
   @override
@@ -325,7 +319,6 @@ class CreateCustomerInput {
     phone,
     phoneAlt,
     email,
-    riskNotes,
     notes,
   );
 

@@ -154,20 +154,11 @@ class Step1IdentityForm extends StatelessWidget {
             ),
             const SizedBox(height: 16.0),
 
-            // Section 3: Catatan Internal & Risiko
+            // Section 3: Catatan Internal
             _buildSectionCard(
               icon: Icons.edit_note_rounded,
-              title: 'Catatan Internal & Risiko',
+              title: 'Catatan Internal',
               children: [
-                _buildTextField(
-                  label: 'Catatan Risiko Internal',
-                  hint:
-                      'Catatan kredit, komplain sebelumnya, atau syarat termin khusus…',
-                  maxLines: 3,
-                  value: controller.riskNotes.value,
-                  onChanged: (v) => controller.riskNotes.value = v,
-                ),
-                const SizedBox(height: 16.0),
                 _buildTextField(
                   label: 'Catatan Operasional & Akses Layanan',
                   hint:

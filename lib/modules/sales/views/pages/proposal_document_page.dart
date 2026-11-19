@@ -68,6 +68,8 @@ class _ProposalDocumentPageState extends State<ProposalDocumentPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.bg,
+      // NavRailShell already resizes for the keyboard; avoid counting it twice.
+      resizeToAvoidBottomInset: false,
       body: SafeArea(
         child: Column(
           children: [

@@ -123,7 +123,6 @@ class CustomerFormController {
   final phoneAlt = signal<String>('');
   final email = signal<String>('');
   final taxPercentage = signal<double>(0.0);
-  final riskNotes = signal<String>('');
   final notes = signal<String>('');
 
   // Step 2 & 3 signals
@@ -357,7 +356,6 @@ class CustomerFormController {
         phoneAlt.value = customer.phoneAlt;
         email.value = customer.email;
         taxPercentage.value = customer.taxPercentage;
-        riskNotes.value = customer.riskNotes;
         notes.value = customer.notes;
 
         final resolvedLocations = <CreateLocationInput>[];
@@ -609,7 +607,6 @@ class CustomerFormController {
       phoneAlt: phoneAlt.value.trim(),
       email: email.value.trim(),
       taxPercentage: taxPercentage.value,
-      riskNotes: riskNotes.value.trim(),
       notes: notes.value.trim(),
       locations: locations.value
           .where(
@@ -806,7 +803,6 @@ class CustomerFormController {
     phoneAlt.dispose();
     email.dispose();
     taxPercentage.dispose();
-    riskNotes.dispose();
     notes.dispose();
     locations.dispose();
     contacts.dispose();

@@ -365,7 +365,6 @@ class Customer {
   final String email;
   final String scanCode;
   final double taxPercentage;
-  final String riskNotes;
   final String notes;
   final int activeProposalsCount;
   final int activeContractsCount;
@@ -391,7 +390,6 @@ class Customer {
     this.email = '',
     this.scanCode = '',
     this.taxPercentage = 0,
-    this.riskNotes = '',
     this.notes = '',
     this.activeProposalsCount = 0,
     this.activeContractsCount = 0,
@@ -430,7 +428,6 @@ class Customer {
     String? email,
     String? scanCode,
     double? taxPercentage,
-    String? riskNotes,
     String? notes,
     int? activeProposalsCount,
     int? activeContractsCount,
@@ -455,7 +452,6 @@ class Customer {
       email: email ?? this.email,
       scanCode: scanCode ?? this.scanCode,
       taxPercentage: taxPercentage ?? this.taxPercentage,
-      riskNotes: riskNotes ?? this.riskNotes,
       notes: notes ?? this.notes,
       activeProposalsCount: activeProposalsCount ?? this.activeProposalsCount,
       activeContractsCount: activeContractsCount ?? this.activeContractsCount,
@@ -485,7 +481,6 @@ class Customer {
           email == other.email &&
           scanCode == other.scanCode &&
           taxPercentage == other.taxPercentage &&
-          riskNotes == other.riskNotes &&
           notes == other.notes &&
           activeProposalsCount == other.activeProposalsCount &&
           activeContractsCount == other.activeContractsCount &&
@@ -507,7 +502,6 @@ class Customer {
     email,
     scanCode,
     taxPercentage,
-    riskNotes,
     notes,
     activeProposalsCount,
     activeContractsCount,

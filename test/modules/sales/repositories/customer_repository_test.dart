@@ -222,7 +222,6 @@ void main() {
               'phone_alt': '+62-361-123-4568',
               'email': 'info@villabali.example.com',
               'scan_code': 'VC-550e8400-e29b',
-              'risk_notes': 'Monitor payment patterns closely',
               'notes': 'Preferred vendor for group bookings',
               'active_proposals_count': 2,
               'active_contracts_count': 0,
@@ -291,7 +290,6 @@ void main() {
         expect(customer.id, customerId);
         expect(customer.name, 'Villa Bali Resort');
         expect(customer.phoneAlt, '+62-361-123-4568');
-        expect(customer.riskNotes, 'Monitor payment patterns closely');
         expect(customer.notes, 'Preferred vendor for group bookings');
 
         // Locations

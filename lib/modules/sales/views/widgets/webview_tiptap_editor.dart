@@ -137,7 +137,15 @@ class _WebviewTiptapEditorState extends State<WebviewTiptapEditor> {
   <div id="paged" class="rt-paged"><div id="editor"></div></div>
 
   <script>
-    const { Editor, StarterKit, Table, TableRow, TableCell, TableHeader, TextAlign, Underline, Link, Image, PagePagination, resolvePageProfile, contentWidthPx } = window.Tiptap;
+    const { Editor, StarterKit, Table, TableView, TableRow, TableCell, TableHeader, TextAlign, Underline, Link, Image, PagePagination, resolvePageProfile, contentWidthPx } = window.Tiptap;
+
+    // Tiptap's columnResizing plugin builds the table node view itself when
+    // resizable is on, so the layout attr must be mirrored onto the <table> here.
+    class LayoutTableView extends TableView {
+      constructor(node, cellMinWidth, view, attrs) { super(node, cellMinWidth, view, attrs); this.syncLayout(node); }
+      update(node) { const ok = super.update(node); if (ok) this.syncLayout(node); return ok; }
+      syncLayout(node) { if (node.attrs.layout === true) this.table.setAttribute('data-layout','true'); else this.table.removeAttribute('data-layout'); }
+    }
 
     let pageProfile = resolvePageProfile($pageLayout);
     document.querySelector('#paged').setAttribute('data-profile', pageProfile.id);
@@ -171,6 +179,7 @@ class _WebviewTiptapEditorState extends State<WebviewTiptapEditor> {
             center: editor.isActive({ textAlign: 'center' }),
             right: editor.isActive({ textAlign: 'right' }),
             table: editor.isActive('table'),
+            tableLayout: editor.isActive('table') && editor.getAttributes('table').layout === true,
             image: editor.isActive('image'),
             imageLeft: imageAlign === 'left',
             imageCenter: imageAlign === 'center',
@@ -186,7 +195,18 @@ class _WebviewTiptapEditorState extends State<WebviewTiptapEditor> {
       editable: ${widget.isEditable},
       extensions: [
         StarterKit,
-        Table.configure({ resizable: true }),
+        Table.extend({
+          addAttributes() {
+            return {
+              ...this.parent?.(),
+              layout: {
+                default: false,
+                parseHTML: el => el.hasAttribute('data-layout'),
+                renderHTML: attrs => attrs.layout ? { 'data-layout': 'true' } : {},
+              },
+            };
+          },
+        }).configure({ resizable: true, View: LayoutTableView }),
         TableRow,
         TableHeader,
         TableCell,
@@ -270,6 +290,11 @@ class _WebviewTiptapEditorState extends State<WebviewTiptapEditor> {
     window.setImageAlign = function(align) {
       if (align !== 'left' && align !== 'center' && align !== 'right') return;
       window.editor.chain().focus().updateAttributes('image', { align: align }).run();
+    };
+
+    window.toggleTableLayout = function() {
+      const current = window.editor.getAttributes('table').layout === true;
+      window.editor.chain().focus().updateAttributes('table', { layout: !current }).run();
     };
 
     window.execCmd = function(cmd, argsStr) {

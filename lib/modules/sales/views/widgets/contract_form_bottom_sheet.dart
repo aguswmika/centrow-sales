@@ -107,287 +107,296 @@ class _ContractFormBottomSheetState extends State<ContractFormBottomSheet> {
 
   @override
   Widget build(BuildContext context) {
-    return Material(
-      color: AppColors.surface,
-      borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
-      clipBehavior: Clip.antiAlias,
-      child: Container(
-        constraints: BoxConstraints(
-          maxHeight: MediaQuery.of(context).size.height * 0.9,
-        ),
-        child: ListenableBuilder(
-          listenable: _controller,
-          builder: (context, _) {
-            final bool isCreateMode = !_controller.isEditMode;
-            final bool templatesUnavailable =
-                isCreateMode &&
-                _controller.selectedCategory != null &&
-                _controller.selectedCategory!.templates.isEmpty;
-            final bool canSubmit = !isCreateMode || !templatesUnavailable;
+    final keyboardInset = MediaQuery.viewInsetsOf(context).bottom;
+    final availableHeight = MediaQuery.sizeOf(context).height - keyboardInset;
+    // Lift the whole sheet above the keyboard and size it to what is left, so
+    // the scroll view shrinks and keeps the focused field visible.
+    return Padding(
+      padding: EdgeInsets.only(bottom: keyboardInset),
+      child: Material(
+        color: AppColors.surface,
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+        clipBehavior: Clip.antiAlias,
+        child: Container(
+          constraints: BoxConstraints(maxHeight: availableHeight * 0.9),
+          child: ListenableBuilder(
+            listenable: _controller,
+            builder: (context, _) {
+              final bool isCreateMode = !_controller.isEditMode;
+              final bool templatesUnavailable =
+                  isCreateMode &&
+                  _controller.selectedCategory != null &&
+                  _controller.selectedCategory!.templates.isEmpty;
+              final bool canSubmit = !isCreateMode || !templatesUnavailable;
 
-            return SingleChildScrollView(
-              padding: EdgeInsets.only(
-                bottom: MediaQuery.of(context).viewInsets.bottom + 24.0,
-                left: 24.0,
-                right: 24.0,
-                top: 12.0,
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  // Handle bar
-                  Center(
-                    child: Container(
-                      width: 40,
-                      height: 4,
-                      decoration: BoxDecoration(
-                        color: AppColors.borderStrong,
-                        borderRadius: BorderRadius.circular(2),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(
-                        _controller.isEditMode
-                            ? 'Ubah Kontrak'
-                            : 'Buat Kontrak',
-                        style: AppTypography.heading2(),
-                      ),
-                      IconButton(
-                        icon: const Icon(
-                          Icons.close_rounded,
-                          color: AppColors.sec,
+              return SingleChildScrollView(
+                padding: const EdgeInsets.only(
+                  bottom: 24.0,
+                  left: 24.0,
+                  right: 24.0,
+                  top: 12.0,
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    // Handle bar
+                    Center(
+                      child: Container(
+                        width: 40,
+                        height: 4,
+                        decoration: BoxDecoration(
+                          color: AppColors.borderStrong,
+                          borderRadius: BorderRadius.circular(2),
                         ),
-                        onPressed: () => context.pop(),
                       ),
-                    ],
-                  ),
-                  const SizedBox(height: 8),
-                  if (_controller.proposalCode != null &&
-                      _controller.proposalCode!.isNotEmpty)
-                    Text(
-                      'Dari Penawaran ${_controller.proposalCode}',
-                      style: AppTypography.bodySm(color: AppColors.muted),
                     ),
-                  Text(
-                    '${_controller.prefilledCustomerName ?? ''} · ${_controller.prefilledServiceName ?? ''}',
-                    style: AppTypography.bodySm(
-                      color: AppColors.text,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-
-                  // Information Banner about Pricing & Signatory
-                  Container(
-                    padding: const EdgeInsets.all(12.0),
-                    decoration: BoxDecoration(
-                      color: AppColors.subtle,
-                      borderRadius: BorderRadius.circular(8.0),
-                      border: Border.all(color: AppColors.border),
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
+                    const SizedBox(height: 16),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         Text(
-                          'Informasi Otomatis:',
-                          style: AppTypography.bodySm(
-                            color: AppColors.text,
-                            fontWeight: FontWeight.w600,
-                          ),
+                          _controller.isEditMode
+                              ? 'Ubah Kontrak'
+                              : 'Buat Kontrak',
+                          style: AppTypography.heading2(),
                         ),
-                        const SizedBox(height: 4),
-                        Text(
-                          '• Nilai kontrak & total kunjungan disalin otomatis dari kalkulasi harga proposal.\n• Tanggal selesai dihitung otomatis dari durasi kontrak pada penawaran (tanggal mulai + durasi bulan).\n• Penandatangan disalin otomatis dari kontak Pelanggan dengan peran Penandatangan.',
-                          style: AppTypography.caption(color: AppColors.sec),
+                        IconButton(
+                          icon: const Icon(
+                            Icons.close_rounded,
+                            color: AppColors.sec,
+                          ),
+                          onPressed: () => context.pop(),
                         ),
                       ],
                     ),
-                  ),
-                  const SizedBox(height: 24),
-
-                  // 1. Kategori Kontrak *
-                  AppSearchableSelector<ContractCategory>(
-                    label: 'Kategori Kontrak',
-                    hint: 'Pilih kategori…',
-                    value: _controller.selectedCategory,
-                    onSearch: _controller.searchCategories,
-                    itemAsString: (cat) => cat.name,
-                    onChanged: (cat) => _controller.updateFields(category: cat),
-                    isRequired: true,
-                  ),
-                  if (isCreateMode && _controller.selectedCategory != null) ...[
-                    const SizedBox(height: 16),
-                    if (_controller.selectedCategory!.templates.isNotEmpty)
-                      AppDropdown<String>(
-                        label: 'Template Kontrak',
-                        isRequired: true,
-                        value: _controller.contractTemplateId,
-                        items: _controller.selectedCategory!.templates
-                            .map(
-                              (t) => DropdownMenuItem(
-                                value: t.id,
-                                child: Text(
-                                  t.label,
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                              ),
-                            )
-                            .toList(),
-                        onChanged: (val) =>
-                            _controller.selectContractTemplate(val),
-                      )
-                    else
+                    const SizedBox(height: 8),
+                    if (_controller.proposalCode != null &&
+                        _controller.proposalCode!.isNotEmpty)
                       Text(
-                        'Template kontrak tidak tersedia untuk kategori ini',
-                        style: AppTypography.bodySm(color: AppColors.err),
+                        'Dari Penawaran ${_controller.proposalCode}',
+                        style: AppTypography.bodySm(color: AppColors.muted),
                       ),
-                  ],
-                  const SizedBox(height: 16),
-
-                  // 2. Tanggal Mulai *
-                  TextFormField(
-                    controller: _startDateCtrl,
-                    readOnly: true,
-                    decoration: const InputDecoration(
-                      labelText: 'Tanggal Mulai *',
-                      suffixIcon: Icon(Icons.calendar_today),
+                    Text(
+                      '${_controller.prefilledCustomerName ?? ''} · ${_controller.prefilledServiceName ?? ''}',
+                      style: AppTypography.bodySm(
+                        color: AppColors.text,
+                        fontWeight: FontWeight.w600,
+                      ),
                     ),
-                    onTap: () => _pickDate(
-                      _startDateCtrl,
-                      (v) => _controller.updateFields(startDate: v),
-                    ),
-                  ),
-                  const SizedBox(height: 16),
+                    const SizedBox(height: 16),
 
-                  // 3. Tanggal Selesai (optional, edit mode only)
-                  if (!isCreateMode) ...[
+                    // Information Banner about Pricing & Signatory
+                    Container(
+                      padding: const EdgeInsets.all(12.0),
+                      decoration: BoxDecoration(
+                        color: AppColors.subtle,
+                        borderRadius: BorderRadius.circular(8.0),
+                        border: Border.all(color: AppColors.border),
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Informasi Otomatis:',
+                            style: AppTypography.bodySm(
+                              color: AppColors.text,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            '• Nilai kontrak & total kunjungan disalin otomatis dari kalkulasi harga proposal.\n• Tanggal selesai dihitung otomatis dari durasi kontrak pada penawaran (tanggal mulai + durasi bulan).\n• Penandatangan disalin otomatis dari kontak Pelanggan dengan peran Penandatangan.',
+                            style: AppTypography.caption(color: AppColors.sec),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 24),
+
+                    // 1. Kategori Kontrak *
+                    AppSearchableSelector<ContractCategory>(
+                      label: 'Kategori Kontrak',
+                      hint: 'Pilih kategori…',
+                      value: _controller.selectedCategory,
+                      onSearch: _controller.searchCategories,
+                      itemAsString: (cat) => cat.name,
+                      onChanged: (cat) =>
+                          _controller.updateFields(category: cat),
+                      isRequired: true,
+                    ),
+                    if (isCreateMode &&
+                        _controller.selectedCategory != null) ...[
+                      const SizedBox(height: 16),
+                      if (_controller.selectedCategory!.templates.isNotEmpty)
+                        AppDropdown<String>(
+                          label: 'Template Kontrak',
+                          isRequired: true,
+                          value: _controller.contractTemplateId,
+                          items: _controller.selectedCategory!.templates
+                              .map(
+                                (t) => DropdownMenuItem(
+                                  value: t.id,
+                                  child: Text(
+                                    t.label,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ),
+                              )
+                              .toList(),
+                          onChanged: (val) =>
+                              _controller.selectContractTemplate(val),
+                        )
+                      else
+                        Text(
+                          'Template kontrak tidak tersedia untuk kategori ini',
+                          style: AppTypography.bodySm(color: AppColors.err),
+                        ),
+                    ],
+                    const SizedBox(height: 16),
+
+                    // 2. Tanggal Mulai *
                     TextFormField(
-                      controller: _endDateCtrl,
+                      controller: _startDateCtrl,
                       readOnly: true,
                       decoration: const InputDecoration(
-                        labelText: 'Tanggal Selesai',
+                        labelText: 'Tanggal Mulai *',
                         suffixIcon: Icon(Icons.calendar_today),
                       ),
                       onTap: () => _pickDate(
-                        _endDateCtrl,
-                        (v) => _controller.updateFields(endDate: v),
+                        _startDateCtrl,
+                        (v) => _controller.updateFields(startDate: v),
                       ),
                     ),
                     const SizedBox(height: 16),
-                  ],
 
-                  // 4. Tanggal Penandatanganan *
-                  TextFormField(
-                    controller: _signedDateCtrl,
-                    readOnly: true,
-                    decoration: const InputDecoration(
-                      labelText: 'Tanggal Penandatanganan *',
-                      suffixIcon: Icon(Icons.calendar_today),
-                    ),
-                    onTap: () => _pickDate(
-                      _signedDateCtrl,
-                      (v) => _controller.updateFields(signedDate: v),
-                    ),
-                  ),
-                  const SizedBox(height: 16),
+                    // 3. Tanggal Selesai (optional, edit mode only)
+                    if (!isCreateMode) ...[
+                      TextFormField(
+                        controller: _endDateCtrl,
+                        readOnly: true,
+                        decoration: const InputDecoration(
+                          labelText: 'Tanggal Selesai',
+                          suffixIcon: Icon(Icons.calendar_today),
+                        ),
+                        onTap: () => _pickDate(
+                          _endDateCtrl,
+                          (v) => _controller.updateFields(endDate: v),
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                    ],
 
-                  // 5. Tanggal Invoice Pertama (optional)
-                  TextFormField(
-                    controller: _firstInvoiceDateCtrl,
-                    readOnly: true,
-                    decoration: InputDecoration(
-                      labelText: 'Tanggal Invoice Pertama',
-                      suffixIcon: _firstInvoiceDateCtrl.text.isNotEmpty
-                          ? IconButton(
-                              icon: const Icon(Icons.clear),
-                              onPressed: () {
-                                setState(() {
-                                  _firstInvoiceDateCtrl.clear();
-                                });
-                                _controller.updateFields(firstInvoiceDate: '');
-                              },
-                            )
-                          : const Icon(Icons.calendar_today),
+                    // 4. Tanggal Penandatanganan *
+                    TextFormField(
+                      controller: _signedDateCtrl,
+                      readOnly: true,
+                      decoration: const InputDecoration(
+                        labelText: 'Tanggal Penandatanganan *',
+                        suffixIcon: Icon(Icons.calendar_today),
+                      ),
+                      onTap: () => _pickDate(
+                        _signedDateCtrl,
+                        (v) => _controller.updateFields(signedDate: v),
+                      ),
                     ),
-                    onTap: () => _pickDate(
-                      _firstInvoiceDateCtrl,
-                      (v) => _controller.updateFields(firstInvoiceDate: v),
+                    const SizedBox(height: 16),
+
+                    // 5. Tanggal Invoice Pertama (optional)
+                    TextFormField(
+                      controller: _firstInvoiceDateCtrl,
+                      readOnly: true,
+                      decoration: InputDecoration(
+                        labelText: 'Tanggal Invoice Pertama',
+                        suffixIcon: _firstInvoiceDateCtrl.text.isNotEmpty
+                            ? IconButton(
+                                icon: const Icon(Icons.clear),
+                                onPressed: () {
+                                  setState(() {
+                                    _firstInvoiceDateCtrl.clear();
+                                  });
+                                  _controller.updateFields(
+                                    firstInvoiceDate: '',
+                                  );
+                                },
+                              )
+                            : const Icon(Icons.calendar_today),
+                      ),
+                      onTap: () => _pickDate(
+                        _firstInvoiceDateCtrl,
+                        (v) => _controller.updateFields(firstInvoiceDate: v),
+                      ),
                     ),
-                  ),
-                  const SizedBox(height: 16),
+                    const SizedBox(height: 16),
 
-                  // 6. Tipe Pembayaran *
-                  AppDropdown<ContractPaymentType>(
-                    label: 'Tipe Pembayaran *',
-                    value: _controller.paymentType,
-                    items: ContractPaymentType.values
-                        .map(
-                          (pt) => DropdownMenuItem(
-                            value: pt,
-                            child: Text(pt.displayName),
-                          ),
-                        )
-                        .toList(),
-                    onChanged: (pt) {
-                      if (pt != null) {
-                        _controller.updateFields(paymentType: pt);
-                      }
-                    },
-                  ),
-                  const SizedBox(height: 16),
-
-                  // 7. Catatan *
-                  TextFormField(
-                    controller: _notesCtrl,
-                    maxLines: 3,
-                    decoration: const InputDecoration(
-                      labelText: 'Catatan *',
-                      alignLabelWithHint: true,
-                    ),
-                    onChanged: (v) => _controller.updateFields(notes: v),
-                  ),
-                  const SizedBox(height: 32),
-
-                  // Submit
-                  ElevatedButton(
-                    onPressed: (_controller.isSubmitting || !canSubmit)
-                        ? null
-                        : () async {
-                            final result = await _controller.submit();
-                            if (!context.mounted) return;
-                            if (result.isOk) {
-                              context.pop(result.valueOrNull);
-                            } else {
-                              showAppToast(
-                                context,
-                                result.failureOrNull!.message,
-                                isError: true,
-                              );
-                            }
-                          },
-                    child: _controller.isSubmitting
-                        ? const SizedBox(
-                            width: 20,
-                            height: 20,
-                            child: CircularProgressIndicator(
-                              strokeWidth: 2,
-                              color: Colors.white,
+                    // 6. Tipe Pembayaran *
+                    AppDropdown<ContractPaymentType>(
+                      label: 'Tipe Pembayaran *',
+                      value: _controller.paymentType,
+                      items: ContractPaymentType.values
+                          .map(
+                            (pt) => DropdownMenuItem(
+                              value: pt,
+                              child: Text(pt.displayName),
                             ),
                           )
-                        : Text(
-                            _controller.isEditMode
-                                ? 'Simpan Perubahan'
-                                : 'Buat Kontrak',
-                          ),
-                  ),
-                ],
-              ),
-            );
-          },
+                          .toList(),
+                      onChanged: (pt) {
+                        if (pt != null) {
+                          _controller.updateFields(paymentType: pt);
+                        }
+                      },
+                    ),
+                    const SizedBox(height: 16),
+
+                    // 7. Catatan *
+                    TextFormField(
+                      controller: _notesCtrl,
+                      maxLines: 3,
+                      decoration: const InputDecoration(
+                        labelText: 'Catatan *',
+                        alignLabelWithHint: true,
+                      ),
+                      onChanged: (v) => _controller.updateFields(notes: v),
+                    ),
+                    const SizedBox(height: 32),
+
+                    // Submit
+                    ElevatedButton(
+                      onPressed: (_controller.isSubmitting || !canSubmit)
+                          ? null
+                          : () async {
+                              final result = await _controller.submit();
+                              if (!context.mounted) return;
+                              if (result.isOk) {
+                                context.pop(result.valueOrNull);
+                              } else {
+                                showAppToast(
+                                  context,
+                                  result.failureOrNull!.message,
+                                  isError: true,
+                                );
+                              }
+                            },
+                      child: _controller.isSubmitting
+                          ? const SizedBox(
+                              width: 20,
+                              height: 20,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                color: Colors.white,
+                              ),
+                            )
+                          : Text(
+                              _controller.isEditMode
+                                  ? 'Simpan Perubahan'
+                                  : 'Buat Kontrak',
+                            ),
+                    ),
+                  ],
+                ),
+              );
+            },
+          ),
         ),
       ),
     );

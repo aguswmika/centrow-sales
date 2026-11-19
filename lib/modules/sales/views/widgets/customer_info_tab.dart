@@ -72,8 +72,6 @@ class CustomerInfoTab extends StatelessWidget {
                   ),
           ),
           _buildDivider(),
-          _buildInfoRow('Catatan Risiko', text: customer.riskNotes),
-          _buildDivider(),
           _buildInfoRow('Catatan Operasional', text: customer.notes),
           _buildDivider(),
           _buildInfoRow(
