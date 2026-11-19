@@ -1,9 +1,9 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:centrow_sales/shared/theme/app_colors.dart';
 import 'package:centrow_sales/shared/theme/app_radius.dart';
 import 'package:centrow_sales/shared/widgets/app_badge.dart';
-import 'package:centrow_sales/shared/widgets/app_segmented_control.dart';
+import 'package:centrow_sales/shared/widgets/app_filter_button.dart';
 import 'package:centrow_sales/modules/sales/entities/contract.dart';
 
 class ContractMasterList extends StatelessWidget {
@@ -66,9 +66,13 @@ class ContractMasterList extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 10.0),
-          _buildSearchBox(),
-          const SizedBox(height: 10.0),
-          _buildStatusFilters(),
+          Row(
+            children: [
+              Expanded(child: _buildSearchBox()),
+              const SizedBox(width: 8.0),
+              _buildStatusFilters(),
+            ],
+          ),
         ],
       ),
     );
@@ -105,18 +109,19 @@ class ContractMasterList extends StatelessWidget {
   }
 
   Widget _buildStatusFilters() {
-    return AppSegmentedControl<int?>(
-      isScrollable: true,
-      items: const [
-        SegmentItem<int?>(label: 'Semua', value: null),
-        SegmentItem<int?>(label: 'Draf', value: 1),
-        SegmentItem<int?>(label: 'Aktif', value: 2),
-        SegmentItem<int?>(label: 'Ditangguhkan', value: 3),
-        SegmentItem<int?>(label: 'Diterminasi', value: 5),
-        SegmentItem<int?>(label: 'Dibatalkan', value: 6),
+    return AppFilterButton<int?>(
+      title: 'Filter Status',
+      options: const [
+        FilterOption<int?>(label: 'Semua', value: null),
+        FilterOption<int?>(label: 'Draf', value: 1),
+        FilterOption<int?>(label: 'Aktif', value: 2),
+        FilterOption<int?>(label: 'Ditangguhkan', value: 3),
+        FilterOption<int?>(label: 'Diterminasi', value: 5),
+        FilterOption<int?>(label: 'Dibatalkan', value: 6),
       ],
       selectedValue: selectedStatus,
-      onValueChanged: onStatusChanged,
+      defaultValue: null,
+      onChanged: onStatusChanged,
     );
   }
 

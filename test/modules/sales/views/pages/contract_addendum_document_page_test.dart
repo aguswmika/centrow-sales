@@ -1,6 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
 // ignore: depend_on_referenced_packages
 import 'package:webview_flutter_platform_interface/webview_flutter_platform_interface.dart';
@@ -429,7 +429,7 @@ void main() {
     tester,
   ) async {
     if (getIt.isRegistered<ContractAddendumDocumentController>()) {
-      getIt.unregister<ContractAddendumDocumentController>();
+      await getIt.unregister<ContractAddendumDocumentController>();
     }
     getIt.registerFactory<ContractAddendumDocumentController>(
       () => ContractAddendumDocumentController(mockRepo),

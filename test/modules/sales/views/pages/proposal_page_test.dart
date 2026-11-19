@@ -10,7 +10,7 @@ import 'package:centrow_sales/modules/sales/views/widgets/proposal_detail_pane.d
 import 'package:centrow_sales/modules/sales/views/widgets/proposal_master_list.dart';
 import 'package:centrow_sales/shared/error/failure.dart';
 import 'package:centrow_sales/shared/result/result.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 class _FakeProposalRepo implements ProposalRepository {

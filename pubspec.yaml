@@ -1,7 +1,7 @@
 name: centrow_sales
 description: "Centrow Sales"
 publish_to: "none"
-version: 1.0.2+3
+version: 1.0.3+4
 
 environment:
   sdk: ^3.12.2
@@ -27,6 +27,7 @@ dependencies:
   image_picker: ^1.1.2
   flutter_image_compress: ^2.4.0
   flutter_painter_v2: ^2.1.1
+  material_ui: ^1.11.1
 dev_dependencies:
   flutter_test:
     sdk: flutter
@@ -34,6 +35,7 @@ dev_dependencies:
   flutter_launcher_icons: ^0.14.4
   flutter_native_splash: ^2.4.4
 
+  webview_flutter_platform_interface: any
 flutter_native_splash:
   color: "#000000"
   image: "assets/img/app_icon_full.png"

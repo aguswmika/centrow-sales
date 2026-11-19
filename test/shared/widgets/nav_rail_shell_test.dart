@@ -1,5 +1,5 @@
 import 'package:centrow_sales/modules/core/repositories/dtos/token_dto.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -128,9 +128,9 @@ void main() {
     SharedPreferences.setMockInitialValues({'auth_token': 'token123'});
     await setupDi();
     AuthTokenHolder.instance.token = 'token123';
-    getIt.unregister<AuthRepository>();
+    await getIt.unregister<AuthRepository>();
     getIt.registerLazySingleton<AuthRepository>(() => _MockAuthRepo());
-    getIt.unregister<CustomerRepository>();
+    await getIt.unregister<CustomerRepository>();
     getIt.registerLazySingleton<CustomerRepository>(() => _MockCustomerRepo());
   });
 

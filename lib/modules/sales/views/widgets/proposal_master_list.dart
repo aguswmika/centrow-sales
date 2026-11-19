@@ -1,9 +1,9 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:centrow_sales/shared/theme/app_colors.dart';
 import 'package:centrow_sales/shared/theme/app_radius.dart';
 import 'package:centrow_sales/shared/widgets/app_badge.dart';
-import 'package:centrow_sales/shared/widgets/app_segmented_control.dart';
+import 'package:centrow_sales/shared/widgets/app_filter_button.dart';
 import 'package:centrow_sales/modules/sales/entities/proposal.dart';
 
 class ProposalMasterList extends StatelessWidget {
@@ -105,6 +105,20 @@ class ProposalMasterList extends StatelessWidget {
                 ),
               ),
               const SizedBox(width: 8.0),
+              AppFilterButton<String>(
+                title: 'Filter Status',
+                options: const [
+                  FilterOption<String>(label: 'Semua', value: 'all'),
+                  FilterOption<String>(label: 'Draf', value: 'draft'),
+                  FilterOption<String>(label: 'Terkirim', value: 'sent'),
+                  FilterOption<String>(label: 'Diterima', value: 'accepted'),
+                  FilterOption<String>(label: 'Ditolak', value: 'rejected'),
+                ],
+                selectedValue: selectedStatus,
+                defaultValue: 'all',
+                onChanged: onSelectStatus,
+              ),
+              const SizedBox(width: 8.0),
               InkWell(
                 onTap: onCreateProposal,
                 borderRadius: AppRadius.borderMd,
@@ -132,18 +146,6 @@ class ProposalMasterList extends StatelessWidget {
                 ),
               ),
             ],
-          ),
-          const SizedBox(height: 10.0),
-          AppSegmentedControl<String>(
-            items: const [
-              SegmentItem<String>(label: 'Semua', value: 'all'),
-              SegmentItem<String>(label: 'Draf', value: 'draft'),
-              SegmentItem<String>(label: 'Terkirim', value: 'sent'),
-              SegmentItem<String>(label: 'Diterima', value: 'accepted'),
-              SegmentItem<String>(label: 'Ditolak', value: 'rejected'),
-            ],
-            selectedValue: selectedStatus,
-            onValueChanged: onSelectStatus,
           ),
         ],
       ),

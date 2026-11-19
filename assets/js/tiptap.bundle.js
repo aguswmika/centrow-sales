@@ -393,27 +393,17 @@ ${n}
   width: 100%;
 }
 
-.rt-paged:is([data-profile^="theme-"]) .ProseMirror th {
+/* Plain table, same grid as the plain profile: full 1px borders, bold header, no fill, no uppercase. */
+.rt-paged:is([data-profile^="theme-"]) .ProseMirror :is(th, td) {
+  border: 1px solid var(--color-border-strong);
+  padding: 4px 8px;
   text-align: left;
+  vertical-align: top;
+}
+
+.rt-paged:is([data-profile^="theme-"]) .ProseMirror th {
   font-weight: 700;
-  font-size: 8.5pt;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-  border: 0;
-  border-bottom: 1.5px solid var(--color-primary);
-  padding: 6px 9px;
-  vertical-align: top;
-}
-
-.rt-paged:is([data-profile^="theme-"]) .ProseMirror td {
-  border: 0;
-  border-bottom: 1px solid var(--color-border-default);
-  padding: 6px 9px;
-  vertical-align: top;
-}
-
-.rt-paged:is([data-profile^="theme-"]) .ProseMirror tr:last-child td {
-  border-bottom: 1.5px solid var(--color-primary);
+  background: none;
 }
 
 /* theme-1 Klasik: Georgia body, justified text, ruled h2, italic h3 */
@@ -454,7 +444,7 @@ ${n}
   padding-bottom: 0.5em;
 }
 
-/* theme-4 Minimalis: hairline rules, no uppercase table heads, no side border */
+/* theme-4 Minimalis: hairline rules, no side border */
 .rt-paged[data-profile="theme-4"] .ProseMirror h2 {
   font-size: 12pt;
   font-weight: 600;
@@ -465,17 +455,6 @@ ${n}
 
 .rt-paged[data-profile="theme-4"] .ProseMirror h3 {
   font-weight: 600;
-}
-
-.rt-paged[data-profile="theme-4"] .ProseMirror th {
-  border-bottom: 1px solid var(--color-primary);
-  text-transform: none;
-  letter-spacing: 0;
-  font-size: 9pt;
-}
-
-.rt-paged[data-profile="theme-4"] .ProseMirror tr:last-child td {
-  border-bottom: 1px solid var(--color-primary);
 }
 
 .rt-paged[data-profile="theme-4"] .ProseMirror blockquote {

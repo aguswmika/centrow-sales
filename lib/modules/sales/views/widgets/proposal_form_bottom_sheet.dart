@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:go_router/go_router.dart';
 import 'package:centrow_sales/app/di.dart';
 import 'package:centrow_sales/modules/sales/controllers/proposal_form_controller.dart';

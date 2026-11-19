@@ -54,7 +54,7 @@ void main() {
     SharedPreferences.setMockInitialValues({});
     await getIt.reset();
     await setupDi();
-    getIt.unregister<AuthRepository>();
+    await getIt.unregister<AuthRepository>();
     getIt.registerLazySingleton<AuthRepository>(() => _MockAuthRepo());
   });
 

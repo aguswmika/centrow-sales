@@ -332,7 +332,13 @@ class PricingCalculatorController {
   }
 
   void addSupplyRow(ProductMapping mapping) {
-    if (supplies.any((m) => m.id == mapping.productId)) return;
+    // One product can be mapped to several pests/methods, so a row is unique
+    // by its mapping, not by its product.
+    if (supplies.any(
+      (m) => m.kind == 1 && m.productMappingId.value == mapping.id,
+    )) {
+      return;
+    }
     supplies.add(
       PricingSupplyRow(
         id: mapping.productId,

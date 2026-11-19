@@ -1,10 +1,10 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:centrow_sales/shared/theme/app_colors.dart';
 import 'package:centrow_sales/shared/theme/app_radius.dart';
 import 'package:centrow_sales/shared/widgets/app_badge.dart';
-import 'package:centrow_sales/shared/widgets/app_segmented_control.dart';
+import 'package:centrow_sales/shared/widgets/app_filter_button.dart';
 import 'package:centrow_sales/modules/sales/entities/customer.dart';
 import 'package:centrow_sales/modules/sales/entities/segment.dart';
 
@@ -109,6 +109,19 @@ class CustomerMasterList extends StatelessWidget {
                 ),
               ),
               const SizedBox(width: 8.0),
+              AppFilterButton<String>(
+                title: 'Filter Segmen',
+                options: [
+                  const FilterOption<String>(label: 'Semua', value: 'all'),
+                  ...segments.map(
+                    (s) => FilterOption<String>(label: s.name, value: s.id),
+                  ),
+                ],
+                selectedValue: selectedSegment,
+                defaultValue: 'all',
+                onChanged: onSelectSegment,
+              ),
+              const SizedBox(width: 8.0),
               InkWell(
                 onTap: onAddCustomer ?? () => context.push('/customers/create'),
                 borderRadius: AppRadius.borderMd,
@@ -136,17 +149,6 @@ class CustomerMasterList extends StatelessWidget {
                 ),
               ),
             ],
-          ),
-          const SizedBox(height: 12.0),
-          AppSegmentedControl<String>(
-            items: [
-              const SegmentItem<String>(label: 'Semua', value: 'all'),
-              ...segments.map(
-                (s) => SegmentItem<String>(label: s.name, value: s.id),
-              ),
-            ],
-            selectedValue: selectedSegment,
-            onValueChanged: onSelectSegment,
           ),
         ],
       ),
